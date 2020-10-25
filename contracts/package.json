@@ -17,10 +17,10 @@
     "dotenv": "^8.2.0",
     "ethers": "^5.0.8",
     "hardhat": "^2.0.1",
-    "hardhat-deploy": "^0.7.0-beta.9",
+    "hardhat-deploy": "^0.7.0-beta.14",
     "hardhat-deploy-ethers": "^0.3.0-beta.5",
-    "planet-wars-common": "../common-lib",
     "mocha": "^8.1.1",
+    "planet-wars-common": "../common-lib",
     "ts-node": "^9.0.0",
     "typescript": "^3.8.3"
   },

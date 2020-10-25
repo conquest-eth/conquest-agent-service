@@ -1,5 +1,6 @@
 'use strict';
 process.env.TS_NODE_FILES = true;
+process.env.HARDHAT_COMPILE = true;
 module.exports = {
   'allow-uncaught': true,
   diff: true,

@@ -14,7 +14,7 @@ const accounts = {
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: '0.7.1',
+    version: '0.6.5',
     settings: {
       optimizer: {
         enabled: true,
