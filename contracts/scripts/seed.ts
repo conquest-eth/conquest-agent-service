@@ -1,19 +1,22 @@
-import {getUnnamedAccounts, ethers} from 'hardhat';
+import {getUnnamedAccounts, ethers, deployments} from 'hardhat';
+import {BigNumber} from '@ethersproject/bignumber';
+import {OuterSpace} from 'planet-wars-common';
 
-const messages = ['Hello', '你好', 'سلام', 'здравствуйте', 'Habari', 'Bonjour', 'नमस्ते'];
-
-function waitFor<T>(p: Promise<{wait: () => Promise<T>}>): Promise<T> {
-  return p.then((tx) => tx.wait());
-}
+// TODO move to util
+const waitFor = <T>(p: Promise<{wait: () => Promise<T>}>) => p.then((tx) => tx.wait());
 
 async function main() {
-  const others = await getUnnamedAccounts();
-  for (let i = 0; i < messages.length; i++) {
-    const sender = others[i];
-    if (sender) {
-      const outerSpaceContract = await ethers.getContract('OuterSpace', sender);
-      await waitFor(outerSpaceContract.setMessage(messages[i]));
-    }
+  const players = await getUnnamedAccounts();
+
+  const OuterSpaceDeployment = await deployments.get('OuterSpace');
+  const outerSpace = new OuterSpace(OuterSpaceDeployment.linkedData);
+
+  let planet;
+  const stableTokenUnit = BigNumber.from('1000000000000000000');
+  for (let i = 0; i < 4; i++) {
+    const outerSpaceContract = await ethers.getContract('OuterSpace', players[i]);
+    planet = outerSpace.findNextPlanet(planet ? planet.pointer : undefined);
+    await waitFor(outerSpaceContract.stake(players[i], planet.location.id, stableTokenUnit));
   }
 }
 
