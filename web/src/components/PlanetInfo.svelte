@@ -1,8 +1,7 @@
 <script lang="ts">
   export let planet;
   import {planets} from '../stores/planets';
-  // import userflow from '../stores/userflow';
-
+  import claimFlow from '../stores/claim';
   $: planetAcquired =
     $planets.data[`${planet.location.x},${planet.location.y}`];
 </script>
@@ -79,7 +78,7 @@
         <label for="natives">natives:</label>
         <span id="natives" class="value">{planet.stats.natives}</span>
       </div>
-      <!-- <button on:click={() => userflow.claim_start(planet)}>CLAIM</button> -->
+      <button on:click={() => claimFlow.claim(planet)}>CLAIM</button>
     {/if}
   </div>
 </div>
