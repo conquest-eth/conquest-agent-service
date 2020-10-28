@@ -4,7 +4,6 @@ import "../Interfaces/ERC20.sol";
 import "../MetaTransaction/ForwarderRegistry.sol";
 import "../MetaTransaction/MetaTxReceiverBase.sol";
 
-
 contract SimpleERC20TokenWithInitialBalance is MetaTxReceiverBase, ERC20 {
     string public constant name = "Simple";
     string public constant symbol = "SIMPLE";
@@ -27,7 +26,7 @@ contract SimpleERC20TokenWithInitialBalance is MetaTxReceiverBase, ERC20 {
 
     /// @notice Gets the total number of tokens in existence.
     /// @return the total number of tokens in existence.
-    function totalSupply() public override view returns (uint256) {
+    function totalSupply() public view override returns (uint256) {
         return _totalSupply;
     }
 
@@ -49,7 +48,7 @@ contract SimpleERC20TokenWithInitialBalance is MetaTxReceiverBase, ERC20 {
     /// @notice Gets the balance of `owner`.
     /// @param owner The address to query the balance of.
     /// @return The amount owned by `owner`.
-    function balanceOf(address owner) public override view returns (uint256) {
+    function balanceOf(address owner) public view override returns (uint256) {
         (, uint256 balance) = _balanceOf(owner);
         return balance;
     }
@@ -58,7 +57,7 @@ contract SimpleERC20TokenWithInitialBalance is MetaTxReceiverBase, ERC20 {
     /// @param owner address whose token is allowed.
     /// @param spender address allowed to transfer.
     /// @return remaining the amount of token `spender` is allowed to transfer on behalf of `owner`.
-    function allowance(address owner, address spender) public override view returns (uint256 remaining) {
+    function allowance(address owner, address spender) public view override returns (uint256 remaining) {
         return _allowances[owner][spender];
     }
 

@@ -11,7 +11,11 @@ export type QueryState<T> = {
 
 export function queryStore<T>(
   queryString: string,
-  options: {variables?: Record<string, unknown>; once?: boolean; transform?: string | ((v: unknown) => T)} = {}
+  options: {
+    variables?: Record<string, unknown>;
+    once?: boolean;
+    transform?: string | ((v: unknown) => T);
+  } = {}
 ): {
   subscribe: typeof subscribe;
   fetch: typeof fetch;
@@ -46,7 +50,12 @@ export function queryStore<T>(
         if (data[options.transform]) {
           data = data[options.transform];
         } else {
-          _set({error: {code: 11, message: `${options.transform} does not exist in result.data: ${data}`}});
+          _set({
+            error: {
+              code: 11,
+              message: `${options.transform} does not exist in result.data: ${data}`,
+            },
+          });
         }
       } else if (options.transform) {
         data = options.transform(data);

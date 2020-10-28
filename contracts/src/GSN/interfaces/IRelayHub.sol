@@ -3,7 +3,6 @@ pragma experimental ABIEncoderV2;
 
 import "../utils/GSNTypes.sol";
 
-
 interface IRelayHub {
     /// Emitted when a relay server registers or updates its details
     /// Looking at these events lets a client discover relay servers

@@ -5,9 +5,7 @@ import 'hardhat-deploy-ethers';
 
 let mnemonic = process.env.MNEMONIC;
 if (!mnemonic) {
-  // FOR DEV ONLY, USE .env FOR EXTERNAL NETWORKS
-  // (IT IS IMPORTANT TO HAVE A NON RANDOM MNEMONIC SO THAT SCRIPTS CAN ACT ON THE SAME ACCOUNTS)
-  mnemonic = 'present annual fetch tiger fabric regret ostrich drum clay sell deny couple';
+  mnemonic = 'test test test test test test test test test test test junk';
 }
 const accounts = {
   mnemonic,

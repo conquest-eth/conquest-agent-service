@@ -2,7 +2,6 @@ pragma solidity 0.6.5;
 
 import "./Interfaces/ERC20.sol";
 
-
 // contract PlayerVault {
 //     address _controller;
 //     ERC20 immutable _payToken;
@@ -28,7 +27,6 @@ interface PaymentDestination {
     ) external;
 }
 
-
 contract PaymentGateway {
     PaymentDestination _destination;
 
@@ -50,7 +48,6 @@ contract PaymentGateway {
         _destination.tokensDeposited(target, msg.sender, token, amount);
     }
 }
-
 
 contract Player is PaymentDestination {
     event Call(bool success, bytes returnData);
@@ -81,7 +78,7 @@ contract Player is PaymentDestination {
         paymentGateway.setDestination(this);
     }
 
-    function depositFor(address target) external override payable {
+    function depositFor(address target) external payable override {
         _ethBalances[target] += msg.value;
         emit Deposited(target, msg.sender, address(0), msg.value);
     }

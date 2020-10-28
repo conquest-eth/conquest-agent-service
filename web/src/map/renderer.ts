@@ -1,7 +1,9 @@
 import planetsFrame from '../assets/planets.json';
 import planetsDataURL from '../assets/planets.png';
 import {OuterSpace, xyToLocation} from 'planet-wars-common';
-const outerspace = new OuterSpace('0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69'); // TODO
+const outerspace = new OuterSpace(
+  '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69'
+); // TODO
 
 // pre-render
 let planetSpriteSheet;
@@ -77,7 +79,8 @@ export class Renderer {
       gridLevel = Math.floor(1 / camera.zoom); //Math.floor(Math.floor(48 / (camera.zoom)) / 48);
     }
 
-    const gridSize = Math.max(1, Math.pow(2, Math.floor(Math.log2(gridLevel)))) * 48;
+    const gridSize =
+      Math.max(1, Math.pow(2, Math.floor(Math.log2(gridLevel)))) * 48;
     // const gridSize = 48 * Math.pow(2, gridLevel-1);
     // const nextLevelGridSize = 48 * Math.pow(2, gridLevel);
     const gridOffset = gridSize - gridSize / 8;
@@ -141,7 +144,11 @@ export class Renderer {
         }
       }
 
-      for (let x = gridStart.x; x < gridStart.x + camera.width + gridOffset; x += gridSize) {
+      for (
+        let x = gridStart.x;
+        x < gridStart.x + camera.width + gridOffset;
+        x += gridSize
+      ) {
         // ctx.fillStyle = vPattern;
         // ctx.save();
         // ctx.scale(1, gridSize / 48);
@@ -161,11 +168,18 @@ export class Renderer {
         // }
         ctx.setLineDash([mainDash, smallDash, smallDash, smallDash]);
         ctx.moveTo(Math.round(x), Math.round(gridStart.y - gridOffset)); // TODO use drawImage for line pattern to avoid anti-aliasing
-        ctx.lineTo(Math.round(x), Math.round(gridStart.y + camera.height + gridOffset));
+        ctx.lineTo(
+          Math.round(x),
+          Math.round(gridStart.y + camera.height + gridOffset)
+        );
         ctx.stroke();
       }
 
-      for (let y = gridStart.y; y < gridStart.y + camera.height + gridOffset; y += gridSize) {
+      for (
+        let y = gridStart.y;
+        y < gridStart.y + camera.height + gridOffset;
+        y += gridSize
+      ) {
         // ctx.fillStyle = hPattern;
         // ctx.save();
         // ctx.scale(gridSize / 48, 1);
@@ -185,20 +199,28 @@ export class Renderer {
         // }
         ctx.setLineDash([mainDash, smallDash, smallDash, smallDash]);
         ctx.moveTo(Math.round(gridStart.x - gridOffset), Math.round(y));
-        ctx.lineTo(Math.round(gridStart.x + camera.width + gridOffset), Math.round(y));
+        ctx.lineTo(
+          Math.round(gridStart.x + camera.width + gridOffset),
+          Math.round(y)
+        );
         ctx.stroke();
       }
     }
 
     const gridX = Math.floor(gridStart.x / 48 / 4 / 2);
     const gridY = Math.floor(gridStart.y / 48 / 4 / 2);
-    const gridEndX = Math.floor((gridStart.x + camera.width + gridOffset) / 48 / 4 / 2);
-    const gridEndY = Math.floor((gridStart.y + camera.height + gridOffset) / 48 / 4 / 2);
+    const gridEndX = Math.floor(
+      (gridStart.x + camera.width + gridOffset) / 48 / 4 / 2
+    );
+    const gridEndY = Math.floor(
+      (gridStart.y + camera.height + gridOffset) / 48 / 4 / 2
+    );
     for (let x = gridX; x <= gridEndX + 1; x++) {
       for (let y = gridY; y <= gridEndY + 1; y++) {
         const planet = outerspace.getPlanetStats({x, y});
         if (planet) {
-          const lavaFrame = planetsFrame.frames[planetTypesToFrame[planet.type]].frame;
+          const lavaFrame =
+            planetsFrame.frames[planetTypesToFrame[planet.type]].frame;
           // console.log(planet)
           ctx.imageSmoothingEnabled = false;
           ctx.drawImage(

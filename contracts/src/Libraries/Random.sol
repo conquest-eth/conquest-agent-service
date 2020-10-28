@@ -2,7 +2,6 @@ pragma solidity >0.6.0;
 
 import "./Math.sol";
 
-
 library Random {
     using Math for uint256;
 

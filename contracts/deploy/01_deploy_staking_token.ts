@@ -7,7 +7,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await deploy('StableToken', {
     from: deployer,
     contract: 'SimpleERC20TokenWithInitialBalance',
-    args: ['1000000000000000000000000000', '0x0000000000000000000000000000000000000000'],
+    args: [
+      '1000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000',
+    ],
     log: true,
   });
 };

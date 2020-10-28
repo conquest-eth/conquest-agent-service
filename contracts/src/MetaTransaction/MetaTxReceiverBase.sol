@@ -2,7 +2,6 @@ pragma solidity 0.6.5;
 
 import "./ForwarderRegistry.sol";
 
-
 abstract contract MetaTxReceiverBase {
     ForwarderRegistry immutable _forwarderRegistry;
 

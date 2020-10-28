@@ -23,11 +23,11 @@ abstract contract BasePaymaster is IPaymaster {
         _relayHub = relayHub;
     }
 
-    function getHubAddr() external override view returns (address) {
+    function getHubAddr() external view override returns (address) {
         return address(_relayHub);
     }
 
-    function getGasLimits() external override view returns (GSNTypes.GasLimits memory limits) {
+    function getGasLimits() external view override returns (GSNTypes.GasLimits memory limits) {
         return
             GSNTypes.GasLimits(ACCEPT_RELAYED_CALL_GAS_LIMIT, PRE_RELAYED_CALL_GAS_LIMIT, POST_RELAYED_CALL_GAS_LIMIT);
     }
@@ -42,7 +42,7 @@ abstract contract BasePaymaster is IPaymaster {
 
     /// check current deposit on relay hub.
     // (wanted to name it "getRelayHubDeposit()", but we use the name from IRelayRecipient...
-    function getRelayHubDeposit() public override view returns (uint256) {
+    function getRelayHubDeposit() public view override returns (uint256) {
         return _relayHub.balanceOf(address(this));
     }
 }

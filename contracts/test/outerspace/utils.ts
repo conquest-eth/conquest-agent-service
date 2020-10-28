@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */ // TODO remove
 import {increaseTime, waitFor, objMap} from '../test-utils';
 import {ethers, getUnnamedAccounts, deployments} from 'hardhat';
 import {BigNumber} from '@ethersproject/bignumber';
@@ -9,7 +10,10 @@ import {ContractReceipt} from 'ethers';
 type AnyContract = any; // TODO ?
 type User = {address: string; [contractName: string]: AnyContract};
 
-async function createPlayerAsContracts(player: string, contractNames: string[]): Promise<User> {
+async function createPlayerAsContracts(
+  player: string,
+  contractNames: string[]
+): Promise<User> {
   const obj: User = {address: player};
   for (const contractName of contractNames) {
     obj[contractName] = await ethers.getContract(contractName, player);
@@ -59,13 +63,16 @@ export async function sendInSecret(
 } | null> {
   const secret = Wallet.createRandom().privateKey;
   const toHash = keccak256(['bytes32', 'uint256'], [secret, to.location.id]);
-  const receipt = await waitFor<ContractReceipt>(player.OuterSpace.send(from.location.id, quantity, toHash));
+  const receipt = await waitFor<ContractReceipt>(
+    player.OuterSpace.send(from.location.id, quantity, toHash)
+  );
   const event = receipt.events?.find((e: any) => e.event === 'FleetSent'); // TODO any
   if (!event || !event.args || !event.args[2]) {
     return null;
   }
   const distanceSquared =
-    Math.pow(to.location.globalX - from.location.globalX, 2) + Math.pow(to.location.globalY - from.location.globalY, 2);
+    Math.pow(to.location.globalX - from.location.globalX, 2) +
+    Math.pow(to.location.globalY - from.location.globalY, 2);
   const distance = Math.floor(Math.sqrt(distanceSquared));
   const timeRequired = BigNumber.from(distance)
     .mul(1 * 3600 * 10000)
@@ -81,7 +88,9 @@ export async function sendInSecret(
 }
 
 // TODO get benefit from typescript
-export function convertPlanetCallData(o: string | number | BigNumber): string | number {
+export function convertPlanetCallData(
+  o: string | number | BigNumber
+): string | number {
   if (typeof o === 'number') {
     return o;
   }
@@ -99,14 +108,21 @@ type PlanetState = Planet & {
   getNumSpaceships: (time: number) => number;
 };
 
-export async function fetchPlanetState(contract: AnyContract, planet: Planet): Promise<PlanetState> {
+export async function fetchPlanetState(
+  contract: AnyContract,
+  planet: Planet
+): Promise<PlanetState> {
   const planetData = await contract.callStatic.getPlanet(planet.location.id);
   const statsFromContract = objMap(planet.stats, convertPlanetCallData);
   // check as validty assetion:
   for (const key of Object.keys(statsFromContract)) {
     const value = statsFromContract[key];
     if (value !== (planet as any).stats[key]) {
-      throw new Error(`${key}: ${(planet as any).stats[key]} not equal to contract stats : ${value} `);
+      throw new Error(
+        `${key}: ${
+          (planet as any).stats[key]
+        } not equal to contract stats : ${value} `
+      );
     }
   }
   const state = objMap(planetData.state, convertPlanetCallData);
@@ -114,7 +130,10 @@ export async function fetchPlanetState(contract: AnyContract, planet: Planet): P
     ...planet,
     state,
     getNumSpaceships(time: number) {
-      return state.numSpaceships + Math.floor(((time - state.lastUpdated) * state.productionRate) / 3600);
+      return (
+        state.numSpaceships +
+        Math.floor(((time - state.lastUpdated) * state.productionRate) / 3600)
+      );
     },
   };
 }

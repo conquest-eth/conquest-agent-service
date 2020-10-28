@@ -1,6 +1,5 @@
 pragma solidity 0.6.5;
 
-
 contract ForwarderRegistry {
     /// @notice emitted for each Forwarder Approval or Disaproval
     event ForwarderApproved(address indexed signer, address indexed forwarder, bool approved, uint256 nonce);
@@ -122,7 +121,6 @@ contract ForwarderRegistry {
     mapping(address => mapping(address => Forwarder)) internal _forwarders;
 }
 
-
 library Utilities {
     // ///////////////////////////// UTILITIES //////////////////////////////////////////////////
     function recoverSigner(bytes32 digest, bytes memory signature) internal pure returns (address) {
@@ -151,11 +149,9 @@ library Utilities {
     }
 }
 
-
 interface ERC1271 {
     function isValidSignature(bytes calldata data, bytes calldata signature) external view returns (bytes4 magicValue);
 }
-
 
 interface ERC1654 {
     function isValidSignature(bytes32 hash, bytes calldata signature) external view returns (bytes4 magicValue);

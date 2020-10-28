@@ -3,7 +3,6 @@ pragma experimental ABIEncoderV2;
 
 import "../utils/GSNTypes.sol";
 
-
 interface IPaymaster {
     /**
      * return the relayHub of this contract.

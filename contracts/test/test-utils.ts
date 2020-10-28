@@ -1,13 +1,20 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */ // TODO remove
 import {ethers} from 'hardhat';
 
-export async function expectRevert(promise: Promise<any>, expectedMessage?: string): Promise<boolean> {
+export async function expectRevert(
+  promise: Promise<any>,
+  expectedMessage?: string
+): Promise<boolean> {
   let receipt;
   try {
     receipt = await promise;
   } catch (error) {
-    const isExpectedMessagePresent = !expectedMessage || error.message.search(expectedMessage) >= 0;
+    const isExpectedMessagePresent =
+      !expectedMessage || error.message.search(expectedMessage) >= 0;
     if (!isExpectedMessagePresent) {
-      throw new Error(`Revert message : "${expectedMessage}" not present, instead got : "${error.message}"`);
+      throw new Error(
+        `Revert message : "${expectedMessage}" not present, instead got : "${error.message}"`
+      );
     }
     return true;
   }
@@ -33,7 +40,8 @@ export function getTime(): number {
 }
 
 export function objMap(
-  obj: any,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  obj: any, // TODO type
   func: (item: any, index: number) => any,
   options?: {
     depth: number;

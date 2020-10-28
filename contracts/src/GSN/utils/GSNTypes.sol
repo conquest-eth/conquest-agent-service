@@ -1,6 +1,5 @@
 pragma solidity 0.6.5;
 
-
 library GSNTypes {
     struct GasData {
         uint256 gasLimit;

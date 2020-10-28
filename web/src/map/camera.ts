@@ -1,5 +1,7 @@
 import {OuterSpace, xyToLocation} from 'planet-wars-common';
-const outerspace = new OuterSpace('0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69'); // TODO
+const outerspace = new OuterSpace(
+  '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69'
+); // TODO
 
 const lowZoomOrder = [
   0.5,
@@ -46,8 +48,12 @@ export class Camera {
     this.world.width = this.canvas.width / scale;
     this.world.height = this.canvas.height / scale;
 
-    this.render.x = Math.floor(Math.floor((this.world.width / 2 - this.world.x) * scale) / scale);
-    this.render.y = Math.floor(Math.floor((this.world.height / 2 - this.world.y) * scale) / scale);
+    this.render.x = Math.floor(
+      Math.floor((this.world.width / 2 - this.world.x) * scale) / scale
+    );
+    this.render.y = Math.floor(
+      Math.floor((this.world.height / 2 - this.world.y) * scale) / scale
+    );
   }
 
   setup({canvas, controller}, onChange) {
@@ -100,7 +106,11 @@ export class Camera {
       location.id = xyToLocation(location.x, location.y);
       // console.log('onClick', JSON.stringify({worldPos, gridPos, location, shifted}, null, '  '));
       const planet = outerspace.getPlanetStats(location);
-      if (planet && planet.location.subX == location.subX && planet.location.subY == location.subY) {
+      if (
+        planet &&
+        planet.location.subX == location.subX &&
+        planet.location.subY == location.subY
+      ) {
         // console.log(JSON.stringify(planet, null, '  '));
         if (this.controller) {
           this.controller.onPlanetSelected(planet);
@@ -184,7 +194,10 @@ export class Camera {
     function startZooming(e) {
       isPanning = false; // zooming override panning
       isZooming = true;
-      lastDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      lastDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
       zoomPoint = {
         x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
         y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
@@ -196,7 +209,10 @@ export class Camera {
     }
 
     function doZooming(e) {
-      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
 
       // console.log(JSON.stringify({dist, lastDist}));
       const diff = lastDist - dist;
@@ -262,8 +278,12 @@ export class Camera {
       const devicePixelRatio = self.render.devicePixelRatio;
       const scale = self.world.zoom * devicePixelRatio;
       return {
-        x: ((x - self.world.x) * scale + self.canvas.width / 2) / devicePixelRatio,
-        y: ((y - self.world.y) * scale + self.canvas.height / 2) / devicePixelRatio,
+        x:
+          ((x - self.world.x) * scale + self.canvas.width / 2) /
+          devicePixelRatio,
+        y:
+          ((y - self.world.y) * scale + self.canvas.height / 2) /
+          devicePixelRatio,
       };
     }
 
@@ -286,7 +306,10 @@ export class Camera {
         if (self.world.zoom > 1) {
           self.world.zoom--;
         } else {
-          self.zoomIndex = Math.min(self.zoomIndex + 1, lowZoomOrder.length - 1);
+          self.zoomIndex = Math.min(
+            self.zoomIndex + 1,
+            lowZoomOrder.length - 1
+          );
           self.world.zoom = lowZoomOrder[self.zoomIndex];
           // self.world.zoom /=2;
         }

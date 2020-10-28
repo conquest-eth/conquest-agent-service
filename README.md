@@ -4,31 +4,42 @@
 
 ## requirements :
 
+This app requires [node.js](https://nodejs.org/) (tested on v12+)
+
+### pnpm
+
+This repo use `pnpm` for package management : https://pnpm.js.org
+
+```bash
+npx pnpm add -g pnpm
+```
+
+`pnpm` is mainly used because it has proper mono-repo support which this project relies on.
+You might be able to switch to `yarn` but will most likely have to configure it to fix hoisting issues.
+If you decide to use `yarn` you ll have to remove the script "preinstall" that by default force the use of `pnpm`
+
 ### docker and docker-compose
 
 `docker` and `docker-compose` are used to setup the external services (an ethereum node, an ipfs node and a [subgraph](https://thegraph.com) node)
 
-If you prefer (or do not have access to docker/docker-compose) you can run them independently. 
+If you prefer (or do not have access to docker/docker-compose) you can run them independently.
 
 ### node
 
 This app requires [node.js](https://nodejs.org/) (tested on v12+)
 
-
 ## intall dependencies :
 
 ```bash
-npm install
+pnpm install
 ```
-
-This will recursively install dependencies in each sub folder too, ensuring all is setup once `npm install` finishes
 
 # Development
 
 The following command will start everything up.
 
 ```bash
-npm run shell:start
+pnpm run shell:start
 ```
 
 This will run each processes in their own terminal window/tap. Note that you might need confiugration based on your system.
@@ -38,7 +49,6 @@ On linux it uses `xterm` by default (so you need that installed).
 On windows it use `cmd.exe` by default.
 
 If you need some other terminal to execute the separate processes, you can configure it in `.newsh.json`.
-
 
 This command will bring 5 shells up
 
@@ -51,20 +61,20 @@ This command will bring 5 shells up
 Once docker-compose is running, you can stop the other shells and restart them if needed via
 
 ```bash
-npm run shell:dev
+pnpm run shell:dev
 ```
 
 Alternatively you can call the following first : this will setup the external services only (ipfs, ethereum and graph nodes)
 
 ```bash
-npm run setup
+pnpm run setup
 ```
 
-and then run `npm run shell:dev` to bring up the rest in watch mode.
+and then run `pnpm run shell:dev` to bring up the rest in watch mode.
 
 You can also always run them individually
 
-You can also run them all in one process : `npm run start` (no separate terminal window/tab) but this means all the log output is in the same window.
+You can also run them all in one process : `pnpm run start` (no separate terminal window/tab) but this means all the log output is in the same window.
 
 Basically the `shell:` version will execute each parallel processes in a new terminal window/tab while the non-shell version will execute all in one process sharing the same log output.
 
@@ -75,7 +85,7 @@ Basically the `shell:` version will execute each parallel processes in a new ter
 To export the web app (ipfs ready) execute the following:
 
 ```bash
-npm run production:web:build
+pnpm run production:web:build
 ```
 
 ## full deployment
@@ -107,13 +117,13 @@ Furthermore, you need to ensure the values in [web/application.json](web/applica
 finally execute the following for staging :
 
 ```
-npm run staging
+pnpm run staging
 ```
 
 for production:
 
 ```
-npm run production
+pnpm run production
 ```
 
 For `webapp:build` you can also use [fleek](https://fleek.co) so that building and ipfs deployment is done automatically. The repo provide a `.fleek.json` file already setup for staging.

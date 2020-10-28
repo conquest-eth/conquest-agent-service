@@ -2,7 +2,6 @@ pragma solidity 0.6.5;
 
 import "./Interfaces/ERC20.sol";
 
-
 contract StakingWithInterest {
     ERC20 immutable _stakingToken;
 

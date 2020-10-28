@@ -17,7 +17,10 @@
 
   let message: string = undefined;
 
-  console.log('CommonLib', test('0x0000000000000000000000000000000000000001', 'hello'));
+  console.log(
+    'CommonLib',
+    test('0x0000000000000000000000000000000000000001', 'hello')
+  );
 </script>
 
 <style>
@@ -90,7 +93,8 @@
             <p>
               {message.message}
               {#if message.pending}
-                <svg class="fill-current animate-spin inline h-4 w-4 dark:text-white"><use
+                <svg
+                  class="fill-current animate-spin inline h-4 w-4 dark:text-white"><use
                     xlink:href="#icon-spinner6" /></svg>
               {/if}
             </p>
@@ -123,7 +127,9 @@
   {#if $wallet.state === 'Ready'}
     <form class="mt-5 w-full max-w-sm">
       <div class="flex items-center">
-        <Button disabled={$wallet.unlocking || $chain.connecting} on:click={() => wallet.disconnect()}>
+        <Button
+          disabled={$wallet.unlocking || $chain.connecting}
+          on:click={() => wallet.disconnect()}>
           Disconnect
         </Button>
       </div>

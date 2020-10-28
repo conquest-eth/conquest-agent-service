@@ -5,7 +5,6 @@ import "./BasePaymaster.sol";
 import "./interfaces/IRelayHub.sol";
 import "./interfaces/ERC20.sol";
 
-
 contract DAIPaymaster is BasePaymaster {
     ERC20 internal immutable _dai;
 
@@ -34,7 +33,7 @@ contract DAIPaymaster is BasePaymaster {
         GSNTypes.RelayRequest calldata relayRequest,
         bytes calldata approvalData,
         uint256 maxPossibleGas
-    ) external override view returns (bytes memory) {
+    ) external view override returns (bytes memory) {
         address payer = this.getPayer(relayRequest); // call to itself as a poor decoder of struct type
 
         uint256 ethMaxCharge = _relayHub.calculateCharge(maxPossibleGas, relayRequest.gasData);

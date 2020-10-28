@@ -1,7 +1,8 @@
 import {locationToXY} from 'planet-wars-common';
-import {derived, Readable} from 'svelte/store';
-import {QueryState, queryStore} from '../_graphql';
-import {transactions} from './wallet';
+// import {derived, Readable} from 'svelte/store';
+// import {QueryState, queryStore} from '../_graphql';
+// import {transactions} from './wallet';
+import {queryStore} from '../_graphql';
 
 type AcquiredPlanet = {
   id: string;
