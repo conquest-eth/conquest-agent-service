@@ -1,19 +1,18 @@
 import planetsFrame from '../assets/planets.json';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+///@ts-ignore
 import planetsDataURL from '../assets/planets.png';
-import {OuterSpace, xyToLocation} from 'planet-wars-common';
+import {OuterSpace} from 'planet-wars-common';
+import type {WorldSetup} from './camera';
 const outerspace = new OuterSpace(
   '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69'
 ); // TODO
 
 // pre-render
-let planetSpriteSheet;
-let horizPattern;
-let vertPattern;
-
-planetSpriteSheet = new Image();
+const planetSpriteSheet = new Image();
 planetSpriteSheet.src = planetsDataURL;
 let pctx;
-horizPattern = document.createElement('canvas');
+const horizPattern = document.createElement('canvas');
 horizPattern.width = 48;
 horizPattern.height = 1;
 pctx = horizPattern.getContext('2d');
@@ -21,7 +20,7 @@ pctx.fillStyle = '#4F487A';
 pctx.fillRect(0, 0, 2, 1);
 pctx.fillRect(6, 0, 36, 1);
 pctx.fillRect(46, 0, 2, 1);
-vertPattern = document.createElement('canvas');
+const vertPattern = document.createElement('canvas');
 vertPattern.width = 1;
 vertPattern.height = 48;
 pctx = vertPattern.getContext('2d');
@@ -58,22 +57,25 @@ const planetTypesToFrame = [
 ];
 
 export class Renderer {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private hPattern: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private vPattern: any;
 
-  constructor() {}
-
-  setup(ctx) {
-    ctx.mozImageSmoothingEnabled = false;
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.msImageSmoothingEnabled = false;
+  setup(ctx: CanvasRenderingContext2D): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (ctx as any).mozImageSmoothingEnabled = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (ctx as any).webkitImageSmoothingEnabled = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (ctx as any).msImageSmoothingEnabled = false;
     ctx.imageSmoothingEnabled = false;
 
     this.hPattern = ctx.createPattern(horizPattern, 'repeat-x');
     this.vPattern = ctx.createPattern(vertPattern, 'repeat-y');
   }
 
-  render(ctx, camera) {
+  render(ctx: CanvasRenderingContext2D, camera: WorldSetup): void {
     let gridLevel = 1;
     if (camera.zoom < 1) {
       gridLevel = Math.floor(1 / camera.zoom); //Math.floor(Math.floor(48 / (camera.zoom)) / 48);
@@ -93,7 +95,7 @@ export class Renderer {
       y: Math.floor((camera.y - camera.height / 2) / gridSize) * gridSize,
     };
 
-    const gridLevelRoot = Math.floor(Math.sqrt((1 / camera.zoom) * 2)); //Math.floor(Math.floor(48 / (camera.zoom)) / 48);
+    // const gridLevelRoot = Math.floor(Math.sqrt((1 / camera.zoom) * 2)); //Math.floor(Math.floor(48 / (camera.zoom)) / 48);
 
     // console.log(JSON.stringify({gridLevelRoot, gridSize, gridLevel}));
 

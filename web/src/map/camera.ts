@@ -1,4 +1,6 @@
 import {OuterSpace, xyToLocation} from 'planet-wars-common';
+import type {Controller} from './controller';
+
 const outerspace = new OuterSpace(
   '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69'
 ); // TODO
@@ -21,7 +23,27 @@ const lowZoomOrder = [
   1 / 16,
 ]; //, 1/17, 1/18, 1/19, 1/20, 1/21, 1/22, 1/23, 1/24, 1/25, 1/26, 1/27, 1/28, 1/29]; // 48
 
+export type CameraSetup = {
+  x: number;
+  y: number;
+  scale: number;
+  devicePixelRatio: number;
+};
+
+export type WorldSetup = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  zoom: number;
+};
+
 export class Camera {
+  private zoomIndex: number;
+  private render: CameraSetup;
+  private world: WorldSetup;
+  private canvas: HTMLCanvasElement;
+  private controller: Controller;
   constructor() {
     this.zoomIndex = -1;
     this.render = {
@@ -34,11 +56,13 @@ export class Camera {
     this.world = {
       x: 0, //-4000000000 / 48 / 4 / 2,
       y: 0, //-4000000000 / 48 / 4 / 2,
+      width: 0,
+      height: 0,
       zoom: 1,
     };
   }
 
-  _set(x, y, zoom) {
+  _set(x: number, y: number, zoom: number): void {
     this.world.x = x;
     this.world.y = y;
     this.world.zoom = zoom;
@@ -56,7 +80,11 @@ export class Camera {
     );
   }
 
-  setup({canvas, controller}, onChange) {
+  setup(
+    {canvas, controller}: {canvas: HTMLCanvasElement; controller: Controller},
+    onChange: () => void
+  ): void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     this.controller = controller;
     this.canvas = canvas;
@@ -97,13 +125,15 @@ export class Camera {
         // console.log('boundaries');
         return;
       }
+      const locX = Math.floor(shifted.x / 4);
+      const locY = Math.floor(shifted.y / 4);
       const location = {
-        x: Math.floor(shifted.x / 4),
-        y: Math.floor(shifted.y / 4),
+        x: locX,
+        y: locY,
         subX: (shifted.x % 4) - 2 * Math.sign(shifted.x),
         subY: (shifted.y % 4) - 2 * Math.sign(shifted.y),
+        id: xyToLocation(locX, locY),
       };
-      location.id = xyToLocation(location.x, location.y);
       // console.log('onClick', JSON.stringify({worldPos, gridPos, location, shifted}, null, '  '));
       const planet = outerspace.getPlanetStats(location);
       if (
@@ -143,8 +173,8 @@ export class Camera {
     const pan = (e) => {
       if (!isPanning) return;
 
-      let movementX;
-      let movementY;
+      // let movementX;
+      // let movementY;
       // if (e.movementX) {
       // 	movementX = e.movementX / windowDevicePxelRatio;
       // 	movementY = e.movementY / windowDevicePxelRatio;
@@ -152,8 +182,8 @@ export class Camera {
       const eventX = e.clientX || e.touches[0].clientX;
       const eventY = e.clientY || e.touches[0].clientY;
       // console.log({eventX, eventY});
-      movementX = eventX - lastClientPos.x;
-      movementY = eventY - lastClientPos.y;
+      const movementX = eventX - lastClientPos.x;
+      const movementY = eventY - lastClientPos.y;
       // console.log(JSON.stringify({movementX, movementY, eMovementX: e.movementX, eMovementY: e.movementY}))
       lastClientPos = {x: eventX, y: eventY};
 
@@ -166,17 +196,17 @@ export class Camera {
       _update();
     };
 
-    function logEvent(name, func, options) {
-      return function (e) {
-        if (options && options.preventDefault) {
-          e.preventDefault();
-        }
-        // console.log(name);
-        if (func) {
-          return func(e);
-        }
-      };
-    }
+    // function logEvent(name, func, options) {
+    //   return function (e) {
+    //     if (options && options.preventDefault) {
+    //       e.preventDefault();
+    //     }
+    //     // console.log(name);
+    //     if (func) {
+    //       return func(e);
+    //     }
+    //   };
+    // }
     canvas.onmousedown = (e) => {
       startPanning(e);
     };
@@ -204,11 +234,12 @@ export class Camera {
       };
     }
 
-    function endZooming(_e) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    function endZooming(_e: TouchEvent) {
       isZooming = false;
     }
 
-    function doZooming(e) {
+    function doZooming(e: TouchEvent) {
       const dist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
@@ -224,14 +255,14 @@ export class Camera {
       }
     }
 
-    function logTouchEvent(title, e) {
+    function logTouchEvent(_title: string, e: TouchEvent) {
       const touches = [];
       for (let i = 0; i < e.touches.length; i++) {
         touches.push({identifier: e.touches[i].identifier});
       }
       // console.log(title, JSON.stringify(touches));
     }
-    canvas.ontouchstart = (e) => {
+    canvas.ontouchstart = (e: TouchEvent) => {
       e.preventDefault();
       logTouchEvent('start', e);
       if (!isZooming && e.touches.length === 2) {
@@ -240,7 +271,7 @@ export class Camera {
         startPanning(e);
       }
     };
-    canvas.ontouchend = (e) => {
+    canvas.ontouchend = (e: TouchEvent) => {
       e.preventDefault();
       logTouchEvent('end', e);
       if (isZooming) {
@@ -249,7 +280,7 @@ export class Camera {
         endPanning(e);
       }
     };
-    canvas.ontouchmove = (e) => {
+    canvas.ontouchmove = (e: TouchEvent) => {
       e.preventDefault();
       logTouchEvent('move', e);
       if (isZooming) {
@@ -287,19 +318,19 @@ export class Camera {
       };
     }
 
-    function clientToCanvas(x, y) {
-      const devicePixelRatio = self.render.devicePixelRatio;
-      x = x * devicePixelRatio;
-      y = y * devicePixelRatio;
-      return {
-        x,
-        y,
-      };
-    }
+    // function clientToCanvas(x: number, y: number) {
+    //   const devicePixelRatio = self.render.devicePixelRatio;
+    //   x = x * devicePixelRatio;
+    //   y = y * devicePixelRatio;
+    //   return {
+    //     x,
+    //     y,
+    //   };
+    // }
 
     function updateZoom(offsetX, offsetY, dir) {
       const {x, y} = screenToWorld(offsetX, offsetY);
-      const oldZoom = self.world.zoom;
+      // const oldZoom = self.world.zoom;
 
       if (dir > 0) {
         // console.log('zoom out');
@@ -343,14 +374,14 @@ export class Camera {
 
     canvas.onwheel = (e) => {
       e.preventDefault();
-      const {offsetX, offsetY, deltaX, deltaY} = event;
+      const {offsetX, offsetY, deltaY} = e;
       const dir = Math.abs(deltaY) / deltaY;
 
       updateZoom(offsetX, offsetY, dir);
     };
   }
 
-  onRender() {
+  onRender(): boolean {
     const canvas = this.canvas;
     const devicePixelRatio = this.render.devicePixelRatio;
     const displayWidth = Math.floor(canvas.clientWidth * devicePixelRatio);
