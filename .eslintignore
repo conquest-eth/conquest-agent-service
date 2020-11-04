@@ -12,4 +12,3 @@ subgraph/build
 subgraph/generated
 common-lib/lib
 package.json
-*.svelte

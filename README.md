@@ -24,10 +24,6 @@ If you decide to use `yarn` you ll have to remove the script "preinstall" that b
 
 If you prefer (or do not have access to docker/docker-compose) you can run them independently.
 
-### node
-
-This app requires [node.js](https://nodejs.org/) (tested on v12+)
-
 ## intall dependencies :
 
 ```bash
@@ -106,8 +102,8 @@ You can remove the env if you want to use the same as the one in `.env`
 
 You'll also need to update the following for staging and production :
 
-- `CHAIN_ID=<id of the chain where contracts lives>`
 - `SUBGRAPH_NAME=<thegraph account name>/<subgraph name>`
+- `VITE_CHAIN_ID=<id of the chain where contracts lives>`
 - `VITE_THE_GRAPH_HTTP=https://api.thegraph.com/subgraphs/name/<thegraph account name>/<subgraph name>`
 
 you then need to ensure you have a subgraph already created on thegraph.com with that name: https://thegraph.com/explorer/dashboard
