@@ -1,9 +1,5 @@
-import {SpaceInfoImpl, xyToLocation} from 'planet-wars-common';
+import {SpaceInfo, xyToLocation} from 'planet-wars-common';
 import type {Controller} from './controller';
-
-const spaceInfo = new SpaceInfoImpl(
-  '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69'
-); // TODO
 
 const lowZoomOrder = [
   0.5,
@@ -44,7 +40,8 @@ export class Camera {
   private world: WorldSetup;
   private canvas: HTMLCanvasElement;
   private controller: Controller;
-  constructor() {
+
+  constructor(private spaceInfo: SpaceInfo) {
     this.zoomIndex = -1;
     this.render = {
       // could be computed on the fly
@@ -135,7 +132,7 @@ export class Camera {
         id: xyToLocation(locX, locY),
       };
       // console.log('onClick', JSON.stringify({worldPos, gridPos, location, shifted}, null, '  '));
-      const planet = spaceInfo.getPlanetInfo(location.x, location.y);
+      const planet = this.spaceInfo.getPlanetInfo(location.x, location.y);
       if (
         planet &&
         planet.location.subX == location.subX &&

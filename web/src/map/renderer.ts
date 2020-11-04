@@ -1,12 +1,9 @@
+import type {SpaceInfo} from 'planet-wars-common';
 import planetsFrame from '../assets/planets.json';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 ///@ts-ignore
 import planetsDataURL from '../assets/planets.png';
-import {SpaceInfoImpl} from 'planet-wars-common';
 import type {WorldSetup} from './camera';
-const spaceInfo = new SpaceInfoImpl(
-  '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69'
-); // TODO
 
 // pre-render
 const planetSpriteSheet = new Image();
@@ -61,6 +58,8 @@ export class Renderer {
   private hPattern: any;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private vPattern: any;
+
+  constructor(private spaceInfo: SpaceInfo) {}
 
   setup(ctx: CanvasRenderingContext2D): void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -219,7 +218,7 @@ export class Renderer {
     );
     for (let x = gridX; x <= gridEndX + 1; x++) {
       for (let y = gridY; y <= gridEndY + 1; y++) {
-        const planet = spaceInfo.getPlanetInfo(x, y);
+        const planet = this.spaceInfo.getPlanetInfo(x, y);
         if (planet) {
           const lavaFrame =
             planetsFrame.frames[planetTypesToFrame[planet.type]].frame;
