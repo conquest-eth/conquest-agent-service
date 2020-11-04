@@ -4,7 +4,8 @@ import {ethers, getUnnamedAccounts, deployments} from 'hardhat';
 import {BigNumber} from '@ethersproject/bignumber';
 import {Wallet} from '@ethersproject/wallet';
 import {keccak256} from '@ethersproject/solidity';
-import {OuterSpace, Planet} from 'planet-wars-common';
+import {SpaceInfoImpl} from 'planet-wars-common';
+import type {PlanetInfo} from 'planet-wars-common';
 import {ContractReceipt} from 'ethers';
 
 type AnyContract = any; // TODO ?
@@ -25,7 +26,7 @@ export async function setupOuterSpace(): Promise<{
   getTime: () => number;
   increaseTime(t: number): Promise<void>;
   outerSpaceContract: AnyContract;
-  outerSpace: OuterSpace;
+  spaceInfo: SpaceInfoImpl;
   players: User[];
 }> {
   const players = await getUnnamedAccounts();
@@ -46,14 +47,14 @@ export async function setupOuterSpace(): Promise<{
       deltaTime += t;
     },
     outerSpaceContract: (await ethers.getContract('OuterSpace')) as AnyContract,
-    outerSpace: new OuterSpace(OuterSpaceDeployment.linkedData),
+    spaceInfo: new SpaceInfoImpl(OuterSpaceDeployment.linkedData),
     players: playersAsContracts,
   };
 }
 
 export async function sendInSecret(
   player: User,
-  {from, quantity, to}: {from: Planet; quantity: number; to: Planet}
+  {from, quantity, to}: {from: PlanetInfo; quantity: number; to: PlanetInfo}
 ): Promise<{
   timeRequired: number;
   distance: number;
@@ -103,14 +104,14 @@ export function convertPlanetCallData(
   return o.toString();
 }
 
-type PlanetState = Planet & {
+type PlanetState = PlanetInfo & {
   state: any; // TODO
   getNumSpaceships: (time: number) => number;
 };
 
 export async function fetchPlanetState(
   contract: AnyContract,
-  planet: Planet
+  planet: PlanetInfo
 ): Promise<PlanetState> {
   const planetData = await contract.callStatic.getPlanet(planet.location.id);
   const statsFromContract = objMap(planet.stats, convertPlanetCallData);

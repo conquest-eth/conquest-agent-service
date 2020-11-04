@@ -1,14 +1,14 @@
-import type {PlanetData} from 'planet-wars-common';
-import PlanetInfo from '../components/PlanetInfo.svelte';
+import type {PlanetInfo} from 'planet-wars-common';
+import PlanetInfoPanel from '../components/PlanetInfoPanel.svelte';
 
 export class Controller {
   private parent: Element;
-  private planetInfoComponent: PlanetInfo;
+  private planetInfoComponent: PlanetInfoPanel;
   constructor(canvas: HTMLCanvasElement) {
     this.parent = canvas.parentNode as Element;
     this.planetInfoComponent = null;
   }
-  onPlanetSelected(planet: PlanetData): void {
+  onPlanetSelected(planet: PlanetInfo): void {
     if (planet) {
       this.showPlanetInfo(planet);
     } else {
@@ -16,13 +16,13 @@ export class Controller {
     }
   }
 
-  showPlanetInfo(planet: PlanetData): void {
+  showPlanetInfo(planet: PlanetInfo): void {
     console.log('show');
     if (this.planetInfoComponent) {
       this.hidePlanetInfo();
     }
     console.log('create');
-    this.planetInfoComponent = new PlanetInfo({
+    this.planetInfoComponent = new PlanetInfoPanel({
       target: this.parent,
       props: {
         planet,

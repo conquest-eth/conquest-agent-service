@@ -8,31 +8,31 @@ import {ethers} from 'hardhat';
 const stableTokenUnit = BigNumber.from('1000000000000000000');
 describe('OuterSpace', function () {
   it('user can acquire virgin planet', async function () {
-    const {players, outerSpace} = await setupOuterSpace();
-    const {location} = outerSpace.findNextPlanet();
+    const {players, spaceInfo} = await setupOuterSpace();
+    const pointer = spaceInfo.findNextPlanet();
     await waitFor(
       players[0].OuterSpace.stake(
         players[0].address,
-        location.id,
+        pointer.data.location.id,
         stableTokenUnit
       )
     );
   });
 
   it('user cannot acquire planet already onwed by another player', async function () {
-    const {players, outerSpace} = await setupOuterSpace();
-    const {location} = outerSpace.findNextPlanet();
+    const {players, spaceInfo} = await setupOuterSpace();
+    const pointer = spaceInfo.findNextPlanet();
     await waitFor(
       players[0].OuterSpace.stake(
         players[0].address,
-        location.id,
+        pointer.data.location.id,
         stableTokenUnit
       )
     );
     await expectRevert(
       players[1].OuterSpace.stake(
         players[1].address,
-        location.id,
+        pointer.data.location.id,
         stableTokenUnit
       )
     );
@@ -44,18 +44,16 @@ describe('OuterSpace', function () {
   it("user can attack other player's planet", async function () {
     const {
       players,
-      outerSpace,
+      spaceInfo,
       outerSpaceContract,
       increaseTime,
       getTime,
     } = await setupOuterSpace();
-    let planet0 = await fetchPlanetState(
-      outerSpaceContract,
-      outerSpace.findNextPlanet()
-    );
+    const p0 = spaceInfo.findNextPlanet();
+    let planet0 = await fetchPlanetState(outerSpaceContract, p0.data);
     let planet1 = await fetchPlanetState(
       outerSpaceContract,
-      outerSpace.findNextPlanet(planet0.pointer)
+      spaceInfo.findNextPlanet(p0).data
     );
     await waitFor(
       players[0].OuterSpace.stake(
@@ -92,14 +90,14 @@ describe('OuterSpace', function () {
   it('planet production maches estimate', async function () {
     const {
       players,
-      outerSpace,
+      spaceInfo,
       outerSpaceContract,
       increaseTime,
       getTime,
     } = await setupOuterSpace();
     let planet = await fetchPlanetState(
       outerSpaceContract,
-      outerSpace.findNextPlanet()
+      spaceInfo.findNextPlanet().data
     );
     await waitFor(
       players[0].OuterSpace.stake(

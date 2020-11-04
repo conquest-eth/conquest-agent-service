@@ -11,7 +11,8 @@ export default class Map {
     this.renderer = renderer || new Renderer();
     this.camera = camera || new Camera();
   }
-  setup(canvas) {
+  setup(canvas: HTMLCanvasElement): () => void {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const ctx = canvas.getContext('2d');
     this.renderer.setup(ctx);
