@@ -5,8 +5,8 @@ import {Controller} from './controller';
 const drawOnChange = true;
 
 export default class Map {
-  public renderer;
-  public camera;
+  public renderer: Renderer;
+  public camera: Camera;
   constructor(renderer: Renderer, camera: Camera) {
     this.renderer = renderer;
     this.camera = camera;
@@ -25,7 +25,7 @@ export default class Map {
       ctx.scale(scale, scale);
       ctx.translate(this.camera.render.x, this.camera.render.y);
 
-      this.renderer.render(ctx, this.camera.world);
+      this.renderer.render(ctx, this.camera.world, this.camera.render);
       ctx.restore();
     };
 

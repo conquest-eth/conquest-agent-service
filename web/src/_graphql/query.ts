@@ -52,3 +52,9 @@ export function query<
     },
   };
 }
+
+// TODO ?
+// export function fetch<T>(
+//   query: DocumentNode | string;
+//   variables?: Variables;
+//   context?: Partial<OperationContext>): Promise<T>

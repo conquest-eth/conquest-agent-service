@@ -1,4 +1,5 @@
-import {SpaceInfo, xyToLocation} from 'planet-wars-common';
+import {xyToLocation} from 'planet-wars-common';
+import type {RenderState} from '../types';
 import type {Controller} from './controller';
 
 const lowZoomOrder = [
@@ -36,12 +37,12 @@ export type WorldSetup = {
 
 export class Camera {
   private zoomIndex: number;
-  private render: CameraSetup;
-  private world: WorldSetup;
+  public render: CameraSetup;
+  public world: WorldSetup;
   private canvas: HTMLCanvasElement;
   private controller: Controller;
 
-  constructor(private spaceInfo: SpaceInfo) {
+  constructor(private renderState: RenderState) {
     this.zoomIndex = -1;
     this.render = {
       // could be computed on the fly
@@ -132,7 +133,7 @@ export class Camera {
         id: xyToLocation(locX, locY),
       };
       // console.log('onClick', JSON.stringify({worldPos, gridPos, location, shifted}, null, '  '));
-      const planet = this.spaceInfo.getPlanetInfo(location.x, location.y);
+      const planet = this.renderState.getPlanet(location.x, location.y);
       if (
         planet &&
         planet.location.subX == location.subX &&

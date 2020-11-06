@@ -1,9 +1,9 @@
-import type {SpaceInfo} from 'planet-wars-common';
 import planetsFrame from '../assets/planets.json';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 ///@ts-ignore
 import planetsDataURL from '../assets/planets.png';
-import type {WorldSetup} from './camera';
+import type {RenderState} from '../types';
+import type {CameraSetup, WorldSetup} from './camera';
 
 // pre-render
 const planetSpriteSheet = new Image();
@@ -59,7 +59,7 @@ export class Renderer {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private vPattern: any;
 
-  constructor(private spaceInfo: SpaceInfo) {}
+  constructor(private renderState: RenderState) {}
 
   setup(ctx: CanvasRenderingContext2D): void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,7 +74,11 @@ export class Renderer {
     this.vPattern = ctx.createPattern(vertPattern, 'repeat-y');
   }
 
-  render(ctx: CanvasRenderingContext2D, camera: WorldSetup): void {
+  render(
+    ctx: CanvasRenderingContext2D,
+    camera: WorldSetup,
+    render: CameraSetup
+  ): void {
     let gridLevel = 1;
     if (camera.zoom < 1) {
       gridLevel = Math.floor(1 / camera.zoom); //Math.floor(Math.floor(48 / (camera.zoom)) / 48);
@@ -218,35 +222,87 @@ export class Renderer {
     );
     for (let x = gridX; x <= gridEndX + 1; x++) {
       for (let y = gridY; y <= gridEndY + 1; y++) {
-        const planet = this.spaceInfo.getPlanetInfo(x, y);
+        const planet = this.renderState.getPlanet(x, y);
         if (planet) {
           const lavaFrame =
             planetsFrame.frames[planetTypesToFrame[planet.type]].frame;
           // console.log(planet)
           ctx.imageSmoothingEnabled = false;
+          const planetX = (x * 4 * 2 + planet.location.subX * 2) * 48;
+          const planetY = (y * 4 * 2 + planet.location.subY * 2) * 48;
           ctx.drawImage(
             planetSpriteSheet,
             lavaFrame.x,
             lavaFrame.y,
             lavaFrame.w,
             lavaFrame.h,
-            Math.round((x * 4 * 2 + planet.location.subX * 2) * 48 - 48 / 2),
-            Math.round((y * 4 * 2 + planet.location.subY * 2) * 48 - 48 / 2),
+            Math.round(planetX - 48 / 2),
+            Math.round(planetY - 48 / 2),
             48,
             48
           );
+
+          let circleColor = undefined;
+          if (this.renderState.player) {
+            if (planet.owner === this.renderState.player) {
+              circleColor = 'green';
+            } else if (
+              planet.owner !== '0x0000000000000000000000000000000000000000'
+            ) {
+              circleColor = 'red';
+            } else {
+              circleColor = undefined;
+            }
+          } else {
+            if (planet.owner !== '0x0000000000000000000000000000000000000000') {
+              circleColor = 'white';
+            } else {
+              circleColor = 'white';
+            }
+          }
+          circleColor = 'white';
+
+          if (circleColor) {
+            ctx.beginPath();
+            ctx.setLineDash([]);
+            if (circleColor === 'white') {
+              ctx.lineWidth = 2;
+            } else {
+              ctx.lineWidth = 1 / render.scale;
+            }
+
+            ctx.strokeStyle = circleColor;
+            ctx.ellipse(
+              Math.round(planetX),
+              Math.round(planetY),
+              72,
+              72,
+              0,
+              0,
+              2 * Math.PI
+            );
+            ctx.stroke();
+          }
         }
       }
     }
 
+    let scale = render.scale * 8;
+    if (scale > 2) {
+      scale = 2;
+    }
+    if (scale < 0.25) {
+      scale = 0.25;
+    }
+
     ctx.beginPath();
     ctx.strokeStyle = '#FDFBF3';
-    ctx.lineWidth = 8; // / scale;
+    ctx.lineWidth = 8 / scale;
     ctx.setLineDash([]);
-    ctx.moveTo(-64, 0);
-    ctx.lineTo(64, 0);
-    ctx.moveTo(0, -64);
-    ctx.lineTo(0, 64);
+    ctx.moveTo(-64 / scale, 0);
+    ctx.lineTo(64 / scale, 0);
+    ctx.moveTo(0, -64 / scale);
+    ctx.lineTo(0, 64 / scale);
     ctx.stroke();
   }
 }
