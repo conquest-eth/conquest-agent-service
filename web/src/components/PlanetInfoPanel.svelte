@@ -1,9 +1,10 @@
 <script lang="ts">
-  export let planet;
-  import {planets} from '../stores/planets';
+  import type {Planet} from 'planet-wars-common';
+  import {planet as getPlanet} from '../stores/planetsCache'; // TODO call it getPlanet / planetStore ?
   import claimFlow from '../stores/claim';
-  $: planetAcquired =
-    $planets.data[`${planet.location.x},${planet.location.y}`];
+
+  export let planet: Planet;
+  const planetAcquired = getPlanet(planet.location.id);
 </script>
 
 <style>
@@ -42,36 +43,38 @@
       <label for="speed">speed:</label>
       <span id="speed" class="value">{planet.stats.speed}</span>
     </div>
-    {#if planetAcquired}
+    {#if $planetAcquired}
       <div>
         <label for="owner">owner:</label>
-        <span id="oener" class="value">{planetAcquired.owner}</span>
+        <span id="oener" class="value">{$planetAcquired.owner}</span>
       </div>
       <div>
         <label for="ownerTime">ownerTime:</label>
         <span
           id="ownerTime"
-          class="value">{planetAcquired.lastOwnershipTime}</span>
+          class="value">{$planetAcquired.lastOwnershipTime}</span>
       </div>
       <div>
         <label for="stake">stake:</label>
-        <span id="stake" class="value">{planetAcquired.stake}</span>
+        <span id="stake" class="value">{$planetAcquired.stake}</span>
       </div>
       <div>
         <label for="productionRate">production:</label>
         <span
           id="productionRate"
-          class="value">{planetAcquired.productionRate}</span>
+          class="value">{$planetAcquired.productionRate}</span>
       </div>
       <div>
         <label for="numSpaceships">spaceships:</label>
         <span
           id="numSpaceships"
-          class="value">{planetAcquired.numSpaceships}</span>
+          class="value">{$planetAcquired.numSpaceships}</span>
       </div>
       <div>
         <label for="lastUpdated">lastUpdated:</label>
-        <span id="lastUpdated" class="value">{planetAcquired.lastUpdated}</span>
+        <span
+          id="lastUpdated"
+          class="value">{$planetAcquired.lastUpdated}</span>
       </div>
     {:else}
       <div>

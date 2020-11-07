@@ -1,6 +1,7 @@
 import {xyToLocation} from 'planet-wars-common';
 import type {RenderState} from '../types';
 import type {Controller} from './controller';
+import {cache} from '../stores/planetsCache';
 
 const lowZoomOrder = [
   0.5,
@@ -78,10 +79,13 @@ export class Camera {
     );
   }
 
-  setup(
-    {canvas, controller}: {canvas: HTMLCanvasElement; controller: Controller},
-    onChange: () => void
-  ): void {
+  setup({
+    canvas,
+    controller,
+  }: {
+    canvas: HTMLCanvasElement;
+    controller: Controller;
+  }): void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     this.controller = controller;
@@ -94,7 +98,9 @@ export class Camera {
 
     const _set = (x, y, zoom) => {
       this._set(x, y, zoom);
-      onChange();
+      const locationX = Math.floor(x / 48 / 4 / 2);
+      const locationY = Math.floor(y / 48 / 4 / 2);
+      cache.update(locationX, locationY); // TODO invesrion of control : emit event
     };
 
     const _update = () => {
@@ -133,6 +139,7 @@ export class Camera {
         id: xyToLocation(locX, locY),
       };
       // console.log('onClick', JSON.stringify({worldPos, gridPos, location, shifted}, null, '  '));
+      // TODO emit event // This should actually be moved to Screen
       const planet = this.renderState.getPlanet(location.x, location.y);
       if (
         planet &&

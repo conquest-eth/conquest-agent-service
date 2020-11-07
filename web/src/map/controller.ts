@@ -1,4 +1,4 @@
-import type {PlanetInfo} from 'planet-wars-common';
+import type {Planet} from 'planet-wars-common';
 import PlanetInfoPanel from '../components/PlanetInfoPanel.svelte';
 
 export class Controller {
@@ -8,7 +8,7 @@ export class Controller {
     this.parent = canvas.parentNode as Element;
     this.planetInfoComponent = null;
   }
-  onPlanetSelected(planet: PlanetInfo): void {
+  onPlanetSelected(planet: Planet): void {
     if (planet) {
       this.showPlanetInfo(planet);
     } else {
@@ -16,7 +16,7 @@ export class Controller {
     }
   }
 
-  showPlanetInfo(planet: PlanetInfo): void {
+  showPlanetInfo(planet: Planet): void {
     console.log('show');
     if (this.planetInfoComponent) {
       this.hidePlanetInfo();

@@ -59,6 +59,15 @@ export class Renderer {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private vPattern: any;
 
+  private lastCamera: WorldSetup = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    zoom: 0,
+  };
+  private lastRenderStateChangeCounter = 0;
+
   constructor(private renderState: RenderState) {}
 
   setup(ctx: CanvasRenderingContext2D): void {
@@ -74,11 +83,49 @@ export class Renderer {
     this.vPattern = ctx.createPattern(vertPattern, 'repeat-y');
   }
 
+  cameraChanged(camera: WorldSetup): boolean {
+    if (
+      this.lastCamera.x !== camera.x ||
+      this.lastCamera.y !== camera.y ||
+      this.lastCamera.width !== camera.width ||
+      this.lastCamera.height !== camera.height ||
+      this.lastCamera.zoom !== camera.zoom
+    ) {
+      this.lastCamera.x = camera.x;
+      this.lastCamera.y = camera.y;
+      this.lastCamera.width = camera.width;
+      this.lastCamera.height = camera.height;
+      this.lastCamera.zoom = camera.zoom;
+      return true;
+    }
+
+    return false;
+  }
+
+  stateChanged(camera: WorldSetup): boolean {
+    const changeCounter = this.renderState.changeCounter;
+    if (this.cameraChanged(camera)) {
+      this.lastRenderStateChangeCounter = changeCounter;
+      return true;
+    }
+
+    if (this.lastRenderStateChangeCounter !== changeCounter) {
+      this.lastRenderStateChangeCounter = changeCounter;
+      return true;
+    }
+
+    return false;
+  }
+
   render(
     ctx: CanvasRenderingContext2D,
     camera: WorldSetup,
     render: CameraSetup
   ): void {
+    if (!this.stateChanged(camera)) {
+      return;
+    }
+
     let gridLevel = 1;
     if (camera.zoom < 1) {
       gridLevel = Math.floor(1 / camera.zoom); //Math.floor(Math.floor(48 / (camera.zoom)) / 48);
@@ -243,30 +290,37 @@ export class Renderer {
           );
 
           let circleColor = undefined;
-          if (this.renderState.player) {
-            if (planet.owner === this.renderState.player) {
-              circleColor = 'green';
-            } else if (
-              planet.owner !== '0x0000000000000000000000000000000000000000'
-            ) {
-              circleColor = 'red';
+          if (planet.state) {
+            if (this.renderState.player) {
+              if (planet.state.owner === this.renderState.player) {
+                circleColor = 'green';
+              } else if (
+                planet.state.owner !==
+                '0x0000000000000000000000000000000000000000'
+              ) {
+                circleColor = 'red';
+              } else {
+                circleColor = undefined;
+              }
             } else {
-              circleColor = undefined;
-            }
-          } else {
-            if (planet.owner !== '0x0000000000000000000000000000000000000000') {
-              circleColor = 'white';
-            } else {
-              circleColor = 'white';
+              if (
+                planet.state.owner !==
+                '0x0000000000000000000000000000000000000000'
+              ) {
+                circleColor = 'white';
+              } else {
+                circleColor = 'white';
+              }
             }
           }
-          circleColor = 'white';
+
+          // circleColor = 'white'; // TODO remove
 
           if (circleColor) {
             ctx.beginPath();
             ctx.setLineDash([]);
             if (circleColor === 'white') {
-              ctx.lineWidth = 2;
+              ctx.lineWidth = 1 / render.scale;
             } else {
               ctx.lineWidth = 1 / render.scale;
             }
@@ -289,7 +343,7 @@ export class Renderer {
 
     let scale = render.scale * 8;
     if (scale > 2) {
-      scale = 2;
+      scale = 1;
     }
     if (scale < 0.25) {
       scale = 0.25;

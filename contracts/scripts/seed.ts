@@ -27,6 +27,9 @@ async function main() {
         stableTokenUnit
       )
     );
+    console.log(
+      `staked: ${planetPointer.data.location.id}, (${planetPointer.data.location.x},${planetPointer.data.location.y})`
+    );
   }
 }
 

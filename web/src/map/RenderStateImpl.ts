@@ -6,6 +6,12 @@ export class RenderStateImpl implements RenderState {
     // TODO this.space.on("<event>", ...)
   }
 
+  private _counter = 0;
+  get changeCounter(): number {
+    this._counter++;
+    return this._counter;
+  }
+
   get player(): string {
     return this.space.player;
   }

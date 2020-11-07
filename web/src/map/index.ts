@@ -2,8 +2,6 @@ import type {Renderer} from './renderer';
 import type {Camera} from './camera';
 import {Controller} from './controller';
 
-const drawOnChange = true;
-
 export default class Map {
   public renderer: Renderer;
   public camera: Camera;
@@ -29,16 +27,13 @@ export default class Map {
       ctx.restore();
     };
 
-    this.camera.setup({canvas, controller: new Controller(canvas)}, () => {
-      if (drawOnChange) draw();
-    });
+    this.camera.setup({canvas, controller: new Controller(canvas)});
 
     let frame;
     (function loop() {
       frame = requestAnimationFrame(loop);
-      if (self.camera.onRender() || !drawOnChange) {
-        draw();
-      }
+      self.camera.onRender();
+      draw();
     })();
     return () => {
       cancelAnimationFrame(frame);
