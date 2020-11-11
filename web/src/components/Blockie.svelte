@@ -1,6 +1,6 @@
 <script lang="ts">
   // blockie generation code from https://github.com/stephensprinkle/react-blockies, itself referenced from https://github.com/alexvandesande/blockies
-  import {afterUpdate, onMount} from 'svelte';
+  import {afterUpdate} from 'svelte';
 
   export let _class = '';
   export {_class as class};
@@ -105,11 +105,13 @@
   }
 
   function update() {
+    console.log('UPDATE');
     if (
       lastOptions &&
       lastOptions.address === address &&
       lastOptions.scale === scale
     ) {
+      console.log(`same address: ${lastOptions.address} == ${address}`);
       return;
     }
     lastOptions = {
@@ -128,10 +130,7 @@
     setCanvas(canvas, imageData, color, scale, bgcolor, spotcolor);
   }
 
-  onMount(() => {
-    update();
-    afterUpdate(update);
-  });
+  afterUpdate(update);
 </script>
 
 <style>

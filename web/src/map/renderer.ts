@@ -118,6 +118,7 @@ export class Renderer {
   }
 
   render(
+    time: number,
     ctx: CanvasRenderingContext2D,
     camera: WorldSetup,
     render: CameraSetup
@@ -290,35 +291,51 @@ export class Renderer {
           );
 
           let circleColor = undefined;
-          if (planet.state) {
-            if (this.renderState.player) {
-              if (planet.state.owner === this.renderState.player) {
-                circleColor = 'green';
-              } else if (
-                planet.state.owner !==
-                '0x0000000000000000000000000000000000000000'
-              ) {
-                circleColor = 'red';
+          let circleDash = [];
+          let circleRotate = false;
+          if (planet.loaded) {
+            if (planet.state) {
+              if (this.renderState.player) {
+                if (
+                  // TODO enforce convention to not need `toLowerCase` overhead
+                  planet.state.owner.toLowerCase() ===
+                  this.renderState.player.toLowerCase()
+                ) {
+                  circleColor = 'green';
+                } else if (
+                  planet.state.owner !==
+                  '0x0000000000000000000000000000000000000000'
+                ) {
+                  circleColor = 'red';
+                } else {
+                  circleColor = undefined;
+                }
               } else {
-                circleColor = undefined;
+                if (
+                  planet.state.owner !==
+                  '0x0000000000000000000000000000000000000000'
+                ) {
+                  circleColor = 'white';
+                } else {
+                  circleColor = 'white';
+                }
               }
-            } else {
-              if (
-                planet.state.owner !==
-                '0x0000000000000000000000000000000000000000'
-              ) {
-                circleColor = 'white';
-              } else {
-                circleColor = 'white';
+              if (planet.state.stake == '0') {
+                // TODO BigNumber ?
+                circleDash = [2, 10];
               }
             }
+          } else {
+            circleColor = 'white'; // TODO remove
+            circleDash = [5, 15];
+            circleRotate = true;
           }
 
           // circleColor = 'white'; // TODO remove
 
           if (circleColor) {
             ctx.beginPath();
-            ctx.setLineDash([]);
+            ctx.setLineDash(circleDash);
             if (circleColor === 'white') {
               ctx.lineWidth = 1 / render.scale;
             } else {
@@ -331,7 +348,7 @@ export class Renderer {
               Math.round(planetY),
               72,
               72,
-              0,
+              circleRotate ? time / 500 : 0,
               0,
               2 * Math.PI
             );

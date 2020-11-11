@@ -1,10 +1,28 @@
 <script lang="ts">
   import type {Planet} from 'planet-wars-common';
+  import {zoneFromLocation} from 'planet-wars-common';
   import {planet as getPlanet} from '../stores/planetsCache'; // TODO call it getPlanet / planetStore ?
   import claimFlow from '../stores/claim';
+  import sendFlow from '../stores/send';
+  import {wallet, flow} from '../stores/wallet';
 
   export let planet: Planet;
+  export let close: () => void;
   const planetAcquired = getPlanet(planet.location.id);
+
+  function capture() {
+    claimFlow.claim(planet);
+  }
+
+  function sendTo() {
+    sendFlow.sendTo(planet.location);
+    close();
+  }
+
+  function sendFrom() {
+    sendFlow.sendFrom(planet.location);
+    close();
+  }
 </script>
 
 <style>
@@ -23,6 +41,7 @@
   <!-- <img class="h-16 w-16 rounded-full mx-auto" src="avatar.jpg"> -->
   <div>
     <h2>Planet {planet.location.x},{planet.location.y}</h2>
+    <h3>{zoneFromLocation(planet.location.x, planet.location.y)}</h3>
     <div>
       <label for="maxStake">maxStake:</label>
       <span id="maxStake" class="value">{planet.stats.maxStake}</span>
@@ -76,12 +95,22 @@
           id="lastUpdated"
           class="value">{$planetAcquired.lastUpdated}</span>
       </div>
+      {#if $wallet.address}
+        {#if $planetAcquired.owner === '0x0000000000000000000000000000000000000000'}
+          <button on:click={capture}>Capture</button>
+        {:else if $planetAcquired.owner.toLowerCase() === $wallet.address.toLowerCase()}
+          <button on:click={sendTo}>Send To</button>
+          <button on:click={sendFrom}>Send From</button>
+        {:else}<button on:click={sendTo}>Attack</button>{/if}
+      {:else}
+        <button on:click={() => flow.connect()}>Connect Wallet</button>
+      {/if}
     {:else}
       <div>
         <label for="natives">natives:</label>
         <span id="natives" class="value">{planet.stats.natives}</span>
       </div>
-      <button on:click={() => claimFlow.claim(planet)}>CLAIM</button>
+      <button on:click={capture}>Capture</button>
     {/if}
   </div>
 </div>

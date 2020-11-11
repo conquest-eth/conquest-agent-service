@@ -31,6 +31,8 @@ type FetchData = AcquiredPlanet[];
 
 const planets: Record<string, AcquiredPlanet> = {};
 
+const zonesLoaded: Record<string, boolean> = {};
+
 const stores: Record<string, Writable<AcquiredPlanet>> = {};
 export function planet(location: string): Readable<AcquiredPlanet> {
   // TODO handle case were planet is not in any of the viewing zones: make a fetch
@@ -53,6 +55,10 @@ function setPlanet(location: string, planet: AcquiredPlanet) {
   if (store) {
     store.set(planet);
   }
+}
+
+function isZoneLoaded(zone: string): boolean {
+  return zonesLoaded[zone];
 }
 
 function fetch(zones: string[]): Promise<FetchData> {
@@ -104,6 +110,9 @@ async function startFetching(fetchingCounterOnFetch: number, zones: string[]) {
     return; // discard pending ? // TODO more complex (blockNumber?)
   }
   const queryTime = Math.floor(Date.now() / 1000); // TODO use latest block number for queries
+  for (const zone of zones) {
+    zonesLoaded[zone] = true; // TODO different state : stale, etc... or use queryTime
+  }
   for (const freshPlanet of freshPlanets) {
     const location = freshPlanet.id;
     const planet = {...freshPlanet, queryTime};
@@ -118,5 +127,6 @@ function getPlanet(x: number, y: number): AcquiredPlanet {
 
 export const cache = {
   getPlanet,
+  isZoneLoaded,
   update,
 };

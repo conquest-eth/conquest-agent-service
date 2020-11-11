@@ -15,7 +15,7 @@ export default class Map {
     const ctx = canvas.getContext('2d');
     this.renderer.setup(ctx);
 
-    const draw = () => {
+    const draw = (time: number) => {
       ctx.save();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -23,18 +23,18 @@ export default class Map {
       ctx.scale(scale, scale);
       ctx.translate(this.camera.render.x, this.camera.render.y);
 
-      this.renderer.render(ctx, this.camera.world, this.camera.render);
+      this.renderer.render(time, ctx, this.camera.world, this.camera.render);
       ctx.restore();
     };
 
     this.camera.setup({canvas, controller: new Controller(canvas)});
 
     let frame;
-    (function loop() {
+    (function loop(time: number) {
       frame = requestAnimationFrame(loop);
       self.camera.onRender();
-      draw();
-    })();
+      draw(time);
+    })(performance.now());
     return () => {
       cancelAnimationFrame(frame);
     };

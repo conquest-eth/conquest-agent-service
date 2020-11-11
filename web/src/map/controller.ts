@@ -26,6 +26,7 @@ export class Controller {
       target: this.parent,
       props: {
         planet,
+        close: () => this.hidePlanetInfo(),
       },
     });
   }

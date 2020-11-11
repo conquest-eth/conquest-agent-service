@@ -43,7 +43,13 @@ contract OuterSpace is StakingWithInterest {
         uint256 numSpaceships,
         uint256 productionRate
     );
-    event FleetSent(address indexed sender, uint256 indexed from, uint256 fleet, uint256 quantity);
+    event FleetSent(
+        address indexed sender,
+        uint256 indexed from,
+        uint256 fleet,
+        uint256 quantity,
+        uint256 newNumSpaceships
+    );
     event FleetArrived(address indexed sender, uint256 indexed fleet, uint256 indexed location);
     event Attack(
         address indexed sender,
@@ -51,7 +57,8 @@ contract OuterSpace is StakingWithInterest {
         uint256 indexed location,
         uint256 fleetLoss,
         uint256 toLoss,
-        bool won
+        bool won,
+        uint256 newNumspaceships
     );
 
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
@@ -210,7 +217,8 @@ contract OuterSpace is StakingWithInterest {
             planet.productionRate
         );
         require(currentnumSpaceships >= quantity, "not enough spaceships");
-        planet.numSpaceships = currentnumSpaceships - quantity;
+        uint256 numSpaceships = currentnumSpaceships - quantity;
+        planet.numSpaceships = numSpaceships;
         planet.lastUpdated = block.timestamp;
 
         uint256 fleetId = ++_lastFleetId;
@@ -231,7 +239,7 @@ contract OuterSpace is StakingWithInterest {
         // }
         // planet.lastFleets.push(fleetId);
 
-        emit FleetSent(owner, from, fleetId, quantity);
+        emit FleetSent(owner, from, fleetId, quantity, numSpaceships);
     }
 
     function _resolveFleetFor(
@@ -388,13 +396,15 @@ contract OuterSpace is StakingWithInterest {
         );
 
         if (attackerLoss == numAttack) {
-            _planets[to].numSpaceships = numDefense - defenderLoss;
-            emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, false);
+            uint256 numSpaceships = numDefense - defenderLoss;
+            _planets[to].numSpaceships = numSpaceships;
+            emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, false, numSpaceships);
         } else if (defenderLoss == numDefense) {
             _planets[to].owner = attacker;
             _planets[to].lastOwnershipTime = block.timestamp;
-            _planets[to].numSpaceships = numAttack - attackerLoss;
-            emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, true);
+            uint256 numSpaceships = numAttack - attackerLoss;
+            _planets[to].numSpaceships = numSpaceships;
+            emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);
         }
         _planets[to].lastUpdated = block.timestamp;
     }

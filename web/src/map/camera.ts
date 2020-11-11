@@ -107,6 +107,11 @@ export class Camera {
       _set(this.world.x, this.world.y, this.world.zoom);
     };
 
+    const zero = worldToScreen(0, 0);
+    for (let i = 0; i < 16; i++) {
+      updateZoom(zero.x, zero.y, 1);
+    }
+
     const startPanning = (e) => {
       // console.log('startPanning');
       isPanning = true;
