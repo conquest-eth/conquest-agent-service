@@ -4,7 +4,8 @@
   import {planet as getPlanet} from '../stores/planetsCache'; // TODO call it getPlanet / planetStore ?
   import claimFlow from '../stores/claim';
   import sendFlow from '../stores/send';
-  import {wallet, flow} from '../stores/wallet';
+  import {wallet} from '../stores/wallet';
+  import login from '../stores/login';
 
   export let planet: Planet;
   export let close: () => void;
@@ -22,6 +23,10 @@
   function sendFrom() {
     sendFlow.sendFrom(planet.location);
     close();
+  }
+
+  function connect() {
+    login.login();
   }
 </script>
 
@@ -103,7 +108,7 @@
           <button on:click={sendFrom}>Send From</button>
         {:else}<button on:click={sendTo}>Attack</button>{/if}
       {:else}
-        <button on:click={() => flow.connect()}>Connect Wallet</button>
+        <button on:click={connect}>Connect Wallet</button>
       {/if}
     {:else}
       <div>

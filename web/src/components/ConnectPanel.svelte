@@ -1,17 +1,18 @@
 <script lang="ts">
   import Button from './Button.svelte';
-  import {flow, wallet} from '../stores/wallet';
+  import {wallet} from '../stores/wallet';
+  import login from '../stores/login';
   import Blockie from './Blockie.svelte';
 
   function connect() {
-    flow.connect();
+    login.login();
   }
   function disconnect() {
     wallet.disconnect();
   }
 </script>
 
-{#if $wallet.address}
+{#if $wallet.address && $login.step === 'READY' }
   <span class="flex">
     <Blockie class="w-10 h-10" address={$wallet.address} />
     <Button on:click={disconnect}>Disconnect</Button>

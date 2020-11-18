@@ -5,10 +5,11 @@
   import {test} from 'planet-wars-common';
   import {logs} from 'named-logs';
   import {messages} from '../stores/messages';
-  import {wallet, flow, chain} from '../stores/wallet';
+  import {wallet, chain} from '../stores/wallet';
+  import login from '../stores/login';
 
   async function setMessage() {
-    await flow.execute((contracts) => contracts.OuterSpace.setMessage(message));
+    await login.execute((contracts) => contracts.OuterSpace.setMessage(message));
   }
 
   const console = logs('app:home');

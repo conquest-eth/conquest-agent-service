@@ -69,8 +69,8 @@ importers:
       hardhat: 2.0.2
       hardhat-deploy: 0.7.0-beta.20_hardhat@2.0.2
       hardhat-deploy-ethers: 0.3.0-beta.5_ethers@5.0.19+hardhat@2.0.2
-      planet-wars-common: 'link:../common-lib'
       mocha: 8.2.0
+      planet-wars-common: 'link:../common-lib'
       ts-node: 9.0.0_typescript@3.9.7
       typescript: 3.9.7
     specifiers:
@@ -90,8 +90,8 @@ importers:
       hardhat: ^2.0.1
       hardhat-deploy: ^0.7.0-beta.20
       hardhat-deploy-ethers: ^0.3.0-beta.5
-      planet-wars-common: 'workspace:*'
       mocha: ^8.1.1
+      planet-wars-common: 'workspace:*'
       ts-node: ^9.0.0
       typescript: ^3.8.3
   subgraph:
@@ -126,13 +126,14 @@ importers:
       '@ethersproject/contracts': 5.0.5
       '@ethersproject/providers': 5.0.14
       '@ethersproject/solidity': 5.0.5
+      '@ethersproject/wallet': 5.0.7
       '@hickory/browser': 2.1.0
       '@urql/core': 1.13.1_graphql@15.4.0
       '@urql/devtools': 2.0.2_@urql+core@1.13.1+graphql@15.4.0
       graphql: 15.4.0
-      planet-wars-common: 'link:../common-lib'
       named-logs: 0.0.13
       named-logs-console: 0.0.14
+      planet-wars-common: 'link:../common-lib'
       svelte: 3.24.1
       svelte-hmr: 0.10.2_svelte@3.24.1
       web3w: 0.2.36_a19e476eac98653fe42ddfff6c05dce6
@@ -168,9 +169,10 @@ importers:
       '@ethersproject/abi': ^5.0.7
       '@ethersproject/bignumber': ^5.0.5
       '@ethersproject/bytes': ^5.0.3
-      '@ethersproject/contracts': ^5.0.3
+      '@ethersproject/contracts': ^5.0.5
       '@ethersproject/providers': ^5.0.6
       '@ethersproject/solidity': ^5.0.2
+      '@ethersproject/wallet': ^5.0.7
       '@hickory/browser': ^2.1.0
       '@tailwindcss/ui': ^0.5.0
       '@tsconfig/svelte': ^1.0.8
@@ -185,9 +187,9 @@ importers:
       graphql: ^15.3.0
       ipfs-deploy: ^8.0.1
       ipfs-gateway-emulator: ^4.2.1-ipfs.1
-      planet-wars-common: 'workspace:*'
       named-logs: 0.0.13
       named-logs-console: 0.0.14
+      planet-wars-common: 'workspace:*'
       postcss-import: ^12.0.1
       postcss-preset-env: ^6.7.0
       svelte: 3.24.1
@@ -411,7 +413,6 @@ packages:
       '@ethersproject/strings': 5.0.5
       '@ethersproject/transactions': 5.0.6
       '@ethersproject/wordlists': 5.0.5
-    dev: true
     resolution:
       integrity: sha512-Ho4HZaK+KijE5adayvjAGusWMnT0mgwGa5hGMBofBOgX9nqiKf6Wxx68SXBGI1/L3rmKo6mlAjxUd8gefs0teQ==
   /@ethersproject/json-wallets/5.0.7:
@@ -429,7 +430,6 @@ packages:
       '@ethersproject/transactions': 5.0.6
       aes-js: 3.0.0
       scrypt-js: 3.0.1
-    dev: true
     resolution:
       integrity: sha512-dgOn9JtGgjT28mDXs4LYY2rT4CzS6bG/rxoYuPq3TLHIf6nmvBcr33Fee6RrM/y8UAx4gyIkf6wb2cXsOctvQQ==
   /@ethersproject/keccak256/5.0.4:
@@ -450,7 +450,6 @@ packages:
     dependencies:
       '@ethersproject/bytes': 5.0.5
       '@ethersproject/sha2': 5.0.4
-    dev: true
     resolution:
       integrity: sha512-9jVBjHXQKfr9+3bkCg01a8Cd1H9e+7Kw3ZMIvAxD0lZtuzrXsJxm1hVwY9KA+PRUvgS/9tTP4viXQYwLAax7zg==
   /@ethersproject/properties/5.0.4:
@@ -562,7 +561,6 @@ packages:
       '@ethersproject/signing-key': 5.0.5
       '@ethersproject/transactions': 5.0.6
       '@ethersproject/wordlists': 5.0.5
-    dev: true
     resolution:
       integrity: sha512-n2GX1+2Tc0qV8dguUcLkjNugINKvZY7u/5fEsn0skW9rz5+jHTR5IKMV6jSfXA+WjQT8UCNMvkI3CNcdhaPbTQ==
   /@ethersproject/web/5.0.9:
@@ -581,7 +579,6 @@ packages:
       '@ethersproject/logger': 5.0.6
       '@ethersproject/properties': 5.0.4
       '@ethersproject/strings': 5.0.5
-    dev: true
     resolution:
       integrity: sha512-XA3ycFltVrCTQt04w5nHu3Xq5Z6HjqWsXaAYQHFdqtugyUsIumaO9S5MOwFFuUYTNkZUoT3jCRa/OBS+K4tLfA==
   /@fullhuman/postcss-purgecss/2.3.0:
@@ -1956,7 +1953,6 @@ packages:
     resolution:
       integrity: sha512-TFi4HBKSGfIKsK5YCkKaaFG2m4PEDyViZmEwof3MTIgzimHLto6muaHVpbrljdIvIrFZzEq/p4nafOeLcYegrg==
   /aes-js/3.0.0:
-    dev: true
     resolution:
       integrity: sha1-4h3xCtbCBTKVvLuNq0Cwnb6ofk0=
   /agent-base/6.0.2:
@@ -11160,7 +11156,6 @@ packages:
     resolution:
       integrity: sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw==
   /scrypt-js/3.0.1:
-    dev: true
     resolution:
       integrity: sha512-cdwTTnqPu0Hyvf5in5asVdZocVDTNRmR7XEcJuIzMjJeSHybHl7vpB66AzwTaIg6CLSbtjcxc8fqcySfnTkccA==
   /secp256k1/3.8.0:

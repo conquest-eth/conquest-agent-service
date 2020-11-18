@@ -1,5 +1,6 @@
 import {writable} from 'svelte/store';
-import {wallet, flow} from './wallet';
+import {wallet} from './wallet';
+import login from './login';
 import {xyToLocation} from 'planet-wars-common';
 
 type SendData = {
@@ -62,7 +63,7 @@ async function sendFrom(from: {x: number; y: number}): Promise<void> {
     pickOrigin(from);
   } else {
     _set({data: {from}, step: 'CONNECTING'});
-    await flow.connect();
+    await login.login();
     _set({step: 'PICK_DESTINATION'});
   }
 }
@@ -72,7 +73,7 @@ async function sendTo(to: {x: number; y: number}): Promise<void> {
     pickDestination(to);
   } else {
     _set({data: {to}, step: 'CONNECTING'});
-    await flow.connect();
+    await login.login();
     _set({step: 'PICK_ORIGIN'});
   }
 }

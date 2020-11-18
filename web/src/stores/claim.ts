@@ -1,5 +1,6 @@
 import {writable} from 'svelte/store';
-import {wallet, flow} from './wallet';
+import {wallet} from './wallet';
+import login from '../stores/login';
 import {BigNumber} from '@ethersproject/bignumber';
 import type {PlanetData} from 'planet-wars-common';
 
@@ -59,7 +60,7 @@ export default dataStore = {
 
   async claim(planet: PlanetData): Promise<void> {
     _set({data: {planet}, step: 'CONNECTING'});
-    await flow.connect();
+    await login.login();
     _set({step: 'CHOOSE_STAKE'});
   },
 

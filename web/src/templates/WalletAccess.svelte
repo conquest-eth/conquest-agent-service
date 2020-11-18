@@ -13,6 +13,8 @@
     flow,
   } from '../stores/wallet';
 
+  import login from '../stores/login';
+
   const chainNames = {
     '1': 'mainnet',
     '3': 'ropsten',
@@ -127,6 +129,9 @@
       {:else if $chain.notSupported}Please switch to {chainName}{/if}
     {:else if $wallet.pendingUserConfirmation}
       Please accept transaction...
+    {:else if $login.step === 'SIGNATURE_REQUIRED'}
+      In order to...
+      <Button label="sign" on:click={() => login.confirm()}>sign</Button>
     {:else if executionError}
       {#if executionError.code === 4001}
         You rejected the request
