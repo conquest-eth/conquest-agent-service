@@ -1,6 +1,10 @@
 import {writable} from 'svelte/store';
-import {wallet, flow} from './wallet';
+import {wallet} from './wallet';
+import login from './login';
+import secret from './secret';
 import {xyToLocation} from 'planet-wars-common';
+import { BigNumber } from '@ethersproject/bignumber';
+import {keccak256} from '@ethersproject/solidity';
 
 type SendData = {
   txHash?: string;
@@ -62,7 +66,7 @@ async function sendFrom(from: {x: number; y: number}): Promise<void> {
     pickOrigin(from);
   } else {
     _set({data: {from}, step: 'CONNECTING'});
-    await flow.connect();
+    await login.login();
     _set({step: 'PICK_DESTINATION'});
   }
 }
@@ -72,7 +76,7 @@ async function sendTo(to: {x: number; y: number}): Promise<void> {
     pickDestination(to);
   } else {
     _set({data: {to}, step: 'CONNECTING'});
-    await flow.connect();
+    await login.login();
     _set({step: 'PICK_ORIGIN'});
   }
 }
@@ -95,15 +99,38 @@ async function confirm(fleetAmount: number): Promise<void> {
   const flow = _set({step: 'WAITING_TX'});
   const from = flow.data.from;
   const to = flow.data.to;
+  const toString = xyToLocation(to.x, to.y)
+  const subId = "0x" + ((crypto.getRandomValues(new Uint8Array(10)) as unknown) as number[]).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const fleetId = BigNumber.from(subId).add(BigNumber.from(wallet.address).shl(96)).toHexString();
+  const hashString = await login.getHashString();
+  const secretHash = keccak256(["bytes32", "uint88"], [hashString, subId])
+  const toHash = keccak256(["bytes32", "uint256"], [secretHash, toString]);
+  console.log({secretHash, toString, toHash});
   const tx = await wallet.contracts.OuterSpace.send(
+    subId,
     xyToLocation(from.x, from.y),
     fleetAmount,
-    xyToLocation(to.x, to.y) // TODO hash
+    toHash
   );
+  secret.recordFleet(fleetId, to)
   _set({
     step: 'SUCCESS',
     data: {txHash: tx.hash},
   });
+
+  // TODO new step
+  await tx.wait();
+  // TODO distance
+  // const distanceSquared =
+  //   Math.pow(to.location.x - from.location.globalX, 2) +
+  //   Math.pow(to.location.globalY - from.location.globalY, 2);
+  const distance = 1; // TODO Math.floor(Math.sqrt(distanceSquared));
+  await wallet.contracts.OuterSpace.resolveFleet(
+    fleetId,
+    xyToLocation(to.x, to.y),
+    distance,
+    secretHash
+  );
 }
 
 let dataStore;

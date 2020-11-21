@@ -3,6 +3,9 @@
   import Button from '../components/Button.svelte';
   import Modal from '../components/Modal.svelte';
   import sendFlow from '../stores/send';
+  import {planet as getPlanet} from '../stores/planetsCache'; // TODO call it getPlanet / planetStore ?
+  import { xyToLocation } from 'planet-wars-common';
+  import time from  '../stores/time';
 
   $: pickNeeded =
     $sendFlow.step === 'PICK_DESTINATION'
@@ -11,7 +14,19 @@
       ? 'origin'
       : undefined;
 
-  let fleetAmount = 0;
+  // TODO remove duplicae : move to util
+  function _getCurrentNumSpaceships(time: number, numSpaceships: number, lastUpdated: number, productionRate: number) : number {
+    return numSpaceships + Math.floor(((time - lastUpdated) * productionRate) / (60*60));
+  }
+  function numSpaceshipFor(time, planetAcquired) {
+    return planetAcquired ? _getCurrentNumSpaceships(time, parseInt(planetAcquired.numSpaceships), parseInt(planetAcquired.lastUpdated), planetAcquired.productionRate) : 0;
+  }
+
+  $: planetFrom = $sendFlow.data?.to ? getPlanet(xyToLocation($sendFlow.data.to.x, $sendFlow.data.to.y)) : undefined;
+  $: maxSpaceships = numSpaceshipFor($time, $planetFrom);
+
+  $: console.log({maxSpaceships, planetFrom});
+  let fleetAmount = 1;
 </script>
 
 {#if pickNeeded}
@@ -37,7 +52,7 @@
         type="range"
         id="fleetAmount"
         name="fleetAmount"
-        bind:value={fleetAmount} />
+        bind:value={fleetAmount} min="1" max="{maxSpaceships}" /> <!-- TODO max range = numSpaceships-->
       <label for="fleetAmount">Number Of Spaceships</label>
       <input type="text" id="textInput" value={fleetAmount} />
     </div>

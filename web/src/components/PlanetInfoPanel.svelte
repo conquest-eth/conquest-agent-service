@@ -4,7 +4,9 @@
   import {planet as getPlanet} from '../stores/planetsCache'; // TODO call it getPlanet / planetStore ?
   import claimFlow from '../stores/claim';
   import sendFlow from '../stores/send';
-  import {wallet, flow} from '../stores/wallet';
+  import {wallet} from '../stores/wallet';
+  import login from '../stores/login';
+  import time from  '../stores/time';
 
   export let planet: Planet;
   export let close: () => void;
@@ -23,6 +25,20 @@
     sendFlow.sendFrom(planet.location);
     close();
   }
+
+  function connect() {
+    login.login();
+  }
+
+  // TODO remove duplicae : move to util
+  function _getCurrentNumSpaceships(time: number, numSpaceships: number, lastUpdated: number, productionRate: number) : number {
+    return numSpaceships + Math.floor(((time - lastUpdated) * productionRate) / (60*60));
+  }
+  function numSpaceshipFor(time, planetAcquired) {
+    return planetAcquired ? _getCurrentNumSpaceships(time, parseInt(planetAcquired.numSpaceships), parseInt(planetAcquired.lastUpdated), planetAcquired.productionRate) : 0;
+  }
+
+  $: currentNumSpaceships = numSpaceshipFor($time, $planetAcquired);
 </script>
 
 <style>
@@ -41,7 +57,6 @@
   <!-- <img class="h-16 w-16 rounded-full mx-auto" src="avatar.jpg"> -->
   <div>
     <h2>Planet {planet.location.x},{planet.location.y}</h2>
-    <h3>{zoneFromLocation(planet.location.x, planet.location.y)}</h3>
     <div>
       <label for="maxStake">maxStake:</label>
       <span id="maxStake" class="value">{planet.stats.maxStake}</span>
@@ -87,7 +102,7 @@
         <label for="numSpaceships">spaceships:</label>
         <span
           id="numSpaceships"
-          class="value">{$planetAcquired.numSpaceships}</span>
+          class="value">{currentNumSpaceships}</span>
       </div>
       <div>
         <label for="lastUpdated">lastUpdated:</label>
@@ -103,7 +118,7 @@
           <button on:click={sendFrom}>Send From</button>
         {:else}<button on:click={sendTo}>Attack</button>{/if}
       {:else}
-        <button on:click={() => flow.connect()}>Connect Wallet</button>
+        <button on:click={connect}>Connect Wallet</button>
       {/if}
     {:else}
       <div>

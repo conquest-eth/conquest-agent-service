@@ -13,6 +13,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     linkedData: genesisHash,
     args: [stakingToken.address, genesisHash],
+    proxy: true, // TODO remove
     log: true,
   });
 };
