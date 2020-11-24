@@ -20,7 +20,7 @@ type AcquiredPlanet = {
   id: string;
   owner: string;
   lastOwnershipTime: string;
-  numSpaceships: number;
+  numSpaceships: string;
   lastUpdated: string;
   productionRate: number;
   stake: string;

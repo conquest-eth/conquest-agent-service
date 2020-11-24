@@ -150,7 +150,7 @@ export class Renderer {
 
     // console.log(JSON.stringify({gridLevelRoot, gridSize, gridLevel}));
 
-    if (gridLevel < 10) {
+    if (false && gridLevel < 10) {
       // console.log(JSON.stringify({gridLevel, gridSize, nextLevelGridSize}));
 
       // console.log(offset, camera);
@@ -195,68 +195,6 @@ export class Renderer {
             ctx.strokeStyle = '#00000';
           }
         }
-      }
-
-      for (
-        let x = gridStart.x;
-        x < gridStart.x + camera.width + gridOffset;
-        x += gridSize
-      ) {
-        // ctx.fillStyle = vPattern;
-        // ctx.save();
-        // ctx.scale(1, gridSize / 48);
-        // ctx.fillRect(x-lineWidth/2, gridStart.y, lineWidth, camera.height + gridOffset);
-        // ctx.restore();
-
-        // // console.log('x', Math.round(x-lineWidth/2), Math.round(gridStart.y), Math.round(lineWidth), Math.round(gridSize))
-        // for (let y = gridStart.y; y < gridStart.y + camera.height + gridOffset; y += gridSize) {
-        // 	ctx.drawImage(vertPattern, Math.round(x-lineWidth/2), Math.round(y), Math.round(lineWidth), Math.round(gridSize));
-        // }
-
-        ctx.beginPath();
-        setColor(x);
-        ctx.lineWidth = lineWidth;
-        // if ((x / nextLevelGridSize) == Math.floor(x / nextLevelGridSize)) {
-        // 	ctx.lineWidth = lineWidth * 2;
-        // }
-        ctx.setLineDash([mainDash, smallDash, smallDash, smallDash]);
-        ctx.moveTo(Math.round(x), Math.round(gridStart.y - gridOffset)); // TODO use drawImage for line pattern to avoid anti-aliasing
-        ctx.lineTo(
-          Math.round(x),
-          Math.round(gridStart.y + camera.height + gridOffset)
-        );
-        ctx.stroke();
-      }
-
-      for (
-        let y = gridStart.y;
-        y < gridStart.y + camera.height + gridOffset;
-        y += gridSize
-      ) {
-        // ctx.fillStyle = hPattern;
-        // ctx.save();
-        // ctx.scale(gridSize / 48, 1);
-        // ctx.fillRect(gridStart.x, y-lineWidth/2, camera.width + gridOffset, lineWidth);
-        // ctx.restore();
-
-        // // console.log('y', Math.round(gridStart.x), Math.round(y-lineWidth/2), Math.round(gridSize), Math.round(lineWidth))
-        // for (let x = gridStart.x; x < gridStart.x + camera.width + gridOffset; x += gridSize) {
-        // 	ctx.drawImage(horizPattern, Math.round(x), Math.round(y-lineWidth/2), Math.round(gridSize), Math.round(lineWidth));
-        // }
-
-        ctx.beginPath();
-        setColor(y);
-        ctx.lineWidth = lineWidth;
-        // if ((y / nextLevelGridSize) == Math.floor(y / nextLevelGridSize)) {
-        // 	ctx.lineWidth = lineWidth * 2;
-        // }
-        ctx.setLineDash([mainDash, smallDash, smallDash, smallDash]);
-        ctx.moveTo(Math.round(gridStart.x - gridOffset), Math.round(y));
-        ctx.lineTo(
-          Math.round(gridStart.x + camera.width + gridOffset),
-          Math.round(y)
-        );
-        ctx.stroke();
       }
     }
 

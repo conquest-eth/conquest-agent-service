@@ -130,7 +130,15 @@
     {:else if $wallet.pendingUserConfirmation}
       Please accept transaction...
     {:else if $login.step === 'SIGNATURE_REQUIRED'}
-      In order to...
+      Planet Wars require your signature to operate. Do not sign this message
+      outside of Planet Wars!
+      <!-- TODO store and then auto connect if present -->
+      <!-- <div class="flex mt-6">
+        <label class="flex items-center">
+          <input type="checkbox" class="form-checkbox" />
+          <span class="ml-2">Trust computer and do not ask again (store locally)</span>
+        </label>
+      </div> -->
       <Button label="sign" on:click={() => login.confirm()}>sign</Button>
     {:else if executionError}
       {#if executionError.code === 4001}

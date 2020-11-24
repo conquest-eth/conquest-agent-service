@@ -1,19 +1,26 @@
 import {writable} from 'svelte/store';
 import {wallet, flow} from './wallet';
 import {Wallet} from '@ethersproject/wallet';
-import type { Contract } from '@ethersproject/contracts';
+import type {Contract} from '@ethersproject/contracts';
+import {keccak256} from '@ethersproject/solidity';
 
-type LoginData = {wallet?: Wallet, step: "READY" | "CONNECTING" | "SIGNATURE_REQUIRED" | "SIGNATURE_REQUESTED" | "IDLE"};
+type LoginData = {
+  wallet?: Wallet;
+  step:
+    | 'READY'
+    | 'CONNECTING'
+    | 'SIGNATURE_REQUIRED'
+    | 'SIGNATURE_REQUESTED'
+    | 'IDLE';
+};
 
 const $data: LoginData = {
   wallet: undefined,
-  step: "IDLE"
-}
+  step: 'IDLE',
+};
 const {subscribe, set} = writable($data);
 
-function _set(
-  obj: Partial<LoginData>
-): LoginData {
+function _set(obj: Partial<LoginData>): LoginData {
   for (const key of Object.keys(obj)) {
     $data[key] = obj[key];
   }
@@ -28,10 +35,10 @@ type Contracts = {
 };
 
 wallet.subscribe(($wallet) => {
-  if($wallet.address) {
+  if ($wallet.address) {
     const existingData = walletData[$wallet.address.toLowerCase()];
     if (existingData) {
-      _set({step: "READY", wallet: existingData.wallet});
+      _set({step: 'READY', wallet: existingData.wallet});
     } else {
       _set({wallet: undefined});
       if ($data.step === 'READY') {
@@ -44,7 +51,7 @@ wallet.subscribe(($wallet) => {
       _set({step: 'IDLE'});
     }
   }
-})
+});
 
 async function login(): Promise<void> {
   await execute();
@@ -60,15 +67,17 @@ async function confirm(): Promise<void> {
   _set({step: 'SIGNATURE_REQUESTED'});
   try {
     const walletAddress = wallet.address.toLowerCase();
-    const signature = await wallet.provider.getSigner().signMessage('Only sign this message on "planet-wars"');
-    const privateWallet = new Wallet(signature.slice(0,130));
+    const signature = await wallet.provider
+      .getSigner()
+      .signMessage('Only sign this message on "planet-wars"');
+    const privateWallet = new Wallet(signature.slice(0, 130));
     walletData[walletAddress] = {wallet: privateWallet};
-    _set({step: "READY", wallet: privateWallet});
+    _set({step: 'READY', wallet: privateWallet});
     if (_func) {
       await _func();
     }
-  } catch(e) {
-    _set({step: "IDLE", wallet: undefined});
+  } catch (e) {
+    _set({step: 'IDLE', wallet: undefined});
     _reject(e);
     _resolve = undefined;
     _reject = undefined;
@@ -83,7 +92,9 @@ async function confirm(): Promise<void> {
   _contracts = undefined;
 }
 
-function execute(func?: (contracts: Contracts) => Promise<void>): Promise<Contracts> {
+function execute(
+  func?: (contracts: Contracts) => Promise<void>
+): Promise<Contracts> {
   if (_promise) {
     return _promise.then(() => _contracts);
   }
@@ -92,25 +103,27 @@ function execute(func?: (contracts: Contracts) => Promise<void>): Promise<Contra
     _set({step: 'CONNECTING'});
   }
 
-  return flow.execute((contracts: Contracts): Promise<void> => {
-    if ($data.step !== 'READY') {
-      _set({step: 'SIGNATURE_REQUIRED'});
-      _promise = new Promise<void>((resolve, reject) => {
-        _contracts = contracts;
-        _resolve = resolve;
-        _reject = reject;
-        if (func) {
-          _func = () => func(contracts);
-        }
-      });
-      return _promise;
+  return flow.execute(
+    (contracts: Contracts): Promise<void> => {
+      if ($data.step !== 'READY') {
+        _set({step: 'SIGNATURE_REQUIRED'});
+        _promise = new Promise<void>((resolve, reject) => {
+          _contracts = contracts;
+          _resolve = resolve;
+          _reject = reject;
+          if (func) {
+            _func = () => func(contracts);
+          }
+        });
+        return _promise;
+      }
+      if (func) {
+        return func(contracts);
+      } else {
+        return Promise.resolve();
+      }
     }
-    if (func) {
-      return func(contracts);
-    } else {
-      return Promise.resolve();
-    }
-  });
+  );
 }
 
 let dataStore;
@@ -118,7 +131,19 @@ export default dataStore = {
   subscribe,
   login,
   confirm,
-  execute
+  execute,
+  get privateWallet() {
+    return $data.wallet;
+  },
+  async getHashString() {
+    return keccak256(
+      ['bytes32', 'bytes32'],
+      [
+        $data.wallet.privateKey.slice(0, 66),
+        '0x' + $data.wallet.privateKey.slice(66, 130),
+      ]
+    ); // TODO use different key
+  },
 };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

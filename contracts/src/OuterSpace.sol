@@ -30,7 +30,6 @@ contract OuterSpace is StakingWithInterest {
     }
     struct Fleet {
         uint256 launchTime;
-        address owner;
         uint256 from;
         bytes32 toHash; // to is not revealed until needed // if same as from, then take a specific time (bluff)
         uint256 quantity; // we know how many but not where
@@ -143,15 +142,17 @@ contract OuterSpace is StakingWithInterest {
     }
 
     function send(
+        uint80 subId,
         uint256 from,
         uint256 quantity,
         bytes32 toHash
     ) external {
-        _sendFor(_msgSender(), from, quantity, toHash);
+        _sendFor(_msgSender(), subId, from, quantity, toHash);
     }
 
     function sendFor(
         address owner,
+        uint80 subId,
         uint256 from,
         uint256 quantity,
         bytes32 toHash
@@ -160,7 +161,7 @@ contract OuterSpace is StakingWithInterest {
         if (sender != owner) {
             require(_operators[owner][sender], "NOT_AUTHORIZED");
         }
-        _sendFor(_msgSender(), from, quantity, toHash);
+        _sendFor(_msgSender(), subId | (1<<81), from, quantity, toHash);
     }
 
     // ////////////// EIP721 /////////////////// // TODO ?
@@ -193,7 +194,6 @@ contract OuterSpace is StakingWithInterest {
     mapping(address => mapping(address => bool)) _operators;
     mapping(uint256 => Planet) _planets;
     mapping(uint256 => Fleet) _fleets;
-    uint256 _lastFleetId;
     bytes32 immutable _genesis;
 
     constructor(ERC20 stakingToken, bytes32 genesis) public StakingWithInterest(stakingToken) {
@@ -204,6 +204,7 @@ contract OuterSpace is StakingWithInterest {
 
     function _sendFor(
         address owner,
+        uint88 subId,
         uint256 from,
         uint256 quantity,
         bytes32 toHash
@@ -221,10 +222,9 @@ contract OuterSpace is StakingWithInterest {
         planet.numSpaceships = numSpaceships;
         planet.lastUpdated = block.timestamp;
 
-        uint256 fleetId = ++_lastFleetId;
+        uint256 fleetId = (uint256(owner) << 96) | subId;
         _fleets[fleetId] = Fleet({
             launchTime: block.timestamp,
-            owner: owner,
             from: from,
             toHash: toHash,
             quantity: quantity
@@ -250,14 +250,17 @@ contract OuterSpace is StakingWithInterest {
         bytes32 secret
     ) internal {
         Fleet storage fleet = _fleets[fleetId];
-        require(attacker == fleet.owner, "not owner of fleet");
+        address fleetOwner = address(fleetId >> 96);
+        require(attacker == fleetOwner, "not owner of fleet");
+        // require(fleet.from != 0, "fleet not exists"); // TODO remove
         require(keccak256(abi.encodePacked(secret, to)) == fleet.toHash, "invalid 'to' or 'secret'");
 
         uint256 from = fleet.from;
         (, PlanetStats memory fromStats) = _getPlanet(from);
         (Planet storage toPlanet, PlanetStats memory toStats) = _getPlanet(to);
-        _checkDistance(distance, from, fromStats, to, toStats);
-        _checkTime(distance, fromStats, fleet);
+        // TODO : reenable
+        // _checkDistance(distance, from, fromStats, to, toStats);
+        // _checkTime(distance, fromStats, fleet);
 
         if (toPlanet.owner == attacker) {
             toPlanet.numSpaceships += fleet.quantity;
@@ -405,6 +408,8 @@ contract OuterSpace is StakingWithInterest {
             uint256 numSpaceships = numAttack - attackerLoss;
             _planets[to].numSpaceships = numSpaceships;
             emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);
+        } else {
+            revert("nobody won");
         }
         _planets[to].lastUpdated = block.timestamp;
     }
