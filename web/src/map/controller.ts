@@ -1,4 +1,4 @@
-import type {Planet} from 'planet-wars-common';
+import type {OwnFleet, Planet} from 'planet-wars-common';
 import PlanetInfoPanel from '../components/PlanetInfoPanel.svelte';
 
 export class Controller {
@@ -14,6 +14,10 @@ export class Controller {
     } else {
       this.hidePlanetInfo();
     }
+  }
+
+  onFleetSelected(fleet: OwnFleet): void {
+    console.log({fleet});
   }
 
   showPlanetInfo(planet: Planet): void {

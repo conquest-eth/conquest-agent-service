@@ -8,7 +8,12 @@ const chainId = import.meta.env.VITE_CHAIN_ID;
 let nodeUrl: string | undefined;
 let finality = 12;
 if (chainId === '1337' || chainId === '31337') {
-  nodeUrl = 'http://localhost:8545';
+  const localEthNode = import.meta.env.VITE_LOCAL_ETH_NODE_URL;
+  if (localEthNode && localEthNode !== "") {
+    nodeUrl = localEthNode;
+  } else {
+    nodeUrl = 'http://localhost:8545';
+  }
   finality = 2;
 }
 

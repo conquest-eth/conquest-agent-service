@@ -143,6 +143,45 @@ export class Camera {
         subY: (shifted.y % 4) - 2 * Math.sign(shifted.y),
         id: xyToLocation(locX, locY),
       };
+
+      const fleets = this.renderState.getOwnFleets();
+      // TODO sort on timeLeft
+      for (const fleet of fleets) {
+        // TODO deduplicate code (see renderer.ts)
+        const fGx1 = fleet.from.x * 4 * 2 * 48;
+        const fGy1 = fleet.from.y * 4 * 2 * 48;
+        const fGx2 = fleet.to.x * 4 * 2 * 48;
+        const fGy2 = fleet.to.y * 4 * 2 * 48;
+        const speed = 10000;
+        const fullDistance = Math.floor(
+          Math.sqrt(
+            Math.pow(fleet.to.x - fleet.from.x, 2) +
+              Math.pow(fleet.to.y - fleet.from.y, 2)
+          )
+        );
+        const fullTime = fullDistance * ((3600 * 10000) / speed);
+        const timePassed = Math.floor(Date.now() / 1000) - fleet.launchTime;
+        let ratio = timePassed / fullTime;
+        if (timePassed > fullTime) {
+          // TODO disapear
+          ratio = 1;
+        }
+
+        // const distance = (timePassed * speed) / (10000 * 3600);
+        const fx = fGx1 + (fGx2 - fGx1) * ratio;
+        const fy = fGy1 + (fGy2 - fGy1) * ratio;
+        if (
+          worldPos.x > fx - 50 &&
+          worldPos.x < fx + 50 &&
+          worldPos.y > fy - 50 &&
+          worldPos.y < fy + 50
+        ) {
+          if (this.controller) {
+            this.controller.onFleetSelected(fleet);
+          }
+        }
+      }
+
       // console.log('onClick', JSON.stringify({worldPos, gridPos, location, shifted}, null, '  '));
       // TODO emit event // This should actually be moved to Screen
       const planet = this.renderState.getPlanet(location.x, location.y);

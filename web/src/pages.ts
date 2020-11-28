@@ -14,12 +14,6 @@ export default [
     component: HomePage, // Home Page is bundled for faster user interaction
   },
   {
-    name: 'Demo',
-    path: 'demo',
-    asyncComponent: (): Promise<ComponentModule> =>
-      import('./pages/demo.svelte'),
-  },
-  {
     name: 'NotFound',
     path: '.*',
     asyncComponent: (): Promise<ComponentModule> =>

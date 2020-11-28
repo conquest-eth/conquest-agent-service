@@ -161,7 +161,7 @@ contract OuterSpace is StakingWithInterest {
         if (sender != owner) {
             require(_operators[owner][sender], "NOT_AUTHORIZED");
         }
-        _sendFor(_msgSender(), subId | (1<<81), from, quantity, toHash);
+        _sendFor(_msgSender(), subId | (1 << 81), from, quantity, toHash);
     }
 
     // ////////////// EIP721 /////////////////// // TODO ?
@@ -223,12 +223,7 @@ contract OuterSpace is StakingWithInterest {
         planet.lastUpdated = block.timestamp;
 
         uint256 fleetId = (uint256(owner) << 96) | subId;
-        _fleets[fleetId] = Fleet({
-            launchTime: block.timestamp,
-            from: from,
-            toHash: toHash,
-            quantity: quantity
-        });
+        _fleets[fleetId] = Fleet({launchTime: block.timestamp, from: from, toHash: toHash, quantity: quantity});
 
         // require(planet.lastFleets.length < 10, "too many fleet send at around the same time");
         // uint256 numPastFleets = planet.lastFleets.length;
@@ -256,6 +251,8 @@ contract OuterSpace is StakingWithInterest {
         require(keccak256(abi.encodePacked(secret, to)) == fleet.toHash, "invalid 'to' or 'secret'");
 
         uint256 from = fleet.from;
+        uint256 quantity = fleet.quantity;
+        require(quantity > 0, "no more");
         (, PlanetStats memory fromStats) = _getPlanet(from);
         (Planet storage toPlanet, PlanetStats memory toStats) = _getPlanet(to);
         // TODO : reenable
@@ -263,11 +260,12 @@ contract OuterSpace is StakingWithInterest {
         // _checkTime(distance, fromStats, fleet);
 
         if (toPlanet.owner == attacker) {
-            toPlanet.numSpaceships += fleet.quantity;
+            toPlanet.numSpaceships += quantity;
             emit FleetArrived(attacker, fleetId, to);
         } else {
-            _performAttack(attacker, fromStats, to, toStats, fleetId, fleet.quantity);
+            _performAttack(attacker, fromStats, to, toStats, fleetId, quantity);
         }
+        fleet.quantity = 0;
     }
 
     function _checkDistance(

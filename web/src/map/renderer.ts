@@ -53,6 +53,166 @@ const planetTypesToFrame = [
   'Tundra.png',
 ];
 
+function line2line(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  x3: number,
+  y3: number,
+  x4: number,
+  y4: number
+): {x: number; y: number} | null {
+  const uA =
+    ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) /
+    ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
+  const uB =
+    ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) /
+    ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
+
+  if (uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1) {
+    const x = x1 + uA * (x2 - x1);
+    const y = y1 + uA * (y2 - y1);
+    return {x, y};
+  }
+  return null;
+}
+
+function line2rect(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  rx: number,
+  ry: number,
+  rw: number,
+  rh: number
+): {x1: number; y1: number; x2: number; y2: number} {
+  const newSegment = {x1, y1, x2, y2};
+  if (x1 > rx && x2 < rx + rw && y1 > ry && y2 < ry + rh) {
+    return newSegment;
+  }
+  const left = line2line(x1, y1, x2, y2, rx, ry, rx, ry + rh);
+  const right = line2line(x1, y1, x2, y2, rx + rw, ry, rx + rw, ry + rh);
+  const top = line2line(x1, y1, x2, y2, rx, ry, rx + rw, ry);
+  const bottom = line2line(x1, y1, x2, y2, rx, ry + rh, rx + rw, ry + rh);
+  if (!left && !right && !top && !bottom) {
+    return null;
+  }
+  if (left) {
+    if (right) {
+      if (x1 < x2) {
+        newSegment.x1 = left.x;
+        newSegment.y1 = left.y;
+        newSegment.x2 = right.x;
+        newSegment.y2 = right.y;
+      } else {
+        newSegment.x2 = left.x;
+        newSegment.y2 = left.y;
+        newSegment.x1 = right.x;
+        newSegment.y1 = right.y;
+      }
+    } else if (top) {
+      if (x1 < x2) {
+        newSegment.x1 = left.x;
+        newSegment.y1 = left.y;
+        newSegment.x2 = top.x;
+        newSegment.y2 = top.y;
+      } else {
+        newSegment.x2 = left.x;
+        newSegment.y2 = left.y;
+        newSegment.x1 = top.x;
+        newSegment.y1 = top.y;
+      }
+    } else if (bottom) {
+      if (x1 < x2) {
+        newSegment.x1 = left.x;
+        newSegment.y1 = left.y;
+        newSegment.x2 = bottom.x;
+        newSegment.y2 = bottom.y;
+      } else {
+        newSegment.x2 = left.x;
+        newSegment.y2 = left.y;
+        newSegment.x1 = bottom.x;
+        newSegment.y1 = bottom.y;
+      }
+    } else {
+      if (x1 < x2) {
+        newSegment.x1 = left.x;
+        newSegment.y1 = left.y;
+      } else {
+        newSegment.x2 = left.x;
+        newSegment.y2 = left.y;
+      }
+    }
+  } else if (right) {
+    if (top) {
+      if (x1 > x2) {
+        newSegment.x1 = right.x;
+        newSegment.y1 = right.y;
+        newSegment.x2 = top.x;
+        newSegment.y2 = top.y;
+      } else {
+        newSegment.x2 = right.x;
+        newSegment.y2 = right.y;
+        newSegment.x1 = top.x;
+        newSegment.y1 = top.y;
+      }
+    } else if (bottom) {
+      if (x1 > x2) {
+        newSegment.x1 = right.x;
+        newSegment.y1 = right.y;
+        newSegment.x2 = bottom.x;
+        newSegment.y2 = bottom.y;
+      } else {
+        newSegment.x2 = right.x;
+        newSegment.y2 = right.y;
+        newSegment.x1 = bottom.x;
+        newSegment.y1 = bottom.y;
+      }
+    } else {
+      if (x1 > x2) {
+        newSegment.x1 = right.x;
+        newSegment.y1 = right.y;
+      } else {
+        newSegment.x2 = right.x;
+        newSegment.y2 = right.y;
+      }
+    }
+  } else if (top) {
+    if (bottom) {
+      if (y1 < y2) {
+        newSegment.x1 = top.x;
+        newSegment.y1 = top.y;
+        newSegment.x2 = bottom.x;
+        newSegment.y2 = bottom.y;
+      } else {
+        newSegment.x2 = top.x;
+        newSegment.y2 = top.y;
+        newSegment.x1 = bottom.x;
+        newSegment.y1 = bottom.y;
+      }
+    } else {
+      if (y1 < y2) {
+        newSegment.x1 = top.x;
+        newSegment.y1 = top.y;
+      } else {
+        newSegment.x2 = top.x;
+        newSegment.y2 = top.y;
+      }
+    }
+  } else {
+    if (y1 > y2) {
+      newSegment.x1 = bottom.x;
+      newSegment.y1 = bottom.y;
+    } else {
+      newSegment.x2 = bottom.x;
+      newSegment.y2 = bottom.y;
+    }
+  }
+  return newSegment;
+}
+
 export class Renderer {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private hPattern: any;
@@ -141,16 +301,18 @@ export class Renderer {
     const smallDash = gridSize / 6 / 2;
     const lineWidth = gridSize / 6 / 2;
 
+    const leftX = camera.x - camera.width / 2;
+    const topY = camera.y - camera.height / 2;
     const gridStart = {
-      x: Math.floor((camera.x - camera.width / 2) / gridSize) * gridSize,
-      y: Math.floor((camera.y - camera.height / 2) / gridSize) * gridSize,
+      x: Math.floor(leftX / gridSize) * gridSize,
+      y: Math.floor(topY / gridSize) * gridSize,
     };
 
     // const gridLevelRoot = Math.floor(Math.sqrt((1 / camera.zoom) * 2)); //Math.floor(Math.floor(48 / (camera.zoom)) / 48);
 
     // console.log(JSON.stringify({gridLevelRoot, gridSize, gridLevel}));
 
-    if (false && gridLevel < 10) {
+    if (gridLevel < 10) {
       // console.log(JSON.stringify({gridLevel, gridSize, nextLevelGridSize}));
 
       // console.log(offset, camera);
@@ -195,6 +357,68 @@ export class Renderer {
             ctx.strokeStyle = '#00000';
           }
         }
+      }
+
+      for (
+        let x = gridStart.x;
+        x < gridStart.x + camera.width + gridOffset;
+        x += gridSize
+      ) {
+        // ctx.fillStyle = vPattern;
+        // ctx.save();
+        // ctx.scale(1, gridSize / 48);
+        // ctx.fillRect(x-lineWidth/2, gridStart.y, lineWidth, camera.height + gridOffset);
+        // ctx.restore();
+
+        // // console.log('x', Math.round(x-lineWidth/2), Math.round(gridStart.y), Math.round(lineWidth), Math.round(gridSize))
+        // for (let y = gridStart.y; y < gridStart.y + camera.height + gridOffset; y += gridSize) {
+        // 	ctx.drawImage(vertPattern, Math.round(x-lineWidth/2), Math.round(y), Math.round(lineWidth), Math.round(gridSize));
+        // }
+
+        ctx.beginPath();
+        setColor(x);
+        ctx.lineWidth = lineWidth;
+        // if ((x / nextLevelGridSize) == Math.floor(x / nextLevelGridSize)) {
+        // 	ctx.lineWidth = lineWidth * 2;
+        // }
+        ctx.setLineDash([mainDash, smallDash, smallDash, smallDash]);
+        ctx.moveTo(Math.round(x), Math.round(gridStart.y - gridOffset)); // TODO use drawImage for line pattern to avoid anti-aliasing
+        ctx.lineTo(
+          Math.round(x),
+          Math.round(gridStart.y + camera.height + gridOffset)
+        );
+        ctx.stroke();
+      }
+
+      for (
+        let y = gridStart.y;
+        y < gridStart.y + camera.height + gridOffset;
+        y += gridSize
+      ) {
+        // ctx.fillStyle = hPattern;
+        // ctx.save();
+        // ctx.scale(gridSize / 48, 1);
+        // ctx.fillRect(gridStart.x, y-lineWidth/2, camera.width + gridOffset, lineWidth);
+        // ctx.restore();
+
+        // // console.log('y', Math.round(gridStart.x), Math.round(y-lineWidth/2), Math.round(gridSize), Math.round(lineWidth))
+        // for (let x = gridStart.x; x < gridStart.x + camera.width + gridOffset; x += gridSize) {
+        // 	ctx.drawImage(horizPattern, Math.round(x), Math.round(y-lineWidth/2), Math.round(gridSize), Math.round(lineWidth));
+        // }
+
+        ctx.beginPath();
+        setColor(y);
+        ctx.lineWidth = lineWidth;
+        // if ((y / nextLevelGridSize) == Math.floor(y / nextLevelGridSize)) {
+        // 	ctx.lineWidth = lineWidth * 2;
+        // }
+        ctx.setLineDash([mainDash, smallDash, smallDash, smallDash]);
+        ctx.moveTo(Math.round(gridStart.x - gridOffset), Math.round(y));
+        ctx.lineTo(
+          Math.round(gridStart.x + camera.width + gridOffset),
+          Math.round(y)
+        );
+        ctx.stroke();
       }
     }
 
@@ -302,6 +526,54 @@ export class Renderer {
     }
     if (scale < 0.25) {
       scale = 0.25;
+    }
+
+    const fleets = this.renderState.getOwnFleets();
+    for (const fleet of fleets) {
+      const fGx1 = fleet.from.x * 4 * 2 * 48;
+      const fGy1 = fleet.from.y * 4 * 2 * 48;
+      const fGx2 = fleet.to.x * 4 * 2 * 48;
+      const fGy2 = fleet.to.y * 4 * 2 * 48;
+      const segment = line2rect(
+        fGx1,
+        fGy1,
+        fGx2,
+        fGy2,
+        leftX,
+        topY,
+        camera.width,
+        camera.height
+      );
+      if (segment) {
+        ctx.beginPath();
+        ctx.strokeStyle = '#FDFBF3';
+        ctx.lineWidth = 8 / scale;
+        ctx.moveTo(segment.x1, segment.y1);
+        ctx.lineTo(segment.x2, segment.y2);
+        ctx.stroke();
+      }
+
+      // TODO
+      const speed = 10000;
+      const fullDistance = Math.floor(
+        Math.sqrt(
+          Math.pow(fleet.to.x - fleet.from.x, 2) +
+            Math.pow(fleet.to.y - fleet.from.y, 2)
+        )
+      );
+      const fullTime = fullDistance * ((3600 * 10000) / speed);
+      const timePassed = Math.floor(Date.now() / 1000) - fleet.launchTime;
+      let ratio = timePassed / fullTime;
+      if (timePassed > fullTime) {
+        // TODO disapear
+        ratio = 1;
+      }
+
+      // const distance = (timePassed * speed) / (10000 * 3600);
+      const fx = fGx1 + (fGx2 - fGx1) * ratio;
+      const fy = fGy1 + (fGy2 - fGy1) * ratio;
+      // if inside rect
+      ctx.fillRect(fx - 50, fy - 50, 100, 100);
     }
 
     ctx.beginPath();

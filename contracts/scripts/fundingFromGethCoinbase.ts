@@ -1,5 +1,5 @@
 // script used to fund account from a geth coinbase account (geth --dev)
-import {ethers} from 'hardhat';
+import {ethers, config} from 'hardhat';
 import {BigNumber} from '@ethersproject/bignumber';
 import {JsonRpcProvider} from '@ethersproject/providers';
 
@@ -23,7 +23,7 @@ async function main() {
     }
   }
 
-  const rawProvider = new JsonRpcProvider('http://localhost:8545');
+  const rawProvider = new JsonRpcProvider(config.networks.localhost.url);
 
   const coinbase = await ethers.provider.send('eth_coinbase', []);
   const accounts = await ethers.provider.listAccounts();

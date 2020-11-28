@@ -5,7 +5,7 @@
   import claimFlow from '../stores/claim';
   import sendFlow from '../stores/send';
   import {wallet} from '../stores/wallet';
-  import login from '../stores/login';
+  import privateAccount from '../stores/privateAccount';
   import time from '../stores/time';
 
   export let planet: Planet;
@@ -27,7 +27,7 @@
   }
 
   function connect() {
-    login.login();
+    privateAccount.login();
   }
 
   // TODO remove duplicae : move to util

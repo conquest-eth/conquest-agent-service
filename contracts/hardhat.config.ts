@@ -25,14 +25,11 @@ const config: HardhatUserConfig = {
     deployer: 0,
   },
   networks: {
-    coverage: {
-      url: 'http://localhost:5458',
-    },
     hardhat: {
       accounts,
     },
     localhost: {
-      url: 'http://localhost:8545',
+      url: process.env.LOCAL_ETH_NODE_URL || 'http://localhost:8545',
       accounts,
     },
     staging: {

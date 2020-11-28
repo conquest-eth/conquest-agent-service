@@ -1,10 +1,8 @@
 import {writable} from 'svelte/store';
 import {wallet} from './wallet';
-import login from './login';
-import secret from './secret';
+import privateAccount from './privateAccount';
 import {xyToLocation} from 'planet-wars-common';
 import {BigNumber} from '@ethersproject/bignumber';
-import {keccak256} from '@ethersproject/solidity';
 
 type SendData = {
   txHash?: string;
@@ -66,7 +64,7 @@ async function sendFrom(from: {x: number; y: number}): Promise<void> {
     pickOrigin(from);
   } else {
     _set({data: {from}, step: 'CONNECTING'});
-    await login.login();
+    await privateAccount.login();
     _set({step: 'PICK_DESTINATION'});
   }
 }
@@ -76,7 +74,7 @@ async function sendTo(to: {x: number; y: number}): Promise<void> {
     pickDestination(to);
   } else {
     _set({data: {to}, step: 'CONNECTING'});
-    await login.login();
+    await privateAccount.login();
     _set({step: 'PICK_ORIGIN'});
   }
 }
@@ -96,10 +94,9 @@ async function pickOrigin(from: {x: number; y: number}): Promise<void> {
 }
 
 async function confirm(fleetAmount: number): Promise<void> {
-  const flow = _set({step: 'WAITING_TX'});
+  const flow = _set({step: 'CREATING_TX'});
   const from = flow.data.from;
   const to = flow.data.to;
-  const toString = xyToLocation(to.x, to.y);
   const subId =
     '0x' +
     ((crypto.getRandomValues(new Uint8Array(10)) as unknown) as number[])
@@ -108,17 +105,24 @@ async function confirm(fleetAmount: number): Promise<void> {
   const fleetId = BigNumber.from(subId)
     .add(BigNumber.from(wallet.address).shl(96))
     .toHexString();
-  const hashString = await login.getHashString();
-  const secretHash = keccak256(['bytes32', 'uint88'], [hashString, subId]);
-  const toHash = keccak256(['bytes32', 'uint256'], [secretHash, toString]);
-  console.log({secretHash, toString, toHash});
+
+  console.log('send', {subId});
+  const toHash = await privateAccount.hashFleet(subId, to);
+  _set({step: 'WAITING_TX'});
   const tx = await wallet.contracts.OuterSpace.send(
     subId,
     xyToLocation(from.x, from.y),
     fleetAmount,
     toHash
   );
-  secret.recordFleet(fleetId, {to, from, fleetAmount});
+  privateAccount.recordFleet(fleetId, {
+    to,
+    from,
+    fleetAmount,
+    launchTime: Math.floor(Date.now() / 1000), //TODO adjust + service to adjust once tx is mined
+    owner: wallet.address,
+  });
+
   _set({
     step: 'SUCCESS',
     data: {txHash: tx.hash},

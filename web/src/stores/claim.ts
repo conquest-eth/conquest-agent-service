@@ -1,10 +1,10 @@
 import {writable} from 'svelte/store';
 import {wallet} from './wallet';
-import login from '../stores/login';
+import privateAccount from './privateAccount';
 import {BigNumber} from '@ethersproject/bignumber';
-import type {PlanetData} from 'planet-wars-common';
+import type {PlanetInfo} from 'planet-wars-common';
 
-type ClaimData = {txHash?: string; planet: PlanetData};
+type ClaimData = {txHash?: string; planet: PlanetInfo};
 
 export type ClaimFlow<T> = {
   type: 'CLAIM';
@@ -58,9 +58,9 @@ export default dataStore = {
     _reset();
   },
 
-  async claim(planet: PlanetData): Promise<void> {
+  async claim(planet: PlanetInfo): Promise<void> {
     _set({data: {planet}, step: 'CONNECTING'});
-    await login.login();
+    await privateAccount.login();
     _set({step: 'CHOOSE_STAKE'});
   },
 

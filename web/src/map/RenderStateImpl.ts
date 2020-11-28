@@ -1,4 +1,4 @@
-import type {Fleet, Planet, PrivateSpace, Space} from 'planet-wars-common';
+import type {OwnFleet, Planet, PrivateSpace} from 'planet-wars-common';
 import type {RenderState} from '../types';
 
 export class RenderStateImpl implements RenderState {
@@ -15,15 +15,15 @@ export class RenderStateImpl implements RenderState {
   get player(): string {
     return this.space.player;
   }
-  getFleets(): Fleet[] {
-    return this.space.getFleets();
+  getOwnFleets(): OwnFleet[] {
+    return this.space.getOwnFleets();
   }
-  getFleetsFrom(x: number, y: number): Fleet[] {
-    return this.space.getFleetsFrom(x, y);
-  }
-  getFleetsTo(x: number, y: number): Fleet[] {
-    return this.space.getFleetsTo(x, y);
-  }
+  // getFleetsFrom(x: number, y: number): Fleet[] {
+  //   return this.space.getFleetsFrom(x, y);
+  // }
+  // getFleetsTo(x: number, y: number): Fleet[] {
+  //   return this.space.getFleetsTo(x, y);
+  // }
 
   getPlanet(x: number, y: number): Planet | undefined {
     return this.space.getPlanet(x, y);

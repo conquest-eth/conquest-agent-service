@@ -13,7 +13,7 @@
     flow,
   } from '../stores/wallet';
 
-  import login from '../stores/login';
+  import privateAccount from '../stores/privateAccount';
 
   const chainNames = {
     '1': 'mainnet',
@@ -129,7 +129,7 @@
       {:else if $chain.notSupported}Please switch to {chainName}{/if}
     {:else if $wallet.pendingUserConfirmation}
       Please accept transaction...
-    {:else if $login.step === 'SIGNATURE_REQUIRED'}
+    {:else if $privateAccount.step === 'SIGNATURE_REQUIRED'}
       Planet Wars require your signature to operate. Do not sign this message
       outside of Planet Wars!
       <!-- TODO store and then auto connect if present -->
@@ -139,7 +139,11 @@
           <span class="ml-2">Trust computer and do not ask again (store locally)</span>
         </label>
       </div> -->
-      <Button label="sign" on:click={() => login.confirm()}>sign</Button>
+      <Button label="sign" on:click={() => privateAccount.confirm()}>
+        sign
+      </Button>
+    {:else if $privateAccount.step === 'LOADING'}
+      Loading Data...
     {:else if executionError}
       {#if executionError.code === 4001}
         You rejected the request

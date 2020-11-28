@@ -9,7 +9,7 @@
 
 <Router {pages} globalQueryStrings={['subgraph', 'debug', 'log', 'trace']}>
   <Notifications />
-  <!-- <Navbar links={['Home', 'Demo', 'Wallet']} /> -->
+  <!-- <Navbar links={['Home', 'Wallet']} /> -->
   <CurrentPage>
     <Loading />
     Loading...

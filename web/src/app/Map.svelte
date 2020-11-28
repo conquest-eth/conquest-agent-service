@@ -7,7 +7,7 @@
   import {RenderStateImpl} from '../map/RenderStateImpl';
   import {StateAdapterFromTheGraph} from './StateAdapterFromTheGraph';
   import contractsInfo from '../contracts.json';
-  import {wallet} from '../stores/wallet';
+  import privateAccount from '../stores/privateAccount';
 
   let canvas;
   onMount(() => {
@@ -15,7 +15,7 @@
       contractsInfo.contracts.OuterSpace.linkedData
     );
     const space = new SpaceImpl(spaceInfo, new StateAdapterFromTheGraph());
-    const privateSpace = new PrivateSpaceImpl(space, wallet);
+    const privateSpace = new PrivateSpaceImpl(space, privateAccount);
     const renderState = new RenderStateImpl(privateSpace);
     const renderer = new Renderer(renderState);
     const camera = new Camera(renderState);
