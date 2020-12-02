@@ -72,8 +72,8 @@ export async function sendInSecret(
     return null;
   }
   const distanceSquared =
-    Math.pow(to.location.x - from.location.x, 2) +
-    Math.pow(to.location.y - from.location.y, 2);
+    Math.pow(to.location.globalX - from.location.globalX, 2) +
+    Math.pow(to.location.globalY - from.location.globalY, 2);
   const distance = Math.floor(Math.sqrt(distanceSquared));
   const timeRequired = BigNumber.from(distance)
     .mul(1 * 3600 * 10000)

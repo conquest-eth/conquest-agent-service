@@ -11,6 +11,8 @@ contract OuterSpace is StakingWithInterest {
     using Random for bytes32;
 
     struct PlanetStats {
+        int8 subX;
+        int8 subY;
         uint256 stake;
         uint256 production;
         uint256 attack;
@@ -19,19 +21,33 @@ contract OuterSpace is StakingWithInterest {
         uint256 natives;
     }
     struct Planet {
-        // PlanetStats stats; // TODO generate on demand from hash
+        // PlanetStats stats; // generated on demand from hash
         address owner;
-        uint256 lastOwnershipTime;
+        uint256 lastOwnershipTime; // can be used to check if the production is active : affect numSpaceship creation // 0 => inactive. what about natives ? : do they come back one owner disapear ? or do we keep owner as is (assuming inactive and numSpaceShips=0] means owner is not really owner at all)
         uint256 numSpaceships;
         uint256 lastUpdated;
         // uint256[] lastFleets; // TODO deal with front running
     }
+    // TODO compress:
+    // owner: 160
+    // lastOwnershipTime: 32 // could use 15 sec precision // could start from contract deployment time
+    // numSpaceships: 32 // could it be lower ? : we need to cap it on every update
+    // lastUpdated: 32 //could start from contract deployment time
+
     struct Fleet {
         uint256 launchTime;
         uint256 from;
         bytes32 toHash; // to is not revealed until needed // if same as from, then take a specific time (bluff)
         uint256 quantity; // we know how many but not where
     }
+    // TODO compress:
+    // launchTime: 32 // could use 15 sec precision // could start from contract deployment tim
+    // from: not compressable, unless we decide to make the world smaller
+    // toHash: not compressable
+    // quantity: 32 //
+    // => compress launchTime and quantity
+
+    // note : launchTime could be set in future when launching, like 30 min, 1h ? or any time ?
 
     event PlanetStake(address indexed acquirer, uint256 indexed location, uint256 numSpaceships);
     event FleetSent(
@@ -246,7 +262,7 @@ contract OuterSpace is StakingWithInterest {
         (, PlanetStats memory fromStats) = _getPlanet(from);
         (Planet storage toPlanet, PlanetStats memory toStats) = _getPlanet(to);
         // TODO : reenable
-        // _checkDistance(distance, from, to);
+        // _checkDistance(distance, from, fromStats, to, toStats);
         // _checkTime(distance, fromStats, fleet);
 
         if (toPlanet.owner == attacker) {
@@ -261,12 +277,16 @@ contract OuterSpace is StakingWithInterest {
     function _checkDistance(
         uint256 distance,
         uint256 from,
-        uint256 to
+        PlanetStats memory fromStats,
+        uint256 to,
+        PlanetStats memory toStats
     ) internal pure {
         // check input instead of compute sqrt
-        uint256 distanceSquared = uint256(
-            (int128(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) - int128(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF))**2 +
-                (int128(to >> 128) - int128(from >> 128))**2
+        uint256 distanceSquared = uint256( // check input instead of compute sqrt
+            ((int128(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) * 4 + toStats.subX) -
+                (int128(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) * 4 + fromStats.subX)) **
+                2 +
+                ((int128(to >> 128) * 4 + toStats.subY) - (int128(from >> 128) * 4 + fromStats.subY))**2
         );
         require(distance**2 <= distanceSquared && distanceSquared < (distance + 1)**2, "wrong distance");
     }
@@ -298,6 +318,8 @@ contract OuterSpace is StakingWithInterest {
 
         return
             PlanetStats({
+                subX: int8(1 - _genesis.r_u8(location, 2, 3)),
+                subY: int8(1 - _genesis.r_u8(location, 3, 3)),
                 stake: _genesis.r_normalFrom(
                     location,
                     4,

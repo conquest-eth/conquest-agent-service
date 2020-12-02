@@ -1,3 +1,4 @@
+import {space} from 'svelte/internal';
 import planetsFrame from '../assets/planets.json';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 ///@ts-ignore
@@ -438,8 +439,8 @@ export class Renderer {
             planetsFrame.frames[planetTypesToFrame[planet.type]].frame;
           // console.log(planet)
           ctx.imageSmoothingEnabled = false;
-          const planetX = (x * 4 * 2) * 48;
-          const planetY = (y * 4 * 2) * 48;
+          const planetX = planet.location.globalX * 2 * 48;
+          const planetY = planet.location.globalY * 2 * 48;
           ctx.drawImage(
             planetSpriteSheet,
             lavaFrame.x,
@@ -482,6 +483,7 @@ export class Renderer {
                   circleColor = 'white';
                 }
               }
+              // TODO : productionEnabled // see OuterSpace.sol : can use lastOwnershipTime, owner and numSpaceships
               if (planet.state.stake == '0') {
                 // TODO BigNumber ?
                 circleDash = [2, 10];
@@ -530,10 +532,22 @@ export class Renderer {
 
     const fleets = this.renderState.getOwnFleets();
     for (const fleet of fleets) {
-      const fGx1 = fleet.from.x * 4 * 2 * 48;
-      const fGy1 = fleet.from.y * 4 * 2 * 48;
-      const fGx2 = fleet.to.x * 4 * 2 * 48;
-      const fGy2 = fleet.to.y * 4 * 2 * 48;
+      const fromX = fleet.from.x;
+      const fromY = fleet.from.y;
+      const fromPlanet = this.renderState.getPlanet(fromX, fromY);
+      const toX = fleet.to.x;
+      const toY = fleet.to.y;
+      const toPlanet = this.renderState.getPlanet(toX, toY);
+
+      const gFromX = fromPlanet.location.globalX;
+      const gFromY = fromPlanet.location.globalY;
+      const gToX = toPlanet.location.globalX;
+      const gToY = toPlanet.location.globalY;
+
+      const fGx1 = gFromX * 2 * 48;
+      const fGy1 = gFromY * 2 * 48;
+      const fGx2 = gToX * 2 * 48;
+      const fGy2 = gToY * 2 * 48;
       const segment = line2rect(
         fGx1,
         fGy1,
@@ -549,17 +563,14 @@ export class Renderer {
         ctx.strokeStyle = '#FDFBF3';
         ctx.lineWidth = 8 / scale;
         ctx.moveTo(segment.x1, segment.y1);
+        // TODO dash for past
         ctx.lineTo(segment.x2, segment.y2);
         ctx.stroke();
       }
 
-      // TODO
-      const speed = 10000;
+      const speed = 10000; // TODO fleet.speed / or planet(fleet.from).stats.speed
       const fullDistance = Math.floor(
-        Math.sqrt(
-          Math.pow(fleet.to.x - fleet.from.x, 2) +
-            Math.pow(fleet.to.y - fleet.from.y, 2)
-        )
+        Math.sqrt(Math.pow(gToX - gFromX, 2) + Math.pow(gToY - gFromY, 2))
       );
       const fullTime = fullDistance * ((3600 * 10000) / speed);
       const timePassed = Math.floor(Date.now() / 1000) - fleet.launchTime;
@@ -573,6 +584,11 @@ export class Renderer {
       const fx = fGx1 + (fGx2 - fGx1) * ratio;
       const fy = fGy1 + (fGy2 - fGy1) * ratio;
       // if inside rect
+      // ctx.beginPath();
+      // ctx.moveTo( bottom-left corner );
+      // ctx.lineTo( bottom-right corner );
+      // ctx.closePath(); // automatically moves back to bottom left corner
+      // ctx.fill();
       ctx.fillRect(fx - 50, fy - 50, 100, 100);
     }
 

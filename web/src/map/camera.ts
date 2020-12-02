@@ -172,6 +172,8 @@ export class Camera {
       const location = {
         x: locX,
         y: locY,
+        globalX: locX * 4 + ((shifted.x % 4) - 2 * Math.sign(shifted.x)),
+        globalY: locY * 4 + ((shifted.y % 4) - 2 * Math.sign(shifted.y)),
         id: xyToLocation(locX, locY),
       };
 
@@ -216,7 +218,11 @@ export class Camera {
       // console.log('onClick', JSON.stringify({worldPos, gridPos, location, shifted}, null, '  '));
       // TODO emit event // This should actually be moved to Screen
       const planet = this.renderState.getPlanet(location.x, location.y);
-      if (planet) {
+      if (
+        planet &&
+        planet.location.globalX === location.globalX &&
+        planet.location.globalY === location.globalY
+      ) {
         // console.log(JSON.stringify(planet, null, '  '));
         if (this.controller) {
           this.controller.onPlanetSelected(planet);

@@ -132,8 +132,8 @@ async function confirm(fleetAmount: number): Promise<void> {
   // await tx.wait();
   // // TODO distance
   // // const distanceSquared =
-  // //   Math.pow(to.location.x - from.location.x, 2) +
-  // //   Math.pow(to.location.y - from.location.y, 2);
+  // //   Math.pow(to.location.globalX - from.location.globalX, 2) +
+  // //   Math.pow(to.location.globalY - from.location.globalY, 2);
   // const distance = 1; // TODO Math.floor(Math.sqrt(distanceSquared));
   // await wallet.contracts.OuterSpace.resolveFleet(
   //   fleetId,
