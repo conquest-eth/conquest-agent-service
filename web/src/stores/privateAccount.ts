@@ -1,10 +1,11 @@
 import {writable} from 'svelte/store';
-import {wallet, flow} from './wallet';
+import {wallet, flow, chain} from './wallet';
 import {Wallet} from '@ethersproject/wallet';
 import type {Contract} from '@ethersproject/contracts';
 import {keccak256} from '@ethersproject/solidity';
 import {OwnFleet, xyToLocation} from 'planet-wars-common';
 import {BigNumber} from '@ethersproject/bignumber';
+import {finality} from '../config';
 
 type SecretData = {
   fleets: Record<string, OwnFleet>;
@@ -23,6 +24,7 @@ type PrivateAccountData = {
   sync: 'IDLE' | 'SYNCING' | 'SYNCED' | 'NOT_SYNCED';
   syncError: unknown;
   walletAddress?: string;
+  chainId?: string;
 };
 
 const $data: PrivateAccountData = {
@@ -44,6 +46,8 @@ function _set(obj: Partial<PrivateAccountData>): PrivateAccountData {
 
 const LOCAL_STORAGE_PRIVATE_ACCOUNT = '_privateAccount';
 
+let monitorProcess: NodeJS.Timeout | undefined = undefined;
+
 function LOCAL_STORAGE_KEY(address: string, chainId: string) {
   const localStoragePrefix =
     window.basepath &&
@@ -63,6 +67,7 @@ async function _loadData(address: string, chainId: string) {
     // TODO decrypt + uncompress
   }
   _set({sync: 'SYNCED', data});
+  startMonitoring(address, chainId);
 }
 
 async function _setData(address: string, chainId: string, data: SecretData) {
@@ -77,38 +82,105 @@ type Contracts = {
   [name: string]: Contract;
 };
 
-wallet.subscribe(($wallet) => {
-  if ($wallet.address) {
-    const diff =
-      !$data.walletAddress ||
-      $wallet.address.toLowerCase() !== $data.walletAddress.toLowerCase();
-    const existingData = walletData[$wallet.address.toLowerCase()];
+function start(walletAddress, chainId): void {
+  const walletDiff =
+  !$data.walletAddress ||
+  walletAddress.toLowerCase() !== $data.walletAddress.toLowerCase();
+  const chainDiff = !$data.chainId || chainId !== $data.chainId;
+
+  if (chainId && walletAddress) {
+    const existingData = walletData[walletAddress.toLowerCase()];
     if (existingData) {
       _set({
         step: 'READY',
         wallet: existingData.wallet,
-        walletAddress: $wallet.address,
+        walletAddress,
+        chainId,
       });
     } else {
       _set({
         wallet: undefined,
-        walletAddress: $wallet.address,
+        walletAddress,
+        chainId,
         data: undefined,
       });
       if ($data.step === 'READY') {
         _set({step: 'IDLE'});
       }
     }
-    if (diff) {
-      _loadData($data.walletAddress, '');
+    if (walletDiff || chainDiff) {
+      _loadData($data.walletAddress, $data.chainId);
     }
+  } else {
+    _set({walletAddress, chainId});
+    stopMonitoring();
+  }
+}
+
+chain.subscribe(($chain) => {
+  if ($chain.state === 'Ready') {
+    start($data.walletAddress, $chain.chainId);
+  } else {
+    _set({wallet: undefined});
+    if ($data.step === 'READY') {
+      _set({step: 'IDLE', chainId: undefined, data: undefined});
+    }
+    stopMonitoring();
+  }
+})
+
+wallet.subscribe(($wallet) => {
+  if ($wallet.address) {
+    start($wallet.address, $data.chainId);
   } else {
     _set({wallet: undefined});
     if ($data.step === 'READY') {
       _set({step: 'IDLE', walletAddress: undefined, data: undefined});
     }
+    stopMonitoring();
   }
 });
+
+
+
+function stopMonitoring() {
+  if (monitorProcess !== undefined) {
+    clearInterval(monitorProcess);
+    monitorProcess = undefined;
+  }
+}
+
+function startMonitoring(address: string, chainId: string) {
+  stopMonitoring();
+  listenForFleets(address, chainId);
+  monitorProcess = setInterval(
+    () => listenForFleets(address, chainId), 1000
+  ); // TODO time config
+}
+
+async function listenForFleets(address: string, chainId: string): Promise<void> {
+  if (!$data.data) {
+    return;
+  }
+  const latestBlockNumber = await wallet.provider.getBlockNumber();
+  const fleetIds = Object.keys($data.data.fleets);
+  for (const fleetId of fleetIds) {
+    // if ($data.data.fleets[fleetId].launchTime) // TODO filter out fleet that are not yet ready to be resolved
+    let fleetData
+    try {
+      fleetData = await wallet.contracts.OuterSpace.callStatic.getFleet(fleetId, {blockTag: Math.max(0, latestBlockNumber - finality)})
+    } catch (e) {
+      //
+    }
+    if ($data.walletAddress.toLowerCase() !== address.toLowerCase() || $data.chainId !== chainId) {
+      return;
+    }
+
+    if (fleetData[0].gt(0) && fleetData[2].eq(0)) {
+      deleteFleet(fleetId);
+    }
+  }
+}
 
 async function login(): Promise<void> {
   await execute();
@@ -133,7 +205,7 @@ async function confirm(): Promise<void> {
     _set({step: 'LOADING'});
 
     try {
-      await _loadData(walletAddress, ''); // TODO support multiple chain ? : wallet.chain.chainId // need to ensure it is set (wallet === READY)
+      await _loadData(walletAddress, wallet.chain.chainId);
     } catch (e) {
       _set({sync: 'NOT_SYNCED', syncError: e});
     }
@@ -201,7 +273,19 @@ function recordFleet(fleetId: string, fleet: OwnFleet) {
   _set({
     data: $data.data,
   });
-  _setData(wallet.address, '', $data.data); // TODO chainId / wallet address (when wallet account changes) // TODO test
+  _setData(wallet.address, wallet.chain.chainId, $data.data);
+}
+
+function deleteFleet(fleetId: string) {
+  if (!$data.data) {
+    return;
+  }
+  const fleets = $data.data.fleets;
+  delete fleets[fleetId];
+  _set({
+    data: $data.data,
+  });
+  _setData(wallet.address, wallet.chain.chainId, $data.data);
 }
 
 function _hashString() {
@@ -241,7 +325,7 @@ function recordFleetResolvingTxhash(fleetId: string, txHash: string): void {
   _set({
     data: $data.data,
   });
-  _setData(wallet.address, '', $data.data); // TODO chainId / wallet address (when wallet account changes) // TODO test
+  _setData(wallet.address, wallet.chain.chainId, $data.data); // TODO chainId / wallet address (when wallet account changes) // TODO test
 }
 
 function getFleets(): OwnFleet[] {

@@ -164,6 +164,15 @@ contract OuterSpace is StakingWithInterest {
         _sendFor(_msgSender(), subId | (1 << 81), from, quantity, toHash);
     }
 
+    function getFleet(uint256 fleetId) external view returns(
+        uint256 launchTime,
+        uint256 from,
+        uint256 quantity) {
+            launchTime = _fleets[fleetId].launchTime;
+            from = _fleets[fleetId].from;
+            quantity = _fleets[fleetId].quantity;
+        }
+
     // ////////////// EIP721 /////////////////// // TODO ?
 
     // function transfer() // TODO EIP-721 ?
