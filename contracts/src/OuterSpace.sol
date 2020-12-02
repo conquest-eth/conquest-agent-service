@@ -9,8 +9,6 @@ contract OuterSpace is StakingWithInterest {
     using Random for bytes32;
 
     struct PlanetStats {
-        int8 subX;
-        int8 subY;
         uint256 maxStake;
         uint256 production;
         uint256 attack;
@@ -284,11 +282,10 @@ contract OuterSpace is StakingWithInterest {
         uint256 to,
         PlanetStats memory toStats
     ) internal pure {
-        uint256 distanceSquared = uint256( // check input instead of compute sqrt
-            ((int128(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) * 4 + toStats.subX) -
-                (int128(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) * 4 + fromStats.subX)) **
-                2 +
-                ((int128(to >> 128) * 4 + toStats.subY) - (int128(from >> 128) * 4 + fromStats.subY))**2
+        // check input instead of compute sqrt
+        uint256 distanceSquared = uint256(
+            (int128(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) - int128(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) ** 2 +
+            (int128(to >> 128)  - int128(from >> 128))**2
         );
         require(distance**2 <= distanceSquared && distanceSquared < (distance + 1)**2, "wrong distance");
     }
@@ -320,8 +317,6 @@ contract OuterSpace is StakingWithInterest {
 
         return
             PlanetStats({
-                subX: int8(1 - _genesis.r_u8(location, 2, 3)),
-                subY: int8(1 - _genesis.r_u8(location, 3, 3)),
                 maxStake: _genesis.r_normalFrom(
                     location,
                     4,

@@ -438,8 +438,8 @@ export class Renderer {
             planetsFrame.frames[planetTypesToFrame[planet.type]].frame;
           // console.log(planet)
           ctx.imageSmoothingEnabled = false;
-          const planetX = (x * 4 * 2 + planet.location.subX * 2) * 48;
-          const planetY = (y * 4 * 2 + planet.location.subY * 2) * 48;
+          const planetX = (x * 4 * 2) * 48;
+          const planetY = (y * 4 * 2) * 48;
           ctx.drawImage(
             planetSpriteSheet,
             lavaFrame.x,
