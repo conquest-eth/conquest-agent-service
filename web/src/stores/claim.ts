@@ -64,12 +64,11 @@ export default dataStore = {
     _set({step: 'CHOOSE_STAKE'});
   },
 
-  async confirm(stake: number): Promise<void> {
+  async confirm(): Promise<void> {
     const flow = _set({step: 'WAITING_TX'});
     const tx = await wallet.contracts.OuterSpace.stake(
       wallet.address,
-      flow.data.planet.location.id,
-      BigNumber.from(stake).mul('1000000000000000000')
+      flow.data.planet.location.id
     );
     _set({
       step: 'SUCCESS',

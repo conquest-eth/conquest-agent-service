@@ -6,7 +6,7 @@ import {node_url, accounts} from './utils/network';
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: '0.6.5',
+    version: '0.7.5',
     settings: {
       optimizer: {
         enabled: true,

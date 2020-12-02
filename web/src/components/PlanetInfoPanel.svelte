@@ -35,11 +35,11 @@
     time: number,
     numSpaceships: number,
     lastUpdated: number,
-    productionRate: number
+    production: number
   ): number {
     return (
       numSpaceships +
-      Math.floor(((time - lastUpdated) * productionRate) / (60 * 60))
+      Math.floor(((time - lastUpdated) * production) / (60 * 60))
     );
   }
   function numSpaceshipFor(time, planetAcquired) {
@@ -48,7 +48,7 @@
           time,
           parseInt(planetAcquired.numSpaceships),
           parseInt(planetAcquired.lastUpdated),
-          planetAcquired.productionRate
+          planet.stats.production
         )
       : 0;
   }
@@ -73,11 +73,11 @@
   <div>
     <h2>Planet {planet.location.x},{planet.location.y}</h2>
     <div>
-      <label for="maxStake">maxStake:</label>
-      <span id="maxStake" class="value">{planet.stats.maxStake}</span>
+      <label for="stake">stake:</label>
+      <span id="stake" class="value">{planet.stats.stake}</span>
     </div>
     <div>
-      <label for="production">maxProduction:</label>
+      <label for="production">production:</label>
       <span id="production" class="value">{planet.stats.production}</span>
     </div>
     <div>
@@ -102,16 +102,6 @@
         <span
           id="ownerTime"
           class="value">{$planetAcquired.lastOwnershipTime}</span>
-      </div>
-      <div>
-        <label for="stake">stake:</label>
-        <span id="stake" class="value">{$planetAcquired.stake}</span>
-      </div>
-      <div>
-        <label for="productionRate">production:</label>
-        <span
-          id="productionRate"
-          class="value">{$planetAcquired.productionRate}</span>
       </div>
       <div>
         <label for="numSpaceships">spaceships:</label>

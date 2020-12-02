@@ -133,7 +133,9 @@ export async function fetchPlanetState(
     getNumSpaceships(time: number) {
       return (
         state.numSpaceships +
-        Math.floor(((time - state.lastUpdated) * state.productionRate) / 3600)
+        Math.floor(
+          ((time - state.lastUpdated) * planet.stats.production) / 3600
+        )
       );
     },
   };

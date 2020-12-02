@@ -6,32 +6,33 @@
   import {planet as getPlanet} from '../stores/planetsCache'; // TODO call it getPlanet / planetStore ?
   import {xyToLocation} from 'planet-wars-common';
   import time from '../stores/time';
+  import {space} from '../app/mapState';
 
   // TODO remove duplicae : move to util
   function _getCurrentNumSpaceships(
     time: number,
     numSpaceships: number,
     lastUpdated: number,
-    productionRate: number
+    production: number
   ): number {
     return (
       numSpaceships +
-      Math.floor(((time - lastUpdated) * productionRate) / (60 * 60))
+      Math.floor(((time - lastUpdated) * production) / (60 * 60))
     );
   }
-  function numSpaceshipFor(time, planetAcquired) {
-    return planetAcquired
+  function numSpaceshipFor(time, planet) {
+    return planet
       ? _getCurrentNumSpaceships(
           time,
-          parseInt(planetAcquired.numSpaceships),
-          parseInt(planetAcquired.lastUpdated),
-          planetAcquired.productionRate
+          parseInt(planet.state.numSpaceships),
+          parseInt(planet.state.lastUpdated),
+          planet.stats.production
         )
       : 0;
   }
 
   $: planetFrom = $sendFlow.data?.from
-    ? getPlanet(xyToLocation($sendFlow.data.from.x, $sendFlow.data.from.y))
+    ? space.getPlanet($sendFlow.data.from.x, $sendFlow.data.from.y)
     : undefined;
 
   // TODO maxSpaceshipsLoaded and invalid message if maxSpaceships == 0
@@ -39,7 +40,7 @@
   let fleetAmount: number = 1;
   let maxSpaceships: number;
   $: {
-    maxSpaceships = numSpaceshipFor($time, $planetFrom);
+    maxSpaceships = numSpaceshipFor($time, planetFrom);
     if (maxSpaceships > 0 && !fleetAmountSet) {
       // TODO loading
       fleetAmount = Math.floor(maxSpaceships / 2);

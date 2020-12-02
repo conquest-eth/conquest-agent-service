@@ -10,8 +10,6 @@ query($zones: [String]) {
     lastOwnershipTime
     numSpaceships
     lastUpdated
-    productionRate
-    stake
   }
 }
 `;
@@ -22,8 +20,6 @@ type AcquiredPlanet = {
   lastOwnershipTime: string;
   numSpaceships: string;
   lastUpdated: string;
-  productionRate: number;
-  stake: string;
 };
 
 // type QueryRawData = {acquiredPlanets: AcquiredPlanet[]};

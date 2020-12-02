@@ -1,15 +1,17 @@
-pragma solidity 0.6.5;
+// SPDX-License-Identifier: AGPL-1.0
+
+pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
 import "./StakingWithInterest.sol";
-import "./Interfaces/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Libraries/Random.sol";
 
 contract OuterSpace is StakingWithInterest {
     using Random for bytes32;
 
     struct PlanetStats {
-        uint256 maxStake;
+        uint256 stake;
         uint256 production;
         uint256 attack;
         uint256 defense;
@@ -22,8 +24,6 @@ contract OuterSpace is StakingWithInterest {
         uint256 lastOwnershipTime;
         uint256 numSpaceships;
         uint256 lastUpdated;
-        uint256 productionRate; // computed on stake given
-        uint256 stake;
         // uint256[] lastFleets; // TODO deal with front running
     }
     struct Fleet {
@@ -33,13 +33,7 @@ contract OuterSpace is StakingWithInterest {
         uint256 quantity; // we know how many but not where
     }
 
-    event PlanetStake(
-        address indexed acquirer,
-        uint256 indexed location,
-        uint256 newStake,
-        uint256 numSpaceships,
-        uint256 productionRate
-    );
+    event PlanetStake(address indexed acquirer, uint256 indexed location, uint256 numSpaceships);
     event FleetSent(
         address indexed sender,
         uint256 indexed from,
@@ -61,13 +55,8 @@ contract OuterSpace is StakingWithInterest {
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 
     // TODO stakeFromApproved()...
-    function stake(
-        address forPlayer,
-        uint256 location,
-        uint256 stakeAmount
-    ) external payable {
-        address sender = _msgSender();
-        require(stakeAmount >= 10**18, "minumum stake : 1");
+    function stake(address forPlayer, uint256 location) external payable {
+        // address sender = _msgSender();
         (Planet storage planet, PlanetStats memory stats) = _getPlanet(location);
         address owner = planet.owner;
 
@@ -88,28 +77,17 @@ contract OuterSpace is StakingWithInterest {
             require(forPlayer == owner, "already owned by someone else");
         }
         planet.lastOwnershipTime = block.timestamp; // reset on every new stake
-
-        uint256 currentStake = planet.stake;
         uint256 currentNumSpaceShips;
         if (planet.lastUpdated == 0) {
             (uint256 attackerLoss, ) = _computeFight(3600, stats.natives, 10000, 10000); // attacker alwasy win as stats.native is restricted to 3500
             currentNumSpaceShips = 3600 - attackerLoss;
         } else {
-            currentNumSpaceShips = _getCurrentNumSpaceships(
-                planet.numSpaceships,
-                planet.lastUpdated,
-                planet.productionRate
-            );
+            currentNumSpaceShips = _getCurrentNumSpaceships(planet.numSpaceships, planet.lastUpdated, stats.production);
         }
         planet.numSpaceships = currentNumSpaceShips;
-        require(currentStake + stakeAmount <= (stats.maxStake * 10**18), "exceeds max stake");
-        uint256 newStake = currentStake + stakeAmount;
-        planet.stake = newStake;
-        uint256 productionRate = (stats.production * newStake) / (stats.maxStake * 10**18);
-        planet.productionRate = productionRate;
         planet.lastUpdated = block.timestamp;
 
-        emit PlanetStake(forPlayer, location, newStake, currentNumSpaceShips, productionRate);
+        emit PlanetStake(forPlayer, location, currentNumSpaceShips);
     }
 
     function withdraw(uint256 location) external {
@@ -162,14 +140,19 @@ contract OuterSpace is StakingWithInterest {
         _sendFor(_msgSender(), subId | (1 << 81), from, quantity, toHash);
     }
 
-    function getFleet(uint256 fleetId) external view returns(
-        uint256 launchTime,
-        uint256 from,
-        uint256 quantity) {
-            launchTime = _fleets[fleetId].launchTime;
-            from = _fleets[fleetId].from;
-            quantity = _fleets[fleetId].quantity;
-        }
+    function getFleet(uint256 fleetId)
+        external
+        view
+        returns (
+            uint256 launchTime,
+            uint256 from,
+            uint256 quantity
+        )
+    {
+        launchTime = _fleets[fleetId].launchTime;
+        from = _fleets[fleetId].from;
+        quantity = _fleets[fleetId].quantity;
+    }
 
     // ////////////// EIP721 /////////////////// // TODO ?
 
@@ -203,7 +186,7 @@ contract OuterSpace is StakingWithInterest {
     mapping(uint256 => Fleet) _fleets;
     bytes32 immutable _genesis;
 
-    constructor(ERC20 stakingToken, bytes32 genesis) public StakingWithInterest(stakingToken) {
+    constructor(IERC20 stakingToken, bytes32 genesis) StakingWithInterest(stakingToken) {
         _genesis = genesis;
     }
 
@@ -216,13 +199,13 @@ contract OuterSpace is StakingWithInterest {
         uint256 quantity,
         bytes32 toHash
     ) internal {
-        (Planet storage planet, ) = _getPlanet(from);
+        (Planet storage planet, PlanetStats memory stats) = _getPlanet(from);
         require(owner == planet.owner, "not owner of the planet");
 
         uint256 currentnumSpaceships = _getCurrentNumSpaceships(
             planet.numSpaceships,
             planet.lastUpdated,
-            planet.productionRate
+            stats.production
         );
         require(currentnumSpaceships >= quantity, "not enough spaceships");
         uint256 numSpaceships = currentnumSpaceships - quantity;
@@ -263,7 +246,7 @@ contract OuterSpace is StakingWithInterest {
         (, PlanetStats memory fromStats) = _getPlanet(from);
         (Planet storage toPlanet, PlanetStats memory toStats) = _getPlanet(to);
         // TODO : reenable
-        // _checkDistance(distance, from, fromStats, to, toStats);
+        // _checkDistance(distance, from, to);
         // _checkTime(distance, fromStats, fleet);
 
         if (toPlanet.owner == attacker) {
@@ -278,14 +261,12 @@ contract OuterSpace is StakingWithInterest {
     function _checkDistance(
         uint256 distance,
         uint256 from,
-        PlanetStats memory fromStats,
-        uint256 to,
-        PlanetStats memory toStats
+        uint256 to
     ) internal pure {
         // check input instead of compute sqrt
         uint256 distanceSquared = uint256(
-            (int128(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) - int128(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) ** 2 +
-            (int128(to >> 128)  - int128(from >> 128))**2
+            (int128(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) - int128(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF))**2 +
+                (int128(to >> 128) - int128(from >> 128))**2
         );
         require(distance**2 <= distanceSquared && distanceSquared < (distance + 1)**2, "wrong distance");
     }
@@ -317,7 +298,7 @@ contract OuterSpace is StakingWithInterest {
 
         return
             PlanetStats({
-                maxStake: _genesis.r_normalFrom(
+                stake: _genesis.r_normalFrom(
                     location,
                     4,
                     0x0001000200030004000500070009000A000A000C000F00140019001E00320064
@@ -351,9 +332,9 @@ contract OuterSpace is StakingWithInterest {
     function _getCurrentNumSpaceships(
         uint256 numSpaceships,
         uint256 lastUpdated,
-        uint256 productionRate
+        uint256 production
     ) internal view returns (uint256) {
-        return numSpaceships + ((block.timestamp - lastUpdated) * productionRate) / 1 hours;
+        return numSpaceships + ((block.timestamp - lastUpdated) * production) / 1 hours;
     }
 
     function _computeFight(
@@ -390,7 +371,7 @@ contract OuterSpace is StakingWithInterest {
         uint256 numDefense = _getCurrentNumSpaceships(
             _planets[to].numSpaceships,
             _planets[to].lastUpdated,
-            _planets[to].productionRate
+            toPlanetStats.production
         );
 
         (uint256 attackerLoss, uint256 defenderLoss) = _computeFight(

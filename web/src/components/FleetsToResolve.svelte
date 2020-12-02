@@ -39,5 +39,7 @@
 <!-- TODO fliter on to-->
 
 {#each fleets as fleet}
-  <Button on:click={() => resolve(fleet.id)}>resolve</Button>
+  <Button label="Resolve Fleet" on:click={() => resolve(fleet.id)}>
+    resolve
+  </Button>
 {/each}

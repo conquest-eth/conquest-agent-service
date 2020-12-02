@@ -1,3 +1,4 @@
+import {BigNumber} from '@ethersproject/bignumber';
 import {locationToXY} from 'planet-wars-common';
 // import {derived, Readable} from 'svelte/store';
 // import {QueryState, queryStore} from '../_graphql';
@@ -7,11 +8,9 @@ import {queryStore} from '../_graphql';
 type AcquiredPlanet = {
   id: string;
   owner: string;
-  lastOwnershipTime: string;
-  numSpaceships: number;
-  lastUpdated: string;
-  productionRate: number;
-  stake: number;
+  lastOwnershipTime: BigNumber;
+  numSpaceships: BigNumber;
+  lastUpdated: BigNumber;
 };
 type QueryRawData = {acquiredPlanets: AcquiredPlanet[]};
 type AcquiredPlanets = Record<string, AcquiredPlanet>;
@@ -25,8 +24,6 @@ const query = queryStore<AcquiredPlanets>(
       lastOwnershipTime
       numSpaceships
       lastUpdated
-      productionRate
-      stake
     }
   }
 `,
@@ -35,7 +32,13 @@ const query = queryStore<AcquiredPlanets>(
       const planets = {};
       for (const planet of v.acquiredPlanets) {
         const {x, y} = locationToXY(planet.id);
-        planets[`${x},${y}`] = planet;
+        planets[`${x},${y}`] = {
+          id: planet.id,
+          owner: planet.owner,
+          lastOwnershipTime: BigNumber.from(planet.lastOwnershipTime),
+          numSpaceships: BigNumber.from(planet.numSpaceships),
+          lastUpdated: BigNumber.from(planet.lastUpdated),
+        };
       }
       return planets;
     },

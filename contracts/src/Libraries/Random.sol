@@ -1,4 +1,6 @@
-pragma solidity >0.6.0;
+// SPDX-License-Identifier: AGPL-1.0
+
+pragma solidity 0.7.5;
 
 import "./Math.sol";
 

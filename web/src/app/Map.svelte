@@ -3,19 +3,11 @@
   import Map from '../map';
   import {Camera} from '../map/camera';
   import {Renderer} from '../map/renderer';
-  import {PrivateSpaceImpl, SpaceInfoImpl, SpaceImpl} from 'planet-wars-common';
   import {RenderStateImpl} from '../map/RenderStateImpl';
-  import {StateAdapterFromTheGraph} from './StateAdapterFromTheGraph';
-  import contractsInfo from '../contracts.json';
-  import privateAccount from '../stores/privateAccount';
+  import {privateSpace} from './mapState';
 
   let canvas;
   onMount(() => {
-    const spaceInfo = new SpaceInfoImpl(
-      contractsInfo.contracts.OuterSpace.linkedData
-    );
-    const space = new SpaceImpl(spaceInfo, new StateAdapterFromTheGraph());
-    const privateSpace = new PrivateSpaceImpl(space, privateAccount);
     const renderState = new RenderStateImpl(privateSpace);
     const renderer = new Renderer(renderState);
     const camera = new Camera(renderState);

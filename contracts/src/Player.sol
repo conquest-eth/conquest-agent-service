@@ -1,11 +1,13 @@
-pragma solidity 0.6.5;
+// SPDX-License-Identifier: AGPL-1.0
 
-import "./Interfaces/ERC20.sol";
+pragma solidity 0.7.5;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // contract PlayerVault {
 //     address _controller;
-//     ERC20 immutable _payToken;
-//     constructor(ERC20 payToken) {
+//     IERC20 immutable _payToken;
+//     constructor(IERC20 payToken) {
 //         _payToken = payToken;
 //     }
 
@@ -22,7 +24,7 @@ interface PaymentDestination {
     function tokensDeposited(
         address farget,
         address from,
-        ERC20 token,
+        IERC20 token,
         uint256 amount
     ) external;
 }
@@ -41,7 +43,7 @@ contract PaymentGateway {
 
     function tokensDeposited(
         address target,
-        ERC20 token,
+        IERC20 token,
         uint256 amount
     ) external {
         token.transfer(address(_destination), amount);
@@ -66,13 +68,13 @@ contract Player is PaymentDestination {
         uint256 amount
     );
 
-    ERC20 immutable _payToken;
+    IERC20 immutable _payToken;
     PaymentGateway _paymentGateway;
-    mapping(address => mapping(ERC20 => uint256)) _tokenBalances;
+    mapping(address => mapping(IERC20 => uint256)) _tokenBalances;
     mapping(address => uint256) _ethBalances;
     mapping(address => address) _delegates;
 
-    constructor(ERC20 payToken, PaymentGateway paymentGateway) public {
+    constructor(IERC20 payToken, PaymentGateway paymentGateway) {
         _payToken = payToken;
         _paymentGateway = paymentGateway;
         paymentGateway.setDestination(this);
@@ -86,7 +88,7 @@ contract Player is PaymentDestination {
     function tokensDeposited(
         address target,
         address from,
-        ERC20 token,
+        IERC20 token,
         uint256 amount
     ) external override {
         require(msg.sender == address(_paymentGateway), "can only receive tokens from payment gateway");
@@ -103,7 +105,7 @@ contract Player is PaymentDestination {
     }
 
     function withdrawToken(
-        ERC20 token,
+        IERC20 token,
         uint256 amount,
         address payable dest
     ) external {
@@ -145,7 +147,7 @@ contract Player is PaymentDestination {
         }
     }
 
-    function _msgSender() internal view returns (address payable signer) {
+    function _msgSender() internal pure returns (address payable signer) {
         bytes memory data = msg.data;
         uint256 length = msg.data.length;
         assembly {

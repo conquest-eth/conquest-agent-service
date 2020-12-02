@@ -1,11 +1,13 @@
-pragma solidity 0.6.5;
+// SPDX-License-Identifier: AGPL-1.0
 
-import "./Interfaces/ERC20.sol";
+pragma solidity 0.7.5;
+
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract StakingWithInterest {
-    ERC20 immutable _stakingToken;
+    IERC20 immutable _stakingToken;
 
-    constructor(ERC20 stakingToken) internal {
+    constructor(IERC20 stakingToken) {
         _stakingToken = stakingToken;
     }
 

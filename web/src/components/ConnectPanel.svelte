@@ -15,8 +15,8 @@
 {#if $wallet.address && $privateAccount.step === 'READY'}
   <span class="flex">
     <Blockie class="w-10 h-10" address={$wallet.address} />
-    <Button on:click={disconnect}>Disconnect</Button>
+    <Button label="Disconnect" on:click={disconnect}>Disconnect</Button>
   </span>
 {:else}
-  <Button on:click={connect}>Connect</Button>
+  <Button label="Connect" on:click={connect}>Connect</Button>
 {/if}

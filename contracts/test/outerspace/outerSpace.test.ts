@@ -38,9 +38,6 @@ describe('OuterSpace', function () {
     );
   });
 
-  // TODO cannot exceed maxStake at first
-  // TODO cannot exceed maxSTake after adding more
-
   it("user can attack other player's planet", async function () {
     const {
       players,

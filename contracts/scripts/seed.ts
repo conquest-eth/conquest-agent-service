@@ -13,19 +13,16 @@ async function main() {
   const spaceInfo = new SpaceInfoImpl(OuterSpaceDeployment.linkedData);
 
   let planetPointer;
-  const stableTokenUnit = BigNumber.from('1000000000000000000');
   for (let i = 0; i < 4; i++) {
     const outerSpaceContract = await ethers.getContract(
       'OuterSpace',
       players[i]
     );
     planetPointer = spaceInfo.findNextPlanet(planetPointer);
+
+    // TODO approve // (TODO using permit)
     await waitFor(
-      outerSpaceContract.stake(
-        players[i],
-        planetPointer.data.location.id,
-        stableTokenUnit
-      )
+      outerSpaceContract.stake(players[i], planetPointer.data.location.id)
     );
     console.log(
       `staked: ${planetPointer.data.location.id}, (${planetPointer.data.location.x},${planetPointer.data.location.y})`
