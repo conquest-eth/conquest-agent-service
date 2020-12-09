@@ -2,8 +2,13 @@ import type {OwnFleet, Planet, PrivateSpace} from 'planet-wars-common';
 import type {RenderState} from '../types';
 
 export class RenderStateImpl implements RenderState {
+  public resolveWindow: number;
+  public timePerDistance: number;
+
   constructor(private space: PrivateSpace) {
     // TODO this.space.on("<event>", ...)
+    this.resolveWindow = space.resolveWindow;
+    this.timePerDistance = space.timePerDistance;
   }
 
   private _counter = 0;
@@ -15,6 +20,7 @@ export class RenderStateImpl implements RenderState {
   get player(): string {
     return this.space.player;
   }
+
   getOwnFleets(): OwnFleet[] {
     return this.space.getOwnFleets();
   }

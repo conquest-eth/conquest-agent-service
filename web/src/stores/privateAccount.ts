@@ -84,8 +84,8 @@ type Contracts = {
 
 function start(walletAddress, chainId): void {
   const walletDiff =
-  !$data.walletAddress ||
-  walletAddress.toLowerCase() !== $data.walletAddress.toLowerCase();
+    !$data.walletAddress ||
+    walletAddress.toLowerCase() !== $data.walletAddress.toLowerCase();
   const chainDiff = !$data.chainId || chainId !== $data.chainId;
 
   if (chainId && walletAddress) {
@@ -109,7 +109,11 @@ function start(walletAddress, chainId): void {
       }
     }
     if (walletDiff || chainDiff) {
-      _loadData($data.walletAddress, $data.chainId);
+      console.log({walletDiff, chainDiff});
+      if (walletData[$data.walletAddress.toLowerCase()]) {
+        console.log('loading data');
+        _loadData($data.walletAddress, $data.chainId);
+      }
     }
   } else {
     _set({walletAddress, chainId});
@@ -127,7 +131,7 @@ chain.subscribe(($chain) => {
     }
     stopMonitoring();
   }
-})
+});
 
 wallet.subscribe(($wallet) => {
   if ($wallet.address) {
@@ -141,8 +145,6 @@ wallet.subscribe(($wallet) => {
   }
 });
 
-
-
 function stopMonitoring() {
   if (monitorProcess !== undefined) {
     clearInterval(monitorProcess);
@@ -153,31 +155,38 @@ function stopMonitoring() {
 function startMonitoring(address: string, chainId: string) {
   stopMonitoring();
   listenForFleets(address, chainId);
-  monitorProcess = setInterval(
-    () => listenForFleets(address, chainId), 1000
-  ); // TODO time config
+  monitorProcess = setInterval(() => listenForFleets(address, chainId), 1000); // TODO time config
 }
 
-async function listenForFleets(address: string, chainId: string): Promise<void> {
+async function listenForFleets(
+  address: string,
+  chainId: string
+): Promise<void> {
   if (!$data.data) {
     return;
   }
   const latestBlockNumber = await wallet.provider.getBlockNumber();
+  if (!$data.data) {
+    return;
+  }
   const fleetIds = Object.keys($data.data.fleets);
   for (const fleetId of fleetIds) {
     // if ($data.data.fleets[fleetId].launchTime) // TODO filter out fleet that are not yet ready to be resolved
-    let fleetData
+    let fleetData;
     try {
-      fleetData = await wallet.contracts.OuterSpace.callStatic.getFleet(fleetId, {blockTag: Math.max(0, latestBlockNumber - finality)})
+      fleetData = await wallet.contracts.OuterSpace.callStatic.getFleet(
+        fleetId,
+        {blockTag: Math.max(0, latestBlockNumber - finality)}
+      );
     } catch (e) {
       //
     }
-    if ($data.walletAddress.toLowerCase() !== address.toLowerCase() || $data.chainId !== chainId) {
+    if (
+      !$data.walletAddress ||
+      $data.walletAddress.toLowerCase() !== address.toLowerCase() ||
+      $data.chainId !== chainId
+    ) {
       return;
-    }
-
-    if (fleetData[0].gt(0) && fleetData[2].eq(0)) {
-      deleteFleet(fleetId);
     }
   }
 }

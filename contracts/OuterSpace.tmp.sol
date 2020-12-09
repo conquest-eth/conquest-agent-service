@@ -20,6 +20,16 @@ contract OuterSpace {
     uint256 internal immutable _timePerDistance;
     uint256 internal immutable _exitDuration;
 
+    mapping(address => uint256) internal _stakeReadyToBeWithdrawn;
+
+    // struct Exit {
+    //     uint256 timestamp;
+    //     uint256 stake;
+    // }
+    // TODO compress
+    // timestamp 64
+    // stake uint16
+
     struct PlanetStats {
         int8 subX;
         int8 subY;
@@ -32,15 +42,16 @@ contract OuterSpace {
     }
     struct Planet {
         // PlanetStats stats; // generated on demand from hash
+        bool active;
         address owner;
-        uint256 lastOwnershipTime; // can be used to check if the production is active : affect numSpaceship creation // 0 => inactive. what about natives ? : do they come back one owner disapear ? or do we keep owner as is (assuming inactive and numSpaceShips=0] means owner is not really owner at all)
+        uint256 exitTime;
         uint256 numSpaceships;
-        uint256 lastUpdated;
+        uint256 lastUpdated; // used as native-destruction indicator
         // uint256[] lastFleets; // TODO deal with front running
     }
     // TODO compress:
     // owner: 160
-    // lastOwnershipTime: 32 // could use 15 sec precision // could start from contract deployment time
+    // exitTime: 32 // could use 15 sec precision // could start from contract deployment time
     // numSpaceships: 32 // could it be lower ? : we need to cap it on every update
     // lastUpdated: 32 //could start from contract deployment time
 
@@ -101,7 +112,29 @@ contract OuterSpace {
     function stake(address forPlayer, uint256 location) external payable {
         // address sender = _msgSender();
         (Planet storage planet, PlanetStats memory stats) = _getPlanet(location);
-        address owner = planet.owner;
+
+        uint256 defense;
+        if (planet.lastUpdated == 0) {
+            defense = stats.natives;
+        } else {
+            uint256 exitTime = planet.exitTime;
+            if (exitTime != 0) {
+                require(block.timestamp > planet.exitTime + _exitDuration, "STILL_EXITING");
+                // TODO _actualiseExit
+            } else {
+                require(!planet.active, "STILL_ACTIVE");
+            }
+            defense = planet.numSpaceships;
+            require(defense <= 3500, "defense spaceship > 3500"); // you can first attack the planet
+        }
+        planet.active = true;
+        planet.owner = forPlayer;
+        planet.exitTime = 0;
+        uint256 currentNumSpaceShips;
+        (uint256 attackerLoss, ) = _computeFight(3600, defense, 10000, 10000); // attacker alwasy win as defense (and stats.native) is restricted to 3500
+        currentNumSpaceShips = 3600 - attackerLoss;
+        planet.numSpaceships = currentNumSpaceShips;
+        planet.lastUpdated = block.timestamp;
 
         if (msg.value > 0) {
             // TODO in playerVault ?
@@ -114,27 +147,44 @@ contract OuterSpace {
             // TODO _stakingToken.transferFrom(sender, address(this), stakeAmount);
         }
 
-        uint256 defense;
-        if (owner == address(0)) {
-            defense = stats.natives;
-        } else {
-            require(planet.lastOwnershipTime == 0, "actively owned");
-            defense = planet.numSpaceships;
-            require(defense <= 3500, "spaceship > 3500");
-        }
-        planet.owner = forPlayer;
-        planet.lastOwnershipTime = block.timestamp;
-        uint256 currentNumSpaceShips;
-        (uint256 attackerLoss, ) = _computeFight(3600, defense, 10000, 10000); // attacker alwasy win as defense (and stats.native) is restricted to 3500
-        currentNumSpaceShips = 3600 - attackerLoss;
-        planet.numSpaceships = currentNumSpaceShips;
-        planet.lastUpdated = block.timestamp;
-
         emit PlanetStake(forPlayer, location, currentNumSpaceShips);
     }
 
-    function withdraw(uint256 location) external {
-        // ensure delay hass passed
+    function exitFor(address owner, uint256 location) external {
+        (Planet storage planet, ) = _getPlanet(location);
+        require(owner == planet.owner, "NOT_OWNER");
+        require(planet.exitTime == 0, "EXITING_ALREADY"); // if you own the planet again, you ll need to first withdraw
+        planet.exitTime = block.timestamp;
+    }
+
+    function _actualiseExit(uint256 location) internal {
+        (Planet storage planet, PlanetStats memory stats) = _getPlanet(location);
+        if (planet.exitTime > 0 && block.timestamp > planet.exitTime + _exitDuration) {
+            address owner = planet.owner;
+            planet.exitTime = 0;
+            planet.active = false;
+            planet.owner = address(0); // This is fine as long as _actualiseExit is called on every move
+            planet.numSpaceships = 0; // This is fine as long as _actualiseExit is called on every move
+            planet.lastUpdated = block.timestamp; // This is fine as long as _actualiseExit is called on every move
+            _stakeReadyToBeWithdrawn[owner] += stats.stake * STAKE_MULTIPLIER;
+        }
+    }
+
+    // TODO optimize with minmal touch of _stakeReadyToBeWithdrawn (so it can happen in memory only, _stakeReadyToBeWithdrawn could be zero and remaim zero)
+    function fetchAndWithdrawFor(address owner, uint256[] calldata locations) external {
+        for (uint256 i = 0; i < locations.length; i++) {
+            _actualiseExit(locations[i]);
+        }
+        withdrawFor(owner);
+    }
+
+    function withdrawFor(address owner) public {
+        uint256 amount = _stakeReadyToBeWithdrawn[owner];
+        _stakeReadyToBeWithdrawn[owner] = 0;
+        // TODO transfer amount;
+        // - if StakingToken own by contract is enouygh, take it
+        // - else extract from interest bearing token
+        // and then transfer
     }
 
     function resolveFleet(
@@ -423,8 +473,9 @@ contract OuterSpace {
             _planets[to].numSpaceships = numSpaceships;
             emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, false, numSpaceships);
         } else if (defenderLoss == numDefense) {
+            // TODO exitTime and stake
             _planets[to].owner = attacker;
-            _planets[to].lastOwnershipTime = block.timestamp;
+            _planets[to].exitTime = 0;
             uint256 numSpaceships = numAttack - attackerLoss;
             _planets[to].numSpaceships = numSpaceships;
             emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);

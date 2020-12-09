@@ -544,10 +544,16 @@ export class Renderer {
       const gToX = toPlanet.location.globalX;
       const gToY = toPlanet.location.globalY;
 
-      const fGx1 = gFromX * 2 * 48;
-      const fGy1 = gFromY * 2 * 48;
-      const fGx2 = gToX * 2 * 48;
-      const fGy2 = gToY * 2 * 48;
+      const destX = gToX * 2 * 48;
+      const destY = gToY * 2 * 48;
+
+      const dirX = (gToX - gFromX) / Math.abs(gToX - gFromX);
+      const dirY = (gToY - gFromY) / Math.abs(gToY - gFromY);
+      const fGx1 = gFromX * 2 * 48 + dirX * 48;
+      const fGy1 = gFromY * 2 * 48 + dirY * 48;
+      const fGx2 = destX - dirX * 48;
+      const fGy2 = destY - dirY * 48;
+
       const segment = line2rect(
         fGx1,
         fGy1,
@@ -568,28 +574,65 @@ export class Renderer {
         ctx.stroke();
       }
 
-      const speed = 10000; // TODO fleet.speed / or planet(fleet.from).stats.speed
+      const speed = fromPlanet.stats.speed;
       const fullDistance = Math.floor(
         Math.sqrt(Math.pow(gToX - gFromX, 2) + Math.pow(gToY - gFromY, 2))
       );
-      const fullTime = fullDistance * ((3600 * 10000) / speed);
-      const timePassed = Math.floor(Date.now() / 1000) - fleet.launchTime;
+      const fullTime =
+        fullDistance *
+        ((this.renderState.timePerDistance * 10000) / speed) *
+        1000;
+      const timePassed = Date.now() - fleet.launchTime * 1000;
       let ratio = timePassed / fullTime;
+      let fx;
+      let fy;
+      const timeLeft = fullTime - timePassed;
+      let facingAngle;
       if (timePassed > fullTime) {
-        // TODO disapear
+        const angle = (timePassed - fullTime) / 2000;
+        const orbit = 48 * 2;
+        fx = destX + Math.cos(angle) * orbit;
+        fy = destY + Math.sin(angle) * orbit;
+        facingAngle = angle - Math.PI;
         ratio = 1;
-      }
+      } else {
+        // const distance = (timePassed * speed) / (10000 * 3600);
+        fx = fGx1 + (fGx2 - fGx1) * ratio;
+        fy = fGy1 + (fGy2 - fGy1) * ratio;
+        // if inside rect
+        // ctx.beginPath();
+        // ctx.moveTo( bottom-left corner );
+        // ctx.lineTo( bottom-right corner );
+        // ctx.closePath(); // automatically moves back to bottom left corner
+        // ctx.fill();
 
-      // const distance = (timePassed * speed) / (10000 * 3600);
-      const fx = fGx1 + (fGx2 - fGx1) * ratio;
-      const fy = fGy1 + (fGy2 - fGy1) * ratio;
-      // if inside rect
-      // ctx.beginPath();
-      // ctx.moveTo( bottom-left corner );
-      // ctx.lineTo( bottom-right corner );
-      // ctx.closePath(); // automatically moves back to bottom left corner
-      // ctx.fill();
-      ctx.fillRect(fx - 50, fy - 50, 100, 100);
+        const dx = fx - fGx1;
+        const dy = fy - fGy1;
+        facingAngle = Math.atan2(dy, dx);
+
+        if (camera.zoom > 0.25) {
+          ctx.font = '48px serif';
+          ctx.fillStyle = 'white';
+          ctx.fillText(`${Math.floor(timeLeft / 1000)}s`, fx - 24, fy - 80);
+        }
+      }
+      ctx.fillStyle = 'green';
+      // ctx.fillRect(fx - 50, fy - 50, 100, 100);
+      const headlen = 64; // length of head in pixels
+
+      ctx.beginPath();
+      ctx.moveTo(fx, fy);
+      ctx.lineTo(
+        fx - headlen * Math.cos(facingAngle - Math.PI / 6),
+        fy - headlen * Math.sin(facingAngle - Math.PI / 6)
+      );
+      ctx.lineTo(
+        fx - headlen * Math.cos(facingAngle + Math.PI / 6),
+        fy - headlen * Math.sin(facingAngle + Math.PI / 6)
+      );
+      ctx.lineTo(fx, fy);
+      ctx.closePath();
+      ctx.fill();
     }
 
     ctx.beginPath();
