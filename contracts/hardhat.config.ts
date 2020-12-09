@@ -7,12 +7,12 @@ import {node_url, accounts} from './utils/network';
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.7.5',
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 2000,
-      },
-    },
+    // settings: {
+    //   optimizer: {
+    //     enabled: true,
+    //     runs: 2000,
+    //   },
+    // },
   },
   namedAccounts: {
     deployer: 0,

@@ -11,11 +11,7 @@ describe('OuterSpace', function () {
     const {players, spaceInfo} = await setupOuterSpace();
     const pointer = spaceInfo.findNextPlanet();
     await waitFor(
-      players[0].OuterSpace.stake(
-        players[0].address,
-        pointer.data.location.id,
-        stableTokenUnit
-      )
+      players[0].OuterSpace.stake(players[0].address, pointer.data.location.id)
     );
   });
 
@@ -23,18 +19,10 @@ describe('OuterSpace', function () {
     const {players, spaceInfo} = await setupOuterSpace();
     const pointer = spaceInfo.findNextPlanet();
     await waitFor(
-      players[0].OuterSpace.stake(
-        players[0].address,
-        pointer.data.location.id,
-        stableTokenUnit
-      )
+      players[0].OuterSpace.stake(players[0].address, pointer.data.location.id)
     );
     await expectRevert(
-      players[1].OuterSpace.stake(
-        players[1].address,
-        pointer.data.location.id,
-        stableTokenUnit
-      )
+      players[1].OuterSpace.stake(players[1].address, pointer.data.location.id)
     );
   });
 
@@ -45,6 +33,7 @@ describe('OuterSpace', function () {
       outerSpaceContract,
       increaseTime,
       getTime,
+      provider,
     } = await setupOuterSpace();
     const p0 = spaceInfo.findNextPlanet();
     let planet0 = await fetchPlanetState(outerSpaceContract, p0.data);
@@ -53,25 +42,20 @@ describe('OuterSpace', function () {
       spaceInfo.findNextPlanet(p0).data
     );
     await waitFor(
-      players[0].OuterSpace.stake(
-        players[0].address,
-        planet0.location.id,
-        stableTokenUnit
-      )
+      players[0].OuterSpace.stake(players[0].address, planet0.location.id)
     );
     await waitFor(
-      players[1].OuterSpace.stake(
-        players[1].address,
-        planet1.location.id,
-        stableTokenUnit
-      )
+      players[1].OuterSpace.stake(players[1].address, planet1.location.id)
     );
     planet0 = await fetchPlanetState(outerSpaceContract, planet0);
     planet1 = await fetchPlanetState(outerSpaceContract, planet1);
 
+    const block = await provider.getBlock('latest');
+    const quantity = planet1.getNumSpaceships(block.timestamp);
+    console.log({quantity, blockTime: block.timestamp});
     const sent = await sendInSecret(players[1], {
       from: planet1,
-      quantity: planet1.getNumSpaceships(getTime()),
+      quantity,
       to: planet0,
     });
     if (!sent) {
@@ -84,7 +68,7 @@ describe('OuterSpace', function () {
     );
   });
 
-  it('planet production maches estimate', async function () {
+  it('planet production matches estimates', async function () {
     const {
       players,
       spaceInfo,
@@ -97,18 +81,14 @@ describe('OuterSpace', function () {
       spaceInfo.findNextPlanet().data
     );
     await waitFor(
-      players[0].OuterSpace.stake(
-        players[0].address,
-        planet.location.id,
-        stableTokenUnit
-      )
+      players[0].OuterSpace.stake(players[0].address, planet.location.id)
     );
     planet = await fetchPlanetState(outerSpaceContract, planet);
     const fistTime = (await ethers.provider.getBlock('latest')).timestamp;
     console.log({fistTime});
     await sendInSecret(players[0], {
       from: planet,
-      quantity: planet.getNumSpaceships(getTime()),
+      quantity: planet.getNumSpaceships(fistTime),
       to: planet,
     });
     await increaseTime(1000);
@@ -129,7 +109,7 @@ describe('OuterSpace', function () {
     await expectRevert(
       sendInSecret(players[0], {
         from: planet,
-        quantity: quantityAgain + 1,
+        quantity: quantityAgain + 2,
         to: planet,
       })
     );

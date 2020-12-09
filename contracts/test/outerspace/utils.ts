@@ -7,6 +7,7 @@ import {keccak256} from '@ethersproject/solidity';
 import {SpaceInfoImpl} from 'planet-wars-common';
 import type {PlanetInfo} from 'planet-wars-common';
 import {ContractReceipt} from 'ethers';
+import {Provider} from '@ethersproject/providers';
 
 type AnyContract = any; // TODO ?
 type User = {address: string; [contractName: string]: AnyContract};
@@ -28,6 +29,7 @@ export async function setupOuterSpace(): Promise<{
   outerSpaceContract: AnyContract;
   spaceInfo: SpaceInfoImpl;
   players: User[];
+  provider: Provider;
 }> {
   const players = await getUnnamedAccounts();
   await deployments.fixture();
@@ -49,6 +51,7 @@ export async function setupOuterSpace(): Promise<{
     outerSpaceContract: (await ethers.getContract('OuterSpace')) as AnyContract,
     spaceInfo: new SpaceInfoImpl(OuterSpaceDeployment.linkedData),
     players: playersAsContracts,
+    provider: ethers.provider,
   };
 }
 
@@ -65,7 +68,7 @@ export async function sendInSecret(
   const secret = Wallet.createRandom().privateKey;
   const toHash = keccak256(['bytes32', 'uint256'], [secret, to.location.id]);
   const receipt = await waitFor<ContractReceipt>(
-    player.OuterSpace.send(from.location.id, quantity, toHash)
+    player.OuterSpace.send(1, from.location.id, quantity, toHash) // TODO subId
   );
   const event = receipt.events?.find((e: any) => e.event === 'FleetSent'); // TODO any
   if (!event || !event.args || !event.args[2]) {
@@ -131,12 +134,20 @@ export async function fetchPlanetState(
     ...planet,
     state,
     getNumSpaceships(time: number) {
-      return (
-        state.numSpaceships +
-        Math.floor(
+      // console.log({state, stats: planet.stats, time});
+      let newSpaceships = 0;
+      if (time > state.lastUpdated) {
+        console.log({
+          time,
+          lastUpdated: state.lastUpdated,
+          numSpaceships: state.numSpaceships,
+          production: planet.stats.production,
+        });
+        newSpaceships = Math.floor(
           ((time - state.lastUpdated) * planet.stats.production) / 3600
-        )
-      );
+        );
+      }
+      return state.numSpaceships + newSpaceships;
     },
   };
 }
