@@ -317,6 +317,19 @@ contract OuterSpace {
         uint256 fleetId = (uint256(owner) << 96) | subId;
         _fleets[fleetId] = Fleet({launchTime: launchTime, from: from, toHash: toHash, quantity: quantity});
 
+        /* TODO
+        struct Fleet {
+            address owner;
+            uint32 launchTime;
+            uint32 quantity; // we know how many but not where
+        }
+        fleetId = keccak256(from,toHash); // remove the need for storage : id encode both from and toHash
+        _fleets[fleetId] = Fleet({owner: owner, launchTime: launchTime, quantity: quantity});
+
+        // verifcation
+        require(keccak256(abi.encodePacked(from, keccak256(abi.encodePacked(secret, to)))) == fleetId, "invalid 'from',  'to' or 'secret'");
+        */
+
         // require(planet.lastFleets.length < 10, "too many fleet send at around the same time");
         // uint256 numPastFleets = planet.lastFleets.length;
         // for (uint256 i = 0; i < num; i++) {
@@ -356,7 +369,7 @@ contract OuterSpace {
         } else {
             _performAttack(attacker, fromStats, to, toStats, fleetId, quantity);
         }
-        fleet.quantity = 0;
+        fleet.quantity = 0; // TODO reset all to get gas refund?
     }
 
     function _checkDistance(

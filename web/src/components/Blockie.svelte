@@ -105,13 +105,11 @@
   }
 
   function update() {
-    console.log('UPDATE');
     if (
       lastOptions &&
       lastOptions.address === address &&
       lastOptions.scale === scale
     ) {
-      console.log(`same address: ${lastOptions.address} == ${address}`);
       return;
     }
     lastOptions = {
