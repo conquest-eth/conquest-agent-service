@@ -10,20 +10,14 @@ describe('OuterSpace', function () {
   it('user can acquire virgin planet', async function () {
     const {players, spaceInfo} = await setupOuterSpace();
     const pointer = spaceInfo.findNextPlanet();
-    await waitFor(
-      players[0].OuterSpace.stake(players[0].address, pointer.data.location.id)
-    );
+    await waitFor(players[0].OuterSpace.acquire(pointer.data.location.id));
   });
 
   it('user cannot acquire planet already onwed by another player', async function () {
     const {players, spaceInfo} = await setupOuterSpace();
     const pointer = spaceInfo.findNextPlanet();
-    await waitFor(
-      players[0].OuterSpace.stake(players[0].address, pointer.data.location.id)
-    );
-    await expectRevert(
-      players[1].OuterSpace.stake(players[1].address, pointer.data.location.id)
-    );
+    await waitFor(players[0].OuterSpace.acquire(pointer.data.location.id));
+    await expectRevert(players[1].OuterSpace.acquire(pointer.data.location.id));
   });
 
   it("user can attack other player's planet", async function () {
@@ -32,7 +26,6 @@ describe('OuterSpace', function () {
       spaceInfo,
       outerSpaceContract,
       increaseTime,
-      getTime,
       provider,
     } = await setupOuterSpace();
     const p0 = spaceInfo.findNextPlanet();
@@ -41,12 +34,8 @@ describe('OuterSpace', function () {
       outerSpaceContract,
       spaceInfo.findNextPlanet(p0).data
     );
-    await waitFor(
-      players[0].OuterSpace.stake(players[0].address, planet0.location.id)
-    );
-    await waitFor(
-      players[1].OuterSpace.stake(players[1].address, planet1.location.id)
-    );
+    await waitFor(players[0].OuterSpace.acquire(planet0.location.id));
+    await waitFor(players[1].OuterSpace.acquire(planet1.location.id));
     planet0 = await fetchPlanetState(outerSpaceContract, planet0);
     planet1 = await fetchPlanetState(outerSpaceContract, planet1);
 
@@ -80,9 +69,7 @@ describe('OuterSpace', function () {
       outerSpaceContract,
       spaceInfo.findNextPlanet().data
     );
-    await waitFor(
-      players[0].OuterSpace.stake(players[0].address, planet.location.id)
-    );
+    await waitFor(players[0].OuterSpace.acquire(planet.location.id));
     planet = await fetchPlanetState(outerSpaceContract, planet);
     const fistTime = (await ethers.provider.getBlock('latest')).timestamp;
     console.log({fistTime});

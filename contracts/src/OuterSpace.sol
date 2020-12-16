@@ -8,47 +8,34 @@ import "./Libraries/Random.sol";
 
 // import "hardhat/console.sol";
 
+// TODO transfer Planet ?
+// cons:
+// - allow a player to easily have multiple address hiding its true potential
+
 contract OuterSpace {
     using Random for bytes32;
 
     uint256 internal constant STAKE_MULTIPLIER = 5e18; // = 5 DAI min
     uint32 internal constant ACTIVE_MASK = 2**31;
 
-    mapping(address => mapping(address => bool)) internal _operators;
-    mapping(uint256 => Planet) internal _planets;
-    mapping(uint256 => Fleet) internal _fleets;
     bytes32 internal immutable _genesis;
     IERC20 internal immutable _stakingToken;
     uint256 internal immutable _resolveWindow;
     uint256 internal immutable _timePerDistance;
     uint256 internal immutable _exitDuration;
 
+    mapping(uint256 => Planet) internal _planets;
+    mapping(uint256 => Fleet) internal _fleets;
+
     mapping(address => uint256) internal _stakeReadyToBeWithdrawn;
 
-    struct PlanetStats {
-        int8 subX;
-        int8 subY;
-        uint16 stake;
-        uint16 production;
-        uint16 attack;
-        uint16 defense;
-        uint16 speed;
-        uint16 natives;
-    }
+    mapping(address => mapping(address => bool)) internal _operators;
+
     struct Planet {
-        // PlanetStats stats; // generated on demand from hash
         address owner;
         uint32 exitTime;
         uint32 numSpaceships; // uint31 + first bit => active
         uint32 lastUpdated; // also used as native-destruction indicator
-    }
-
-    struct ExternalPlanet {
-        address owner;
-        uint32 exitTime;
-        uint32 numSpaceships;
-        uint32 lastUpdated;
-        bool active;
     }
 
     struct Fleet {
@@ -58,6 +45,7 @@ contract OuterSpace {
         uint32 quantity; // we know how many but not where
     }
     // note : launchTime could be set in future when launching, like 30 min, 1h ? or any time ?
+    // TODO fleetId = keccak256(toHash,from), data = {owner, launchTime, quantity}
 
     event PlanetStake(address indexed acquirer, uint256 indexed location, uint32 numSpaceships);
     event FleetSent(
@@ -83,6 +71,10 @@ contract OuterSpace {
         uint32 newNumspaceships
     );
 
+    event PlanetExit(address indexed owner, uint256 indexed location);
+
+    event StakeToWithdraw(address indexed owner, uint256 newStake);
+
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 
     constructor(
@@ -102,38 +94,49 @@ contract OuterSpace {
         _exitDuration = exitDuration;
     }
 
-    // TODO stakeFromApproved()...
-    function stake(address forPlayer, uint256 location) external payable {
-        // address sender = _msgSender();
-        (Planet storage planet, PlanetStats memory stats) = _getPlanet(location);
+    function acquire(uint256 location) external payable {
+        address sender = msg.sender; // address sender = _msgSender(); // TODO MetaTransaction via Registry ? or via GSN ?
+        Planet storage planet = _getPlanet(location); // TODO use only stats needed to reduce keccak256 operations
+
+        uint16 production = _production(location);
+        address owner = planet.owner;
+        uint32 lastUpdated = planet.lastUpdated;
+        uint32 numSpaceshipsData = planet.numSpaceships;
+        uint32 exitTime = planet.exitTime;
 
         (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
-            planet.numSpaceships,
-            planet.lastUpdated,
-            stats.production
+            numSpaceshipsData,
+            lastUpdated,
+            production
         );
 
+        bool justExited;
         uint32 defense;
-        if (planet.lastUpdated == 0) {
-            defense = stats.natives;
+        if (lastUpdated == 0) {
+            uint16 natives = _natives(location);
+            defense = natives;
         } else {
-            uint32 exitTime = planet.exitTime;
             if (exitTime != 0) {
-                require(block.timestamp > planet.exitTime + _exitDuration, "STILL_EXITING");
-                // TODO _actualiseExit
+                require(_hasJustExited(exitTime), "STILL_EXITING");
+                justExited = true;
             } else {
                 require(!active, "STILL_ACTIVE");
+                defense = currentNumSpaceships;
+                require(defense <= 3500, "defense spaceship > 3500"); // you can first attack the planet
             }
-            defense = currentNumSpaceships;
-            require(defense <= 3500, "defense spaceship > 3500"); // you can first attack the planet
         }
-        planet.owner = forPlayer;
-        planet.exitTime = 0; // should not be needed : // TODO actualiseExit
+        if (justExited) {
+            currentNumSpaceships = 3600;
+            _setPlanetAfterExit(location, owner, planet, sender, currentNumSpaceships);
+        } else {
+            planet.owner = sender;
+            // planet.exitTime = 0; // should not be needed : // TODO actualiseExit
 
-        (uint32 attackerLoss, ) = _computeFight(3600, defense, 10000, 10000); // attacker alwasy win as defense (and stats.native) is restricted to 3500
-        currentNumSpaceships = 3600 - attackerLoss;
-        planet.numSpaceships = _setActiveNumSpaceships(true, currentNumSpaceships);
-        planet.lastUpdated = uint32(block.timestamp);
+            (uint32 attackerLoss, ) = _computeFight(3600, defense, 10000, 10000); // attacker alwasy win as defense (and stats.native) is restricted to 3500
+            currentNumSpaceships = 3600 - attackerLoss;
+            planet.numSpaceships = _setActiveNumSpaceships(true, currentNumSpaceships);
+            planet.lastUpdated = uint32(block.timestamp);
+        }
 
         if (msg.value > 0) {
             // TODO in playerVault ?
@@ -146,34 +149,25 @@ contract OuterSpace {
             // TODO _stakingToken.transferFrom(sender, address(this), stakeAmount);
         }
 
-        (bool newActive, uint32 newSpaceships) = _activeNumSpaceships(planet.numSpaceships);
-
-        emit PlanetStake(forPlayer, location, currentNumSpaceships);
+        emit PlanetStake(sender, location, currentNumSpaceships);
     }
 
     function exitFor(address owner, uint256 location) external {
-        (Planet storage planet, ) = _getPlanet(location);
+        Planet storage planet = _getPlanet(location);
         require(owner == planet.owner, "NOT_OWNER");
         require(planet.exitTime == 0, "EXITING_ALREADY"); // if you own the planet again, you ll need to first withdraw
         planet.exitTime = uint32(block.timestamp);
-    }
-
-    function _actualiseExit(uint256 location) internal {
-        (Planet storage planet, PlanetStats memory stats) = _getPlanet(location);
-        if (planet.exitTime > 0 && block.timestamp > planet.exitTime + _exitDuration) {
-            address owner = planet.owner;
-            planet.exitTime = 0;
-            planet.owner = address(0); // This is fine as long as _actualiseExit is called on every move
-            planet.numSpaceships = 0; // This is fine as long as _actualiseExit is called on every move
-            planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move
-            _stakeReadyToBeWithdrawn[owner] += stats.stake * STAKE_MULTIPLIER;
-        }
+        emit PlanetExit(owner, location);
     }
 
     // TODO optimize with minmal touch of _stakeReadyToBeWithdrawn (so it can happen in memory only, _stakeReadyToBeWithdrawn could be zero and remaim zero)
     function fetchAndWithdrawFor(address owner, uint256[] calldata locations) external {
         for (uint256 i = 0; i < locations.length; i++) {
-            _actualiseExit(locations[i]);
+            Planet storage planet = _getPlanet(locations[i]);
+            if (_hasJustExited(planet.exitTime)) {
+                require(owner == planet.owner, "NOT_OWNER");
+                _setPlanetAfterExit(locations[i], owner, planet, address(0), 0);
+            }
         }
         withdrawFor(owner);
     }
@@ -247,6 +241,42 @@ contract OuterSpace {
         quantity = _fleets[fleetId].quantity;
     }
 
+    function getGeneisHash() external view returns (bytes32) {
+        return _genesis;
+    }
+
+    struct PlanetStats {
+        int8 subX;
+        int8 subY;
+        uint16 stake;
+        uint16 production;
+        uint16 attack;
+        uint16 defense;
+        uint16 speed;
+        uint16 natives;
+    }
+
+    struct ExternalPlanet {
+        address owner;
+        uint32 exitTime;
+        uint32 numSpaceships;
+        uint32 lastUpdated;
+        bool active;
+    }
+
+    function getPlanet(uint256 location) external view returns (ExternalPlanet memory state, PlanetStats memory stats) {
+        Planet storage planet = _getPlanet(location);
+        (bool active, uint32 numSpaceships) = _activeNumSpaceships(planet.numSpaceships);
+        state = ExternalPlanet({
+            owner: planet.owner,
+            exitTime: planet.exitTime,
+            numSpaceships: numSpaceships,
+            lastUpdated: planet.lastUpdated,
+            active: active
+        });
+        stats = _getPlanetStats(location);
+    }
+
     // ////////////// EIP721 /////////////////// // TODO ?
 
     // function transfer() // TODO EIP-721 ?
@@ -257,34 +287,43 @@ contract OuterSpace {
         emit ApprovalForAll(sender, operator, approved);
     }
 
-    function getGeneisHash() external view returns (bytes32) {
-        return _genesis;
-    }
-
-    // TODO remove /////////////////// used to test gas cost of computing stats from reading from storage
-    // PlanetStats _test;
-    // function getPlanetStats(uint256 location) external returns (PlanetStats memory stats) {
-    //     // return _getPlanetStats(location);
-    //     return _test;
-    // }
-    ///////////////////////////////////
-
-    function getPlanet(uint256 location) external view returns (ExternalPlanet memory state, PlanetStats memory stats) {
-        (Planet storage planet, PlanetStats memory planetStats) = _getPlanet(location);
-        (bool active, uint32 numSpaceships) = _activeNumSpaceships(planet.numSpaceships);
-        state = ExternalPlanet({
-            owner: planet.owner,
-            exitTime: planet.exitTime,
-            numSpaceships: numSpaceships,
-            lastUpdated: planet.lastUpdated,
-            active: active
-        });
-        stats = planetStats;
-    }
-
     // ///////////////// INTERNALS ////////////////////
 
-    function _activeNumSpaceships(uint32 numSpaceshipsData) internal view returns (bool active, uint32 numSpaceships) {
+    // function _actualiseExit(uint256 location) internal {
+    //     Planet storage planet = _getPlanet(location);
+    //     if (planet.exitTime > 0 && block.timestamp > planet.exitTime + _exitDuration) {
+    //         uint16 stake = _stake(location);
+    //         address owner = planet.owner;
+    //         planet.exitTime = 0;
+    //         planet.owner = address(0); // This is fine as long as _actualiseExit is called on every move
+    //         planet.numSpaceships = 0; // This is fine as long as _actualiseExit is called on every move
+    //         planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move
+    //         _stakeReadyToBeWithdrawn[owner] += stake * STAKE_MULTIPLIER;
+    //     }
+    // }
+
+    function _hasJustExited(uint32 exitTime) internal view returns (bool) {
+        return exitTime > 0 && block.timestamp > exitTime + _exitDuration;
+    }
+
+    function _setPlanetAfterExit(
+        uint256 location,
+        address owner,
+        Planet storage planet,
+        address newOwner,
+        uint32 spaceshipsData
+    ) internal {
+        uint16 stake = _stake(location);
+        planet.exitTime = 0;
+        planet.owner = newOwner; // This is fine as long as _actualiseExit is called on every move
+        planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move
+        planet.numSpaceships = spaceshipsData;
+        uint256 newStake = _stakeReadyToBeWithdrawn[owner] + stake * STAKE_MULTIPLIER;
+        _stakeReadyToBeWithdrawn[owner] = newStake;
+        emit StakeToWithdraw(owner, newStake);
+    }
+
+    function _activeNumSpaceships(uint32 numSpaceshipsData) internal pure returns (bool active, uint32 numSpaceships) {
         active = (numSpaceshipsData & ACTIVE_MASK) == ACTIVE_MASK;
         numSpaceships = numSpaceshipsData % (ACTIVE_MASK);
     }
@@ -300,13 +339,18 @@ contract OuterSpace {
         uint32 quantity,
         bytes32 toHash
     ) internal {
-        (Planet storage planet, PlanetStats memory stats) = _getPlanet(from);
+        Planet storage planet = _getPlanet(from);
+
+        require(planet.exitTime == 0, "PLANET_EXIT"); // TODO never revert, update state and emit Error event ?
+
         require(owner == planet.owner, "not owner of the planet");
+
+        uint16 production = _production(from);
 
         (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
             planet.numSpaceships,
             planet.lastUpdated,
-            stats.production
+            production
         );
         require(currentNumSpaceships >= quantity, "not enough spaceships");
         uint32 launchTime = uint32(block.timestamp);
@@ -358,16 +402,19 @@ contract OuterSpace {
         uint256 from = fleet.from;
         uint32 quantity = fleet.quantity;
         require(quantity > 0, "no more");
-        (, PlanetStats memory fromStats) = _getPlanet(from);
-        (Planet storage toPlanet, PlanetStats memory toStats) = _getPlanet(to);
+
+        Planet storage toPlanet = _getPlanet(to);
+
+        uint16 production = _production(to);
+
         // TODO : reenable
         // _checkDistance(distance, from, fromStats, to, toStats);
         // _checkTime(distance, fromStats, fleet);
 
         if (toPlanet.owner == attacker) {
-            _performReinforcement(attacker, to, toPlanet, toStats, fleetId, quantity);
+            _performReinforcement(attacker, to, production, fleetId, quantity);
         } else {
-            _performAttack(attacker, fromStats, to, toStats, fleetId, quantity);
+            _performAttack(attacker, from, to, production, fleetId, quantity);
         }
         fleet.quantity = 0; // TODO reset all to get gas refund?
     }
@@ -399,48 +446,61 @@ contract OuterSpace {
         require(block.timestamp < reachTime + 2 hours, "too late, your spaceships are lost in space");
     }
 
-    function _getPlanet(uint256 location) internal view returns (Planet storage, PlanetStats memory) {
-        return (_planets[location], _getPlanetStats(location));
+    function _getPlanet(uint256 location) internal view returns (Planet storage) {
+        return _planets[location];
     }
 
+    // ------------------------- PLANET STATS -------------------------------
+    function _subLocation(uint256 location) internal view returns (int8 subX, int8 subY) {
+        subX = int8(1 - _genesis.r_u8(location, 2, 3));
+        subY = int8(1 - _genesis.r_u8(location, 3, 3));
+    }
+
+    function _stake(uint256 location) internal view returns (uint16) {
+        return _genesis.r_normalFrom(location, 4, 0x0001000200030004000500070009000A000A000C000F00140019001E00320064); //_genesis.r_u256_minMax(location, 3, 10**18, 1000**18),
+    }
+
+    function _production(uint256 location) internal view returns (uint16) {
+        return _genesis.r_normalFrom(location, 5, 0x0708083409600a8c0bb80ce40e100e100e100e101068151819c81e7823282ee0); // per hour
+    }
+
+    function _attack(uint256 location) internal view returns (uint16) {
+        return 4000 + _genesis.r_normal(location, 6) * 400; // 1/10,000
+    }
+
+    function _defense(uint256 location) internal view returns (uint16) {
+        return 4000 + _genesis.r_normal(location, 7) * 400; // 1/10,000
+    }
+
+    function _speed(uint256 location) internal view returns (uint16) {
+        return 4090 + _genesis.r_normal(location, 8) * 334; // 1/10,000
+    }
+
+    function _natives(uint256 location) internal view returns (uint16) {
+        return 2000 + _genesis.r_normal(location, 9) * 100;
+    }
+
+    function _exists(uint256 location) internal view returns (bool) {
+        return _genesis.r_u8(location, 1, 16) == 1;
+    }
+
+    // ---------------------------------------------------------------------
+
     function _getPlanetStats(uint256 location) internal view returns (PlanetStats memory) {
-        // depending on random algorithm might be cheaper to always execute random
-        // if we use uin16 for each field, it would be cheaper to read from storage
-        // int120 gx = int120(gridLocation & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
-        // int120 gy = int120(gridLocation >> 128);
+        require(_exists(location), "no planet in this location");
 
-        bool hasPlanet = _genesis.r_u8(location, 1, 16) == 1;
-        require(hasPlanet, "no planet in this location");
-
+        (int8 subX, int8 subY) = _subLocation(location);
         return
             PlanetStats({
-                subX: int8(1 - _genesis.r_u8(location, 2, 3)),
-                subY: int8(1 - _genesis.r_u8(location, 3, 3)),
-                stake: _genesis.r_normalFrom(
-                    location,
-                    4,
-                    0x0001000200030004000500070009000A000A000C000F00140019001E00320064
-                ), //_genesis.r_u256_minMax(location, 3, 10**18, 1000**18),
-                production: _genesis.r_normalFrom(
-                    location,
-                    5,
-                    0x0708083409600a8c0bb80ce40e100e100e100e101068151819c81e7823282ee0
-                ), // per hour
-                attack: 4000 + _genesis.r_normal(location, 6) * 400, // 1/10,000
-                defense: 4000 + _genesis.r_normal(location, 7) * 400, // 1/10,000
-                speed: 4090 + _genesis.r_normal(location, 8) * 334, // 1/10,000
-                natives: 2000 + _genesis.r_normal(location, 9) * 100
-                // maxCapacity ?
+                subX: subX,
+                subY: subY,
+                stake: _stake(location),
+                production: _production(location),
+                attack: _attack(location),
+                defense: _defense(location),
+                speed: _speed(location),
+                natives: _natives(location)
             });
-
-        // Planet storage planet = _planets[location];
-        // if (planet.exits) {
-        //     return planet;
-        // }
-        // // require(kec)
-        // // TODO check existence from hash
-        // _planets[location] = Planet();
-        // return _planets[location];
     }
 
     function _msgSender() internal view returns (address) {
@@ -488,61 +548,71 @@ contract OuterSpace {
 
     function _performAttack(
         address attacker,
-        PlanetStats memory fromPlanetStats,
+        uint256 from,
         uint256 to,
-        PlanetStats memory toPlanetStats,
+        uint16 production,
         uint256 fleetId,
         uint32 numAttack
     ) internal {
-        (bool active, uint32 numDefense) = _getCurrentNumSpaceships(
-            _planets[to].numSpaceships,
-            _planets[to].lastUpdated,
-            toPlanetStats.production
-        );
-
-        (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(
-            numAttack,
-            numDefense,
-            fromPlanetStats.attack,
-            toPlanetStats.defense
-        );
-
-        if (attackerLoss == numAttack) {
-            uint32 numSpaceships = numDefense - defenderLoss;
-            _planets[to].numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
-            emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, false, numSpaceships);
-        } else if (defenderLoss == numDefense) {
-            // TODO exitTime and stake
-            _planets[to].owner = attacker;
-            _planets[to].exitTime = 0;
-            uint32 numSpaceships = numAttack - attackerLoss;
-            _planets[to].numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
-            emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);
+        // TODO use storage / memory planet arguments ?
+        uint16 attack = _attack(from);
+        uint16 defense = _defense(to);
+        uint32 exitTime = _planets[to].exitTime;
+        if (_hasJustExited(exitTime)) {
+            _setPlanetAfterExit(to, _planets[to].owner, _planets[to], attacker, numAttack);
+            emit FleetArrived(attacker, fleetId, to, numAttack);
         } else {
-            revert("nobody won");
+            (bool active, uint32 numDefense) = _getCurrentNumSpaceships(
+                _planets[to].numSpaceships,
+                _planets[to].lastUpdated,
+                production
+            );
+
+            (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, numDefense, attack, defense);
+
+            if (attackerLoss == numAttack) {
+                uint32 numSpaceships = numDefense - defenderLoss;
+                _planets[to].numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
+                emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, false, numSpaceships);
+            } else if (defenderLoss == numDefense) {
+                // TODO exitTime and stake // reset
+                _planets[to].owner = attacker;
+                _planets[to].exitTime = 0;
+                uint32 numSpaceships = numAttack - attackerLoss;
+                _planets[to].numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
+                emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);
+            } else {
+                revert("nobody won");
+            }
+            _planets[to].lastUpdated = uint32(block.timestamp);
         }
-        _planets[to].lastUpdated = uint32(block.timestamp);
     }
 
     function _performReinforcement(
         address attacker,
         uint256 to,
-        Planet storage toPlanet,
-        PlanetStats memory toStats,
+        uint16 production,
         uint256 fleetId,
         uint32 quantity
     ) internal {
-        (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
-            toPlanet.numSpaceships,
-            toPlanet.lastUpdated,
-            toStats.production
-        );
-        uint256 newNumSpaceships = currentNumSpaceships + quantity;
-        if (newNumSpaceships >= ACTIVE_MASK) {
-            newNumSpaceships = ACTIVE_MASK - 1;
+        // TODO use storage / memory planet arguments ?
+        uint32 exitTime = _planets[to].exitTime;
+        if (_hasJustExited(exitTime)) {
+            _setPlanetAfterExit(to, _planets[to].owner, _planets[to], attacker, quantity);
+            emit FleetArrived(attacker, fleetId, to, quantity);
+        } else {
+            (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
+                _planets[to].numSpaceships,
+                _planets[to].lastUpdated,
+                production
+            );
+            uint256 newNumSpaceships = currentNumSpaceships + quantity;
+            if (newNumSpaceships >= ACTIVE_MASK) {
+                newNumSpaceships = ACTIVE_MASK - 1;
+            }
+            _planets[to].numSpaceships = _setActiveNumSpaceships(active, uint32(newNumSpaceships));
+            emit FleetArrived(attacker, fleetId, to, uint32(newNumSpaceships));
         }
-        toPlanet.numSpaceships = _setActiveNumSpaceships(active, uint32(newNumSpaceships));
-        emit FleetArrived(attacker, fleetId, to, uint32(newNumSpaceships));
     }
 }
 

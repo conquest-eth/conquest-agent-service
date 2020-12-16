@@ -21,9 +21,7 @@ async function main() {
     planetPointer = spaceInfo.findNextPlanet(planetPointer);
 
     // TODO approve // (TODO using permit)
-    await waitFor(
-      outerSpaceContract.stake(players[i], planetPointer.data.location.id)
-    );
+    await waitFor(outerSpaceContract.acquire(planetPointer.data.location.id));
     console.log(
       `staked: ${planetPointer.data.location.id}, (${planetPointer.data.location.x},${planetPointer.data.location.y})`
     );

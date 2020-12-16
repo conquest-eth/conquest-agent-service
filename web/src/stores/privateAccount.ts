@@ -334,11 +334,14 @@ function recordFleetResolvingTxhash(fleetId: string, txHash: string): void {
     $data.data = {fleets: {}};
   }
   const fleets = $data.data.fleets;
-  fleets[fleetId].resolveTxHash = txHash;
-  _set({
-    data: $data.data,
-  });
-  _setData(wallet.address, wallet.chain.chainId, $data.data); // TODO chainId / wallet address (when wallet account changes) // TODO test
+  const fleet = fleets[fleetId];
+  if (fleet) {
+    fleet.resolveTxHash = txHash;
+    _set({
+      data: $data.data,
+    });
+    _setData(wallet.address, wallet.chain.chainId, $data.data); // TODO chainId / wallet address (when wallet account changes) // TODO test
+  }
 }
 
 function getFleets(): OwnFleet[] {

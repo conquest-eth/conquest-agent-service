@@ -66,8 +66,7 @@ export default dataStore = {
 
   async confirm(): Promise<void> {
     const flow = _set({step: 'WAITING_TX'});
-    const tx = await wallet.contracts.OuterSpace.stake(
-      wallet.address,
+    const tx = await wallet.contracts.OuterSpace.acquire(
       flow.data.planet.location.id
     );
     _set({
