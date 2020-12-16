@@ -2,7 +2,7 @@
   // export let to: string = '';
   import resolveFlow from '../stores/resolve';
   import privateAccount from '../stores/privateAccount';
-  import Button from './Button.svelte';
+  import PanelButton from './PanelButton.svelte';
 
   function resolve(fleetId) {
     resolveFlow.resolve(fleetId);
@@ -38,8 +38,16 @@
 
 <!-- TODO fliter on to-->
 
-{#each fleets as fleet}
-  <Button label="Resolve Fleet" on:click={() => resolve(fleet.id)}>
-    resolve
-  </Button>
-{/each}
+<div class="border mt-3 mr-1 flex flex-col">
+  {#if fleets.length > 0}
+    <h2 class="text-white p-1">Fleets to Resolve</h2>
+  {/if}
+  {#each fleets as fleet}
+    <PanelButton
+      class="m-1"
+      label="Resolve Fleet"
+      on:click={() => resolve(fleet.id)}>
+      resolve
+    </PanelButton>
+  {/each}
+</div>

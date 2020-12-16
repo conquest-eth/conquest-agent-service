@@ -8,7 +8,6 @@ import {queryStore} from '../_graphql';
 type AcquiredPlanet = {
   id: string;
   owner: string;
-  lastOwnershipTime: BigNumber;
   numSpaceships: BigNumber;
   lastUpdated: BigNumber;
 };
@@ -21,7 +20,6 @@ const query = queryStore<AcquiredPlanets>(
     acquiredPlanets {
       id
       owner
-      lastOwnershipTime
       numSpaceships
       lastUpdated
     }
@@ -35,7 +33,6 @@ const query = queryStore<AcquiredPlanets>(
         planets[`${x},${y}`] = {
           id: planet.id,
           owner: planet.owner,
-          lastOwnershipTime: BigNumber.from(planet.lastOwnershipTime),
           numSpaceships: BigNumber.from(planet.numSpaceships),
           lastUpdated: BigNumber.from(planet.lastUpdated),
         };

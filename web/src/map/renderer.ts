@@ -483,7 +483,7 @@ export class Renderer {
                   circleColor = 'white';
                 }
               }
-              // TODO : productionEnabled // see OuterSpace.sol : can use lastOwnershipTime, owner and numSpaceships
+              // TODO : productionEnabled // see OuterSpace.sol : can use owner and numSpaceships
               if (planet.state.stake == '0') {
                 // TODO BigNumber ?
                 circleDash = [2, 10];
@@ -635,14 +635,14 @@ export class Renderer {
       ctx.fill();
     }
 
-    ctx.beginPath();
-    ctx.strokeStyle = '#FDFBF3';
-    ctx.lineWidth = 8 / scale;
-    ctx.setLineDash([]);
-    ctx.moveTo(-64 / scale, 0);
-    ctx.lineTo(64 / scale, 0);
-    ctx.moveTo(0, -64 / scale);
-    ctx.lineTo(0, 64 / scale);
-    ctx.stroke();
+    // ctx.beginPath();
+    // ctx.strokeStyle = '#FDFBF3';
+    // ctx.lineWidth = 8 / scale;
+    // ctx.setLineDash([]);
+    // ctx.moveTo(-64 / scale, 0);
+    // ctx.lineTo(64 / scale, 0);
+    // ctx.moveTo(0, -64 / scale);
+    // ctx.lineTo(0, 64 / scale);
+    // ctx.stroke();
   }
 }

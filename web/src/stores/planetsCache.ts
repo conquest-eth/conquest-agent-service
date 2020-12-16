@@ -7,7 +7,6 @@ query($zones: [String]) {
   acquiredPlanets(where: {zone_in: $zones}) {
     id
     owner
-    lastOwnershipTime
     numSpaceships
     lastUpdated
   }
@@ -17,7 +16,6 @@ query($zones: [String]) {
 type AcquiredPlanet = {
   id: string;
   owner: string;
-  lastOwnershipTime: string;
   numSpaceships: string;
   lastUpdated: string;
 };

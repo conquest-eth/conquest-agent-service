@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Button from './Button.svelte';
+  import PanelButton from './PanelButton.svelte';
   import {wallet} from '../stores/wallet';
   import privateAccount from '../stores/privateAccount';
   import Blockie from './Blockie.svelte';
@@ -14,9 +14,13 @@
 
 {#if $wallet.address && $privateAccount.step === 'READY'}
   <span class="flex">
-    <Blockie class="w-10 h-10" address={$wallet.address} />
-    <Button label="Disconnect" on:click={disconnect}>Disconnect</Button>
+    <PanelButton class="m-1" label="Disconnect" on:click={disconnect}>
+      Disconnect
+    </PanelButton>
+    <Blockie class="w-10 h-10 m-1" address={$wallet.address} />
   </span>
 {:else}
-  <Button label="Connect" on:click={connect}>Connect</Button>
+  <PanelButton class="m-1" label="Connect" on:click={connect}>
+    Connect
+  </PanelButton>
 {/if}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Button from '../components/Button.svelte';
+  import PanelButton from '../components/PanelButton.svelte';
   import Modal from '../components/Modal.svelte';
   import sendFlow from '../stores/send';
   import {onMount} from 'svelte';
@@ -76,7 +76,9 @@
     <label for="fleetAmount">Number Of Spaceships</label>
     <input type="text" id="textInput" value={fleetAmount} />
   </div>
-  <Button label="Fleet Amount" on:click={() => sendFlow.confirm(fleetAmount)}>
+  <PanelButton
+    label="Fleet Amount"
+    on:click={() => sendFlow.confirm(fleetAmount)}>
     Confirm
-  </Button>
+  </PanelButton>
 </Modal>
