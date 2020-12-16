@@ -518,6 +518,8 @@ export class Renderer {
             );
             ctx.stroke();
           }
+
+          // if (planet.exitTime) // TODO
         }
       }
     }

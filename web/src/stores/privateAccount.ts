@@ -189,7 +189,7 @@ async function listenForFleets(
       return;
     }
 
-    if (fleetData && fleetData.launchTime.gt(0)) {
+    if (fleetData && fleetData.launchTime.gt(0) && fleetData.quantity === 0) {
       deleteFleet(fleetId);
     }
   }
