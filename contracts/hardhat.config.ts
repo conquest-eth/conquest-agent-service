@@ -6,13 +6,26 @@ import {node_url, accounts} from './utils/network';
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: '0.7.5',
-    // settings: {
-    //   optimizer: {
-    //     enabled: true,
-    //     runs: 2000,
-    //   },
-    // },
+    compilers: [
+      {
+        version: '0.7.5',
+        // settings: {
+        //   optimizer: {
+        //     enabled: true,
+        //     runs: 2000,
+        //   },
+        // },
+      },
+      {
+        version: '0.5.12', // For Dai.sol
+        settings: {
+          optimizer: {
+            enabled: false,
+            runs: 2000,
+          },
+        },
+      },
+    ],
   },
   namedAccounts: {
     deployer: 0,
