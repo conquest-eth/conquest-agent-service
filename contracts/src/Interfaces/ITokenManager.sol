@@ -2,6 +2,6 @@
 
 pragma solidity 0.7.5;
 
-interface TokenManager {
+interface ITokenManager {
     function takeBack(uint256 amount) external;
 }

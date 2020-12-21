@@ -2,37 +2,56 @@
 pragma solidity 0.7.5;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../Interfaces/TokenManager.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "../Interfaces/ITokenManager.sol";
 import "./PlayInternal.sol";
 import "./PlayPermit.sol";
 
 contract Play is IERC20, PlayInternal, PlayPermit {
+    using Address for address;
+
     uint256 internal constant UINT256_MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
     string public constant name = "Play";
     string public constant symbol = "PLAY";
 
     IERC20 internal immutable _wrappedToken;
-    TokenManager internal immutable _tokenManager;
+    ITokenManager internal immutable _tokenManager;
 
     uint256 internal _totalSupply;
     mapping(address => uint256) internal _balances;
     mapping(address => mapping(address => uint256)) internal _allowances;
 
-    constructor(IERC20 wrappedToken, TokenManager tokenManager) {
+    constructor(IERC20 wrappedToken, ITokenManager tokenManager) {
         _wrappedToken = wrappedToken;
         _tokenManager = tokenManager;
         wrappedToken.approve(address(tokenManager), UINT256_MAX); // TODO embed code in this contract
     }
 
-    function stake(uint256 amount) external {
+    function mintAndCall(
+        uint256 amount,
+        address target,
+        bytes calldata data
+    ) external {
+        // TODO support metatx ?
         // TODO support permit or transfer gateways
+        // support ERC20 permit as appended calldata
+        address sender = msg.sender;
+        _wrappedToken.transferFrom(sender, address(this), amount);
+        _mint(address(this), amount);
+        target.functionCall(data);
+        _transferAllIfAny(address(this), sender);
+    }
+
+    function mint(uint256 amount) external {
+        // TODO support permit or transfer gateways
+        // support ERC20 permit as appended calldata
         address sender = msg.sender;
         _wrappedToken.transferFrom(sender, address(this), amount);
         _mint(sender, amount);
     }
 
-    function unstake(uint256 amount) external {
+    function burn(uint256 amount) external {
         address sender = msg.sender;
         uint256 currentBalance = _wrappedToken.balanceOf(address(this));
         if (currentBalance < amount) {
@@ -59,6 +78,7 @@ contract Play is IERC20, PlayInternal, PlayPermit {
     }
 
     function transfer(address to, uint256 amount) external override returns (bool) {
+        // TODO support metatx ?
         _transfer(msg.sender, to, amount);
         return true;
     }
@@ -81,6 +101,7 @@ contract Play is IERC20, PlayInternal, PlayPermit {
     }
 
     function approve(address spender, uint256 amount) external override returns (bool) {
+        // TODO support metatx ?
         _approveFor(msg.sender, spender, amount);
         return true;
     }
@@ -109,9 +130,16 @@ contract Play is IERC20, PlayInternal, PlayPermit {
         emit Transfer(from, to, amount);
     }
 
+    function _transferAllIfAny(address from, address to) internal {
+        uint256 balanceLeft = _balances[from];
+        if (balanceLeft > 0) {
+            _balances[from] = 0;
+            _balances[to] += balanceLeft;
+            emit Transfer(from, to, balanceLeft);
+        }
+    }
+
     function _mint(address to, uint256 amount) internal {
-        // require(to != address(0), "INVALID_ZERO_ADDRESS");
-        // require(to != address(this), "INVALID_THIS_ADDRESS");
         _totalSupply += amount;
         _balances[to] += amount;
         emit Transfer(address(0), to, amount);

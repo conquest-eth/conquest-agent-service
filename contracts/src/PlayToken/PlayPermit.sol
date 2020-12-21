@@ -2,9 +2,9 @@
 pragma solidity 0.7.5;
 
 import "./PlayInternal.sol";
-import "../Interfaces/ERC2612.sol";
+import "../Interfaces/IERC2612Standalone.sol";
 
-abstract contract PlayPermit is PlayInternal, ERC2612 {
+abstract contract PlayPermit is PlayInternal, IERC2612Standalone {
     bytes32 internal constant PERMIT_TYPEHASH = keccak256(
         "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
     );

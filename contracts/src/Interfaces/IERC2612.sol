@@ -3,6 +3,6 @@
 pragma solidity 0.7.5;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./ERC2612.sol";
+import "./IERC2612Standalone.sol";
 
-interface ERC20With2612 is IERC20, ERC2612 {}
+interface IERC2612 is IERC2612Standalone, IERC20 {}
