@@ -144,7 +144,7 @@ importers:
       planet-wars-common: 'link:../common-lib'
       svelte: 3.24.1
       svelte-hmr: 0.10.2_svelte@3.24.1
-      web3w: 0.2.36_a19e476eac98653fe42ddfff6c05dce6
+      web3w: 0.2.39_a19e476eac98653fe42ddfff6c05dce6
       web3w-torus-loader: 0.2.4
       web3w-walletconnect-loader: 0.2.0
       wonka: 4.0.14
@@ -211,7 +211,7 @@ importers:
       tslib: ^2.0.0
       typescript: ^3.9.7
       vite: ^1.0.0-rc.8
-      web3w: ^0.2.36
+      web3w: ^0.2.39
       web3w-torus-loader: ^0.2.4
       web3w-walletconnect-loader: ^0.2.0
       wonka: ^4.0.14
@@ -13190,7 +13190,7 @@ packages:
     dev: false
     resolution:
       integrity: sha512-tF2mdo910sA14WuvumoekFCyfO5gsvbkzuvaRtW7QUCT3E4YAzGVr6PWTrUdA+Y6pCIfYkKUMLZcYTPFSyacCg==
-  /web3w/0.2.36_a19e476eac98653fe42ddfff6c05dce6:
+  /web3w/0.2.39_a19e476eac98653fe42ddfff6c05dce6:
     dependencies:
       '@ethersproject/abi': 5.0.7
       '@ethersproject/bignumber': 5.0.8
@@ -13204,7 +13204,7 @@ packages:
       '@ethersproject/contracts': ^5.0.0
       '@ethersproject/providers': ^5.0.0
     resolution:
-      integrity: sha512-2+E/unPSVbdNZD7nn1soIeYmWtH0PtuoSieMltsydR2noe7p3CsLlR67DobO3jpdyBtEwW/z+JJeCQuKTp6kug==
+      integrity: sha512-NCOM45TIKARc6Uag2lm6VvbXf2wGdutTM7oXDsEmuxYjV/M/Y7/eog77t+rsqi9382ViKUSWnfBqa2AibFYt5Q==
   /which-module/2.0.0:
     dev: true
     resolution:
