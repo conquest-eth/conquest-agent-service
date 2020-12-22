@@ -457,7 +457,7 @@ export class Renderer {
           let circleDash = [];
           let circleRotate = false;
           if (planet.loaded) {
-            if (planet.state) {
+            if (planet.state && planet.state.owner !==  '0x0000000000000000000000000000000000000000') {
               if (this.renderState.player) {
                 if (
                   // TODO enforce convention to not need `toLowerCase` overhead
@@ -637,14 +637,14 @@ export class Renderer {
       ctx.fill();
     }
 
-    // ctx.beginPath();
-    // ctx.strokeStyle = '#FDFBF3';
-    // ctx.lineWidth = 8 / scale;
-    // ctx.setLineDash([]);
-    // ctx.moveTo(-64 / scale, 0);
-    // ctx.lineTo(64 / scale, 0);
-    // ctx.moveTo(0, -64 / scale);
-    // ctx.lineTo(0, 64 / scale);
-    // ctx.stroke();
+    ctx.beginPath();
+    ctx.strokeStyle = '#FDFBF3';
+    ctx.lineWidth = 8 / scale;
+    ctx.setLineDash([]);
+    ctx.moveTo(-64 / scale, 0);
+    ctx.lineTo(64 / scale, 0);
+    ctx.moveTo(0, -64 / scale);
+    ctx.lineTo(0, 64 / scale);
+    ctx.stroke();
   }
 }

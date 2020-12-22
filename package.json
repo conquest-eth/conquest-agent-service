@@ -104,6 +104,12 @@
     "reconnect": "npm-run-all -l --parallel common:dev web subgraph:setup contracts subgraph",
     "shell:start": "npm-run-all -l externals:down --parallel shell:common shell:web shell:externals --sequential common:build subgraph:setup contracts:clean shell:contracts shell:subgraph seed",
     "shell:dev": "npm-run-all -l --parallel shell:common shell:web --sequential common:build subgraph:setup contracts:clean shell:contracts shell:subgraph seed",
-    "shell:reconnect": "npm-run-all -l --parallel shell:common shell:web --sequential common:build subgraph:setup shell:contracts shell:subgraph"
+    "shell:reconnect": "npm-run-all -l --parallel shell:common shell:web --sequential common:build subgraph:setup shell:contracts shell:subgraph",
+
+    "// No Subgraph": "",
+    "contracts:dev": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run dev -- --export ../web/src/contracts.json",
+    "shell:contracts:dev": "newsh \"npm run contracts:dev\"",
+    "local": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all --parallel common:dev web contracts:dev seed:build",
+    "shell:local": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all --parallel shell:common shell:web shell:contracts:dev seed:build"
   }
 }

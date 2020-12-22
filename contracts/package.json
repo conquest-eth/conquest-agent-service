@@ -31,7 +31,7 @@
   "scripts": {
     "test": "cross-env HARDHAT_DEPLOY_FIXTURE=true HARDHAT_COMPILE=true mocha --bail --recursive test",
     "coverage": "cross-env HARDHAT_DEPLOY_FIXTURE=true hardhat --network coverage coverage",
-    "dev": "hardhat node --reset --watch --export contractsInfo.json",
+    "dev": "hardhat node --watch",
     "compile": "hardhat compile",
     "local:dev": "hardhat --network localhost deploy --watch",
     "local:deploy": "hardhat --network localhost deploy",

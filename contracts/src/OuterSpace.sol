@@ -277,6 +277,21 @@ contract OuterSpace {
         stats = _getPlanetStats(location);
     }
 
+    function getPlanetStates(uint256[] calldata locations) external view returns (ExternalPlanet[] memory planetStates) {
+        planetStates = new ExternalPlanet[](locations.length);
+        for(uint256 i = 0; i < locations.length; i ++) {
+            Planet storage planet = _getPlanet(locations[i]);
+            (bool active, uint32 numSpaceships) = _activeNumSpaceships(planet.numSpaceships);
+            planetStates[i] = ExternalPlanet({
+                owner: planet.owner,
+                exitTime: planet.exitTime,
+                numSpaceships: numSpaceships,
+                lastUpdated: planet.lastUpdated,
+                active: active
+            });
+        }
+    }
+
     // ////////////// EIP721 /////////////////// // TODO ?
 
     // function transfer() // TODO EIP-721 ?
