@@ -288,6 +288,8 @@ export class Renderer {
       return;
     }
 
+    const timeMs =  Date.now();
+
     let gridLevel = 1;
     if (camera.zoom < 1) {
       gridLevel = Math.floor(1 / camera.zoom); //Math.floor(Math.floor(48 / (camera.zoom)) / 48);
@@ -453,6 +455,8 @@ export class Renderer {
             48
           );
 
+          let exitRatio = Number.MAX_SAFE_INTEGER;
+
           let circleColor = undefined;
           let circleDash = [];
           let circleRotate = false;
@@ -489,6 +493,12 @@ export class Renderer {
                 circleDash = [2, 10];
               }
             }
+            if (this.renderState.isActive(planet, timeMs/ 1000)) {
+              // TODO ?
+              if (this.renderState.isExiting(planet, timeMs / 1000)) {
+                exitRatio = this.renderState.exitRatio(planet,timeMs / 1000);
+              }
+            }
           } else {
             circleColor = 'white'; // TODO remove
             circleDash = [5, 15];
@@ -519,10 +529,28 @@ export class Renderer {
             ctx.stroke();
           }
 
+          if (exitRatio < 1) {
+            ctx.beginPath();
+            ctx.setLineDash([]);
+            ctx.lineWidth = 1 / render.scale;
+            ctx.strokeStyle = "orange";
+            ctx.ellipse(
+              Math.round(planetX),
+              Math.round(planetY),
+              84,
+              84,
+              circleRotate ? time / 500 : 0,
+              -Math.PI/2,
+              -Math.PI/2 + 2 * Math.PI * Math.max(exitRatio, 0.03)
+            );
+            ctx.stroke();
+          }
+
           // if (planet.exitTime) // TODO
         }
       }
     }
+
 
     let scale = render.scale * 8;
     if (scale > 2) {
@@ -584,7 +612,7 @@ export class Renderer {
         fullDistance *
         ((this.renderState.timePerDistance * 10000) / speed) *
         1000;
-      const timePassed = Date.now() - fleet.launchTime * 1000;
+      const timePassed = timeMs - fleet.launchTime * 1000;
       let ratio = timePassed / fullTime;
       let fx;
       let fy;

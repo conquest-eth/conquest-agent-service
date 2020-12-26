@@ -34,4 +34,17 @@ export class RenderStateImpl implements RenderState {
   getPlanet(x: number, y: number): Planet | undefined {
     return this.space.getPlanet(x, y);
   }
+
+  isActive(planet: Planet, time: number): boolean {
+    return this.space.isActive(planet, time);
+  }
+
+  isExiting(planet: Planet, time: number): boolean {
+    return this.space.isExiting(planet, time);
+  }
+
+
+  exitRatio(planet: Planet, time: number): number {
+    return this.space.exitRatio(planet, time);
+  }
 }

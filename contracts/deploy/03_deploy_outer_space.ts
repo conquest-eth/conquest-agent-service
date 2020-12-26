@@ -33,7 +33,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   await deploy('OuterSpace', {
     from: deployer,
-    linkedData: {genesisHash, resolveWindow, timePerDistance},
+    linkedData: {genesisHash, resolveWindow, timePerDistance, exitDuration},
     args: [
       stakingToken.address,
       genesisHash,
