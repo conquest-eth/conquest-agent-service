@@ -1,10 +1,8 @@
 import {writable} from 'svelte/store';
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
-import {BigNumber} from '@ethersproject/bignumber';
-import type {PlanetInfo} from 'planet-wars-common';
 
-type ClaimData = {txHash?: string; planet: PlanetInfo};
+type ClaimData = {txHash?: string; location: string};
 
 export type ClaimFlow<T> = {
   type: 'CLAIM';
@@ -58,8 +56,8 @@ export default dataStore = {
     _reset();
   },
 
-  async claim(planet: PlanetInfo): Promise<void> {
-    _set({data: {planet}, step: 'CONNECTING'});
+  async claim(location: string): Promise<void> {
+    _set({data: {location}, step: 'CONNECTING'});
     await privateAccount.login();
     _set({step: 'CHOOSE_STAKE'});
   },
@@ -67,7 +65,7 @@ export default dataStore = {
   async confirm(): Promise<void> {
     const flow = _set({step: 'WAITING_TX'});
     const tx = await wallet.contracts.OuterSpace.acquire(
-      flow.data.planet.location.id
+      flow.data.location
     );
     _set({
       step: 'SUCCESS',

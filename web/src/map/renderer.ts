@@ -1,10 +1,10 @@
-import {space} from 'svelte/internal';
+
 import planetsFrame from '../assets/planets.json';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 ///@ts-ignore
 import planetsDataURL from '../assets/planets.png';
-import type {RenderState} from '../types';
 import type {CameraSetup, WorldSetup} from './camera';
+import type {RenderState} from './RenderState';
 
 // pre-render
 const planetSpriteSheet = new Image();
@@ -435,7 +435,7 @@ export class Renderer {
     );
     for (let x = gridX; x <= gridEndX + 1; x++) {
       for (let y = gridY; y <= gridEndY + 1; y++) {
-        const planet = this.renderState.getPlanet(x, y);
+        const planet = this.renderState.space.planetAt(x, y);
         if (planet) {
           const lavaFrame =
             planetsFrame.frames[planetTypesToFrame[planet.type]].frame;
@@ -462,11 +462,11 @@ export class Renderer {
           let circleRotate = false;
           if (planet.loaded) {
             if (planet.state && planet.state.owner !==  '0x0000000000000000000000000000000000000000') {
-              if (this.renderState.player) {
+              if (this.renderState.space.player) {
                 if (
                   // TODO enforce convention to not need `toLowerCase` overhead
                   planet.state.owner.toLowerCase() ===
-                  this.renderState.player.toLowerCase()
+                  this.renderState.space.player.toLowerCase()
                 ) {
                   circleColor = 'green';
                 } else if (
@@ -488,15 +488,15 @@ export class Renderer {
                 }
               }
               // TODO : productionEnabled // see OuterSpace.sol : can use owner and numSpaceships
-              if (planet.state.stake == '0') {
-                // TODO BigNumber ?
-                circleDash = [2, 10];
-              }
+              // if (planet.state.stake == '0') {
+              //   // TODO BigNumber ?
+              //   circleDash = [2, 10];
+              // }
             }
-            if (this.renderState.isActive(planet, timeMs/ 1000)) {
+            if (planet.state.active) {
               // TODO ?
-              if (this.renderState.isExiting(planet, timeMs / 1000)) {
-                exitRatio = this.renderState.exitRatio(planet,timeMs / 1000);
+              if (planet.state.exiting) {
+                exitRatio = (this.renderState.space.spaceInfo.exitDuration - planet.state.exitTimeLeft) / this.renderState.space.spaceInfo.exitDuration;
               }
             }
           } else {
@@ -560,14 +560,14 @@ export class Renderer {
       scale = 0.25;
     }
 
-    const fleets = this.renderState.getOwnFleets();
+    const fleets = this.renderState.space.getOwnFleets();
     for (const fleet of fleets) {
       const fromX = fleet.from.x;
       const fromY = fleet.from.y;
-      const fromPlanet = this.renderState.getPlanet(fromX, fromY);
+      const fromPlanet = this.renderState.space.planetAt(fromX, fromY);
       const toX = fleet.to.x;
       const toY = fleet.to.y;
-      const toPlanet = this.renderState.getPlanet(toX, toY);
+      const toPlanet = this.renderState.space.planetAt(toX, toY);
 
       const gFromX = fromPlanet.location.globalX;
       const gFromY = fromPlanet.location.globalY;
@@ -610,7 +610,7 @@ export class Renderer {
       );
       const fullTime =
         fullDistance *
-        ((this.renderState.timePerDistance * 10000) / speed) *
+        ((this.renderState.space.spaceInfo.timePerDistance * 10000) / speed) *
         1000;
       const timePassed = timeMs - fleet.launchTime * 1000;
       let ratio = timePassed / fullTime;

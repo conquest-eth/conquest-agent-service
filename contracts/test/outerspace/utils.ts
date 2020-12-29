@@ -4,7 +4,7 @@ import {ethers, getUnnamedAccounts, deployments} from 'hardhat';
 import {BigNumber} from '@ethersproject/bignumber';
 import {Wallet} from '@ethersproject/wallet';
 import {keccak256} from '@ethersproject/solidity';
-import {SpaceInfoImpl} from 'planet-wars-common';
+import {SpaceInfo} from 'planet-wars-common';
 import type {PlanetInfo} from 'planet-wars-common';
 import {ContractReceipt} from 'ethers';
 import {Provider} from '@ethersproject/providers';
@@ -27,7 +27,7 @@ export async function setupOuterSpace(): Promise<{
   getTime: () => number;
   increaseTime(t: number): Promise<void>;
   outerSpaceContract: AnyContract;
-  spaceInfo: SpaceInfoImpl;
+  spaceInfo: SpaceInfo;
   players: User[];
   provider: Provider;
 }> {
@@ -49,7 +49,7 @@ export async function setupOuterSpace(): Promise<{
       deltaTime += t;
     },
     outerSpaceContract: (await ethers.getContract('OuterSpace')) as AnyContract,
-    spaceInfo: new SpaceInfoImpl(OuterSpaceDeployment.linkedData),
+    spaceInfo: new SpaceInfo(OuterSpaceDeployment.linkedData),
     players: playersAsContracts,
     provider: ethers.provider,
   };

@@ -3,36 +3,11 @@
   import Modal from '../components/Modal.svelte';
   import sendFlow from '../stores/send';
   import {onMount} from 'svelte';
-  import {planet as getPlanet} from '../stores/planetsCache'; // TODO call it getPlanet / planetStore ?
-  import {xyToLocation} from 'planet-wars-common';
-  import time from '../stores/time';
-  import {space} from '../app/mapState';
-
-  // TODO remove duplicae : move to util
-  function _getCurrentNumSpaceships(
-    time: number,
-    numSpaceships: number,
-    lastUpdated: number,
-    production: number
-  ): number {
-    return (
-      numSpaceships +
-      Math.floor(((time - lastUpdated) * production) / (60 * 60))
-    );
-  }
-  function numSpaceshipFor(time, planet) {
-    return planet
-      ? _getCurrentNumSpaceships(
-          time,
-          parseInt(planet.state.numSpaceships),
-          parseInt(planet.state.lastUpdated),
-          planet.stats.production
-        )
-      : 0;
-  }
+  import {planetAt} from '../stores/planets';
+  import { xyToLocation } from 'planet-wars-common';
 
   $: planetFrom = $sendFlow.data?.from
-    ? space.getPlanet($sendFlow.data.from.x, $sendFlow.data.from.y)
+    ? planetAt(xyToLocation($sendFlow.data.from.x, $sendFlow.data.from.y))
     : undefined;
 
   // TODO maxSpaceshipsLoaded and invalid message if maxSpaceships == 0
@@ -40,7 +15,7 @@
   let fleetAmount: number = 1;
   let maxSpaceships: number;
   $: {
-    maxSpaceships = numSpaceshipFor($time, planetFrom);
+    maxSpaceships = $planetFrom.state.numSpaceships;
     if (maxSpaceships > 0 && !fleetAmountSet) {
       // TODO loading
       fleetAmount = Math.floor(maxSpaceships / 2);

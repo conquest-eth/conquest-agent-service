@@ -427,7 +427,7 @@ contract OuterSpace {
         // _checkTime(distance, from, fleet);
 
         if (toPlanet.owner == attacker) {
-            _performReinforcement(attacker, toPlanet, production, fleetId, quantity);
+            _performReinforcement(attacker, toPlanet, to, production, fleetId, quantity);
         } else {
             _performAttack(attacker, from, toPlanet, to, production, fleetId, quantity);
         }
@@ -496,7 +496,12 @@ contract OuterSpace {
     }
 
     function _exists(uint256 location) internal view returns (bool) {
-        return _genesis.r_u8(location, 1, 16) == 1;
+        return _genesis.r_u8(location, 1, 16) == 1; // 16 => 36 so : 1 planet per 6 (=24 min unit) square
+        // also:
+        // 20000 average starting numSpaceships (or max?)
+        // speed of min unit = 30 min ( 1 hour per square)
+        // production : 20000 per 6 hours
+        // exit : 3 days ? => 72 distance
     }
 
     // ---------------------------------------------------------------------
@@ -619,10 +624,10 @@ contract OuterSpace {
         address sender,
         Planet memory toPlanet,
         uint256 to,
+        uint16 production,
         uint256 fleetId,
         uint32 quantity
     ) internal {
-        uint16 production = _production(to);
         if (_hasJustExited(toPlanet.exitTime)) {
             _setPlanetAfterExit(to, toPlanet.owner, _planets[to], sender, quantity);
             emit FleetArrived(sender, fleetId, to, quantity);

@@ -29,7 +29,7 @@ export class Controller {
     this.planetInfoComponent = new PlanetInfoPanel({
       target: this.parent,
       props: {
-        planet,
+        location: planet.location.id,
         close: () => this.hidePlanetInfo(),
       },
     });

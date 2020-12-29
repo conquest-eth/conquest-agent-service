@@ -3,12 +3,12 @@
   import Map from '../map';
   import {Camera} from '../map/camera';
   import {Renderer} from '../map/renderer';
-  import {RenderStateImpl} from '../map/RenderStateImpl';
-  import {privateSpace} from './mapState';
+  import {RenderState} from '../map/RenderState';
+  import {space} from './mapState';
 
   let canvas;
   onMount(() => {
-    const renderState = new RenderStateImpl(privateSpace);
+    const renderState = new RenderState(space);
     const renderer = new Renderer(renderState);
     const camera = new Camera(renderState);
     const map = new Map(renderer, camera);

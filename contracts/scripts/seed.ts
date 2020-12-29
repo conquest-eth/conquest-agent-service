@@ -1,6 +1,5 @@
 import {getUnnamedAccounts, ethers, deployments} from 'hardhat';
-import {BigNumber} from '@ethersproject/bignumber';
-import {SpaceInfoImpl} from 'planet-wars-common';
+import {SpaceInfo} from 'planet-wars-common';
 
 // TODO move to util
 const waitFor = <T>(p: Promise<{wait: () => Promise<T>}>) =>
@@ -10,7 +9,7 @@ async function main() {
   const players = await getUnnamedAccounts();
 
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
-  const spaceInfo = new SpaceInfoImpl(OuterSpaceDeployment.linkedData);
+  const spaceInfo = new SpaceInfo(OuterSpaceDeployment.linkedData);
 
   let planetPointer;
   for (let i = 0; i < 4; i++) {
