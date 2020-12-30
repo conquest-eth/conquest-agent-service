@@ -133,7 +133,9 @@ export class Camera {
       this._set(x, y, zoom);
       const locationX = Math.floor(x / 48 / 4 / 2);
       const locationY = Math.floor(y / 48 / 4 / 2);
-      space.focus(locationX, locationY); // TODO invesrion of control : emit event
+      const lwidth = Math.ceil(self.world.width/48/4/2/2);
+      const lheight = Math.ceil(self.world.height/48/4/2/2);
+      space.focus(locationX - lwidth, locationY - lheight, locationX+ lwidth, locationY + lheight); // TODO invesrion of control : emit event
     };
 
     const _update = () => {

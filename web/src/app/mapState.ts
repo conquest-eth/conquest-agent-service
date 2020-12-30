@@ -3,11 +3,17 @@ import contractsInfo from '../contracts.json';
 import privateAccount from '../stores/privateAccount';
 import {fallback, chain} from '../stores/wallet';
 
-const timeKeeper = {setTimeout(fn, sec) {
-  return setTimeout(fn, sec * 1000)
-}, getTime() {
-  return Math.floor(Date.now() / 1000)
-}}
+const timeKeeper = {
+  setTimeout(fn, sec) {
+    return setTimeout(fn, sec * 1000) as unknown as number
+  },
+  clearTimeout(t) {
+    return clearTimeout(t)
+  },
+  getTime() {
+    return Math.floor(Date.now() / 1000)
+  }
+}
 
 async function fetch(planetIds: string[]): Promise<PlanetData[]> {
   const contracts = chain.contracts || fallback.contracts;
@@ -28,4 +34,4 @@ export const spaceInfo = new SpaceInfo(
   contractsInfo.contracts.OuterSpace.linkedData
 );
 export const space = new PrivateSpace(spaceInfo, fetch, timeKeeper, privateAccount);
-space.focus(0,0);
+

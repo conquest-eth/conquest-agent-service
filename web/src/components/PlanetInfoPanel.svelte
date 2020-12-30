@@ -8,7 +8,7 @@
 
   import PanelButton from './PanelButton.svelte';
   import Blockie from './Blockie.svelte';
-import { locationToXY } from 'planet-wars-common';
+  import { locationToXY } from 'planet-wars-common';
 
   export let location: string;
   export let close: () => void;
@@ -70,12 +70,12 @@ import { locationToXY } from 'planet-wars-common';
 
     {#if $planet.state} <!-- if active-->
     <div class="m-1">
-      <label for="stake">exitTime:</label>
-      <span id="stake" class="value">{$planet.state.exitTime}</span>
+      <label for="active">active:</label>
+      <span id="active" class="value">{$planet.state.active}</span>
     </div>
     <div class="m-1">
-      <label for="stake">active:</label>
-      <span id="stake" class="value">{$planet.state.active}</span>
+      <label for="exiting">exiting:</label>
+      <span id="exiting" class="value">{$planet.state.exitTimeLeft}</span>
     </div>
     {/if}
 
