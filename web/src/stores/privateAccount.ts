@@ -6,6 +6,7 @@ import {keccak256} from '@ethersproject/solidity';
 import {OwnFleet, xyToLocation} from 'planet-wars-common';
 import {BigNumber} from '@ethersproject/bignumber';
 import {finality} from '../config';
+import aes from "aes-js";
 
 type SecretData = {
   fleets: Record<string, OwnFleet>;
@@ -26,6 +27,15 @@ type PrivateAccountData = {
   walletAddress?: string;
   chainId?: string;
 };
+
+// TODO
+const aesKey = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 ];
+try {
+  new aes.ModeOfOperation.ctr(aesKey);
+} catch(e) {
+
+}
+
 
 const $data: PrivateAccountData = {
   wallet: undefined,
@@ -66,14 +76,169 @@ async function _loadData(address: string, chainId: string) {
     data = JSON.parse(fromStorage);
     // TODO decrypt + uncompress
   }
-  _set({sync: 'SYNCED', data});
+  _set({data});
+  _syncDown().then((result) => {
+    if (result && result.newDataOnLocal) {
+      // TODO flag to ensure syncing up when first checks
+    }
+  })
   startMonitoring(address, chainId);
 }
 
-async function _setData(address: string, chainId: string, data: SecretData) {
+let _lastId = 0;
+async function syncRequest(method: string, params: string[]): Promise<Response> {
+  return await fetch("https://cf-worker-2.rim.workers.dev/", { // TODO env variable
+    method: "POST",
+    body: JSON.stringify({
+        method,
+        params,
+        "jsonrpc": "2.0",
+        id: ++_lastId
+    }),
+    headers: {
+        "Content-type": "application/json; charset=UTF-8"
+    }
+  });
+}
+
+// async function getSyncedData(): Promise<string> {
+
+// }
+
+async function _syncDown(): Promise<{newDataOnLocal: boolean, counter: BigNumber} | undefined> {
+  _set({sync: 'SYNCING'});
+  let json;
+  let error;
+  try {
+    const response = await syncRequest("wallet_getString", [$data.wallet.address, "planet-wars-test"]);
+    json = await response.json();
+  } catch(e) {
+    error = e;
+  }
+  if (error || json.error) {
+    _set({sync: 'NOT_SYNCED', syncError: error || json.error});
+    return; // TODO retry ?
+  }
+  const data = json.result.data ? JSON.parse(json.result.data) :  {}; // TODO decryption
+  const newDataOnLocal = _merge(data);
+
+  _set({data:$data.data});
+  _saveToLocalStorage($data.walletAddress, $data.chainId, $data.data);
+
+  if (!newDataOnLocal) {
+    _set({sync: 'SYNCED'});
+  } else {
+    // do not sync up as we will do that latter as part of the usual fleet checks
+  }
+  return {newDataOnLocal, counter: BigNumber.from(json.result.counter)};
+}
+
+function _merge(data: SecretData): boolean {
+  if (!$data.data) {
+    $data.data = {fleets: {}}
+  }
+  if (!$data.data.fleets) {
+    $data.data.fleets = {};
+  }
+  let newDataOnLocal = false;
+  const localFleets = $data.data.fleets;
+  const remoteFleets = data.fleets;
+  if (remoteFleets) {
+    for (const key of Object.keys(remoteFleets)) {
+      if (!localFleets[key]) {
+        localFleets[key] = remoteFleets[key]; // new
+      } else {
+        const localFleet = localFleets[key];
+        const remoteFleet = remoteFleets[key];
+        if (localFleet.to.x !== remoteFleet.to.x || localFleet.to.y !== remoteFleet.to.y) {
+          console.error("fleet with different destination but same id");
+        }
+        if (localFleet.resolveTxHash) {
+          if (remoteFleet.resolveTxHash) {
+            // if (localFleet.resolveTxHash != remoteFleet.resolveTxHash) {
+
+            // }
+          } else {
+            newDataOnLocal = true;
+          }
+        } else {
+          if (remoteFleet.resolveTxHash) {
+            localFleet.resolveTxHash = remoteFleet.resolveTxHash;
+          }
+        }
+        if (localFleet.sendTxHash) {
+          if (remoteFleet.sendTxHash) {
+            // if (localFleet.sendTxHash != remoteFleet.sendTxHash) {
+
+            // }
+          } else {
+            newDataOnLocal = true;
+          }
+        } else {
+          if (remoteFleet.sendTxHash) {
+            localFleet.sendTxHash = remoteFleet.sendTxHash;
+          }
+        }
+      }
+    }
+  }
+  for (const key of Object.keys(localFleets)) {
+    if (!remoteFleets[key]) {
+      newDataOnLocal = true;
+    }
+  }
+  set($data);
+  return newDataOnLocal;
+}
+
+async function _sync(fleetsToDelete: string[] = []) {
+
+  const syncDownResult = await _syncDown();
+
+
+  if (syncDownResult && (syncDownResult.newDataOnLocal || fleetsToDelete.length > 0 )) {
+    _set({sync: 'SYNCING'});
+
+    for (const fleetToDelete of fleetsToDelete) {
+      delete $data.data.fleets[fleetToDelete];
+    }
+    _set($data);
+
+    const data = JSON.stringify($data.data); // TODO compression + encryption
+
+    const counter = syncDownResult.counter.add(1).toString();
+    const signature = await $data.wallet.signMessage('put:' + 'planet-wars-test' + ':' + counter + ':' + data);
+
+    let json;
+    let error;
+    try {
+      const response = await syncRequest("wallet_putString", [$data.wallet.address, "planet-wars-test", counter, data, signature]);
+      json = await response.json();
+    } catch(e) {
+      error = e;
+    }
+    if (error || json.error) {
+      _set({sync: 'NOT_SYNCED', syncError: error || json.error});
+      return; // TODO retry ?
+    }
+    if (!json.success) {
+      _set({sync: 'NOT_SYNCED', syncError: "no success"});
+      return; // TODO retry ?
+    }
+
+    _set({sync: 'SYNCED'});
+  }
+}
+
+function _saveToLocalStorage(address: string, chainId: string, data: SecretData) {
   const toStorage = JSON.stringify(data);
   // TODO compress + encrypt
   localStorage.setItem(LOCAL_STORAGE_KEY(address, chainId), toStorage);
+}
+
+async function _setData(address: string, chainId: string, data: SecretData, fleetIdsToDelete: string[] = []) {
+  _saveToLocalStorage(address, chainId, data);
+  _sync(fleetIdsToDelete); // TODO fetch before set local storage to avoid aother encryption roundtrip
 }
 
 const walletData: Record<string, {wallet: Wallet}> = {};
@@ -83,12 +248,14 @@ type Contracts = {
 };
 
 function start(walletAddress, chainId): void {
+  // console.log("START", {walletAddress, chainId});
   const walletDiff =
     !$data.walletAddress ||
     walletAddress.toLowerCase() !== $data.walletAddress.toLowerCase();
   const chainDiff = !$data.chainId || chainId !== $data.chainId;
 
   if (chainId && walletAddress) {
+    // console.log("READY");
     const existingData = walletData[walletAddress.toLowerCase()];
     if (existingData) {
       _set({
@@ -110,12 +277,13 @@ function start(walletAddress, chainId): void {
     }
     if (walletDiff || chainDiff) {
       console.log({walletDiff, chainDiff});
-      if (walletData[$data.walletAddress.toLowerCase()]) {
+      if ($data.walletAddress && walletData[$data.walletAddress.toLowerCase()]) {
         console.log('loading data');
         _loadData($data.walletAddress, $data.chainId);
       }
     }
   } else {
+    // console.log("STOP");
     _set({walletAddress, chainId});
     stopMonitoring();
   }
@@ -217,13 +385,10 @@ async function confirm(): Promise<void> {
 
     _set({step: 'LOADING'});
 
-    try {
-      await _loadData(walletAddress, wallet.chain.chainId);
-    } catch (e) {
-      _set({sync: 'NOT_SYNCED', syncError: e});
-    }
-
     _set({step: 'READY', wallet: privateWallet});
+
+    await _loadData(walletAddress, wallet.chain.chainId);
+
     if (_func) {
       await _func();
     }
@@ -298,7 +463,7 @@ function deleteFleet(fleetId: string) {
   _set({
     data: $data.data,
   });
-  _setData(wallet.address, wallet.chain.chainId, $data.data);
+  _setData(wallet.address, wallet.chain.chainId, $data.data, [fleetId]);
 }
 
 function _hashString() {
