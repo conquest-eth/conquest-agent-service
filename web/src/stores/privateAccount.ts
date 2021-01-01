@@ -65,11 +65,14 @@ function LOCAL_STORAGE_KEY(address: string, chainId: string) {
 async function _loadData(address: string, chainId: string) {
   // TODO load from signature based DB
   const fromStorage = localStorage.getItem(LOCAL_STORAGE_KEY(address, chainId));
-  let data;
+  let data = {fleets: {}};
   if (fromStorage) {
-    const decrypted = decrypt(fromStorage);
-    data = JSON.parse(decrypted);
-    // TODO decrypt + uncompress
+    try {
+      const decrypted = decrypt(fromStorage);
+      data = JSON.parse(decrypted);
+    } catch (e) {
+      console.error(e);
+    }
   }
   _set({data});
   _syncDown().then((result) => {
