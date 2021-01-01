@@ -62,11 +62,13 @@ async function exitFrom(location: {x: number; y: number}): Promise<void> {
 async function confirm(): Promise<void> {
   const flow = _set({step: 'WAITING_TX'});
   const location = flow.data.location;
+  const locationId = xyToLocation(location.x, location.y);
+  const latestBlock = await wallet.provider.getBlock("latest");
   let tx: {hash: string};
   try {
     tx = await wallet.contracts.OuterSpace.exitFor(
       wallet.address,
-      xyToLocation(location.x, location.y)
+      locationId
     );
   } catch (e) {
     _set({
@@ -75,6 +77,8 @@ async function confirm(): Promise<void> {
     });
     return;
   }
+
+  privateAccount.recordExit(locationId, latestBlock.timestamp);
 
   _set({
     step: 'SUCCESS',

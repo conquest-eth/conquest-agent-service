@@ -127,7 +127,7 @@ contract OuterSpace {
         }
         if (justExited) {
             currentNumSpaceships = 3600;
-            _setPlanetAfterExit(location, owner, planet, sender, currentNumSpaceships);
+            _setPlanetAfterExit(location, owner, planet, sender, _setActiveNumSpaceships(true, currentNumSpaceships));
         } else {
             planet.owner = sender;
             // planet.exitTime = 0; // should not be needed : // TODO actualiseExit
