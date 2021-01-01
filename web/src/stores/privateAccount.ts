@@ -7,6 +7,7 @@ import {OwnFleet, xyToLocation} from 'planet-wars-common';
 import {BigNumber} from '@ethersproject/bignumber';
 import {finality} from '../config';
 import aes from "aes-js";
+import * as base64 from "byte-base64";
 
 type SecretData = {
   fleets: Record<string, OwnFleet>;
@@ -14,6 +15,7 @@ type SecretData = {
 
 type PrivateAccountData = {
   wallet?: Wallet;
+  aesKey?: Uint8Array;
   step:
     | 'READY'
     | 'CONNECTING'
@@ -28,17 +30,9 @@ type PrivateAccountData = {
   chainId?: string;
 };
 
-// TODO
-const aesKey = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 ];
-try {
-  new aes.ModeOfOperation.ctr(aesKey);
-} catch(e) {
-
-}
-
-
 const $data: PrivateAccountData = {
   wallet: undefined,
+  aesKey: undefined,
   step: 'IDLE',
   data: undefined,
   sync: 'IDLE',
@@ -73,7 +67,8 @@ async function _loadData(address: string, chainId: string) {
   const fromStorage = localStorage.getItem(LOCAL_STORAGE_KEY(address, chainId));
   let data;
   if (fromStorage) {
-    data = JSON.parse(fromStorage);
+    const decrypted = decrypt(fromStorage);
+    data = JSON.parse(decrypted);
     // TODO decrypt + uncompress
   }
   _set({data});
@@ -105,7 +100,7 @@ async function syncRequest(method: string, params: string[]): Promise<Response> 
 
 // }
 
-async function _syncDown(): Promise<{newDataOnLocal: boolean, counter: BigNumber} | undefined> {
+async function _syncDown(): Promise<{newDataOnLocal: boolean, newDataOnRemote: boolean, counter: BigNumber} | undefined> {
   _set({sync: 'SYNCING'});
   let json;
   let error;
@@ -119,8 +114,16 @@ async function _syncDown(): Promise<{newDataOnLocal: boolean, counter: BigNumber
     _set({sync: 'NOT_SYNCED', syncError: error || json.error});
     return; // TODO retry ?
   }
-  const data = json.result.data ? JSON.parse(json.result.data) :  {}; // TODO decryption
-  const newDataOnLocal = _merge(data);
+  let data: SecretData = {fleets: {}};
+  if (json.result.data && json.result.data !== "") {
+    try {
+      const decryptedData = decrypt(json.result.data);
+      data = JSON.parse(decryptedData);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  const {newDataOnLocal, newDataOnRemote} = _merge(data);
 
   _set({data:$data.data});
   _saveToLocalStorage($data.walletAddress, $data.chainId, $data.data);
@@ -130,10 +133,10 @@ async function _syncDown(): Promise<{newDataOnLocal: boolean, counter: BigNumber
   } else {
     // do not sync up as we will do that latter as part of the usual fleet checks
   }
-  return {newDataOnLocal, counter: BigNumber.from(json.result.counter)};
+  return {newDataOnLocal, newDataOnRemote, counter: BigNumber.from(json.result.counter)};
 }
 
-function _merge(data: SecretData): boolean {
+function _merge(data: SecretData): {newDataOnLocal: boolean, newDataOnRemote: boolean} {
   if (!$data.data) {
     $data.data = {fleets: {}}
   }
@@ -141,11 +144,13 @@ function _merge(data: SecretData): boolean {
     $data.data.fleets = {};
   }
   let newDataOnLocal = false;
+  let newDataOnRemote = false;
   const localFleets = $data.data.fleets;
   const remoteFleets = data.fleets;
   if (remoteFleets) {
     for (const key of Object.keys(remoteFleets)) {
       if (!localFleets[key]) {
+        newDataOnRemote = true;
         localFleets[key] = remoteFleets[key]; // new
       } else {
         const localFleet = localFleets[key];
@@ -163,6 +168,7 @@ function _merge(data: SecretData): boolean {
           }
         } else {
           if (remoteFleet.resolveTxHash) {
+            newDataOnRemote = true;
             localFleet.resolveTxHash = remoteFleet.resolveTxHash;
           }
         }
@@ -176,6 +182,7 @@ function _merge(data: SecretData): boolean {
           }
         } else {
           if (remoteFleet.sendTxHash) {
+            newDataOnRemote = true;
             localFleet.sendTxHash = remoteFleet.sendTxHash;
           }
         }
@@ -188,7 +195,27 @@ function _merge(data: SecretData): boolean {
     }
   }
   set($data);
-  return newDataOnLocal;
+  return {newDataOnLocal, newDataOnRemote};
+}
+
+function encrypt(data: string): string {
+  if (!$data || !$data.aesKey) {
+    throw new Error("no aes key set");
+  }
+  const textBytes = aes.utils.utf8.toBytes(data);
+  const ctr = new aes.ModeOfOperation.ctr($data.aesKey);
+  const encryptedBytes = ctr.encrypt(textBytes);
+  return base64.bytesToBase64(encryptedBytes);
+}
+
+function decrypt(data: string): string {
+  if (!$data || !$data.aesKey) {
+    throw new Error("no aes key set");
+  }
+  const encryptedBytes = base64.base64ToBytes(data);
+  const ctr = new aes.ModeOfOperation.ctr($data.aesKey);
+  const decryptedBytes = ctr.decrypt(encryptedBytes);
+  return aes.utils.utf8.fromBytes(decryptedBytes);
 }
 
 async function _sync(fleetsToDelete: string[] = []) {
@@ -204,7 +231,9 @@ async function _sync(fleetsToDelete: string[] = []) {
     }
     _set($data);
 
-    const data = JSON.stringify($data.data); // TODO compression + encryption
+    const dataToEncrypt = JSON.stringify($data.data); // TODO compression + encryption
+
+    const data = encrypt(dataToEncrypt);
 
     const counter = syncDownResult.counter.add(1).toString();
     const signature = await $data.wallet.signMessage('put:' + 'planet-wars-test' + ':' + counter + ':' + data);
@@ -232,8 +261,9 @@ async function _sync(fleetsToDelete: string[] = []) {
 
 function _saveToLocalStorage(address: string, chainId: string, data: SecretData) {
   const toStorage = JSON.stringify(data);
+  const encrypted = encrypt(toStorage);
   // TODO compress + encrypt
-  localStorage.setItem(LOCAL_STORAGE_KEY(address, chainId), toStorage);
+  localStorage.setItem(LOCAL_STORAGE_KEY(address, chainId), encrypted);
 }
 
 async function _setData(address: string, chainId: string, data: SecretData, fleetIdsToDelete: string[] = []) {
@@ -241,7 +271,7 @@ async function _setData(address: string, chainId: string, data: SecretData, flee
   _sync(fleetIdsToDelete); // TODO fetch before set local storage to avoid aother encryption roundtrip
 }
 
-const walletData: Record<string, {wallet: Wallet}> = {};
+const walletData: Record<string, {wallet: Wallet, aesKey: Uint8Array}> = {};
 
 type Contracts = {
   [name: string]: Contract;
@@ -261,12 +291,14 @@ function start(walletAddress, chainId): void {
       _set({
         step: 'READY',
         wallet: existingData.wallet,
+        aesKey: existingData.aesKey,
         walletAddress,
         chainId,
       });
     } else {
       _set({
         wallet: undefined,
+        aesKey: undefined,
         walletAddress,
         chainId,
         data: undefined,
@@ -293,7 +325,7 @@ chain.subscribe(($chain) => {
   if ($chain.state === 'Ready') {
     start($data.walletAddress, $chain.chainId);
   } else {
-    _set({wallet: undefined});
+    _set({wallet: undefined, aesKey: undefined});
     if ($data.step === 'READY') {
       _set({step: 'IDLE', chainId: undefined, data: undefined});
     }
@@ -305,7 +337,7 @@ wallet.subscribe(($wallet) => {
   if ($wallet.address) {
     start($wallet.address, $data.chainId);
   } else {
-    _set({wallet: undefined});
+    _set({wallet: undefined, aesKey: undefined});
     if ($data.step === 'READY') {
       _set({step: 'IDLE', walletAddress: undefined, data: undefined});
     }
@@ -381,11 +413,13 @@ async function confirm(): Promise<void> {
       .getSigner()
       .signMessage('Only sign this message on "planet-wars"');
     const privateWallet = new Wallet(signature.slice(0, 130));
-    walletData[walletAddress] = {wallet: privateWallet};
+    const aesKeySignature = await privateWallet.signMessage('AES KEY');
+    const aesKey = aes.utils.hex.toBytes(aesKeySignature.slice(2,66)); // TODO mix ?
+    walletData[walletAddress] = {wallet: privateWallet, aesKey };
 
     _set({step: 'LOADING'});
 
-    _set({step: 'READY', wallet: privateWallet});
+    _set({step: 'READY', wallet: privateWallet, aesKey});
 
     await _loadData(walletAddress, wallet.chain.chainId);
 
@@ -393,7 +427,7 @@ async function confirm(): Promise<void> {
       await _func();
     }
   } catch (e) {
-    _set({step: 'IDLE', wallet: undefined});
+    _set({step: 'IDLE', wallet: undefined, aesKey: undefined});
     _reject(e);
     _resolve = undefined;
     _reject = undefined;

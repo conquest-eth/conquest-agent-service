@@ -139,6 +139,7 @@ importers:
       '@urql/core': 1.13.1_graphql@15.4.0
       '@urql/devtools': 2.0.2_@urql+core@1.13.1+graphql@15.4.0
       aes-js: 3.0.0
+      byte-base64: 1.1.0
       graphql: 15.4.0
       named-logs: 0.0.13
       named-logs-console: 0.0.14
@@ -193,6 +194,7 @@ importers:
       '@urql/core': ^1.12.3
       '@urql/devtools': ^2.0.2
       aes-js: 3.0.0
+      byte-base64: ^1.1.0
       eth-ens-namehash: ^2.0.8
       favicons: ^6.2.0
       fs-extra: ^9.0.1
@@ -3427,6 +3429,10 @@ packages:
     dev: true
     resolution:
       integrity: sha1-hZgoeOIbmOHGZCXgPQF0eI9Wnug=
+  /byte-base64/1.1.0:
+    dev: false
+    resolution:
+      integrity: sha512-56cXelkJrVMdCY9V/3RfDxTh4VfMFCQ5km7B7GkIGfo4bcPL9aACyJLB0Ms3Ezu5rsHmLB2suis96z4fLM03DA==
   /byte-size/6.2.0:
     dev: true
     engines:
