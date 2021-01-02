@@ -3,6 +3,7 @@ import {wallet} from './wallet';
 import privateAccount from './privateAccount';
 import {xyToLocation} from 'planet-wars-common';
 import {BigNumber} from '@ethersproject/bignumber';
+import {spaceInfo} from '../app/mapState';
 
 type SendData = {
   txHash?: string;
@@ -115,12 +116,26 @@ async function confirm(fleetAmount: number): Promise<void> {
     fleetAmount,
     toHash
   );
+  const fromPlanetInfo = spaceInfo.getPlanetInfo(from.x, from.y);
+  const toPlanetInfo = spaceInfo.getPlanetInfo(to.x, to.y);
+  const gToX = toPlanetInfo.location.globalX;
+  const gToY = toPlanetInfo.location.globalY;
+  const gFromX = fromPlanetInfo.location.globalX;
+  const gFromY = fromPlanetInfo.location.globalY;
+  const speed = fromPlanetInfo.stats.speed;
+  const fullDistance = Math.floor(
+    Math.sqrt(Math.pow(gToX - gFromX, 2) + Math.pow(gToY - gFromY, 2))
+  );
+  const fleetDuration = fullDistance * ((spaceInfo.timePerDistance * 10000) / speed);
+
   privateAccount.recordFleet(fleetId, {
     to,
     from,
     fleetAmount,
+    duration: fleetDuration, // TODO stricly speaking not necessary but allow us to not need to refetch the stats from spaceInfo
     launchTime: Math.floor(Date.now() / 1000), //TODO adjust + service to adjust once tx is mined
     owner: wallet.address,
+    sendTxHash: tx.hash
   });
 
   _set({

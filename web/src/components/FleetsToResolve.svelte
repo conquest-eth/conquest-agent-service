@@ -3,14 +3,20 @@
   import resolveFlow from '../stores/resolve';
   import privateAccount from '../stores/privateAccount';
   import PanelButton from './PanelButton.svelte';
+  import {spaceInfo} from '../app/mapState';
+  import time from '../stores/time';
 
   function resolve(fleetId) {
     resolveFlow.resolve(fleetId);
   }
 
-  $: fleets = !$privateAccount.data
-    ? []
-    : Object.keys($privateAccount.data.fleets)
+  let fleets;
+  $: {
+    const now = $time;
+    if (!$privateAccount.data) {
+      fleets = []
+    } else {
+      fleets = Object.keys($privateAccount.data.fleets)
         .map((fleetId) => {
           return {id: fleetId, ...$privateAccount.data.fleets[fleetId]};
         })
@@ -18,22 +24,20 @@
           if (fleet.resolveTxHash) {
             return false; // TOOO query it
           }
-          const speed = 10000;
-          const fullDistance = Math.floor(
-            Math.sqrt(
-              Math.pow(fleet.to.x - fleet.from.x, 2) +
-                Math.pow(fleet.to.y - fleet.from.y, 2)
-            )
-          );
-          const fullTime = fullDistance * ((3600 * 10000) / speed);
-          const timePassed = Math.floor(Date.now() / 1000) - fleet.launchTime;
-          let ratio = timePassed / fullTime;
-          if (timePassed > fullTime) {
-            // TODO disapear
-            ratio = 1;
+
+          const resolveWindow = spaceInfo.resolveWindow;
+          const timeToResolve = fleet.launchTime + fleet.duration; // TODO launchTime : use actual launchTime
+          const expiryTime = fleet.launchTime + fleet.duration + resolveWindow;
+          if (now > expiryTime) {
+            return false;
           }
-          return true; // ratio >= 1;
+          if (now < timeToResolve) {
+            return false;
+          }
+          return true;
         });
+    }
+  }
 </script>
 
 <!-- TODO fliter on to-->

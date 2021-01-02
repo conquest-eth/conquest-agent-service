@@ -301,7 +301,7 @@ function start(walletAddress, chainId): void {
     const existingData = walletData[walletAddress.toLowerCase()];
     if (existingData) {
       _set({
-        step: 'READY',
+        step: 'READY', // TODO why READY ?
         wallet: existingData.wallet,
         aesKey: existingData.aesKey,
         walletAddress,
@@ -309,8 +309,8 @@ function start(walletAddress, chainId): void {
       });
     } else {
       _set({
-        wallet: undefined,
-        aesKey: undefined,
+        wallet: existingData ? existingData.wallet : undefined,
+        aesKey: existingData ? existingData.aesKey: undefined,
         walletAddress,
         chainId,
         data: undefined,
@@ -321,7 +321,14 @@ function start(walletAddress, chainId): void {
     }
     if (walletDiff || chainDiff) {
       console.log({walletDiff, chainDiff});
-      if ($data.walletAddress && walletData[$data.walletAddress.toLowerCase()]) {
+      if ($data.walletAddress && $data.chainId && existingData) {
+        _set({
+          wallet: existingData.wallet,
+          aesKey: existingData.aesKey,
+          walletAddress,
+          chainId,
+          data: undefined,
+        });
         console.log('loading data');
         _loadData($data.walletAddress, $data.chainId);
       }
@@ -396,7 +403,6 @@ async function listenForExits(
     const location = split[0];
     const timestamp = parseInt(split[1]);
 
-    console.log({timestamp, location});
     if (latestBlock.timestamp > timestamp + contractsInfo.contracts.OuterSpace.linkedData.exitDuration) {
       let planetData;
       try {
@@ -415,8 +421,6 @@ async function listenForExits(
         return;
       }
 
-      console.log({planetData, location})
-
       if (planetData && (planetData[0].exitTime === 0 || planetData[0].owner !== address)) {
         deleteExit(exitId);
       }
@@ -431,13 +435,16 @@ async function listenForFleets(
   if (!$data.data) {
     return;
   }
-  const latestBlockNumber = await wallet.provider.getBlockNumber();
+  const latestBlock = await wallet.provider.getBlock("latest");
+  const latestBlockNumber = latestBlock.number;
+
+  const latestFinalityBlock = await wallet.provider.getBlock(latestBlockNumber - finality);
   if (!$data.data) {
     return;
   }
   const fleetIds = Object.keys($data.data.fleets);
   for (const fleetId of fleetIds) {
-    // if ($data.data.fleets[fleetId].launchTime) // TODO filter out fleet that are not yet ready to be resolved
+    const fleet = $data.data.fleets[fleetId];
     let fleetData;
     try {
       fleetData = await wallet.contracts.OuterSpace.callStatic.getFleet( // TODO batch getFleets
@@ -455,9 +462,30 @@ async function listenForFleets(
       return;
     }
 
-    if (fleetData && fleetData.launchTime.gt(0) && fleetData.quantity === 0) {
-      deleteFleet(fleetId);
+    if (fleetData && fleetData.launchTime.gt(0)) {
+      const launchTime = fleetData.launchTime.toNumber(); // TODO return uint32 for launchTime in OuterSpace.sol ?
+      if (fleetData.quantity === 0) { // TODO use resolveTxHash instead ? // this would allow resolve to clear storage in OuterSpace.sol
+        deleteFleet(fleetId);
+        continue;
+      } else {
+        const resolveWindow = contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
+        console.log({duration: fleet.duration, launchTime: launchTime, resolveWindow});
+        const expiryTime = launchTime + fleet.duration + resolveWindow;
+        if (latestFinalityBlock.timestamp > expiryTime) {
+          console.log({expirted: fleetId})
+          deleteFleet(fleetId);
+        }
+        continue;
+      }
+    } else {
+      if (fleet.resolveTxHash) {
+        // TODO should not happen
+      } else {
+        // TODO check for replaced tx
+      }
     }
+
+
   }
 }
 
@@ -552,6 +580,10 @@ function recordExit(location: string, timestamp: number) {
     data: $data.data,
   });
   _setData(wallet.address, wallet.chain.chainId, $data.data);
+}
+
+function recordWithdrawal(loctions: string[], txHash: string) {
+  // TODO
 }
 
 
