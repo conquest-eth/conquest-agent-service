@@ -37,7 +37,7 @@
     "// externals : Setup external services locally (ethereum node, thegraph)": "",
     "stop": "run-s externals:down",
     "externals:down": "docker-compose down -v",
-    "docker-compose": "dotenv -e .env -e contracts/.env -- docker-compose up",
+    "docker-compose": "dotenv -e .env -e contracts/.env -- docker-compose -f docker-compose.subgraph.yml up",
     "externals": "run-p docker-compose contracts:fundingFromGethCoinbase",
     "shell:externals": "newsh \"npm run externals\"",
 
@@ -110,6 +110,11 @@
     "contracts:dev": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run dev -- --export ../web/src/contracts.json",
     "shell:contracts:dev": "newsh \"npm run contracts:dev\"",
     "local": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all --parallel common:dev web contracts:dev seed:build",
-    "shell:local": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all --parallel shell:common shell:web shell:contracts:dev seed:build"
+    "shell:local": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all --parallel shell:common shell:web shell:contracts:dev seed:build",
+
+    "ethnode": "dotenv -e .env -e contracts/.env -- docker-compose -f docker-compose.yml up ",
+    "ethnode:down": "docker-compose -f docker-compose.yml down",
+    "shell:ethnode": "newsh \"npm run ethnode\"",
+    "shell:ethnode:web:contracts": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all -l ethnode:down --parallel shell:common shell:web shell:ethnode --sequential common:build contracts:clean shell:contracts seed"
   }
 }

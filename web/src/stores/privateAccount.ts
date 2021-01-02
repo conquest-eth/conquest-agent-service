@@ -8,7 +8,11 @@ import {BigNumber} from '@ethersproject/bignumber';
 import {finality} from '../config';
 import aes from "aes-js";
 import * as base64 from "byte-base64";
+import * as lz from 'lz-string'
 import contractsInfo from '../contracts.json';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const { compressToUint8Array, decompressFromUint8Array } = (lz as any).default as lz.LZStringStatic;
 
 type SecretData = {
   fleets: Record<string, OwnFleet>;
@@ -207,7 +211,7 @@ function encrypt(data: string): string {
   if (!$data || !$data.aesKey) {
     throw new Error("no aes key set");
   }
-  const textBytes = aes.utils.utf8.toBytes(data);
+  const textBytes = compressToUint8Array(data);
   const ctr = new aes.ModeOfOperation.ctr($data.aesKey);
   const encryptedBytes = ctr.encrypt(textBytes);
   return base64.bytesToBase64(encryptedBytes);
@@ -220,7 +224,7 @@ function decrypt(data: string): string {
   const encryptedBytes = base64.base64ToBytes(data);
   const ctr = new aes.ModeOfOperation.ctr($data.aesKey);
   const decryptedBytes = ctr.decrypt(encryptedBytes);
-  return aes.utils.utf8.fromBytes(decryptedBytes);
+  return decompressFromUint8Array(decryptedBytes);
 }
 
 async function _sync(fleetsToDelete: string[] = [], exitsToDelete: string[] = []) {
