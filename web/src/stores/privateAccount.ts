@@ -211,7 +211,7 @@ function encrypt(data: string): string {
   if (!$data || !$data.aesKey) {
     throw new Error("no aes key set");
   }
-  const textBytes = compressToUint8Array(data);
+  const textBytes = compressToUint8Array(data); // const textBytes = aes.utils.utf8.toBytes(data);
   const ctr = new aes.ModeOfOperation.ctr($data.aesKey);
   const encryptedBytes = ctr.encrypt(textBytes);
   return base64.bytesToBase64(encryptedBytes);
@@ -224,7 +224,7 @@ function decrypt(data: string): string {
   const encryptedBytes = base64.base64ToBytes(data);
   const ctr = new aes.ModeOfOperation.ctr($data.aesKey);
   const decryptedBytes = ctr.decrypt(encryptedBytes);
-  return decompressFromUint8Array(decryptedBytes);
+  return decompressFromUint8Array(decryptedBytes); // return aes.utils.utf8.fromBytes(decryptedBytes);
 }
 
 async function _sync(fleetsToDelete: string[] = [], exitsToDelete: string[] = []) {
