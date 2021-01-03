@@ -2,6 +2,7 @@ import {writable} from 'svelte/store';
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
 import {xyToLocation} from 'planet-wars-common';
+import {spaceInfo} from '../app/mapState';
 
 // type ResolveData = {};
 
@@ -52,14 +53,16 @@ async function resolve(fleetId: string): Promise<void> {
   const fleet = privateAccount.getFleet(fleetId);
   const secretHash = privateAccount.fleetSecret(fleetId);
   console.log('resolve', {secretHash});
-  // TODO distance
-  // const distanceSquared =
-  //   Math.pow(to.location.globalX - from.location.globalX, 2) +
-  //   Math.pow(to.location.globalY - from.location.globalY, 2);
-  const distance = 1; // TODO Math.floor(Math.sqrt(distanceSquared));
+  const to = spaceInfo.getPlanetInfo(fleet.to.x, fleet.to.y);
+  const from = spaceInfo.getPlanetInfo(fleet.from.x, fleet.from.y);
+  const distanceSquared =
+    Math.pow(to.location.globalX - from.location.globalX, 2) +
+    Math.pow(to.location.globalY - from.location.globalY, 2);
+  const distance = Math.floor(Math.sqrt(distanceSquared));
   _set({step: 'WAITING_TX'});
   const tx = await wallet.contracts.OuterSpace.resolveFleet(
     fleetId,
+    xyToLocation(fleet.from.x, fleet.from.y),
     xyToLocation(fleet.to.x, fleet.to.y),
     distance,
     secretHash

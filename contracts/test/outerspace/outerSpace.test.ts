@@ -42,7 +42,7 @@ describe('OuterSpace', function () {
     const block = await provider.getBlock('latest');
     const quantity = planet1.getNumSpaceships(block.timestamp);
     console.log({quantity, blockTime: block.timestamp});
-    const sent = await sendInSecret(players[1], {
+    const sent = await sendInSecret(spaceInfo, players[1], {
       from: planet1,
       quantity,
       to: planet0,
@@ -50,10 +50,10 @@ describe('OuterSpace', function () {
     if (!sent) {
       throw new Error('no fleet found');
     }
-    const {fleetId, secret, to, distance, timeRequired} = sent;
+    const {fleetId, secret, from, to, distance, timeRequired} = sent;
     await increaseTime(timeRequired);
     await waitFor(
-      players[1].OuterSpace.resolveFleet(fleetId, to, distance, secret)
+      players[1].OuterSpace.resolveFleet(fleetId, from, to, distance, secret)
     );
   });
 
@@ -73,7 +73,7 @@ describe('OuterSpace', function () {
     planet = await fetchPlanetState(outerSpaceContract, planet);
     const fistTime = (await ethers.provider.getBlock('latest')).timestamp;
     console.log({fistTime});
-    await sendInSecret(players[0], {
+    await sendInSecret(spaceInfo, players[0], {
       from: planet,
       quantity: planet.getNumSpaceships(fistTime),
       to: planet,
@@ -83,7 +83,7 @@ describe('OuterSpace', function () {
     const new_planet = await fetchPlanetState(outerSpaceContract, planet);
     const quantity = new_planet.getNumSpaceships(currentTime);
     console.log({quantity, currentTime});
-    await sendInSecret(players[0], {
+    await sendInSecret(spaceInfo, players[0], {
       from: planet,
       quantity,
       to: planet,
@@ -94,7 +94,7 @@ describe('OuterSpace', function () {
     const quantityAgain = new_planet_again.getNumSpaceships(currentTimeAgain);
     console.log({quantityAgain, currentTimeAgain});
     await expectRevert(
-      sendInSecret(players[0], {
+      sendInSecret(spaceInfo, players[0], {
         from: planet,
         quantity: quantityAgain + 2,
         to: planet,

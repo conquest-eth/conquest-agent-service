@@ -39,13 +39,10 @@ contract OuterSpace {
     }
 
     struct Fleet {
-        uint256 from;
-        bytes32 toHash; // to is not revealed until needed // if same as from, then take a specific time (bluff)
+        address owner;
         uint32 launchTime;
-        uint32 quantity; // we know how many but not where
+        uint32 quantity;
     }
-    // note : launchTime could be set in future when launching, like 30 min, 1h ? or any time ?
-    // TODO fleetId = keccak256(toHash,from), data = {owner, launchTime, quantity}
 
     event PlanetStake(address indexed acquirer, uint256 indexed location, uint32 numSpaceships);
     event FleetSent(
@@ -121,8 +118,12 @@ contract OuterSpace {
                 justExited = true;
             } else {
                 require(!active, "STILL_ACTIVE");
-                defense = currentNumSpaceships; // TODO natives ?
-                require(defense <= 3500, "defense spaceship > 3500"); // you can first attack the planet
+                if (owner != sender) {
+                    defense = currentNumSpaceships; // TODO natives ?
+                    require(defense <= 3500, "defense spaceship > 3500"); // you can first attack the planet
+                } else {
+                    defense = 0;
+                }
             }
         }
         if (justExited) {
@@ -130,10 +131,14 @@ contract OuterSpace {
             _setPlanetAfterExit(location, owner, planet, sender, _setActiveNumSpaceships(true, currentNumSpaceships));
         } else {
             planet.owner = sender;
-            // planet.exitTime = 0; // should not be needed : // TODO actualiseExit
+            if (defense != 0) {
+                (uint32 attackerLoss, ) = _computeFight(3600, defense, 10000, 10000); // attacker alwasy win as defense (and stats.native) is restricted to 3500
+                currentNumSpaceships = 3600 - attackerLoss;
+            } else {
+                currentNumSpaceships += 3600;
+            }
 
-            (uint32 attackerLoss, ) = _computeFight(3600, defense, 10000, 10000); // attacker alwasy win as defense (and stats.native) is restricted to 3500
-            currentNumSpaceships = 3600 - attackerLoss;
+            // planet.exitTime = 0; // should not be needed : // TODO actualiseExit
             planet.numSpaceships = _setActiveNumSpaceships(true, currentNumSpaceships);
             planet.lastUpdated = uint32(block.timestamp);
         }
@@ -183,16 +188,18 @@ contract OuterSpace {
 
     function resolveFleet(
         uint256 fleetId,
+        uint256 from,
         uint256 to,
         uint256 distance,
         bytes32 secret
     ) external {
-        _resolveFleetFor(_msgSender(), fleetId, to, distance, secret);
+        _resolveFleetFor(_msgSender(), fleetId, from, to, distance, secret);
     }
 
     function resolveFleetFor(
         address attacker,
         uint256 fleetId,
+        uint256 from,
         uint256 to,
         uint256 distance,
         bytes32 secret
@@ -201,21 +208,19 @@ contract OuterSpace {
         if (sender != attacker) {
             require(_operators[attacker][sender], "NOT_AUTHORIZED");
         }
-        _resolveFleetFor(attacker, fleetId, to, distance, secret);
+        _resolveFleetFor(attacker, fleetId, from, to, distance, secret);
     }
 
     function send(
-        uint80 subId,
         uint256 from,
         uint32 quantity,
         bytes32 toHash
     ) external {
-        _sendFor(_msgSender(), subId, from, quantity, toHash);
+        _sendFor(_msgSender(), from, quantity, toHash);
     }
 
     function sendFor(
         address owner,
-        uint80 subId,
         uint256 from,
         uint32 quantity,
         bytes32 toHash
@@ -224,21 +229,21 @@ contract OuterSpace {
         if (sender != owner) {
             require(_operators[owner][sender], "NOT_AUTHORIZED");
         }
-        _sendFor(_msgSender(), subId | (1 << 81), from, quantity, toHash);
+        _sendFor(_msgSender(), from, quantity, toHash);
     }
 
     function getFleet(uint256 fleetId)
         external
         view
         returns (
-            uint256 launchTime,
-            uint256 from,
+            address owner,
+            uint32 launchTime,
             uint32 quantity
         )
     {
         launchTime = _fleets[fleetId].launchTime;
-        from = _fleets[fleetId].from;
         quantity = _fleets[fleetId].quantity;
+        owner = _fleets[fleetId].owner;
     }
 
     function getGeneisHash() external view returns (bytes32) {
@@ -349,7 +354,6 @@ contract OuterSpace {
 
     function _sendFor(
         address owner,
-        uint88 subId,
         uint256 from,
         uint32 quantity,
         bytes32 toHash
@@ -373,30 +377,8 @@ contract OuterSpace {
         planet.numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
         planet.lastUpdated = launchTime;
 
-        uint256 fleetId = (uint256(owner) << 96) | subId;
-        _fleets[fleetId] = Fleet({launchTime: launchTime, from: from, toHash: toHash, quantity: quantity});
-
-        /* TODO
-        struct Fleet {
-            address owner;
-            uint32 launchTime;
-            uint32 quantity; // we know how many but not where
-        }
-        fleetId = keccak256(from,toHash); // remove the need for storage : id encode both from and toHash
-        _fleets[fleetId] = Fleet({owner: owner, launchTime: launchTime, quantity: quantity});
-
-        // verifcation
-        require(keccak256(abi.encodePacked(from, keccak256(abi.encodePacked(secret, to)))) == fleetId, "invalid 'from',  'to' or 'secret'");
-        */
-
-        // require(planet.lastFleets.length < 10, "too many fleet send at around the same time");
-        // uint256 numPastFleets = planet.lastFleets.length;
-        // for (uint256 i = 0; i < num; i++) {
-        //     if (planet.lastFleets[i].launchTime) {
-
-        //     }
-        // }
-        // planet.lastFleets.push(fleetId);
+        uint256 fleetId = uint256(keccak256(abi.encodePacked(toHash, from)));
+        _fleets[fleetId] = Fleet({launchTime: launchTime, owner: owner, quantity: quantity});
 
         emit FleetSent(owner, from, fleetId, quantity, numSpaceships);
     }
@@ -404,34 +386,36 @@ contract OuterSpace {
     function _resolveFleetFor(
         address attacker,
         uint256 fleetId,
+        uint256 from,
         uint256 to,
         uint256 distance,
         bytes32 secret
     ) internal {
-        Fleet storage fleet = _fleets[fleetId];
-        address fleetOwner = address(fleetId >> 96);
-        require(attacker == fleetOwner, "not owner of fleet");
-        // require(fleet.from != 0, "fleet not exists"); // TODO remove
-        require(keccak256(abi.encodePacked(secret, to)) == fleet.toHash, "invalid 'to' or 'secret'");
+        Fleet memory fleet = _fleets[fleetId];
+        require(attacker == fleet.owner, "not owner of fleet");
 
-        uint256 from = fleet.from;
-        uint32 quantity = fleet.quantity;
-        require(quantity > 0, "no more");
+        require(
+            uint256(keccak256(abi.encodePacked(
+                keccak256(abi.encodePacked(secret, to)),
+                from
+            ))) == fleetId, "invalid 'to', 'from' or 'secret'");
+
+
+        require(fleet.quantity > 0, "no more");
 
         Planet memory toPlanet = _getPlanet(to);
 
         uint16 production = _production(to);
 
-        // TODO : reenable
-        // _checkDistance(distance, from, to);
-        // _checkTime(distance, from, fleet);
+        _checkDistance(distance, from, to);
+        _checkTime(distance, from, fleet.launchTime);
 
         if (toPlanet.owner == attacker) {
-            _performReinforcement(attacker, toPlanet, to, production, fleetId, quantity);
+            _performReinforcement(attacker, toPlanet, to, production, fleetId, fleet.quantity);
         } else {
-            _performAttack(attacker, from, toPlanet, to, production, fleetId, quantity);
+            _performAttack(attacker, from, toPlanet, to, production, fleetId, fleet.quantity);
         }
-        fleet.quantity = 0; // TODO reset all to get gas refund?
+        _fleets[fleetId].quantity = 0; // TODO reset all to get gas refund?
     }
 
     function _checkDistance(
@@ -454,11 +438,11 @@ contract OuterSpace {
     function _checkTime(
         uint256 distance,
         uint256 from,
-        Fleet memory fleet
+        uint32 launchTime
     ) internal view {
-        uint256 reachTime = fleet.launchTime + (distance * (_timePerDistance * 10000)) / _speed(from);
+        uint256 reachTime = launchTime + (distance * (_timePerDistance * 10000)) / _speed(from);
         require(block.timestamp >= reachTime, "too early");
-        require(block.timestamp < reachTime + 2 hours, "too late, your spaceships are lost in space");
+        require(block.timestamp < reachTime + _resolveWindow, "too late, your spaceships are lost in space");
     }
 
     function _getPlanet(uint256 location) internal view returns (Planet storage) {

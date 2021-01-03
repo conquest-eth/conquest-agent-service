@@ -56,6 +56,7 @@ importers:
       '@ethersproject/bignumber': 5.0.8
       '@ethersproject/bytes': 5.0.5
       '@ethersproject/constants': 5.0.7
+      '@ethersproject/contracts': 5.0.8
       '@ethersproject/providers': 5.0.14
       '@ethersproject/solidity': 5.0.5
       '@ethersproject/units': 5.0.8
@@ -80,6 +81,7 @@ importers:
       '@ethersproject/bignumber': ^5.0.5
       '@ethersproject/bytes': ^5.0.3
       '@ethersproject/constants': ^5.0.7
+      '@ethersproject/contracts': ^5.0.8
       '@ethersproject/providers': ^5.0.14
       '@ethersproject/solidity': ^5.0.2
       '@ethersproject/units': ^5.0.8

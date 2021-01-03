@@ -6,7 +6,7 @@ import {Wallet} from '@ethersproject/wallet';
 import {keccak256} from '@ethersproject/solidity';
 import {SpaceInfo} from 'planet-wars-common';
 import type {PlanetInfo} from 'planet-wars-common';
-import {ContractReceipt} from 'ethers';
+import {ContractReceipt} from '@ethersproject/contracts';
 import {Provider} from '@ethersproject/providers';
 
 type AnyContract = any; // TODO ?
@@ -56,36 +56,38 @@ export async function setupOuterSpace(): Promise<{
 }
 
 export async function sendInSecret(
+  spaceInfo: SpaceInfo,
   player: User,
   {from, quantity, to}: {from: PlanetInfo; quantity: number; to: PlanetInfo}
 ): Promise<{
+  receipt: ContractReceipt;
   timeRequired: number;
   distance: number;
   fleetId: string;
+  from: string;
   to: string;
   secret: string;
-} | null> {
+}> {
   const secret = Wallet.createRandom().privateKey;
   const toHash = keccak256(['bytes32', 'uint256'], [secret, to.location.id]);
+  const fleetId = keccak256(['bytes32', 'uint256'], [toHash, from.location.id]);
   const receipt = await waitFor<ContractReceipt>(
-    player.OuterSpace.send(1, from.location.id, quantity, toHash) // TODO subId
+    player.OuterSpace.send(from.location.id, quantity, toHash) // TODO subId
   );
-  const event = receipt.events?.find((e: any) => e.event === 'FleetSent'); // TODO any
-  if (!event || !event.args || !event.args[2]) {
-    return null;
-  }
   const distanceSquared =
     Math.pow(to.location.globalX - from.location.globalX, 2) +
     Math.pow(to.location.globalY - from.location.globalY, 2);
   const distance = Math.floor(Math.sqrt(distanceSquared));
   const timeRequired = BigNumber.from(distance)
-    .mul(1 * 3600 * 10000)
+    .mul(1 * spaceInfo.timePerDistance * 10000)
     .div(from.stats.speed)
     .toNumber();
   return {
+    receipt,
     timeRequired,
     distance,
-    fleetId: event.args[2],
+    fleetId,
+    from: from.location.id,
     to: to.location.id,
     secret,
   };

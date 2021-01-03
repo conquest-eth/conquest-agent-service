@@ -59,7 +59,7 @@
         Planet
         {$planet.location.x},{$planet.location.y}
       </h2>
-      {#if $planet.state && $planet.state.owner}
+      {#if $planet.state && $planet.state.owner !== "0x0000000000000000000000000000000000000000"}
         <div>
           <Blockie
             class="flex-auto w-8 h-8 flot"
@@ -73,10 +73,12 @@
       <label for="active">active:</label>
       <span id="active" class="value">{$planet.state.active}</span>
     </div>
-    <div class="m-1">
-      <label for="exiting">exiting:</label>
-      <span id="exiting" class="value">{$planet.state.exitTimeLeft}</span>
-    </div>
+      {#if $planet.state.exiting}
+      <div class="m-1">
+        <label for="exiting">exiting:</label>
+        <span id="exiting" class="value">{$planet.state.exitTimeLeft}</span>
+      </div>
+      {/if}
     {/if}
 
     <div class="m-1">
@@ -113,9 +115,12 @@
     <div class="flex flex-col">
       {#if $planet.state}
         {#if $wallet.address}
-          {#if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
+          {#if $planet.state.owner === '0x0000000000000000000000000000000000000000' || (wallet.address.toLowerCase() === $planet.state.owner.toLowerCase() && !$planet.state.active)}
             <PanelButton class="flex-auto" on:click={capture}>
               Capture
+            </PanelButton>
+            <PanelButton class="m-1 flex-auto" on:click={sendTo}>
+              Attack
             </PanelButton>
           {:else if $planet.state.owner.toLowerCase() === $wallet.address.toLowerCase()}
             <PanelButton class="m-1 flex-auto" on:click={sendTo}>

@@ -274,8 +274,11 @@ async function _sync(fleetsToDelete: string[] = [], exitsToDelete: string[] = []
 function _saveToLocalStorage(address: string, chainId: string, data: SecretData) {
   const toStorage = JSON.stringify(data);
   const encrypted = encrypt(toStorage);
-  // TODO compress + encrypt
-  localStorage.setItem(LOCAL_STORAGE_KEY(address, chainId), encrypted);
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY(address, chainId), encrypted);
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 async function _setData(address: string, chainId: string, data: SecretData, fleetIdsToDelete: string[] = [], exitsToDelete: string[] = []) {
@@ -462,8 +465,8 @@ async function listenForFleets(
       return;
     }
 
-    if (fleetData && fleetData.launchTime.gt(0)) {
-      const launchTime = fleetData.launchTime.toNumber(); // TODO return uint32 for launchTime in OuterSpace.sol ?
+    if (fleetData && fleetData.launchTime > 0) {
+      const launchTime = fleetData.launchTime;
       if (fleetData.quantity === 0) { // TODO use resolveTxHash instead ? // this would allow resolve to clear storage in OuterSpace.sol
         deleteFleet(fleetId);
         continue;
@@ -623,7 +626,7 @@ function deleteFleet(fleetId: string) {
   _setData(wallet.address, wallet.chain.chainId, $data.data, [fleetId]);
 }
 
-function _hashString() {
+function _hashString() { // TODO cache
   return keccak256(
     ['bytes32', 'bytes32'],
     [
@@ -634,21 +637,23 @@ function _hashString() {
 }
 
 async function hashFleet(
-  subId: string,
+  from: {x: number; y: number},
   to: {x: number; y: number}
-): Promise<string> {
+): Promise<{toHash: string; fleetId: string; secret: string}> {
+  // TODO use timestamp to allow user to retrieve a lost secret by knowing `to` and approximate time of launch
+  const randomNonce = '0x' + Array.from(crypto.getRandomValues(new Uint8Array(32))).map((b) => b.toString(16).padStart(2, '0')).join('');
   const toString = xyToLocation(to.x, to.y);
-  const secretHash = keccak256(['bytes32', 'uint88'], [_hashString(), subId]);
+  const fromString = xyToLocation(from.x, from.y);
+  console.log({randomNonce, toString, fromString});
+  const secretHash = keccak256(['bytes32', 'bytes32'], [_hashString(), randomNonce]);
+  console.log({secretHash});
   const toHash = keccak256(['bytes32', 'uint256'], [secretHash, toString]);
-  return toHash;
+  const fleetId = keccak256(['bytes32', 'uint256'], [toHash, fromString]);
+  return {toHash, fleetId, secret: secretHash};
 }
 
 function fleetSecret(fleetId: string): string {
-  const subId = BigNumber.from(fleetId)
-    .mod('0x10000000000000000000000')
-    .toString();
-  console.log('fleetSecret', {subId});
-  return keccak256(['bytes32', 'uint88'], [_hashString(), subId]);
+  return $data.data.fleets[fleetId].secret;
 }
 
 function recordFleetResolvingTxhash(fleetId: string, txHash: string): void {

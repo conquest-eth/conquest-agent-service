@@ -98,20 +98,10 @@ async function confirm(fleetAmount: number): Promise<void> {
   const flow = _set({step: 'CREATING_TX'});
   const from = flow.data.from;
   const to = flow.data.to;
-  const subId =
-    '0x' +
-    ((crypto.getRandomValues(new Uint8Array(10)) as unknown) as number[])
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-  const fleetId = BigNumber.from(subId)
-    .add(BigNumber.from(wallet.address).shl(96))
-    .toHexString();
+  const {toHash, fleetId, secret} = await privateAccount.hashFleet(from, to);
 
-  console.log('send', {subId});
-  const toHash = await privateAccount.hashFleet(subId, to);
   _set({step: 'WAITING_TX'});
   const tx = await wallet.contracts.OuterSpace.send(
-    subId,
     xyToLocation(from.x, from.y),
     fleetAmount,
     toHash
@@ -133,9 +123,10 @@ async function confirm(fleetAmount: number): Promise<void> {
     from,
     fleetAmount,
     duration: fleetDuration, // TODO stricly speaking not necessary but allow us to not need to refetch the stats from spaceInfo
-    launchTime: Math.floor(Date.now() / 1000), //TODO adjust + service to adjust once tx is mined
+    launchTime: Math.floor(Date.now() / 1000), //TODO adjust + service to adjust once tx is mined // use block time instead of Date.now
     owner: wallet.address,
-    sendTxHash: tx.hash
+    sendTxHash: tx.hash,
+    secret: secret
   });
 
   _set({

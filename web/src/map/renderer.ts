@@ -461,7 +461,7 @@ export class Renderer {
           let circleDash = [];
           let circleRotate = false;
           if (planet.loaded) {
-            if (planet.state && planet.state.owner !==  '0x0000000000000000000000000000000000000000') {
+            if (planet.state.owner !==  '0x0000000000000000000000000000000000000000') {
               if (this.renderState.space.player) {
                 if (
                   // TODO enforce convention to not need `toLowerCase` overhead
@@ -492,11 +492,30 @@ export class Renderer {
               //   // TODO BigNumber ?
               //   circleDash = [2, 10];
               // }
+
             }
+
             if (planet.state.active) {
               // TODO ?
               if (planet.state.exiting) {
                 exitRatio = (this.renderState.space.spaceInfo.exitDuration - planet.state.exitTimeLeft) / this.renderState.space.spaceInfo.exitDuration;
+              }
+            } else {
+              if (planet.state.owner !==  '0x0000000000000000000000000000000000000000'){
+                circleDash = [15, 5];
+                if (this.renderState.space.player) {
+                  if (
+                    // TODO enforce convention to not need `toLowerCase` overhead
+                    planet.state.owner.toLowerCase() ===
+                    this.renderState.space.player.toLowerCase()
+                  ) {
+                    circleColor = 'forestgreen';
+                  } else {
+                    circleColor = 'red';
+                  }
+                } else {
+                  circleColor = 'white';
+                }
               }
             }
           } else {
@@ -560,6 +579,7 @@ export class Renderer {
       scale = 0.25;
     }
 
+    ctx.setLineDash([]);
     const fleets = this.renderState.space.getOwnFleets();
     for (const fleet of fleets) {
       const fromX = fleet.from.x;
