@@ -568,6 +568,7 @@ contract OuterSpace {
                 uint32 numSpaceships = numAttack - attackerLoss;
                 _planets[to].numSpaceships = _setActiveNumSpaceships(false, numSpaceships);
                 _planets[to].lastUpdated = uint32(block.timestamp);
+                _planets[to].owner = attacker;
                 emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);
             } else {
                 emit Attack(attacker, fleetId, to, attackerLoss, 0, false, 0);
