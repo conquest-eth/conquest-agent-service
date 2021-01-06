@@ -125,7 +125,7 @@
               </PanelButton>
             {:else}
               <PanelButton class="m-1 flex-auto" on:click={sendTo}>
-                Send
+                Send To
               </PanelButton>
             {/if}
           {:else if wallet.address.toLowerCase() === $planet.state.owner.toLowerCase() && !$planet.state.active}
@@ -133,7 +133,7 @@
               Capture
             </PanelButton>
             <PanelButton class="m-1 flex-auto" on:click={sendTo}>
-              Send
+              Send To
             </PanelButton>
           {:else if $planet.state.owner.toLowerCase() === $wallet.address.toLowerCase()}
             <PanelButton class="m-1 flex-auto" on:click={sendTo}>

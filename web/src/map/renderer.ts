@@ -582,6 +582,9 @@ export class Renderer {
     ctx.setLineDash([]);
     const fleets = this.renderState.space.getOwnFleets();
     for (const fleet of fleets) {
+      if (this.renderState.space.isTxPerformed(fleet.resolveTxHash)) {
+        continue;
+      }
       const fromX = fleet.from.x;
       const fromY = fleet.from.y;
       const fromPlanet = this.renderState.space.planetAt(fromX, fromY);

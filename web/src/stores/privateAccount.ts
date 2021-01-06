@@ -89,6 +89,8 @@ async function _loadData(address: string, chainId: string) {
   startMonitoring(address, chainId);
 }
 
+const _txPerformed: Record<string, boolean> = {};
+
 let _lastId = 0;
 async function syncRequest(method: string, params: string[]): Promise<Response> {
   return await fetch("https://cf-worker-2.rim.workers.dev/", { // TODO env variable
@@ -457,12 +459,37 @@ async function listenForFleets(
     } catch (e) {
       //
     }
+    let currentFleetData;
+    try {
+      currentFleetData = await wallet.contracts.OuterSpace.callStatic.getFleet( // TODO batch getFleets
+        fleetId
+      );
+    } catch (e) {
+      //
+    }
     if (
       !$data.walletAddress ||
       $data.walletAddress.toLowerCase() !== address.toLowerCase() ||
       $data.chainId !== chainId
     ) {
       return;
+    }
+
+    if (fleet.resolveTxHash && currentFleetData && currentFleetData.launchTime > 0) {
+      if (currentFleetData.quantity == 0) {
+        _txPerformed[fleet.resolveTxHash] = true;
+      } else {
+        _txPerformed[fleet.resolveTxHash] = false;
+        const launchTime = currentFleetData.launchTime;
+        const resolveWindow = contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
+        console.log({duration: fleet.duration, launchTime: launchTime, resolveWindow});
+        const expiryTime = launchTime + fleet.duration + resolveWindow;
+        if (latestFinalityBlock.timestamp > expiryTime) {
+          console.log({expirted: fleetId})
+          deleteFleet(fleetId);
+          continue;
+        }
+      }
     }
 
     if (fleetData && fleetData.launchTime > 0) {
@@ -679,6 +706,13 @@ function getFleets(): OwnFleet[] {
   }
 }
 
+function isTxPerformed(txHash?: string): boolean {
+  if (!txHash) {
+    return false;
+  }
+  return _txPerformed[txHash];
+}
+
 function getFleet(fleetId: string): OwnFleet | null {
   if ($data.data) {
     return $data.data.fleets[fleetId];
@@ -702,6 +736,7 @@ export default dataStore = {
   fleetSecret,
   getFleets,
   getFleet,
+  isTxPerformed,
   get walletAddress() {
     return $data.walletAddress;
   },
