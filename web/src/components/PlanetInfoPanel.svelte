@@ -69,15 +69,15 @@
     </div>
 
     {#if $planet.state} <!-- if active-->
-    <div class="m-1">
-      <label for="active">active:</label>
-      <span id="active" class="value">{$planet.state.active}</span>
-    </div>
-      {#if $planet.state.exiting}
       <div class="m-1">
-        <label for="exiting">exiting:</label>
-        <span id="exiting" class="value">{$planet.state.exitTimeLeft}</span>
+        <label for="active">active:</label>
+        <span id="active" class="value">{$planet.state.active}</span>
       </div>
+      {#if $planet.state.exiting}
+        <div class="m-1">
+          <label for="exiting">exiting:</label>
+          <span id="exiting" class="value">{$planet.state.exitTimeLeft}</span>
+        </div>
       {/if}
     {/if}
 
@@ -101,26 +101,39 @@
       <label for="speed">speed:</label>
       <span id="speed" class="value">{$planet.stats.speed}</span>
     </div>
-    {#if $planet.state}
-      <div class="m-1">
-        <label for="numSpaceships">spaceships:</label>
-        <span id="numSpaceships" class="value">{$planet.state.numSpaceships}</span>
-      </div>
-    {:else}
+    {#if !$planet.state || $planet.state.natives}
       <div class="m-1">
         <label for="natives">natives:</label>
         <span id="natives" class="value">{$planet.stats.natives}</span>
+      </div>
+    {:else}
+      <div class="m-1">
+        <label for="numSpaceships">spaceships:</label>
+        <span id="numSpaceships" class="value">{$planet.state.numSpaceships}</span>
       </div>
     {/if}
     <div class="flex flex-col">
       {#if $planet.state}
         {#if $wallet.address}
-          {#if $planet.state.owner === '0x0000000000000000000000000000000000000000' || (wallet.address.toLowerCase() === $planet.state.owner.toLowerCase() && !$planet.state.active)}
+          {#if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
+            <PanelButton class="flex-auto" on:click={capture}>
+              Capture
+            </PanelButton>
+            {#if $planet.state.natives}
+              <PanelButton class="m-1 flex-auto" on:click={sendTo}>
+                Attack
+              </PanelButton>
+            {:else}
+              <PanelButton class="m-1 flex-auto" on:click={sendTo}>
+                Send
+              </PanelButton>
+            {/if}
+          {:else if wallet.address.toLowerCase() === $planet.state.owner.toLowerCase() && !$planet.state.active}
             <PanelButton class="flex-auto" on:click={capture}>
               Capture
             </PanelButton>
             <PanelButton class="m-1 flex-auto" on:click={sendTo}>
-              Attack
+              Send
             </PanelButton>
           {:else if $planet.state.owner.toLowerCase() === $wallet.address.toLowerCase()}
             <PanelButton class="m-1 flex-auto" on:click={sendTo}>
