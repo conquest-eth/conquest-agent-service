@@ -64,9 +64,12 @@ export default dataStore = {
 
   async confirm(): Promise<void> {
     const flow = _set({step: 'WAITING_TX'});
+    const latestBlock = await wallet.provider.getBlock("latest");
     const tx = await wallet.contracts.OuterSpace.acquire(
       flow.data.location
     );
+
+    privateAccount.recordCapture(flow.data.location, tx.hash, latestBlock.timestamp, tx.nonce); // TODO check
     _set({
       step: 'SUCCESS',
       data: {txHash: tx.hash},

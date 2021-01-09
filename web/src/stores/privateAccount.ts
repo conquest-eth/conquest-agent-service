@@ -14,9 +14,22 @@ import contractsInfo from '../contracts.json';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const { compressToUint8Array, decompressFromUint8Array } = (lz as any).default as lz.LZStringStatic;
 
+type Capture = {
+  txHash: string;
+  nonce: number;
+  time: number;
+};
+
+type Withdrawal = {
+  txHash: string;
+  nonce: number;
+}
+
 type SecretData = {
   fleets: Record<string, OwnFleet>;
-  exits: Record<string, number>
+  exits: Record<string, number>;
+  captures: Record<string, Capture>;
+  lastWithdrawal?: Withdrawal;
 };
 
 type PrivateAccountData = {
@@ -71,7 +84,7 @@ function LOCAL_STORAGE_KEY(address: string, chainId: string) {
 async function _loadData(address: string, chainId: string) {
   // TODO load from signature based DB
   const fromStorage = localStorage.getItem(LOCAL_STORAGE_KEY(address, chainId));
-  let data = {fleets: {}, exits: {}};
+  let data = {fleets: {}, exits: {}, captures: {}};
   if (fromStorage) {
     try {
       const decrypted = decrypt(fromStorage);
@@ -125,7 +138,7 @@ async function _syncDown(): Promise<{newDataOnLocal: boolean, newDataOnRemote: b
     _set({sync: 'NOT_SYNCED', syncError: error || json.error});
     return; // TODO retry ?
   }
-  let data: SecretData = {fleets: {}, exits: {}};
+  let data: SecretData = {fleets: {}, exits: {}, captures: {}};
   if (json.result.data && json.result.data !== "") {
     try {
       const decryptedData = decrypt(json.result.data);
@@ -149,7 +162,7 @@ async function _syncDown(): Promise<{newDataOnLocal: boolean, newDataOnRemote: b
 
 function _merge(data: SecretData): {newDataOnLocal: boolean, newDataOnRemote: boolean} {
   if (!$data.data) {
-    $data.data = {fleets: {}, exits: {}}
+    $data.data = {fleets: {}, exits: {}, captures: {}}
   }
   if (!$data.data.fleets) {
     $data.data.fleets = {};
@@ -229,7 +242,7 @@ function decrypt(data: string): string {
   return decompressFromUint8Array(decryptedBytes); // return aes.utils.utf8.fromBytes(decryptedBytes);
 }
 
-async function _sync(fleetsToDelete: string[] = [], exitsToDelete: string[] = []) {
+async function _sync(fleetsToDelete: string[] = [], exitsToDelete: string[] = [], capturesToDelete: string[] = []) {
 
   const syncDownResult = await _syncDown();
 
@@ -242,6 +255,9 @@ async function _sync(fleetsToDelete: string[] = [], exitsToDelete: string[] = []
     }
     for (const exitToDelete of exitsToDelete) {
       delete $data.data.exits[exitToDelete];
+    }
+    for (const captureToDelete of capturesToDelete) {
+      delete $data.data.captures[captureToDelete];
     }
     _set($data);
 
@@ -283,9 +299,9 @@ function _saveToLocalStorage(address: string, chainId: string, data: SecretData)
   }
 }
 
-async function _setData(address: string, chainId: string, data: SecretData, fleetIdsToDelete: string[] = [], exitsToDelete: string[] = []) {
+async function _setData(address: string, chainId: string, data: SecretData, fleetIdsToDelete: string[] = [], exitsToDelete: string[] = [], capturesToDelete: string[] = []) {
   _saveToLocalStorage(address, chainId, data);
-  _sync(fleetIdsToDelete, exitsToDelete); // TODO fetch before set local storage to avoid aother encryption roundtrip
+  _sync(fleetIdsToDelete, exitsToDelete, capturesToDelete); // TODO fetch before set local storage to avoid aother encryption roundtrip
 }
 
 const walletData: Record<string, {wallet: Wallet, aesKey: Uint8Array}> = {};
@@ -379,15 +395,17 @@ function stopMonitoring() {
 function startMonitoring(address: string, chainId: string) {
   stopMonitoring();
   checking(address, chainId);
-  monitorProcess = setInterval(() => checking(address, chainId), 1000); // TODO time config
+  monitorProcess = setInterval(() => checking(address, chainId), 5000); // TODO time config
 }
 
 async function checking(
   address: string,
   chainId: string
 ) {
-  await listenForFleets(address, chainId);
-  await listenForExits(address, chainId);
+  // TODO check blockNumber and only perform if different ?
+  listenForFleets(address, chainId);
+  listenForExits(address, chainId);
+  listenForCaptures(address, chainId);
 }
 
 async function listenForExits(
@@ -428,6 +446,52 @@ async function listenForExits(
 
       if (planetData && (planetData[0].exitTime === 0 || planetData[0].owner !== address)) {
         deleteExit(exitId);
+      }
+    }
+  }
+}
+
+async function listenForCaptures(
+  address: string,
+  chainId: string
+): Promise<void> {
+  if (!$data.data) {
+    return;
+  }
+  const latestBlock = await wallet.provider.getBlock("latest");
+  const latestBlockNumber = latestBlock.number;
+  if (!$data.data) {
+    return;
+  }
+  const locations = Object.keys($data.data.captures);
+  for (const location of locations) {
+    const capture = $data.data.captures[location];
+    const receipt = await wallet.provider.getTransactionReceipt(capture.txHash);
+    if (
+      !$data.walletAddress ||
+      $data.walletAddress.toLowerCase() !== address.toLowerCase() ||
+      $data.chainId !== chainId
+    ) {
+      return;
+    }
+    if (receipt) {
+      if (receipt.status && receipt.status === 0) {
+        // TODO record Error ?
+      }
+      if (receipt.confirmations == finality) { // TODO finality
+        deleteCapture(location); // TODO pending
+      }
+    } else {
+      const finalNonce = await wallet.provider.getTransactionCount(wallet.address, latestBlockNumber - finality);
+      if (
+        !$data.walletAddress ||
+        $data.walletAddress.toLowerCase() !== address.toLowerCase() ||
+        $data.chainId !== chainId
+      ) {
+        return;
+      }
+      if (finalNonce > capture.nonce) { // TODO check equality or not
+        deleteCapture(location);
       }
     }
   }
@@ -602,7 +666,7 @@ function execute(
 
 function recordExit(location: string, timestamp: number) {
   if (!$data.data) {
-    $data.data = {fleets: {}, exits: {}}; // TODO everywhere
+    $data.data = {fleets: {}, exits: {}, captures: {}}; // TODO everywhere
   }
   const exits = $data.data.exits;
   exits[location + "_" + timestamp] = timestamp;
@@ -616,6 +680,35 @@ function recordWithdrawal(loctions: string[], txHash: string) {
   // TODO
 }
 
+function recordCapture(location: string, txHash: string, time: number, nonce: number) {
+  console.log(`record capture ${location}`);
+  if (!$data.data) {
+    $data.data = {fleets: {}, exits: {}, captures: {}}; // TODO everywhere
+  }
+  const captures = $data.data.captures;
+  captures[location] ={
+    txHash,
+    time,
+    nonce
+  };
+  _set({
+    data: $data.data,
+  });
+  _setData(wallet.address, wallet.chain.chainId, $data.data);
+}
+
+function deleteCapture(id: string) {
+  console.log(`delete capture ${id}`);
+  if (!$data.data) {
+    return;
+  }
+  const captures = $data.data.captures;
+  delete captures[id];
+  _set({
+    data: $data.data,
+  });
+  _setData(wallet.address, wallet.chain.chainId, $data.data, [], [], [id]);
+}
 
 function deleteExit(id: string) {
   if (!$data.data) {
@@ -631,7 +724,7 @@ function deleteExit(id: string) {
 
 function recordFleet(fleetId: string, fleet: OwnFleet) {
   if (!$data.data) {
-    $data.data = {fleets: {}, exits: {}};
+    $data.data = {fleets: {}, exits: {}, captures: {}};
   }
   const fleets = $data.data.fleets;
   fleets[fleetId] = fleet;
@@ -685,7 +778,7 @@ function fleetSecret(fleetId: string): string {
 
 function recordFleetResolvingTxhash(fleetId: string, txHash: string): void {
   if (!$data.data) {
-    $data.data = {fleets: {}, exits: {}};
+    $data.data = {fleets: {}, exits: {}, captures: {}};
   }
   const fleets = $data.data.fleets;
   const fleet = fleets[fleetId];
@@ -713,6 +806,10 @@ function isTxPerformed(txHash?: string): boolean {
   return _txPerformed[txHash];
 }
 
+function isCapturing(location: string): boolean {
+  return $data.data && $data.data.captures[location] && $data.data.captures[location].txHash !== null;
+}
+
 function getFleet(fleetId: string): OwnFleet | null {
   if ($data.data) {
     return $data.data.fleets[fleetId];
@@ -729,6 +826,8 @@ export default dataStore = {
   recordFleet,
   recordFleetResolvingTxhash,
   recordExit,
+  recordCapture,
+  isCapturing,
   get privateWallet() {
     return $data.wallet;
   },

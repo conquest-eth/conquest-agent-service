@@ -9,7 +9,7 @@ const walletStores = WalletStores({
   chainConfigs: contractsInfo,
   builtin: {autoProbe: true},
   transactions: {
-    autoDelete: false,
+    autoDelete: true,
     finality,
   },
   localStoragePrefix:
