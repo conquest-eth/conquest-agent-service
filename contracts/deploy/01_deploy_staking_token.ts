@@ -12,6 +12,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     contract: 'ERC20WithInitialBalance',
     args: [parseEther('1000000000000'), parseEther('1000'), AddressZero],
     log: true,
+    autoMine: true,
   });
 };
 export default func;

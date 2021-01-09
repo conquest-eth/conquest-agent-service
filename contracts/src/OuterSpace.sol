@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Libraries/Random.sol";
+import "hardhat-deploy/solc_0.7/proxy/Proxied.sol";
 
 // import "hardhat/console.sol";
 
@@ -12,11 +13,12 @@ import "./Libraries/Random.sol";
 // cons:
 // - allow a player to easily have multiple address hiding its true potential
 
-contract OuterSpace {
+contract OuterSpace is Proxied {
     using Random for bytes32;
 
     uint256 internal constant STAKE_MULTIPLIER = 5e18; // = 5 DAI min
     uint32 internal constant ACTIVE_MASK = 2**31;
+    int256 internal constant UINT32_MAX = 2**32-1;
 
     bytes32 internal immutable _genesis;
     IERC20 internal immutable _stakingToken;
@@ -30,6 +32,15 @@ contract OuterSpace {
     mapping(address => uint256) internal _stakeReadyToBeWithdrawn;
 
     mapping(address => mapping(address => bool)) internal _operators;
+
+    struct Discovered {
+        uint32 minX;
+        uint32 maxX;
+        uint32 minY;
+        uint32 maxY;
+    }
+
+    Discovered internal _discovered;
 
     struct Planet {
         address owner;
@@ -89,6 +100,31 @@ contract OuterSpace {
         _resolveWindow = resolveWindow;
         _timePerDistance = t;
         _exitDuration = exitDuration;
+
+        postUpgrade(
+            stakingToken,
+            genesis,
+            resolveWindow,
+            timePerDistance,
+            exitDuration
+        );
+    }
+
+    function postUpgrade(
+        IERC20,
+        bytes32,
+        uint16,
+        uint16,
+        uint16
+    ) public proxied {
+        if (_discovered.minX == 0) {
+            _discovered = Discovered({
+                minX: 6,
+                maxX: 6,
+                minY: 6,
+                maxY: 6
+            });
+        }
     }
 
     function acquire(uint256 location) external payable {
@@ -153,6 +189,8 @@ contract OuterSpace {
             // get from Player account ?
             // TODO _stakingToken.transferFrom(sender, address(this), stakeAmount);
         }
+
+        _handleDiscovery(location);
 
         emit PlanetStake(sender, location, currentNumSpaceships);
     }
@@ -282,7 +320,7 @@ contract OuterSpace {
         stats = _getPlanetStats(location);
     }
 
-    function getPlanetStates(uint256[] calldata locations) external view returns (ExternalPlanet[] memory planetStates) {
+    function getPlanetStates(uint256[] calldata locations) external view returns (ExternalPlanet[] memory planetStates, Discovered memory discovered) {
         planetStates = new ExternalPlanet[](locations.length);
         for(uint256 i = 0; i < locations.length; i ++) {
             Planet storage planet = _getPlanet(locations[i]);
@@ -295,6 +333,11 @@ contract OuterSpace {
                 active: active
             });
         }
+        discovered = _discovered;
+    }
+
+    function getDiscovered() external view returns (Discovered memory) {
+        return _discovered;
     }
 
     // ////////////// EIP721 /////////////////// // TODO ?
@@ -321,6 +364,60 @@ contract OuterSpace {
     //         _stakeReadyToBeWithdrawn[owner] += stake * STAKE_MULTIPLIER;
     //     }
     // }
+
+    // solhint-disable-next-line code-complexity
+    function _handleDiscovery(uint256 location) internal {
+        Discovered memory discovered = _discovered;
+        int256 x = int256(int128(location & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF));
+        int256 y = int256(int128(location >> 128));
+        bool changes = false;
+        if (x < 0) {
+            require(-x <= discovered.minX, "NOT_REACHABLE_YET_MINX");
+            x = -x + 6;
+            if (x > UINT32_MAX) {
+                x = UINT32_MAX;
+            }
+            if (discovered.minX < uint32(x)) {
+                discovered.minX = uint32(x);
+                changes = true;
+            }
+        } else {
+            require(x <= discovered.maxX, "NOT_REACHABLE_YET_MAXX");
+            x = x + 6;
+            if (x > UINT32_MAX) {
+                x = UINT32_MAX;
+            }
+            if (discovered.maxX < uint32(x)) {
+                discovered.maxX = uint32(x);
+                changes = true;
+            }
+        }
+
+        if (y < 0) {
+            require(-y <= discovered.minY, "NOT_REACHABLE_YET_MINY");
+            y = -y + 6;
+            if (y > UINT32_MAX) {
+                y = UINT32_MAX;
+            }
+            if (discovered.minY < uint32(y)) {
+                discovered.minY = uint32(y);
+                changes = true;
+            }
+        } else {
+            require(y <= discovered.maxY, "NOT_REACHABLE_YET_MAXY");
+            y = y + 6;
+            if (y > UINT32_MAX) {
+                y = UINT32_MAX;
+            }
+            if (discovered.maxY < uint32(y)) {
+                discovered.maxY = uint32(y);
+                changes = true;
+            }
+        }
+        if (changes) {
+            _discovered = discovered;
+        }
+    }
 
     function _hasJustExited(uint32 exitTime) internal view returns (bool) {
         return exitTime > 0 && block.timestamp > exitTime + _exitDuration;

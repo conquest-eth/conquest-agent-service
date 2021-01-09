@@ -115,6 +115,10 @@
     "ethnode": "dotenv -e .env -e contracts/.env -- docker-compose -f docker-compose.yml up ",
     "ethnode:down": "docker-compose -f docker-compose.yml down",
     "shell:ethnode": "newsh \"npm run ethnode\"",
-    "shell:ethnode:web:contracts": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all -l ethnode:down --parallel shell:common shell:web shell:ethnode --sequential common:build contracts:clean shell:contracts seed"
+    "shell:ethnode:web:contracts": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all -l ethnode:down --parallel shell:common shell:web shell:ethnode --sequential common:build contracts:clean shell:contracts seed",
+
+    "with-ethnode": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all contracts:clean --parallel common:dev web contracts seed:build",
+    "shell:with-ethnode": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all contracts:clean --parallel shell:common shell:web shell:contracts seed:build",
+    "shell:recontracts": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all contracts:clean shell:contracts seed:build"
   }
 }

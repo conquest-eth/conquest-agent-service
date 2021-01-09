@@ -15,7 +15,7 @@ const timeKeeper = {
   }
 }
 
-async function fetch(planetIds: string[]): Promise<PlanetData[]> {
+async function fetch(planetIds: string[]): Promise<{planetStates: PlanetData[], discovered: {minX: number; minY: number; maxX: number; maxY: number}}> {
   const contracts = chain.contracts || fallback.contracts;
   if (contracts) {
     return contracts.OuterSpace.getPlanetStates(planetIds);
@@ -26,7 +26,7 @@ async function fetch(planetIds: string[]): Promise<PlanetData[]> {
   } else {
     console.log('not ready');
   }
-  return [];
+  return {planetStates: [], discovered: {minX: 1, minY:1, maxX: 1, maxY: 1}};
 }
 
 

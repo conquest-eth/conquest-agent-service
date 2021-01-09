@@ -39,10 +39,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       genesisHash,
       resolveWindow,
       timePerDistance,
-      exitDuration,
+      exitDuration
     ],
-    proxy: true, // TODO remove // dev only // rinkeby
+    proxy: "postUpgrade", // TODO remove // dev only // rinkeby
     log: true,
+    autoMine: true,
   });
 };
 export default func;
