@@ -626,10 +626,10 @@ export class Renderer {
       }
       const fromX = fleet.from.x;
       const fromY = fleet.from.y;
-      const fromPlanet = this.renderState.space.planetAt(fromX, fromY);
+      const fromPlanet = this.renderState.space.ensurePlanetAt(fromX, fromY);
       const toX = fleet.to.x;
       const toY = fleet.to.y;
-      const toPlanet = this.renderState.space.planetAt(toX, toY);
+      const toPlanet = this.renderState.space.ensurePlanetAt(toX, toY);
 
       const gFromX = fromPlanet.location.globalX;
       const gFromY = fromPlanet.location.globalY;
