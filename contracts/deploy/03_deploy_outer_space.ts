@@ -15,7 +15,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const chainId = await hre.getChainId();
 
-  const stakingToken = await hre.deployments.get('StakingToken');
+  const playToken = await hre.deployments.get('PlayToken');
 
   let genesisHash =
     '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
@@ -35,7 +35,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     linkedData: {genesisHash, resolveWindow, timePerDistance, exitDuration},
     args: [
-      stakingToken.address,
+      playToken.address,
       genesisHash,
       resolveWindow,
       timePerDistance,
@@ -47,3 +47,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 };
 export default func;
+func.dependencies = ["PlayToken_deploy"]
+func.tags = ["OuterSpace", "OuterSpace_deploy"]

@@ -1,18 +1,24 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 import {AddressZero} from '@ethersproject/constants';
-import {parseEther} from '@ethersproject/units';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deployer} = await hre.getNamedAccounts();
   const {deploy} = hre.deployments;
 
-  await deploy('StakingToken', {
+  const tokenManager = deployer; // TODO tokenManager
+
+  const stableToken = await hre.deployments.get('StableToken');
+
+
+  await deploy('PlayToken', {
     from: deployer,
-    contract: 'ERC20WithInitialBalance',
-    args: [parseEther('1000000000000'), parseEther('1000'), AddressZero],
+    contract: 'Play',
+    args: [stableToken.address, tokenManager],
     log: true,
     autoMine: true,
   });
 };
 export default func;
+func.dependencies = ["StableToken_deploy"]
+func.tags = ["PlayToken", "PlayToken_deploy"]

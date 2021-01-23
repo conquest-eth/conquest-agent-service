@@ -304,6 +304,20 @@ async function _setData(address: string, chainId: string, data: SecretData, flee
   _sync(fleetIdsToDelete, exitsToDelete, capturesToDelete); // TODO fetch before set local storage to avoid aother encryption roundtrip
 }
 
+async function clearData() {
+  const syncDownResult = await _syncDown();
+  if (!wallet.address || !wallet.chain.chainId) {
+    console.log(` no: ${wallet.address}, ${wallet.chain.chainId}`);
+    return;
+  }
+  const key = LOCAL_STORAGE_KEY(wallet.address, wallet.chain.chainId);
+  localStorage.removeItem(key);
+  const data = "";
+  const counter = syncDownResult.counter.add(1).toString();
+  const signature = await $data.wallet.signMessage('put:' + 'planet-wars-test' + ':' + counter + ':' + data);
+  await syncRequest("wallet_putString", [$data.wallet.address, "planet-wars-test", counter, data, signature]);
+}
+
 const walletData: Record<string, {wallet: Wallet, aesKey: Uint8Array}> = {};
 
 type Contracts = {
@@ -839,6 +853,7 @@ export default dataStore = {
   get walletAddress() {
     return $data.walletAddress;
   },
+  clearData,
 };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

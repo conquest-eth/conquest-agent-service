@@ -29,6 +29,7 @@ const config: HardhatUserConfig = {
   },
   namedAccounts: {
     deployer: 0,
+    stableTokenBeneficiary: 9,
   },
   networks: {
     hardhat: {

@@ -3,18 +3,37 @@
   import Modal from '../components/Modal.svelte';
   import Button from '../components/Button.svelte';
   import {planetAt} from '../stores/planets';
+  import {playTokenAccount} from '../stores/playToken';
+  import { BigNumber } from '@ethersproject/bignumber';
 
   $: location = $claimFlow.data?.location;
-  $: planet = planetAt(location);
-  $: stats = $planet.stats;
-  $: stake = stats.stake;
+  $: planet = location && planetAt(location);
+  $: stats = $planet && $planet.stats;
+  $: stake = stats && stats.stake;
+  $: cost = $planet  && BigNumber.from($planet.stats.stake).mul(5); // TODO multiplier from config/contract
 </script>
 
 {#if $claimFlow.step === 'CONNECTING'}
   <!---->
 {:else if $claimFlow.step === 'CHOOSE_STAKE'}
-  <Modal on:close={() => claimFlow.cancel()}>
-    <h2>Claim Planet {$planet.location.x},{$planet.location.y} for {stake} ZTOKEN</h2>
-    <Button label="Stake" on:click={() => claimFlow.confirm()}>Confirm</Button>
-  </Modal>
+<Modal on:close={() => claimFlow.cancel()}>
+  {#if $playTokenAccount.status === 'Idle'}
+  Please wait...
+  {:else if $playTokenAccount.status === 'WaitingContracts'}
+  Please wait...
+  {:else if $playTokenAccount.status === 'Ready'}
+    {#if !$playTokenAccount.balance}
+     Fetching Balance...
+    {:else}
+      {#if $playTokenAccount.balance.eq(0)}
+        You do not have any Play token. You need {cost.toString()}
+      {:else if $playTokenAccount.balance.lt(cost.mul("1000000000000000000"))}
+        Not enough play token. You need {cost.toString()} Play Token but you have only {$playTokenAccount.balance.div("1000000000000000000").toString()}
+      {:else}
+        <h2>Claim Planet {$planet.location.x},{$planet.location.y} for {stake} ZTOKEN</h2>
+        <Button label="Stake" on:click={() => claimFlow.confirm()}>Confirm</Button>
+      {/if}
+    {/if}
+  {/if}
+</Modal>
 {/if}
