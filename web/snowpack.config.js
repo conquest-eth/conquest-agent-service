@@ -14,7 +14,12 @@ module.exports = {
     '@snowpack/plugin-postcss',
     [
       'snowpack-plugin-hmr-inject',
-      {filter: filterFiles({includes: ['src/stores/*']})},
+      {
+        filter: filterFiles({
+          includes: ['src/stores/*'],
+          excludes: ['src/stores/privateAccount.js'], // TODO investigate why it fails
+        }),
+      },
     ],
     'snowpack-plugin-folder2routes',
     [

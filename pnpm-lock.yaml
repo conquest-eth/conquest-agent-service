@@ -184,7 +184,7 @@ importers:
       prettier-plugin-svelte: 2.1.1_prettier@2.2.1+svelte@3.31.2
       snowpack: 3.0.11
       snowpack-plugin-folder2routes: 0.1.0
-      snowpack-plugin-hmr-inject: 0.1.2
+      snowpack-plugin-hmr-inject: 0.1.3
       snowpack-plugin-ipfs: 0.1.2
       svelte-preprocess: 4.6.3_a36d02c4e5aa7819d629bb09e38fdf83
       tailwindcss: 2.0.2_d337930ac9ab3cde8278bf6b015e1ea7
@@ -241,7 +241,7 @@ importers:
       prettier-plugin-svelte: ^2.1.0
       snowpack: ^3.0.1
       snowpack-plugin-folder2routes: ^0.1.0
-      snowpack-plugin-hmr-inject: ^0.1.2
+      snowpack-plugin-hmr-inject: ^0.1.3
       snowpack-plugin-ipfs: ^0.1.2
       svelte: ^3.24.0
       svelte-preprocess: ^4.0.8
@@ -11131,12 +11131,13 @@ packages:
     dev: true
     resolution:
       integrity: sha512-nfwF4P9mAH/hAHB3S7+K6KuX3uOuBNL/E+PqhlLwR8zaNA6MhIt8l3qT0bQNg2nHy6NaFnwwwZEk7ClBsV0syA==
-  /snowpack-plugin-hmr-inject/0.1.2:
+  /snowpack-plugin-hmr-inject/0.1.3:
     dependencies:
+      fs-extra: 9.1.0
       minimatch: 3.0.4
     dev: true
     resolution:
-      integrity: sha512-tveiK9EuSzyQe8Rop41gnlBlg3z8iG1/Ne75JmMFEvVWod4zIkYagSdkEZbpL4sr9gaDGuGI1gMk2JMmwx9wTQ==
+      integrity: sha512-NQP40wVttVYKZBRGgZliwWw5RW8HNOmabwpLb3DcPBwNLyhQoePaEVUwCWrgMWvoK/5ipqwC792isCj/disjYA==
   /snowpack-plugin-ipfs/0.1.2:
     dependencies:
       eth-ens-namehash: 2.0.8
