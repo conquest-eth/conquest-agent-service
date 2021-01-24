@@ -13,6 +13,8 @@
     flow,
   } from '../stores/wallet';
 
+  import privateAccount from '../stores/privateAccount';
+
   const chainNames: {[chainId: string]: string} = {
     '1': 'mainnet',
     '3': 'ropsten',
@@ -22,7 +24,7 @@
     '1337': 'localhost chain',
     '31337': 'localhost chain',
   };
-  const chainId: string = import.meta.env.SNOWPACK_PUBLIC_CHAIN_ID;
+  const chainId: string = import.meta.env.VITE_CHAIN_ID;
   const chainName = (() => {
     const name = chainNames[chainId];
     if (name) {
@@ -126,7 +128,28 @@
         Loading contracts...
       {:else if $chain.notSupported}Please switch to {chainName}{/if}
     {:else if $wallet.pendingUserConfirmation}
-      Please accept transaction...
+      {#if $wallet.pendingUserConfirmation[0] === 'transaction'}
+        Please accept transaction...
+      {:else if $wallet.pendingUserConfirmation[0] === 'signature'}
+        Please accept signature...
+      {:else}
+        Please accept request...
+      {/if}
+    {:else if $privateAccount.step === 'SIGNATURE_REQUIRED'}
+      Planet Wars require your signature to operate. Do not sign this message
+      outside of Planet Wars!
+      <!-- TODO store and then auto connect if present -->
+      <!-- <div class="flex mt-6">
+        <label class="flex items-center">
+          <input type="checkbox" class="form-checkbox" />
+          <span class="ml-2">Trust computer and do not ask again (store locally)</span>
+        </label>
+      </div> -->
+      <NavButton label="sign" on:click={() => privateAccount.confirm()}>
+        sign
+      </NavButton>
+    {:else if $privateAccount.step === 'LOADING'}
+      Loading Data...
     {:else if executionError}
       {#if executionError.code === 4001}
         You rejected the request
