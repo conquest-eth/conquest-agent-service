@@ -3,7 +3,7 @@ let nodeUrl: string | undefined;
 let finality = 12;
 if (chainId === '1337' || chainId === '31337') {
   const localEthNode = import.meta.env.VITE_ETH_NODE_URI_LOCALHOST;
-  if (localEthNode && localEthNode !== "") {
+  if (localEthNode && localEthNode !== '') {
     nodeUrl = localEthNode;
   } else {
     nodeUrl = 'http://localhost:8545';
@@ -11,8 +11,4 @@ if (chainId === '1337' || chainId === '31337') {
   finality = 2;
 }
 
-export {
-  finality,
-  nodeUrl,
-  chainId
-}
+export {finality, nodeUrl, chainId};

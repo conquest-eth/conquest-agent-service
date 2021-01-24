@@ -6,7 +6,7 @@
   import {RenderState} from '../map/RenderState';
   import {space} from './mapState';
 
-  let canvas;
+  let canvas: HTMLCanvasElement;
   onMount(() => {
     const renderState = new RenderState(space);
     const renderer = new Renderer(renderState);

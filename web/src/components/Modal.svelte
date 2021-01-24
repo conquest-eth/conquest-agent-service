@@ -2,13 +2,13 @@
   import {createEventDispatcher, onDestroy} from 'svelte';
   export let globalCloseButton: boolean = false;
   export let closeButton: boolean = false;
-  export let title: string;
+  export let title: string = '';
   export let cancelable: boolean = true;
 
   const dispatch = createEventDispatcher();
   const close = () => cancelable && dispatch('close');
 
-  let modal;
+  let modal: Element;
 
   function handle_keydown(evt: KeyboardEvent | undefined) {
     evt = evt || (window.event as KeyboardEvent);
@@ -28,7 +28,10 @@
       const nodes = modal.querySelectorAll('*');
       const tabbable = Array.from(nodes).filter((n: any) => n.tabIndex >= 0);
 
-      let index = tabbable.indexOf(document.activeElement);
+      let index = -1;
+      if (document.activeElement) {
+        index = tabbable.indexOf(document.activeElement);
+      }
       if (index === -1 && evt.shiftKey) index = 0;
 
       index += tabbable.length + (evt.shiftKey ? -1 : 1);
@@ -63,7 +66,7 @@
 
   <div
     class="z-50 modal-container dark:bg-black dark:border-2 dark:border-gray-800 bg-white w-11/12 md:max-w-md mx-auto rounded
-      shadow-lg overflow-y-auto">
+    shadow-lg overflow-y-auto">
     {#if globalCloseButton}
       <div
         on:click={close}

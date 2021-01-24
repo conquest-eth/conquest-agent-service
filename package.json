@@ -36,7 +36,7 @@
 
     "// externals : Setup external services locally (ethereum node, thegraph)": "",
     "stop": "run-s externals:down",
-    "externals:down": "docker-compose down -v",
+    "externals:down": "docker-compose down -v --remove-orphans",
     "docker-compose": "dotenv -e .env -e contracts/.env -- docker-compose -f docker-compose.subgraph.yml up",
     "externals": "run-p docker-compose contracts:fundingFromGethCoinbase",
     "shell:externals": "newsh \"npm run externals\"",

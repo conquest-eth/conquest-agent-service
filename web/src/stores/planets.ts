@@ -1,4 +1,4 @@
-import { locationToXY, Planet, xyToLocation } from 'planet-wars-common';
+import {locationToXY, Planet, xyToLocation} from 'planet-wars-common';
 import {Readable, Writable, writable} from 'svelte/store';
 import {space} from '../app/mapState';
 
@@ -11,10 +11,13 @@ export function planetAt(location: string): Readable<Planet> {
   if (!store) {
     const xy = locationToXY(location);
     store = writable(space.ensurePlanetAt(xy.x, xy.y), (set) => {
-      stores[location] = store;
-      const listenerIndex = space.onPlannetUpdates(location, (planet: Planet) => {
-        set(planet);
-      })
+      stores[location] = store as Writable<Planet>;
+      const listenerIndex = space.onPlannetUpdates(
+        location,
+        (planet: Planet) => {
+          set(planet);
+        }
+      );
       return () => {
         space.switchOffPlanetUpdates(listenerIndex);
         delete stores[location];

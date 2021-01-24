@@ -12,7 +12,12 @@ export default class Map {
   setup(canvas: HTMLCanvasElement): () => void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
-    const ctx = canvas.getContext('2d');
+    let ctx: CanvasRenderingContext2D = canvas.getContext(
+      '2d'
+    ) as CanvasRenderingContext2D;
+    if (!ctx) {
+      throw new Error(`cannot create 2d context`);
+    }
     this.renderer.setup(ctx);
 
     const draw = (time: number) => {
@@ -29,7 +34,7 @@ export default class Map {
 
     this.camera.setup({canvas, controller: new Controller(canvas)});
 
-    let frame;
+    let frame: number;
     (function loop(time: number) {
       frame = requestAnimationFrame(loop);
       self.camera.onRender();

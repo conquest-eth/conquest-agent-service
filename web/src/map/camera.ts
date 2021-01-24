@@ -77,6 +77,10 @@ export class Camera {
   private controller: Controller;
 
   constructor(private renderState: RenderState) {
+    // avoid type errors
+    this.canvas = (undefined as unknown) as HTMLCanvasElement;
+    this.controller = (undefined as unknown) as Controller;
+
     this.zoomIndex = -1;
     this.render = {
       // could be computed on the fly
@@ -129,13 +133,18 @@ export class Camera {
     let isPanning = false;
     let lastClientPos = {x: 0, y: 0};
 
-    const _set = (x, y, zoom) => {
+    const _set = (x: number, y: number, zoom: number) => {
       this._set(x, y, zoom);
       const locationX = Math.floor(x / 48 / 4 / 2);
       const locationY = Math.floor(y / 48 / 4 / 2);
-      const lwidth = Math.ceil(self.world.width/48/4/2/2);
-      const lheight = Math.ceil(self.world.height/48/4/2/2);
-      space.focus(locationX - lwidth, locationY - lheight, locationX+ lwidth, locationY + lheight); // TODO invesrion of control : emit event
+      const lwidth = Math.ceil(self.world.width / 48 / 4 / 2 / 2);
+      const lheight = Math.ceil(self.world.height / 48 / 4 / 2 / 2);
+      space.focus(
+        locationX - lwidth,
+        locationY - lheight,
+        locationX + lwidth,
+        locationY + lheight
+      ); // TODO invesrion of control : emit event
     };
 
     const _update = () => {
@@ -147,15 +156,21 @@ export class Camera {
       updateZoom(zero.x, zero.y, 1);
     }
 
-    const startPanning = (e) => {
+    const startPanning = (e: TouchEvent | MouseEvent) => {
       // console.log('startPanning');
       isPanning = true;
-      const eventX = e.clientX || e.touches[0].clientX;
-      const eventY = e.clientY || e.touches[0].clientY;
-      lastClientPos = {x: eventX, y: eventY};
+      if ('clientX' in e) {
+        const eventX = e.clientX;
+        const eventY = e.clientY;
+        lastClientPos = {x: eventX, y: eventY};
+      } else {
+        const eventX = e.touches[0].clientX;
+        const eventY = e.touches[0].clientY;
+        lastClientPos = {x: eventX, y: eventY};
+      }
     };
 
-    const onClick = (x, y) => {
+    const onClick = (x: number, y: number) => {
       const worldPos = screenToWorld(x, y);
       const gridPos = {
         x: Math.round(worldPos.x / 48 / 2),
@@ -232,20 +247,20 @@ export class Camera {
         }
       } else {
         // console.log('no planet');
-        this.controller.onPlanetSelected(null);
+        this.controller.onPlanetSelected(undefined);
       }
     };
 
-    const endPanning = (e) => {
+    const endPanning = (e: TouchEvent | MouseEvent) => {
       // console.log('endPanning');
       isPanning = false;
       let dist;
-      if (!e.clientX) {
+      if ('clientX' in e) {
         // endtouch always trigger ? // TODO fix
         dist = 0;
       } else {
-        const eventX = e.clientX || e.touches[0].clientX;
-        const eventY = e.clientY || e.touches[0].clientY;
+        const eventX = e.touches[0].clientX;
+        const eventY = e.touches[0].clientY;
         dist = Math.hypot(eventX - lastClientPos.x, eventY - lastClientPos.y);
       }
       if (dist < 22) {
@@ -255,7 +270,7 @@ export class Camera {
       }
     };
 
-    const pan = (e) => {
+    const pan = (e: TouchEvent | MouseEvent) => {
       if (!isPanning) return;
 
       // let movementX;
@@ -264,8 +279,16 @@ export class Camera {
       // 	movementX = e.movementX / windowDevicePxelRatio;
       // 	movementY = e.movementY / windowDevicePxelRatio;
       // }
-      const eventX = e.clientX || e.touches[0].clientX;
-      const eventY = e.clientY || e.touches[0].clientY;
+      let eventX;
+      let eventY;
+      if ('clientX' in e) {
+        eventX = e.clientX;
+        eventY = e.clientY;
+      } else {
+        eventX = e.touches[0].clientX;
+        eventY = e.touches[0].clientY;
+      }
+
       // console.log({eventX, eventY});
       const movementX = eventX - lastClientPos.x;
       const movementY = eventY - lastClientPos.y;
@@ -306,7 +329,7 @@ export class Camera {
     let lastDist = 0;
     let zoomPoint = {x: 0, y: 0};
 
-    function startZooming(e) {
+    function startZooming(e: TouchEvent) {
       isPanning = false; // zooming override panning
       isZooming = true;
       lastDist = Math.hypot(
@@ -334,7 +357,7 @@ export class Camera {
       const diff = lastDist - dist;
       if (Math.abs(diff) > 50) {
         // devicePixelRatio
-        const dir = Math.sign(diff);
+        const dir: 0 | -1 | 1 = Math.sign(diff) as 0 | -1 | 1;
         updateZoom(zoomPoint.x, zoomPoint.y, dir);
         lastDist = dist;
       }
@@ -379,7 +402,7 @@ export class Camera {
       }
     };
 
-    function screenToWorld(x, y) {
+    function screenToWorld(x: number, y: number) {
       const devicePixelRatio = self.render.devicePixelRatio;
       const scale = self.world.zoom * devicePixelRatio;
       x = (x * devicePixelRatio - canvas.width / 2) / scale + self.world.x;
@@ -390,7 +413,7 @@ export class Camera {
       };
     }
 
-    function worldToScreen(x, y) {
+    function worldToScreen(x: number, y: number) {
       const devicePixelRatio = self.render.devicePixelRatio;
       const scale = self.world.zoom * devicePixelRatio;
       return {
@@ -413,7 +436,7 @@ export class Camera {
     //   };
     // }
 
-    function updateZoom(offsetX, offsetY, dir) {
+    function updateZoom(offsetX: number, offsetY: number, dir: 1 | -1 | 0) {
       const {x, y} = screenToWorld(offsetX, offsetY);
       // const oldZoom = self.world.zoom;
 
@@ -460,7 +483,7 @@ export class Camera {
     canvas.onwheel = (e) => {
       e.preventDefault();
       const {offsetX, offsetY, deltaY} = e;
-      const dir = Math.abs(deltaY) / deltaY;
+      const dir = (Math.abs(deltaY) / deltaY) as 0 | -1 | 1;
 
       updateZoom(offsetX, offsetY, dir);
     };
@@ -478,5 +501,6 @@ export class Camera {
       this._set(this.world.x, this.world.y, this.world.zoom);
       return true;
     }
+    return false;
   }
 }

@@ -8,7 +8,7 @@
 
   import PanelButton from './PanelButton.svelte';
   import Blockie from './Blockie.svelte';
-  import { locationToXY } from 'planet-wars-common';
+  import {locationToXY} from 'planet-wars-common';
 
   export let location: string;
   export let close: () => void;
@@ -59,7 +59,7 @@
         Planet
         {$planet.location.x},{$planet.location.y}
       </h2>
-      {#if $planet.state && $planet.state.owner !== "0x0000000000000000000000000000000000000000"}
+      {#if $planet.state && $planet.state.owner !== '0x0000000000000000000000000000000000000000'}
         <div>
           <Blockie
             class="flex-auto w-8 h-8 flot"
@@ -68,7 +68,8 @@
       {/if}
     </div>
 
-    {#if $planet.state} <!-- if active-->
+    {#if $planet.state}
+      <!-- if active-->
       <div class="m-1">
         <label for="active">active:</label>
         <span id="active" class="value">{$planet.state.active}</span>
@@ -109,70 +110,83 @@
     {:else}
       <div class="m-1">
         <label for="numSpaceships">spaceships:</label>
-        <span id="numSpaceships" class="value">{$planet.state.numSpaceships}</span>
+        <span
+          id="numSpaceships"
+          class="value">{$planet.state.numSpaceships}</span>
       </div>
     {/if}
     <div class="flex flex-col">
       {#if $planet.state}
-
         {#if $wallet.address}
           {#if $planet.state.capturing}
-          Capturing...
-          {:else}
-            {#if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
-              <PanelButton class="flex-auto" on:click={capture}>
-                Capture
-              </PanelButton>
-              {#if $planet.state.natives}
-                <PanelButton class="m-1 flex-auto" on:click={sendTo}>
-                  Attack
-                </PanelButton>
-              {:else}
-                <PanelButton class="m-1 flex-auto" on:click={sendTo}>
-                  Send To
-                </PanelButton>
-              {/if}
-            {:else if wallet.address.toLowerCase() === $planet.state.owner.toLowerCase() && !$planet.state.active}
-              <PanelButton class="flex-auto" on:click={capture}>
-                Capture
-              </PanelButton>
-              <PanelButton class="m-1 flex-auto" on:click={sendTo}>
-                Send To
-              </PanelButton>
-            {:else if $planet.state.owner.toLowerCase() === $wallet.address.toLowerCase()}
-              <PanelButton class="m-1 flex-auto" on:click={sendTo}>
-                Send To
-              </PanelButton>
-              <PanelButton class="m-1 flex-auto" on:click={sendFrom}>
-                Send From
-              </PanelButton>
-              <PanelButton class="m-1 flex-auto" on:click={exitFrom}>
-                Exit
-              </PanelButton>
-            {:else}
-              <PanelButton class="m-1 flex-auto" on:click={sendTo}>
+            Capturing...
+          {:else if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
+            <PanelButton label="Capture" class="flex-auto" on:click={capture}>
+              Capture
+            </PanelButton>
+            {#if $planet.state.natives}
+              <PanelButton
+                label="Attack"
+                class="m-1 flex-auto"
+                on:click={sendTo}>
                 Attack
               </PanelButton>
+            {:else}
+              <PanelButton
+                label="Send To"
+                class="m-1 flex-auto"
+                on:click={sendTo}>
+                Send To
+              </PanelButton>
             {/if}
+          {:else if wallet.address.toLowerCase() === $planet.state.owner.toLowerCase() && !$planet.state.active}
+            <PanelButton label="Capture" class="flex-auto" on:click={capture}>
+              Capture
+            </PanelButton>
+            <PanelButton
+              label="Send To"
+              class="m-1 flex-auto"
+              on:click={sendTo}>
+              Send To
+            </PanelButton>
+          {:else if $planet.state.owner.toLowerCase() === $wallet.address.toLowerCase()}
+            <PanelButton
+              label="Send To"
+              class="m-1 flex-auto"
+              on:click={sendTo}>
+              Send To
+            </PanelButton>
+            <PanelButton
+              label="Send From"
+              class="m-1 flex-auto"
+              on:click={sendFrom}>
+              Send From
+            </PanelButton>
+            <PanelButton label="Exit" class="m-1 flex-auto" on:click={exitFrom}>
+              Exit
+            </PanelButton>
+          {:else}
+            <PanelButton label="Attack" class="m-1 flex-auto" on:click={sendTo}>
+              Attack
+            </PanelButton>
           {/if}
         {:else}
-          <PanelButton class="m-1 flex-auto" on:click={connect}>
+          <PanelButton
+            label="Connect your wallet"
+            class="m-1 flex-auto"
+            on:click={connect}>
             Connect Wallet
           </PanelButton>
         {/if}
-      {:else}
-        {#if $planet.loaded}
-          {#if $planet.state.capturing}
+      {:else if $planet.loaded}
+        {#if $planet.state.capturing}
           Capturing...
-          {:else}
-          <PanelButton class="m-1 flex-auto" on:click={capture}>
+        {:else}
+          <PanelButton label="Capture" class="m-1 flex-auto" on:click={capture}>
             Capture
           </PanelButton>
-          {/if}
-        {:else}
-          Loading...
         {/if}
-      {/if}
+      {:else}Loading...{/if}
     </div>
   </div>
 </div>

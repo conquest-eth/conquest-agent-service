@@ -3,12 +3,12 @@ import PlanetInfoPanel from '../components/PlanetInfoPanel.svelte';
 
 export class Controller {
   private parent: Element;
-  private planetInfoComponent: PlanetInfoPanel;
+  private planetInfoComponent: PlanetInfoPanel | undefined;
   constructor(canvas: HTMLCanvasElement) {
     this.parent = canvas.parentNode as Element;
-    this.planetInfoComponent = null;
+    this.planetInfoComponent = undefined;
   }
-  onPlanetSelected(planet: Planet): void {
+  onPlanetSelected(planet?: Planet): void {
     if (planet) {
       this.showPlanetInfo(planet);
     } else {
@@ -40,7 +40,7 @@ export class Controller {
     if (this.planetInfoComponent) {
       console.log('destroy');
       this.planetInfoComponent.$destroy();
-      this.planetInfoComponent = null;
+      this.planetInfoComponent = undefined;
     }
   }
 }

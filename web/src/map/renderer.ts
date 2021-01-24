@@ -1,4 +1,3 @@
-
 import planetsFrame from '../assets/planets.json';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 ///@ts-ignore
@@ -9,11 +8,12 @@ import type {RenderState} from './RenderState';
 // pre-render
 const planetSpriteSheet = new Image();
 planetSpriteSheet.src = planetsDataURL;
-let pctx;
 const horizPattern = document.createElement('canvas');
 horizPattern.width = 48;
 horizPattern.height = 1;
-pctx = horizPattern.getContext('2d');
+let pctx: CanvasRenderingContext2D = horizPattern.getContext(
+  '2d'
+) as CanvasRenderingContext2D;
 pctx.fillStyle = '#4F487A';
 pctx.fillRect(0, 0, 2, 1);
 pctx.fillRect(6, 0, 36, 1);
@@ -21,7 +21,7 @@ pctx.fillRect(46, 0, 2, 1);
 const vertPattern = document.createElement('canvas');
 vertPattern.width = 1;
 vertPattern.height = 48;
-pctx = vertPattern.getContext('2d');
+pctx = vertPattern.getContext('2d') as CanvasRenderingContext2D;
 pctx.fillStyle = '#4F487A';
 pctx.fillRect(0, 0, 1, 2);
 pctx.fillRect(0, 6, 1, 36);
@@ -88,7 +88,7 @@ function line2rect(
   ry: number,
   rw: number,
   rh: number
-): {x1: number; y1: number; x2: number; y2: number} {
+): {x1: number; y1: number; x2: number; y2: number} | null {
   const newSegment = {x1, y1, x2, y2};
   if (x1 > rx && x2 < rx + rw && y1 > ry && y2 < ry + rh) {
     return newSegment;
@@ -202,7 +202,7 @@ function line2rect(
         newSegment.y2 = top.y;
       }
     }
-  } else {
+  } else if (bottom) {
     if (y1 > y2) {
       newSegment.x1 = bottom.x;
       newSegment.y1 = bottom.y;
@@ -292,7 +292,7 @@ export class Renderer {
       return;
     }
 
-    const timeMs =  Date.now();
+    const timeMs = Date.now();
 
     let gridLevel = 1;
     if (camera.zoom < 1) {
@@ -326,7 +326,7 @@ export class Renderer {
       // console.log({lineWidth,gridStart, gridOffset, gridSize, canvasWidth: canvas.width, canvasHeight: canvas.height, zoom: camera.zoom});
 
       // eslint-disable-next-line no-inner-declarations
-      function setColor(x) {
+      function setColor(x: number) {
         if (gridSize == 48) {
           if (Math.floor(x / (8 * 48)) == x / (8 * 48)) {
             ctx.strokeStyle = '#4f5d94'; //"#6c7fc9";
@@ -441,8 +441,15 @@ export class Renderer {
       for (let y = gridY; y <= gridEndY + 1; y++) {
         const planet = this.renderState.space.planetAt(x, y);
         if (planet) {
-          const lavaFrame =
-            planetsFrame.frames[planetTypesToFrame[planet.type]].frame;
+          const frameType = planetTypesToFrame[planet.type];
+          if (!frameType) {
+            throw new Error(`no frame type for ${planet.type}`);
+          }
+          const frameInfo = (planetsFrame.frames as any)[frameType];
+          if (!frameInfo) {
+            throw new Error(`not frameInfo for ${frameType}`);
+          }
+          const lavaFrame = frameInfo.frame;
           // console.log(planet)
           ctx.imageSmoothingEnabled = false;
           const planetX = planet.location.globalX * 2 * 48;
@@ -462,19 +469,22 @@ export class Renderer {
           let exitRatio = Number.MAX_SAFE_INTEGER;
 
           let circleColor = undefined;
-          let circleDash = [];
+          let circleDash: number[] = [];
           let circleRotate = false;
           if (planet.loaded) {
-            if (planet.state.owner !==  '0x0000000000000000000000000000000000000000') {
+            if (
+              planet.state?.owner !==
+              '0x0000000000000000000000000000000000000000'
+            ) {
               if (this.renderState.space.player) {
                 if (
                   // TODO enforce convention to not need `toLowerCase` overhead
-                  planet.state.owner.toLowerCase() ===
+                  planet.state?.owner.toLowerCase() ===
                   this.renderState.space.player.toLowerCase()
                 ) {
                   circleColor = 'green';
                 } else if (
-                  planet.state.owner !==
+                  planet.state?.owner !==
                   '0x0000000000000000000000000000000000000000'
                 ) {
                   circleColor = 'red';
@@ -483,7 +493,7 @@ export class Renderer {
                 }
               } else {
                 if (
-                  planet.state.owner !==
+                  planet.state?.owner !==
                   '0x0000000000000000000000000000000000000000'
                 ) {
                   circleColor = 'white';
@@ -496,21 +506,26 @@ export class Renderer {
               //   // TODO BigNumber ?
               //   circleDash = [2, 10];
               // }
-
             }
 
-            if (planet.state.active) {
+            if (planet.state?.active) {
               // TODO ?
               if (planet.state.exiting) {
-                exitRatio = (this.renderState.space.spaceInfo.exitDuration - planet.state.exitTimeLeft) / this.renderState.space.spaceInfo.exitDuration;
+                exitRatio =
+                  (this.renderState.space.spaceInfo.exitDuration -
+                    planet.state.exitTimeLeft) /
+                  this.renderState.space.spaceInfo.exitDuration;
               }
             } else {
-              if (planet.state.owner !==  '0x0000000000000000000000000000000000000000'){
+              if (
+                planet.state?.owner !==
+                '0x0000000000000000000000000000000000000000'
+              ) {
                 circleDash = [15, 5];
                 if (this.renderState.space.player) {
                   if (
                     // TODO enforce convention to not need `toLowerCase` overhead
-                    planet.state.owner.toLowerCase() ===
+                    planet.state?.owner.toLowerCase() ===
                     this.renderState.space.player.toLowerCase()
                   ) {
                     circleColor = 'forestgreen';
@@ -556,15 +571,15 @@ export class Renderer {
             ctx.beginPath();
             ctx.setLineDash([]);
             ctx.lineWidth = 1 / render.scale;
-            ctx.strokeStyle = "orange";
+            ctx.strokeStyle = 'orange';
             ctx.ellipse(
               Math.round(planetX),
               Math.round(planetY),
               84,
               84,
               circleRotate ? time / 500 : 0,
-              -Math.PI/2,
-              -Math.PI/2 + 2 * Math.PI * Math.max(exitRatio, 0.03)
+              -Math.PI / 2,
+              -Math.PI / 2 + 2 * Math.PI * Math.max(exitRatio, 0.03)
             );
             ctx.stroke();
           }
@@ -574,10 +589,22 @@ export class Renderer {
       }
     }
 
-    const x1 = Math.max(leftX, Math.round(this.renderState.space.discovered.x1 * 8*48 - 48*4));
-    const x2 = Math.min(leftX + camera.width, Math.round(this.renderState.space.discovered.x2 * 8*48 + 48*4));
-    const y1 = Math.max(topY, Math.round(this.renderState.space.discovered.y1 * 8*48 - 48*4));
-    const y2 = Math.min(topY + camera.height, Math.round(this.renderState.space.discovered.y2 * 8*48 + 48*4));
+    const x1 = Math.max(
+      leftX,
+      Math.round(this.renderState.space.discovered.x1 * 8 * 48 - 48 * 4)
+    );
+    const x2 = Math.min(
+      leftX + camera.width,
+      Math.round(this.renderState.space.discovered.x2 * 8 * 48 + 48 * 4)
+    );
+    const y1 = Math.max(
+      topY,
+      Math.round(this.renderState.space.discovered.y1 * 8 * 48 - 48 * 4)
+    );
+    const y2 = Math.min(
+      topY + camera.height,
+      Math.round(this.renderState.space.discovered.y2 * 8 * 48 + 48 * 4)
+    );
     ctx.lineWidth = lineWidth;
     ctx.strokeStyle = 'blue';
     ctx.setLineDash([]);
@@ -603,7 +630,7 @@ export class Renderer {
       ctx.stroke();
     }
 
-    if (y2 != topY+ camera.height) {
+    if (y2 != topY + camera.height) {
       ctx.beginPath();
       ctx.moveTo(x1, y2);
       ctx.lineTo(x2, y2);

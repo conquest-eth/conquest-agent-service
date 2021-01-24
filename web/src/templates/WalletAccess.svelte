@@ -1,7 +1,7 @@
 <script lang="ts">
-  export let title: string = undefined;
-  import Button from '../components/Button.svelte';
-  import Toast from '../components/Toast.svelte';
+  export let title: string;
+  import NavButton from '../components/navigation/NavButton.svelte';
+  import Toast from '../components/notification/Toast.svelte';
   import Modal from '../components/Modal.svelte';
 
   import {
@@ -13,9 +13,7 @@
     flow,
   } from '../stores/wallet';
 
-  import privateAccount from '../stores/privateAccount';
-
-  const chainNames = {
+  const chainNames: {[chainId: string]: string} = {
     '1': 'mainnet',
     '3': 'ropsten',
     '4': 'rinkeby',
@@ -24,7 +22,7 @@
     '1337': 'localhost chain',
     '31337': 'localhost chain',
   };
-  const chainId = import.meta.env.VITE_CHAIN_ID;
+  const chainId: string = import.meta.env.SNOWPACK_PUBLIC_CHAIN_ID;
   const chainName = (() => {
     const name = chainNames[chainId];
     if (name) {
@@ -99,7 +97,7 @@
         {#if builtinNeedInstalation}
           <div class="text-center">OR</div>
           <div class="flex justify-center">
-            <Button
+            <NavButton
               label="Download Metamask"
               blank={true}
               href="https://metamask.io/download.html"
@@ -109,7 +107,7 @@
                 alt={`Download Metamask}`}
                 src={`${base}images/metamask.svg`} />
               Download metamask
-            </Button>
+            </NavButton>
           </div>
         {/if}
       {/if}
@@ -117,9 +115,9 @@
       {#if $wallet.unlocking}
         Please accept the application to access your wallet.
       {:else}
-        <Button label="Unlock Wallet" on:click={() => wallet.unlock()}>
+        <NavButton label="Unlock Wallet" on:click={() => wallet.unlock()}>
           Unlock
-        </Button>
+        </NavButton>
       {/if}
     {:else if $chain.state === 'Idle'}
       {#if $chain.connecting}Connecting...{/if}
@@ -128,35 +126,14 @@
         Loading contracts...
       {:else if $chain.notSupported}Please switch to {chainName}{/if}
     {:else if $wallet.pendingUserConfirmation}
-      {#if $wallet.pendingUserConfirmation[0] === 'transaction'}
-        Please accept transaction...
-      {:else if $wallet.pendingUserConfirmation[0] === 'signature'}
-        Please accept signature...
-      {:else}
-        Please accept request...
-      {/if}
-    {:else if $privateAccount.step === 'SIGNATURE_REQUIRED'}
-      Planet Wars require your signature to operate. Do not sign this message
-      outside of Planet Wars!
-      <!-- TODO store and then auto connect if present -->
-      <!-- <div class="flex mt-6">
-        <label class="flex items-center">
-          <input type="checkbox" class="form-checkbox" />
-          <span class="ml-2">Trust computer and do not ask again (store locally)</span>
-        </label>
-      </div> -->
-      <Button label="sign" on:click={() => privateAccount.confirm()}>
-        sign
-      </Button>
-    {:else if $privateAccount.step === 'LOADING'}
-      Loading Data...
+      Please accept transaction...
     {:else if executionError}
       {#if executionError.code === 4001}
         You rejected the request
       {:else if executionError.message}
         {executionError.message}
       {:else}Error: {executionError}{/if}
-      <Button label="Retry" on:click={() => flow.retry()}>Retry</Button>
+      <NavButton label="Retry" on:click={() => flow.retry()}>Retry</NavButton>
     {/if}
   </Modal>
 {/if}
