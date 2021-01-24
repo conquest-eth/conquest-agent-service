@@ -22,7 +22,7 @@
     '1337': 'localhost chain',
     '31337': 'localhost chain',
   };
-  const chainId: string = import.meta.env.SNOWPACK_PUBLIC_CHAIN_ID;
+  const chainId: string = import.meta.env.VITE_CHAIN_ID;
   const chainName = (() => {
     const name = chainNames[chainId];
     if (name) {
