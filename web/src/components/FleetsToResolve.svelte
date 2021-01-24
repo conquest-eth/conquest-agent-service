@@ -5,16 +5,17 @@
   import PanelButton from './PanelButton.svelte';
   import {spaceInfo} from '../app/mapState';
   import time from '../stores/time';
+  import type {OwnFleet} from 'planet-wars-common';
 
-  function resolve(fleetId) {
+  function resolve(fleetId: string) {
     resolveFlow.resolve(fleetId);
   }
 
-  let fleets;
+  let fleets: ({id: string} & OwnFleet)[];
   $: {
     const now = $time;
     if (!$privateAccount.data) {
-      fleets = []
+      fleets = [];
     } else {
       fleets = Object.keys($privateAccount.data.fleets)
         .map((fleetId) => {

@@ -34,13 +34,21 @@ const {subscribe, set} = writable($data);
 
 function _set(obj: Partial<SendFlow<Partial<SendData>>>): SendFlow<SendData> {
   for (const key of Object.keys(obj)) {
-    if ($data[key] && typeof obj[key] === 'object') {
-      for (const subKey of Object.keys(obj[key])) {
-        // TODO recursve
-        $data[key][subKey] = obj[key][subKey];
+    const objTyped = obj as Record<string, any>;
+    const data = $data as Record<string, any>;
+    if (data[key] && typeof objTyped[key] === 'object') {
+      const subObj: Record<string, unknown> = objTyped[key] as Record<
+        string,
+        unknown
+      >;
+      if (typeof subObj === 'object') {
+        for (const subKey of Object.keys(subObj as {})) {
+          // TODO recursve
+          data[key][subKey] = subObj[subKey];
+        }
       }
     } else {
-      $data[key] = obj[key];
+      data[key] = objTyped[key];
     }
   }
   set($data);
@@ -96,18 +104,24 @@ async function pickOrigin(from: {x: number; y: number}): Promise<void> {
 
 async function confirm(fleetAmount: number): Promise<void> {
   const flow = _set({step: 'CREATING_TX'});
+  if (!flow.data) {
+    throw new Error(`no data for send flow`);
+  }
   const from = flow.data.from;
   const to = flow.data.to;
   const {toHash, fleetId, secret} = await privateAccount.hashFleet(from, to);
 
   _set({step: 'WAITING_TX'});
-  const tx = await wallet.contracts.OuterSpace.send(
+  const tx = await wallet.contracts?.OuterSpace.send(
     xyToLocation(from.x, from.y),
     fleetAmount,
     toHash
   );
   const fromPlanetInfo = spaceInfo.getPlanetInfo(from.x, from.y);
   const toPlanetInfo = spaceInfo.getPlanetInfo(to.x, to.y);
+  if (!fromPlanetInfo || !toPlanetInfo) {
+    throw new Error(`cannot get to or from planet info`);
+  }
   const gToX = toPlanetInfo.location.globalX;
   const gToY = toPlanetInfo.location.globalY;
   const gFromX = fromPlanetInfo.location.globalX;
@@ -116,7 +130,12 @@ async function confirm(fleetAmount: number): Promise<void> {
   const fullDistance = Math.floor(
     Math.sqrt(Math.pow(gToX - gFromX, 2) + Math.pow(gToY - gFromY, 2))
   );
-  const fleetDuration = fullDistance * ((spaceInfo.timePerDistance * 10000) / speed);
+  const fleetDuration =
+    fullDistance * ((spaceInfo.timePerDistance * 10000) / speed);
+
+  if (!wallet.address) {
+    throw new Error(`no wallet address`);
+  }
 
   privateAccount.recordFleet(fleetId, {
     to,
@@ -126,7 +145,7 @@ async function confirm(fleetAmount: number): Promise<void> {
     launchTime: Math.floor(Date.now() / 1000), //TODO adjust + service to adjust once tx is mined // use block time instead of Date.now
     owner: wallet.address,
     sendTxHash: tx.hash,
-    secret: secret
+    secret: secret,
   });
 
   _set({

@@ -1,5 +1,5 @@
 import WalletStores from 'web3w';
-// import {TorusModuleLoader} from 'web3w-torus-loader';
+import {TorusModuleLoader} from 'web3w-torus-loader';
 import {WalletConnectModuleLoader} from 'web3w-walletconnect-loader';
 import contractsInfo from '../contracts.json';
 import {notifications} from './notifications';
@@ -29,7 +29,7 @@ const walletStores = WalletStores({
       infuraId: 'bc0bdd4eaac640278cdebc3aa91fabe4',
     }),
   ],
-  fallbackNode: nodeUrl // TODO use query string to specify it // TODO settings
+  fallbackNode: nodeUrl, // TODO use query string to specify it // TODO settings
 });
 
 // USEFUL FOR DEBUGGING:
@@ -47,10 +47,10 @@ export const {
   chain,
   balance,
   flow,
-  fallback
+  fallback,
 } = walletStores;
 
-function notifyFailure(tx) {
+function notifyFailure(tx: {hash: string}) {
   notifications.queue({
     id: tx.hash,
     delay: 0,
@@ -61,7 +61,7 @@ function notifyFailure(tx) {
   });
 }
 
-function notifyCancelled(tx) {
+function notifyCancelled(tx: {hash: string}) {
   notifications.queue({
     id: tx.hash,
     delay: 3,

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Button from '../components/Button.svelte';
+  import Button from '../components/navigation/NavButton.svelte'; // TODO use different button ?
   import WalletAccess from '../templates/WalletAccess.svelte';
   import {wallet, builtin, chain, flow, transactions} from '../stores/wallet';
   import type {Contract} from '@ethersproject/contracts';

@@ -20,13 +20,21 @@ const {subscribe, set} = writable($data);
 
 function _set(obj: Partial<ResolveFlow>): ResolveFlow {
   for (const key of Object.keys(obj)) {
-    if ($data[key] && typeof obj[key] === 'object') {
-      for (const subKey of Object.keys(obj[key])) {
-        // TODO recursve
-        $data[key][subKey] = obj[key][subKey];
+    const objTyped = obj as Record<string, any>;
+    const data = $data as Record<string, any>;
+    if (data[key] && typeof objTyped[key] === 'object') {
+      const subObj: Record<string, unknown> = objTyped[key] as Record<
+        string,
+        unknown
+      >;
+      if (typeof subObj === 'object') {
+        for (const subKey of Object.keys(subObj as {})) {
+          // TODO recursve
+          data[key][subKey] = subObj[subKey];
+        }
       }
     } else {
-      $data[key] = obj[key];
+      data[key] = objTyped[key];
     }
   }
   set($data);
@@ -51,16 +59,22 @@ async function resolve(fleetId: string): Promise<void> {
   await privateAccount.login();
   _set({step: 'CREATING_TX'});
   const fleet = privateAccount.getFleet(fleetId);
+  if (!fleet) {
+    throw new Error(`no fleet with id ${fleetId}`);
+  }
   const secretHash = privateAccount.fleetSecret(fleetId);
   console.log('resolve', {secretHash});
   const to = spaceInfo.getPlanetInfo(fleet.to.x, fleet.to.y);
   const from = spaceInfo.getPlanetInfo(fleet.from.x, fleet.from.y);
+  if (!from || !to) {
+    throw new Error(`cannot get from or to`);
+  }
   const distanceSquared =
     Math.pow(to.location.globalX - from.location.globalX, 2) +
     Math.pow(to.location.globalY - from.location.globalY, 2);
   const distance = Math.floor(Math.sqrt(distanceSquared));
   _set({step: 'WAITING_TX'});
-  const tx = await wallet.contracts.OuterSpace.resolveFleet(
+  const tx = await wallet.contracts?.OuterSpace.resolveFleet(
     fleetId,
     xyToLocation(fleet.from.x, fleet.from.y),
     xyToLocation(fleet.to.x, fleet.to.y),

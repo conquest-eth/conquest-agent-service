@@ -1,7 +1,7 @@
 import {wallet} from './wallet';
-import type { BigNumber } from '@ethersproject/bignumber';
-import type { WalletStore } from 'web3w';
-import {BaseStore} from '../utils/stores';
+import type {BigNumber} from '@ethersproject/bignumber';
+import type {WalletStore} from 'web3w';
+import {BaseStore} from '../lib/utils/stores';
 
 type TokenAccount = {
   status: 'Ready' | 'WaitingContracts' | 'Idle';
@@ -9,32 +9,35 @@ type TokenAccount = {
   balance?: BigNumber;
   allowanceForOuterSpace?: BigNumber;
   error?: unknown;
-}
+};
 
 class PlayTokenAccount extends BaseStore<TokenAccount> {
   constructor(private wallet: WalletStore) {
-   super({
-     status: 'Idle'
-   });
-   this.wallet.subscribe(($wallet) => {
-    if ($wallet.address !== this.$store.account) {
-      this.set({
-        account: $wallet.address,
-        status: 'Idle',
-      });
-      this.triggerUpdates();
-    }
-   })
+    super({
+      status: 'Idle',
+    });
+    this.wallet.subscribe(($wallet) => {
+      if ($wallet.address !== this.$store.account) {
+        this.set({
+          account: $wallet.address,
+          status: 'Idle',
+        });
+        this.triggerUpdates();
+      }
+    });
   }
 
   acknowledgeError() {
     this.setPartial({error: undefined});
   }
 
-  protected async fetchFor<T,P>(address: string, func: (address: string) => Promise<P>): Promise<P> {
+  protected async fetchFor<T, P>(
+    address: string,
+    func: (address: string) => Promise<P>
+  ): Promise<P> {
     const partial = await func(address);
     if (this.$store.account === address) {
-      this.setPartial(partial)
+      this.setPartial(partial);
     }
     return partial;
   }
@@ -46,26 +49,41 @@ class PlayTokenAccount extends BaseStore<TokenAccount> {
   private async update() {
     if (this.wallet.contracts) {
       this.setPartial({
-        status: 'Ready' // Fetching?
-      })
+        status: 'Ready', // Fetching?
+      });
       try {
-        await this.fetchFor(this.$store.account, (address) => this.wallet.contracts.PlayToken.balanceOf(address).then(b => ({balance: b})));
+        if (this.$store.account) {
+          await this.fetchFor(this.$store.account, (address) =>
+            this.wallet.contracts?.PlayToken.balanceOf(address).then(
+              (b: BigNumber) => ({
+                balance: b,
+              })
+            )
+          );
+        }
       } catch (e) {
         this.setPartial({
-          error: e
-        })
+          error: e,
+        });
       }
       try {
-        await this.fetchFor(this.$store.account, (address) => this.wallet.contracts.PlayToken.allowance(address, this.wallet.contracts.OuterSpace.address).then(v => ({allowanceForOuterSpace: v})));
+        if (this.$store.account) {
+          await this.fetchFor(this.$store.account, (address) =>
+            this.wallet.contracts?.PlayToken.allowance(
+              address,
+              this.wallet.contracts.OuterSpace.address
+            ).then((v: BigNumber) => ({allowanceForOuterSpace: v}))
+          );
+        }
       } catch (e) {
         this.setPartial({
-          error: e
-        })
+          error: e,
+        });
       }
     } else {
       this.setPartial({
-        status: 'WaitingContracts'
-      })
+        status: 'WaitingContracts',
+      });
     }
     setTimeout(this.update.bind(this), 1000); // TODO config delay;
   }
