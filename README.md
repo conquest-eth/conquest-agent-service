@@ -103,8 +103,8 @@ You can remove the env if you want to use the same as the one in `.env`
 You'll also need to update the following for staging and production :
 
 - `SUBGRAPH_NAME=<thegraph account name>/<subgraph name>`
-- `VITE_CHAIN_ID=<id of the chain where contracts lives>`
-- `VITE_THE_GRAPH_HTTP=https://api.thegraph.com/subgraphs/name/<thegraph account name>/<subgraph name>`
+- `SNOWPACK_PUBLIC_CHAIN_ID=<id of the chain where contracts lives>`
+- `SNOWPACK_PUBLIC_THE_GRAPH_HTTP=https://api.thegraph.com/subgraphs/name/<thegraph account name>/<subgraph name>`
 
 you then need to ensure you have a subgraph already created on thegraph.com with that name: https://thegraph.com/explorer/dashboard
 
@@ -124,4 +124,4 @@ pnpm run production
 
 For `webapp:build` you can also use [fleek](https://fleek.co) so that building and ipfs deployment is done automatically. The repo provide a `.fleek.json` file already setup for staging.
 
-The only thing needed is setting up the environment variables (VITE_THE_GRAPH_HTTP, VITE_CHAIN_ID). You can either set them in fleek dashboard or set them in `.fleek.json`
+The only thing needed is setting up the environment variables (SNOWPACK_PUBLIC_THE_GRAPH_HTTP, SNOWPACK_PUBLIC_CHAIN_ID). You can either set them in fleek dashboard or set them in `.fleek.json`
