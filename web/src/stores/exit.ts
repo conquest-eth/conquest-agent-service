@@ -28,7 +28,9 @@ const {subscribe, set} = writable($data);
 
 function _set(obj: Partial<ExitFlow<Partial<ExitData>>>): ExitFlow<ExitData> {
   for (const key of Object.keys(obj)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const objTyped = obj as Record<string, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = $data as Record<string, any>;
     if (data[key] && typeof objTyped[key] === 'object') {
       const subObj: Record<string, unknown> = objTyped[key] as Record<
@@ -36,7 +38,7 @@ function _set(obj: Partial<ExitFlow<Partial<ExitData>>>): ExitFlow<ExitData> {
         unknown
       >;
       if (typeof subObj === 'object') {
-        for (const subKey of Object.keys(subObj as {})) {
+        for (const subKey of Object.keys(subObj as Record<string, unknown>)) {
           // TODO recursve
           data[key][subKey] = subObj[subKey];
         }
@@ -97,17 +99,10 @@ async function confirm(): Promise<void> {
   });
 }
 
-let dataStore;
-export default dataStore = {
+export default {
   subscribe,
   cancel,
   acknownledgeSuccess,
   exitFrom,
   confirm,
 };
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-if (typeof window !== 'undefined') {
-  (window as any).flow_exit = dataStore;
-}
-/* eslint-enable @typescript-eslint/no-explicit-any */

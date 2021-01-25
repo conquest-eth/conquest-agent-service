@@ -13,6 +13,15 @@ module.exports = {
     '@snowpack/plugin-typescript',
     '@snowpack/plugin-postcss',
     [
+      'snowpack-plugin-window-modules',
+      {
+        filter: filterFiles({
+          includes: ['src/stores/*'],
+          excludes: ['src/stores/privateAccount.js'], // TODO investigate why it fails
+        }),
+      },
+    ],
+    [
       'snowpack-plugin-hmr-inject',
       {
         filter: filterFiles({

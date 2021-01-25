@@ -2,7 +2,6 @@ import {writable} from 'svelte/store';
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
 import {xyToLocation} from '../common/src';
-import {BigNumber} from '@ethersproject/bignumber';
 import {spaceInfo} from '../app/mapState';
 
 type SendData = {
@@ -34,7 +33,9 @@ const {subscribe, set} = writable($data);
 
 function _set(obj: Partial<SendFlow<Partial<SendData>>>): SendFlow<SendData> {
   for (const key of Object.keys(obj)) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const objTyped = obj as Record<string, any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = $data as Record<string, any>;
     if (data[key] && typeof objTyped[key] === 'object') {
       const subObj: Record<string, unknown> = objTyped[key] as Record<
@@ -42,7 +43,7 @@ function _set(obj: Partial<SendFlow<Partial<SendData>>>): SendFlow<SendData> {
         unknown
       >;
       if (typeof subObj === 'object') {
-        for (const subKey of Object.keys(subObj as {})) {
+        for (const subKey of Object.keys(subObj as Record<string, unknown>)) {
           // TODO recursve
           data[key][subKey] = subObj[subKey];
         }
@@ -168,8 +169,7 @@ async function confirm(fleetAmount: number): Promise<void> {
   // );
 }
 
-let dataStore;
-export default dataStore = {
+export default {
   subscribe,
   cancel,
   acknownledgeSuccess,
@@ -179,9 +179,3 @@ export default dataStore = {
   pickOrigin,
   confirm,
 };
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-if (typeof window !== 'undefined') {
-  (window as any).flow_send = dataStore;
-}
-/* eslint-enable @typescript-eslint/no-explicit-any */

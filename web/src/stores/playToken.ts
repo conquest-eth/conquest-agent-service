@@ -90,9 +90,3 @@ class PlayTokenAccount extends BaseStore<TokenAccount> {
 }
 
 export const playTokenAccount = new PlayTokenAccount(wallet);
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-if (typeof window !== 'undefined') {
-  (window as any).playTokenAccount = playTokenAccount;
-}
-/* eslint-enable @typescript-eslint/no-explicit-any */

@@ -1,7 +1,7 @@
-import {wallet, chain} from './wallet';
-import type {BigNumber} from '@ethersproject/bignumber';
-import type {WalletStore} from 'web3w';
-import {BaseStore} from '../lib/utils/stores';
+// import {wallet, chain} from './wallet';
+// import type {BigNumber} from '@ethersproject/bignumber';
+// import type {WalletStore} from 'web3w';
+// import {BaseStore} from '../lib/utils/stores';
 
 type Gift = {
   status: 'Ready' | 'WaitingContracts' | 'Idle' | 'Pendig' | 'Done';

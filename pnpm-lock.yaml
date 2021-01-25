@@ -186,6 +186,7 @@ importers:
       snowpack-plugin-folder2routes: 0.1.0
       snowpack-plugin-hmr-inject: 0.1.3
       snowpack-plugin-ipfs: 0.1.2
+      snowpack-plugin-window-modules: 0.1.0
       svelte-preprocess: 4.6.3_a36d02c4e5aa7819d629bb09e38fdf83
       tailwindcss: 2.0.2_d337930ac9ab3cde8278bf6b015e1ea7
       typescript: 4.1.3
@@ -243,6 +244,7 @@ importers:
       snowpack-plugin-folder2routes: ^0.1.0
       snowpack-plugin-hmr-inject: ^0.1.3
       snowpack-plugin-ipfs: ^0.1.2
+      snowpack-plugin-window-modules: ^0.1.0
       svelte: ^3.24.0
       svelte-preprocess: ^4.0.8
       tailwindcss: ^2.0.2
@@ -11146,6 +11148,13 @@ packages:
     dev: true
     resolution:
       integrity: sha512-kh9TGnLZUWBN1Y4scbOiw4gVE8TsddfzNP90WnKyES5IrtiHkm2iYMA+Xbc3cGnBbyLs2NjzZw3UEEhI1fI2yw==
+  /snowpack-plugin-window-modules/0.1.0:
+    dependencies:
+      fs-extra: 9.1.0
+      minimatch: 3.0.4
+    dev: true
+    resolution:
+      integrity: sha512-9sCU1iG9HFdDVgSfw6n3K5VJWGgBLLxDxkRq6jv8GdkvCL5N1rizWhbijvq5w7KdomogqmRiLV8gxeZ6IAA+2Q==
   /snowpack/3.0.11:
     dependencies:
       esbuild: 0.8.34

@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let title: string;
+  export let title: string = '';
   import NavButton from '../components/navigation/NavButton.svelte';
   import Toast from '../components/notification/Toast.svelte';
   import Modal from '../components/Modal.svelte';
@@ -132,9 +132,7 @@
         Please accept transaction...
       {:else if $wallet.pendingUserConfirmation[0] === 'signature'}
         Please accept signature...
-      {:else}
-        Please accept request...
-      {/if}
+      {:else}Please accept request...{/if}
     {:else if $privateAccount.step === 'SIGNATURE_REQUIRED'}
       Planet Wars require your signature to operate. Do not sign this message
       outside of Planet Wars!

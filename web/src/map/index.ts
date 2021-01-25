@@ -12,7 +12,7 @@ export default class Map {
   setup(canvas: HTMLCanvasElement): () => void {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
-    let ctx: CanvasRenderingContext2D = canvas.getContext(
+    const ctx: CanvasRenderingContext2D = canvas.getContext(
       '2d'
     ) as CanvasRenderingContext2D;
     if (!ctx) {

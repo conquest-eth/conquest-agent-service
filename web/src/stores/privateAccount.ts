@@ -371,7 +371,7 @@ async function _setData(
   _sync(fleetIdsToDelete, exitsToDelete, capturesToDelete); // TODO fetch before set local storage to avoid aother encryption roundtrip
 }
 
-async function clearData() {
+async function clearData(): Promise<void> {
   const syncDownResult = await _syncDown();
   if (!syncDownResult) {
     throw new Error(`failed to sync down`);
@@ -802,7 +802,7 @@ function execute(
   );
 }
 
-function recordExit(location: string, timestamp: number) {
+function recordExit(location: string, timestamp: number): void {
   if (!wallet.address) {
     throw new Error(`no wallet.address`);
   }
@@ -820,16 +820,16 @@ function recordExit(location: string, timestamp: number) {
   _setData(wallet.address, wallet.chain.chainId, $data.data);
 }
 
-function recordWithdrawal(loctions: string[], txHash: string) {
-  // TODO
-}
+// function recordWithdrawal(loctions: string[], txHash: string): void {
+//   // TODO
+// }
 
 function recordCapture(
   location: string,
   txHash: string,
   time: number,
   nonce: number
-) {
+): void {
   if (!wallet.address) {
     throw new Error(`no wallet.address`);
   }
@@ -889,7 +889,7 @@ function deleteExit(id: string) {
   _setData(wallet.address, wallet.chain.chainId, $data.data, [], [id]);
 }
 
-function recordFleet(fleetId: string, fleet: OwnFleet) {
+function recordFleet(fleetId: string, fleet: OwnFleet): void {
   if (!wallet.address) {
     throw new Error(`no wallet.address`);
   }
@@ -1023,8 +1023,7 @@ function getFleet(fleetId: string): OwnFleet | null {
   return null;
 }
 
-let dataStore;
-export default dataStore = {
+export default {
   subscribe,
   login,
   confirm,
@@ -1034,7 +1033,7 @@ export default dataStore = {
   recordExit,
   recordCapture,
   isCapturing,
-  get privateWallet() {
+  get privateWallet(): Wallet | undefined {
     return $data.wallet;
   },
   hashFleet,
@@ -1042,14 +1041,8 @@ export default dataStore = {
   getFleets,
   getFleet,
   isTxPerformed,
-  get walletAddress() {
+  get walletAddress(): string | undefined {
     return $data.walletAddress;
   },
   clearData,
 };
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-if (typeof window !== 'undefined') {
-  (window as any).privateAccount = dataStore;
-}
-/* eslint-enable @typescript-eslint/no-explicit-any */

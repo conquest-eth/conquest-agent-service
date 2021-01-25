@@ -24,8 +24,6 @@ async function fetch(
   const contracts = chain.contracts || fallback.contracts;
   if (contracts) {
     return contracts.OuterSpace.getPlanetStates(planetIds);
-    // const result = await contracts.OuterSpace.functions.getPlanetStates(planetIds);
-    // return result[0];
   } else if (fallback.state === 'Ready') {
     // TODO should indicate fallback is being connected to on the UI ()
     throw new Error('no contracts to fetch with');

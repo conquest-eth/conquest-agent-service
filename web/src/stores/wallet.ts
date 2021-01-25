@@ -1,5 +1,4 @@
 import WalletStores from 'web3w';
-import {TorusModuleLoader} from 'web3w-torus-loader';
 import {WalletConnectModuleLoader} from 'web3w-walletconnect-loader';
 import contractsInfo from '../contracts.json';
 import {notifications} from './notifications';
@@ -20,9 +19,6 @@ const walletStores = WalletStores({
       : undefined, // ensure local storage is not conflicting across web3w-based apps on ipfs gateways
   options: [
     'builtin',
-    // new TorusModuleLoader({verifier: 'google', nodeUrl, chainId}),
-    // new TorusModuleLoader({verifier: 'facebook', nodeUrl, chainId}),
-    // new TorusModuleLoader({verifier: 'discord', nodeUrl, chainId}),
     new WalletConnectModuleLoader({
       nodeUrl,
       chainId,
@@ -31,14 +27,6 @@ const walletStores = WalletStores({
   ],
   fallbackNode: nodeUrl, // TODO use query string to specify it // TODO settings
 });
-
-// USEFUL FOR DEBUGGING:
-if (typeof window !== 'undefined') {
-  // console.log('adding walletStores');
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  (window as any).walletStores = walletStores;
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-}
 
 export const {
   wallet,

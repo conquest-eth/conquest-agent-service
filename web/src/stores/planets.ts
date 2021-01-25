@@ -1,4 +1,4 @@
-import {locationToXY, xyToLocation} from '../common/src';
+import {locationToXY} from '../common/src';
 import type {Planet} from '../common/src/types';
 import {Readable, Writable, writable} from 'svelte/store';
 import {space} from '../app/mapState';
@@ -27,9 +27,3 @@ export function planetAt(location: string): Readable<Planet> {
   }
   return store;
 }
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-if (typeof window !== 'undefined') {
-  (window as any).planets = {planetAt, xyToLocation};
-}
-/* eslint-enable @typescript-eslint/no-explicit-any */
