@@ -1,7 +1,7 @@
 import {writable} from 'svelte/store';
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
-import {xyToLocation} from 'planet-wars-common';
+import {xyToLocation} from '../common/src';
 import {spaceInfo} from '../app/mapState';
 
 // type ResolveData = {};

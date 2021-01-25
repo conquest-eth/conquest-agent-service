@@ -4,7 +4,7 @@
   import sendFlow from '../stores/send';
   import {onMount} from 'svelte';
   import {planetAt} from '../stores/planets';
-  import { xyToLocation } from 'planet-wars-common';
+  import {xyToLocation} from '../common/src';
 
   $: planetFrom = $sendFlow.data?.from
     ? planetAt(xyToLocation($sendFlow.data.from.x, $sendFlow.data.from.y))

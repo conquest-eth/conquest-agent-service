@@ -1,4 +1,4 @@
-import {xyToLocation} from 'planet-wars-common';
+import {xyToLocation} from '../common/src';
 import type {RenderState} from './RenderState';
 import type {Controller} from './controller';
 import {space} from '../app/mapState';

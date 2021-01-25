@@ -1,4 +1,4 @@
-import {PrivateSpace, SpaceInfo, PlanetData} from 'planet-wars-common';
+import {PrivateSpace, SpaceInfo, PlanetData} from '../common/src';
 import contractsInfo from '../contracts.json';
 import privateAccount from '../stores/privateAccount';
 import {fallback, chain} from '../stores/wallet';

@@ -1,4 +1,5 @@
-import {locationToXY, Planet, xyToLocation} from 'planet-wars-common';
+import {locationToXY, xyToLocation} from '../common/src';
+import type {Planet} from '../common/src/types';
 import {Readable, Writable, writable} from 'svelte/store';
 import {space} from '../app/mapState';
 

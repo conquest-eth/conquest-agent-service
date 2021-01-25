@@ -1,4 +1,4 @@
-import type {OwnFleet, Planet} from 'planet-wars-common';
+import type {OwnFleet, Planet} from '../common/src/types';
 import PlanetInfoPanel from '../components/PlanetInfoPanel.svelte';
 
 export class Controller {

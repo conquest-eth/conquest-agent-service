@@ -8,7 +8,7 @@
 
   import PanelButton from './PanelButton.svelte';
   import Blockie from './Blockie.svelte';
-  import {locationToXY} from 'planet-wars-common';
+  import {locationToXY} from '../common/src';
 
   export let location: string;
   export let close: () => void;

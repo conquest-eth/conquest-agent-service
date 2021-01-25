@@ -5,7 +5,7 @@
   import PanelButton from './PanelButton.svelte';
   import {spaceInfo} from '../app/mapState';
   import time from '../stores/time';
-  import type {OwnFleet} from 'planet-wars-common';
+  import type {OwnFleet} from '../common/src/types';
 
   function resolve(fleetId: string) {
     resolveFlow.resolve(fleetId);
