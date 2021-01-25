@@ -1,10 +1,8 @@
-import {writable} from 'svelte/store';
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
+import {BaseStore} from '../lib/utils/stores';
 
-type ClaimData = {txHash?: string; location: string};
-
-export type ClaimFlow<T> = {
+export type ClaimFlow = {
   type: 'CLAIM';
   step:
     | 'IDLE'
@@ -13,66 +11,34 @@ export type ClaimFlow<T> = {
     | 'CREATING_TX'
     | 'WAITING_TX'
     | 'SUCCESS';
-  data?: T;
+  data?: {txHash?: string; location: string};
 };
 
-const $data: ClaimFlow<ClaimData> = {
-  type: 'CLAIM',
-  step: 'IDLE',
-};
-const {subscribe, set} = writable($data);
-
-function _set(
-  obj: Partial<ClaimFlow<Partial<ClaimData>>>
-): ClaimFlow<ClaimData> {
-  for (const key of Object.keys(obj)) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const objTyped = obj as Record<string, any>;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data = $data as Record<string, any>;
-    if (data[key] && typeof objTyped[key] === 'object') {
-      const subObj: Record<string, unknown> = objTyped[key] as Record<
-        string,
-        unknown
-      >;
-      if (typeof subObj === 'object') {
-        for (const subKey of Object.keys(subObj as Record<string, unknown>)) {
-          // TODO recursve
-          data[key][subKey] = subObj[subKey];
-        }
-      }
-    } else {
-      data[key] = objTyped[key];
-    }
+class ClaimFlowStore extends BaseStore<ClaimFlow> {
+  public constructor() {
+    super({
+      type: 'CLAIM',
+      step: 'IDLE',
+    });
   }
-  set($data);
-  return $data;
-}
-
-function _reset() {
-  _set({step: 'IDLE', data: undefined});
-}
-
-export default {
-  subscribe,
 
   async cancel(): Promise<void> {
-    _reset();
-  },
+    this._reset();
+  }
 
   async acknownledgeSuccess(): Promise<void> {
     // TODO automatic ?
-    _reset();
-  },
+    this._reset();
+  }
 
   async claim(location: string): Promise<void> {
-    _set({data: {location}, step: 'CONNECTING'});
+    this.setPartial({data: {location}, step: 'CONNECTING'});
     await privateAccount.login();
-    _set({step: 'CHOOSE_STAKE'});
-  },
+    this.setPartial({step: 'CHOOSE_STAKE'});
+  }
 
   async confirm(): Promise<void> {
-    const flow = _set({step: 'WAITING_TX'});
+    const flow = this.setPartial({step: 'WAITING_TX'});
     if (!flow.data) {
       throw new Error(`no flow data`);
     }
@@ -80,6 +46,7 @@ export default {
     if (!latestBlock) {
       throw new Error(`can't fetch latest block`);
     }
+    console.log('HELLO');
     const tx = await wallet.contracts?.OuterSpace.acquire(flow.data?.location);
 
     privateAccount.recordCapture(
@@ -88,9 +55,15 @@ export default {
       latestBlock.timestamp,
       tx.nonce
     ); // TODO check
-    _set({
+    this.setRecursivePartial({
       step: 'SUCCESS',
       data: {txHash: tx.hash},
     });
-  },
-};
+  }
+
+  private _reset() {
+    this.setPartial({step: 'IDLE', data: undefined});
+  }
+}
+
+export default new ClaimFlowStore();

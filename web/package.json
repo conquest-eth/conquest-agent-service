@@ -62,7 +62,7 @@
     "snowpack-plugin-folder2routes": "^0.1.0",
     "snowpack-plugin-hmr-inject": "^0.1.3",
     "snowpack-plugin-ipfs": "^0.1.2",
-    "snowpack-plugin-window-modules": "^0.1.0",
+    "snowpack-plugin-window-modules": "^0.1.1",
     "svelte-preprocess": "^4.0.8",
     "tailwindcss": "^2.0.2",
     "typescript": "^4.0.0"

@@ -2,6 +2,21 @@ import {Writable, writable, Readable} from 'svelte/store';
 
 type DataType = Record<string, unknown | Record<string, unknown>>;
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+function _recurseSet(target: any, obj: any) {
+  for (const key of Object.keys(obj)) {
+    if (
+      target[key] &&
+      typeof target[key] === 'object' &&
+      typeof obj[key] === 'object'
+    ) {
+      _recurseSet(target[key], obj[key]);
+    } else {
+      target[key] = obj[key];
+    }
+  }
+}
+
 export class BaseStore<T extends DataType> implements Readable<T> {
   private store: Writable<T>;
   constructor(protected readonly $store: T) {
@@ -15,24 +30,15 @@ export class BaseStore<T extends DataType> implements Readable<T> {
     return this.store.subscribe(run, invalidate);
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+  protected setRecursivePartial(obj: any): T {
+    _recurseSet(this.$store, obj);
+    this.store.set(this.$store);
+    return this.$store;
+  }
+
   protected setPartial(obj: Partial<T>): T {
-    for (const key of Object.keys(obj)) {
-      if (this.$store[key] && typeof obj[key] === 'object') {
-        const subObj: Record<string, unknown> = obj[key] as Record<
-          string,
-          unknown
-        >;
-        if (typeof subObj === 'object') {
-          for (const subKey of Object.keys(subObj as {})) {
-            // TODO recursve
-            (this.$store[key] as Record<string, unknown>)[subKey] =
-              subObj[subKey];
-          }
-        }
-      } else {
-        (this.$store as Record<string, unknown>)[key] = obj[key];
-      }
-    }
+    _recurseSet(this.$store, obj);
     this.store.set(this.$store);
     return this.$store;
   }
@@ -50,17 +56,3 @@ export class BaseStore<T extends DataType> implements Readable<T> {
     return this.$store;
   }
 }
-
-// TODO store subclass via constructor
-// then loop through them to replace the protoype down the chain
-// (async () => {
-//   if (import.meta.hot) {
-//     const previousModule = await import(import.meta.url);
-//     import.meta.hot.accept(({module}) => {
-//     for (const field of Object.keys(module)) {
-//         const newPrototype = Reflect.getPrototypeOf(module[field]);
-//         Reflect.setPrototypeOf(previousModule[field], newPrototype);
-//     }
-//     });
-//  }
-// })();
