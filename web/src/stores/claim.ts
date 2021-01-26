@@ -1,7 +1,8 @@
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
-import {BaseStore} from '../lib/utils/stores';
+import {BaseStoreWithData} from '../lib/utils/stores';
 
+type Data = {txHash?: string; location: string};
 export type ClaimFlow = {
   type: 'CLAIM';
   step:
@@ -11,10 +12,10 @@ export type ClaimFlow = {
     | 'CREATING_TX'
     | 'WAITING_TX'
     | 'SUCCESS';
-  data?: {txHash?: string; location: string};
+  data?: Data;
 };
 
-class ClaimFlowStore extends BaseStore<ClaimFlow> {
+class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
   public constructor() {
     super({
       type: 'CLAIM',
@@ -55,10 +56,7 @@ class ClaimFlowStore extends BaseStore<ClaimFlow> {
       latestBlock.timestamp,
       tx.nonce
     ); // TODO check
-    this.setRecursivePartial({
-      step: 'SUCCESS',
-      data: {txHash: tx.hash},
-    });
+    this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
   }
 
   private _reset() {

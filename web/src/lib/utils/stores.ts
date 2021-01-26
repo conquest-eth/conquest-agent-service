@@ -1,6 +1,6 @@
 import {Writable, writable, Readable} from 'svelte/store';
 
-type DataType = Record<string, unknown | Record<string, unknown>>;
+type DataType<T> = Record<string, unknown> & {data?: T};
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
 function _recurseSet(target: any, obj: any) {
@@ -17,8 +17,9 @@ function _recurseSet(target: any, obj: any) {
   }
 }
 
-export class BaseStore<T extends DataType> implements Readable<T> {
-  private store: Writable<T>;
+export class BaseStore<T extends Record<string, unknown>>
+  implements Readable<T> {
+  protected store: Writable<T>;
   constructor(protected readonly $store: T) {
     this.store = writable(this.$store);
   }
@@ -30,15 +31,10 @@ export class BaseStore<T extends DataType> implements Readable<T> {
     return this.store.subscribe(run, invalidate);
   }
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-  protected setRecursivePartial(obj: any): T {
-    _recurseSet(this.$store, obj);
-    this.store.set(this.$store);
-    return this.$store;
-  }
-
   protected setPartial(obj: Partial<T>): T {
-    _recurseSet(this.$store, obj);
+    for (const key of Object.keys(obj)) {
+      (this.$store as Record<string, unknown>)[key] = obj[key];
+    }
     this.store.set(this.$store);
     return this.$store;
   }
@@ -46,11 +42,31 @@ export class BaseStore<T extends DataType> implements Readable<T> {
     // Testing hmr for subclasses
     //   const objAny: any = obj;
     //   objAny.value += 7;
-    for (const key of Object.keys(this.$store)) {
-      (this.$store as Record<string, unknown>)[key] = undefined;
+    if (obj !== this.$store) {
+      for (const key of Object.keys(this.$store)) {
+        if (obj[key] === undefined) {
+          (this.$store as Record<string, unknown>)[key] = undefined;
+        }
+      }
+      for (const key of Object.keys(obj)) {
+        (this.$store as Record<string, unknown>)[key] = obj[key];
+      }
     }
-    for (const key of Object.keys(obj)) {
-      (this.$store as Record<string, unknown>)[key] = obj[key];
+    this.store.set(this.$store);
+    return this.$store;
+  }
+}
+
+export class BaseStoreWithData<T extends DataType<U>, U> extends BaseStore<T> {
+  constructor($store: T) {
+    super($store);
+  }
+
+  protected setData(data: Partial<U>, extra?: Partial<T>): T {
+    this.$store.data = this.$store.data || ({} as U); // this assume setData was set before ?
+    _recurseSet(this.$store.data, data);
+    if (extra) {
+      this.setPartial(extra);
     }
     this.store.set(this.$store);
     return this.$store;

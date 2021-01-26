@@ -1,4 +1,3 @@
-import {writable} from 'svelte/store';
 import {wallet, flow, chain} from './wallet';
 import {Wallet} from '@ethersproject/wallet';
 import type {Contract} from '@ethersproject/contracts';
@@ -8,14 +7,14 @@ import type {OwnFleet} from '../common/src/types';
 import {BigNumber} from '@ethersproject/bignumber';
 import {finality} from '../config';
 import aes from 'aes-js';
-import * as base64 from 'byte-base64';
-import * as lz from 'lz-string';
+import {
+  base64,
+  compressToUint8Array,
+  decompressFromUint8Array,
+} from '../lib/utils';
+
 import contractsInfo from '../contracts.json';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const {compressToUint8Array, decompressFromUint8Array} = (lz as any)
-  .default as lz.LZStringStatic;
-
+import {BaseStoreWithData} from '../lib/utils/stores';
 type Capture = {
   txHash: string;
   nonce: number;
@@ -51,30 +50,11 @@ type PrivateAccountData = {
   chainId?: string;
 };
 
-const $data: PrivateAccountData = {
-  wallet: undefined,
-  aesKey: undefined,
-  step: 'IDLE',
-  data: undefined,
-  sync: 'IDLE',
-  syncError: undefined,
+type Contracts = {
+  [name: string]: Contract;
 };
-const {subscribe, set} = writable($data);
-
-function _set(obj: Partial<PrivateAccountData>): PrivateAccountData {
-  const data = $data as Record<string, unknown>;
-  const objTyped = obj as Record<string, unknown>;
-  for (const key of Object.keys(obj)) {
-    data[key] = objTyped[key];
-  }
-  set($data);
-  return $data;
-}
 
 const LOCAL_STORAGE_PRIVATE_ACCOUNT = '_privateAccount';
-
-let monitorProcess: NodeJS.Timeout | undefined = undefined;
-
 function LOCAL_STORAGE_KEY(address: string, chainId: string) {
   const localStoragePrefix =
     window.basepath &&
@@ -85,964 +65,965 @@ function LOCAL_STORAGE_KEY(address: string, chainId: string) {
   return `${localStoragePrefix}_${LOCAL_STORAGE_PRIVATE_ACCOUNT}_${address.toLowerCase()}_${chainId}`;
 }
 
-async function _loadData(address: string, chainId: string) {
-  // TODO load from signature based DB
-  const fromStorage = localStorage.getItem(LOCAL_STORAGE_KEY(address, chainId));
-  let data = {fleets: {}, exits: {}, captures: {}};
-  if (fromStorage) {
-    try {
-      const decrypted = decrypt(fromStorage);
-      data = JSON.parse(decrypted);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  _set({data});
-  _syncDown().then((result) => {
-    if (result && result.newDataOnLocal) {
-      // TODO flag to ensure syncing up when first checks
-    }
-  });
-  startMonitoring(address, chainId);
-}
-
-const _txPerformed: Record<string, boolean> = {};
-
-let _lastId = 0;
-async function syncRequest(
-  method: string,
-  params: string[]
-): Promise<Response> {
-  return await fetch('https://cf-worker-2.rim.workers.dev/', {
-    // TODO env variable
-    method: 'POST',
-    body: JSON.stringify({
-      method,
-      params,
-      jsonrpc: '2.0',
-      id: ++_lastId,
-    }),
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-    },
-  });
-}
-
-// async function getSyncedData(): Promise<string> {
-
-// }
-
-async function _syncDown(): Promise<
-  | {newDataOnLocal: boolean; newDataOnRemote: boolean; counter: BigNumber}
-  | undefined
+class PrivateAccountStore extends BaseStoreWithData<
+  PrivateAccountData,
+  SecretData
 > {
-  _set({sync: 'SYNCING'});
-  let json;
-  let error;
-  try {
-    if (!$data.wallet) {
-      throw new Error(`no $data.wallet`);
-    }
-    const response = await syncRequest('wallet_getString', [
-      $data.wallet.address,
-      'planet-wars-test',
-    ]);
-    json = await response.json();
-  } catch (e) {
-    error = e;
-  }
-  if (error || json.error) {
-    _set({sync: 'NOT_SYNCED', syncError: error || json.error});
-    return; // TODO retry ?
-  }
-  let data: SecretData = {fleets: {}, exits: {}, captures: {}};
-  if (json.result.data && json.result.data !== '') {
-    try {
-      const decryptedData = decrypt(json.result.data);
-      data = JSON.parse(decryptedData);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  const {newDataOnLocal, newDataOnRemote} = _merge(data);
+  private monitorProcess: NodeJS.Timeout | undefined = undefined;
+  private _txPerformed: Record<string, boolean> = {};
+  private _lastId = 0;
+  private walletData: Record<string, {wallet: Wallet; aesKey: Uint8Array}> = {};
 
-  if (!$data.walletAddress) {
-    throw new Error(`no $data.walletAddress`);
-  }
-  if (!$data.chainId) {
-    throw new Error(`no $data.chainId`);
-  }
-  if (!$data.data) {
-    throw new Error(`no $data.data`);
-  }
-  _set({data: $data.data});
-  _saveToLocalStorage($data.walletAddress, $data.chainId, $data.data);
+  private _promise: Promise<void> | undefined;
+  private _resolve: (() => void) | undefined;
+  private _reject: ((error: unknown) => void) | undefined;
+  private _func: (() => Promise<void>) | undefined;
+  private _contracts: Contracts | undefined;
 
-  if (!newDataOnLocal) {
-    _set({sync: 'SYNCED'});
-  } else {
-    // do not sync up as we will do that latter as part of the usual fleet checks
-  }
-  return {
-    newDataOnLocal,
-    newDataOnRemote,
-    counter: BigNumber.from(json.result.counter),
-  };
-}
+  constructor() {
+    super({
+      wallet: undefined,
+      aesKey: undefined,
+      step: 'IDLE',
+      data: undefined,
+      sync: 'IDLE',
+      syncError: undefined,
+    });
 
-function _merge(
-  data: SecretData
-): {newDataOnLocal: boolean; newDataOnRemote: boolean} {
-  if (!$data.data) {
-    $data.data = {fleets: {}, exits: {}, captures: {}};
-  }
-  if (!$data.data.fleets) {
-    $data.data.fleets = {};
-  }
-  let newDataOnLocal = false;
-  let newDataOnRemote = false;
-  const localFleets = $data.data.fleets;
-  const remoteFleets = data.fleets;
-  if (remoteFleets) {
-    for (const key of Object.keys(remoteFleets)) {
-      if (!localFleets[key]) {
-        newDataOnRemote = true;
-        localFleets[key] = remoteFleets[key]; // new
+    // THIS sill trigger on all hmr reload what to do ?
+    chain.subscribe(($chain) => {
+      if ($chain.state === 'Ready') {
+        this.start(this.$store.walletAddress, $chain.chainId);
       } else {
-        const localFleet = localFleets[key];
-        const remoteFleet = remoteFleets[key];
-        if (
-          localFleet.to.x !== remoteFleet.to.x ||
-          localFleet.to.y !== remoteFleet.to.y
-        ) {
-          console.error('fleet with different destination but same id');
+        this.setPartial({wallet: undefined, aesKey: undefined});
+        if (this.$store.step === 'READY') {
+          this.setPartial({step: 'IDLE', chainId: undefined, data: undefined});
         }
-        if (localFleet.resolveTxHash) {
-          if (remoteFleet.resolveTxHash) {
-            // if (localFleet.resolveTxHash != remoteFleet.resolveTxHash) {
-            // }
-          } else {
-            newDataOnLocal = true;
-          }
-        } else {
-          if (remoteFleet.resolveTxHash) {
-            newDataOnRemote = true;
-            localFleet.resolveTxHash = remoteFleet.resolveTxHash;
-          }
+        this.stopMonitoring();
+      }
+    });
+
+    wallet.subscribe(($wallet) => {
+      if ($wallet.address) {
+        this.start($wallet.address, this.$store.chainId);
+      } else {
+        this.setPartial({wallet: undefined, aesKey: undefined});
+        if (this.$store.step === 'READY') {
+          this.setPartial({
+            step: 'IDLE',
+            walletAddress: undefined,
+            data: undefined,
+          });
         }
-        if (localFleet.sendTxHash) {
-          if (remoteFleet.sendTxHash) {
-            // if (localFleet.sendTxHash != remoteFleet.sendTxHash) {
-            // }
-          } else {
-            newDataOnLocal = true;
-          }
-        } else {
-          if (remoteFleet.sendTxHash) {
-            newDataOnRemote = true;
-            localFleet.sendTxHash = remoteFleet.sendTxHash;
-          }
-        }
+        this.stopMonitoring();
+      }
+    });
+  }
+
+  async _loadData(address: string, chainId: string) {
+    // TODO load from signature based DB
+    const fromStorage = localStorage.getItem(
+      LOCAL_STORAGE_KEY(address, chainId)
+    );
+    let data = {fleets: {}, exits: {}, captures: {}};
+    if (fromStorage) {
+      try {
+        const decrypted = this.decrypt(fromStorage);
+        data = JSON.parse(decrypted);
+      } catch (e) {
+        console.error(e);
       }
     }
+    this.setPartial({data});
+    this._syncDown().then((result) => {
+      if (result && result.newDataOnLocal) {
+        // TODO flag to ensure syncing up when first checks
+      }
+    });
+    this.startMonitoring(address, chainId);
   }
-  for (const key of Object.keys(localFleets)) {
-    if (!remoteFleets[key]) {
-      newDataOnLocal = true;
-    }
+
+  async syncRequest(method: string, params: string[]): Promise<Response> {
+    return await fetch('https://cf-worker-2.rim.workers.dev/', {
+      // TODO env variable
+      method: 'POST',
+      body: JSON.stringify({
+        method,
+        params,
+        jsonrpc: '2.0',
+        id: ++this._lastId,
+      }),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+    });
   }
-  set($data);
-  return {newDataOnLocal, newDataOnRemote};
-}
 
-function encrypt(data: string): string {
-  if (!$data || !$data.aesKey) {
-    throw new Error('no aes key set');
-  }
-  const textBytes = compressToUint8Array(data); // const textBytes = aes.utils.utf8.toBytes(data);
-  const ctr = new aes.ModeOfOperation.ctr($data.aesKey);
-  const encryptedBytes = ctr.encrypt(textBytes);
-  return base64.bytesToBase64(encryptedBytes);
-}
-
-function decrypt(data: string): string {
-  if (!$data || !$data.aesKey) {
-    throw new Error('no aes key set');
-  }
-  const encryptedBytes = base64.base64ToBytes(data);
-  const ctr = new aes.ModeOfOperation.ctr($data.aesKey);
-  const decryptedBytes = ctr.decrypt(encryptedBytes);
-  return decompressFromUint8Array(decryptedBytes) || ''; // return aes.utils.utf8.fromBytes(decryptedBytes);
-}
-
-async function _sync(
-  fleetsToDelete: string[] = [],
-  exitsToDelete: string[] = [],
-  capturesToDelete: string[] = []
-) {
-  const syncDownResult = await _syncDown();
-
-  if (
-    syncDownResult &&
-    (syncDownResult.newDataOnLocal || fleetsToDelete.length > 0)
-  ) {
-    _set({sync: 'SYNCING'});
-
-    if (!$data.data) {
-      throw new Error(`no $data.data`);
-    }
-    if (!$data.wallet) {
-      throw new Error(`no $data.wallet`);
-    }
-
-    for (const fleetToDelete of fleetsToDelete) {
-      delete $data.data.fleets[fleetToDelete];
-    }
-    for (const exitToDelete of exitsToDelete) {
-      delete $data.data.exits[exitToDelete];
-    }
-    for (const captureToDelete of capturesToDelete) {
-      delete $data.data.captures[captureToDelete];
-    }
-    _set($data);
-
-    const dataToEncrypt = JSON.stringify($data.data); // TODO compression + encryption
-
-    const data = encrypt(dataToEncrypt);
-
-    const counter = syncDownResult.counter.add(1).toString();
-    const signature = await $data.wallet.signMessage(
-      'put:' + 'planet-wars-test' + ':' + counter + ':' + data
-    );
-
+  async _syncDown(): Promise<
+    | {newDataOnLocal: boolean; newDataOnRemote: boolean; counter: BigNumber}
+    | undefined
+  > {
+    this.setPartial({sync: 'SYNCING'});
     let json;
     let error;
     try {
-      const response = await syncRequest('wallet_putString', [
-        $data.wallet.address,
+      if (!this.$store.wallet) {
+        throw new Error(`no this.$store.wallet`);
+      }
+      const response = await this.syncRequest('wallet_getString', [
+        this.$store.wallet.address,
         'planet-wars-test',
-        counter,
-        data,
-        signature,
       ]);
       json = await response.json();
     } catch (e) {
       error = e;
     }
     if (error || json.error) {
-      _set({sync: 'NOT_SYNCED', syncError: error || json.error});
+      this.setPartial({sync: 'NOT_SYNCED', syncError: error || json.error});
       return; // TODO retry ?
     }
-    if (!json.success) {
-      _set({sync: 'NOT_SYNCED', syncError: 'no success'});
-      return; // TODO retry ?
-    }
-
-    _set({sync: 'SYNCED'});
-  }
-}
-
-function _saveToLocalStorage(
-  address: string,
-  chainId: string,
-  data?: SecretData
-) {
-  if (!data) {
-    return; // TODO ?
-  }
-  const toStorage = JSON.stringify(data);
-  const encrypted = encrypt(toStorage);
-  try {
-    localStorage.setItem(LOCAL_STORAGE_KEY(address, chainId), encrypted);
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-async function _setData(
-  address: string,
-  chainId: string,
-  data: SecretData,
-  fleetIdsToDelete: string[] = [],
-  exitsToDelete: string[] = [],
-  capturesToDelete: string[] = []
-) {
-  _saveToLocalStorage(address, chainId, data);
-  _sync(fleetIdsToDelete, exitsToDelete, capturesToDelete); // TODO fetch before set local storage to avoid aother encryption roundtrip
-}
-
-async function clearData(): Promise<void> {
-  const syncDownResult = await _syncDown();
-  if (!syncDownResult) {
-    throw new Error(`failed to sync down`);
-  }
-  if (!wallet.address || !wallet.chain.chainId) {
-    console.log(` no: ${wallet.address}, ${wallet.chain.chainId}`);
-    return;
-  }
-  if (!$data.wallet) {
-    throw new Error(`no $data.wallet`);
-  }
-  const key = LOCAL_STORAGE_KEY(wallet.address, wallet.chain.chainId);
-  localStorage.removeItem(key);
-  const data = '';
-  const counter = syncDownResult.counter.add(1).toString();
-  const signature = await $data.wallet.signMessage(
-    'put:' + 'planet-wars-test' + ':' + counter + ':' + data
-  );
-  await syncRequest('wallet_putString', [
-    $data.wallet.address,
-    'planet-wars-test',
-    counter,
-    data,
-    signature,
-  ]);
-}
-
-const walletData: Record<string, {wallet: Wallet; aesKey: Uint8Array}> = {};
-
-type Contracts = {
-  [name: string]: Contract;
-};
-
-function start(walletAddress?: string, chainId?: string): void {
-  // console.log("START", {walletAddress, chainId});
-  const walletDiff =
-    !$data.walletAddress ||
-    walletAddress?.toLowerCase() !== $data.walletAddress.toLowerCase();
-  const chainDiff = !$data.chainId || chainId !== $data.chainId;
-
-  if (chainId && walletAddress) {
-    // console.log("READY");
-    const existingData = walletData[walletAddress.toLowerCase()];
-    if (existingData) {
-      _set({
-        step: 'READY', // TODO why READY ?
-        wallet: existingData.wallet,
-        aesKey: existingData.aesKey,
-        walletAddress,
-        chainId,
-      });
-    } else {
-      _set({
-        wallet: undefined,
-        aesKey: undefined,
-        walletAddress,
-        chainId,
-        data: undefined,
-      });
-      if ($data.step === 'READY') {
-        _set({step: 'IDLE'});
+    let data: SecretData = {fleets: {}, exits: {}, captures: {}};
+    if (json.result.data && json.result.data !== '') {
+      try {
+        const decryptedData = this.decrypt(json.result.data);
+        data = JSON.parse(decryptedData);
+      } catch (e) {
+        console.error(e);
       }
     }
-    if (walletDiff || chainDiff) {
-      console.log({walletDiff, chainDiff});
-      if ($data.walletAddress && $data.chainId && existingData) {
-        _set({
+    const {newDataOnLocal, newDataOnRemote} = this._merge(data);
+
+    if (!this.$store.walletAddress) {
+      throw new Error(`no this.$store.walletAddress`);
+    }
+    if (!this.$store.chainId) {
+      throw new Error(`no this.$store.chainId`);
+    }
+    if (!this.$store.data) {
+      throw new Error(`no this.$store.data`);
+    }
+    this.setPartial({data: this.$store.data});
+    this._saveToLocalStorage(
+      this.$store.walletAddress,
+      this.$store.chainId,
+      this.$store.data
+    );
+
+    if (!newDataOnLocal) {
+      this.setPartial({sync: 'SYNCED'});
+    } else {
+      // do not sync up as we will do that latter as part of the usual fleet checks
+    }
+    return {
+      newDataOnLocal,
+      newDataOnRemote,
+      counter: BigNumber.from(json.result.counter),
+    };
+  }
+
+  _merge(
+    data: SecretData
+  ): {newDataOnLocal: boolean; newDataOnRemote: boolean} {
+    if (!this.$store.data) {
+      this.$store.data = {fleets: {}, exits: {}, captures: {}};
+    }
+    if (!this.$store.data.fleets) {
+      this.$store.data.fleets = {};
+    }
+    let newDataOnLocal = false;
+    let newDataOnRemote = false;
+    const localFleets = this.$store.data.fleets;
+    const remoteFleets = data.fleets;
+    if (remoteFleets) {
+      for (const key of Object.keys(remoteFleets)) {
+        if (!localFleets[key]) {
+          newDataOnRemote = true;
+          localFleets[key] = remoteFleets[key]; // new
+        } else {
+          const localFleet = localFleets[key];
+          const remoteFleet = remoteFleets[key];
+          if (
+            localFleet.to.x !== remoteFleet.to.x ||
+            localFleet.to.y !== remoteFleet.to.y
+          ) {
+            console.error('fleet with different destination but same id');
+          }
+          if (localFleet.resolveTxHash) {
+            if (remoteFleet.resolveTxHash) {
+              // if (localFleet.resolveTxHash != remoteFleet.resolveTxHash) {
+              // }
+            } else {
+              newDataOnLocal = true;
+            }
+          } else {
+            if (remoteFleet.resolveTxHash) {
+              newDataOnRemote = true;
+              localFleet.resolveTxHash = remoteFleet.resolveTxHash;
+            }
+          }
+          if (localFleet.sendTxHash) {
+            if (remoteFleet.sendTxHash) {
+              // if (localFleet.sendTxHash != remoteFleet.sendTxHash) {
+              // }
+            } else {
+              newDataOnLocal = true;
+            }
+          } else {
+            if (remoteFleet.sendTxHash) {
+              newDataOnRemote = true;
+              localFleet.sendTxHash = remoteFleet.sendTxHash;
+            }
+          }
+        }
+      }
+    }
+    for (const key of Object.keys(localFleets)) {
+      if (!remoteFleets[key]) {
+        newDataOnLocal = true;
+      }
+    }
+    this.set(this.$store);
+    return {newDataOnLocal, newDataOnRemote};
+  }
+
+  encrypt(data: string): string {
+    if (!this.$store || !this.$store.aesKey) {
+      throw new Error('no aes key set');
+    }
+    const textBytes = compressToUint8Array(data); // const textBytes = aes.utils.utf8.toBytes(data);
+    const ctr = new aes.ModeOfOperation.ctr(this.$store.aesKey);
+    const encryptedBytes = ctr.encrypt(textBytes);
+    return base64.bytesToBase64(encryptedBytes);
+  }
+
+  decrypt(data: string): string {
+    if (!this.$store || !this.$store.aesKey) {
+      throw new Error('no aes key set');
+    }
+    const encryptedBytes = base64.base64ToBytes(data);
+    const ctr = new aes.ModeOfOperation.ctr(this.$store.aesKey);
+    const decryptedBytes = ctr.decrypt(encryptedBytes);
+    return decompressFromUint8Array(decryptedBytes) || ''; // return aes.utils.utf8.fromBytes(decryptedBytes);
+  }
+
+  async _sync(
+    fleetsToDelete: string[] = [],
+    exitsToDelete: string[] = [],
+    capturesToDelete: string[] = []
+  ) {
+    const syncDownResult = await this._syncDown();
+
+    if (
+      syncDownResult &&
+      (syncDownResult.newDataOnLocal || fleetsToDelete.length > 0)
+    ) {
+      this.setPartial({sync: 'SYNCING'});
+
+      if (!this.$store.data) {
+        throw new Error(`no this.$store.data`);
+      }
+      if (!this.$store.wallet) {
+        throw new Error(`no this.$store.wallet`);
+      }
+
+      for (const fleetToDelete of fleetsToDelete) {
+        delete this.$store.data.fleets[fleetToDelete];
+      }
+      for (const exitToDelete of exitsToDelete) {
+        delete this.$store.data.exits[exitToDelete];
+      }
+      for (const captureToDelete of capturesToDelete) {
+        delete this.$store.data.captures[captureToDelete];
+      }
+      this.set(this.$store);
+
+      const dataToEncrypt = JSON.stringify(this.$store.data); // TODO compression + encryption
+
+      const data = this.encrypt(dataToEncrypt);
+
+      const counter = syncDownResult.counter.add(1).toString();
+      const signature = await this.$store.wallet.signMessage(
+        'put:' + 'planet-wars-test' + ':' + counter + ':' + data
+      );
+
+      let json;
+      let error;
+      try {
+        const response = await this.syncRequest('wallet_putString', [
+          this.$store.wallet.address,
+          'planet-wars-test',
+          counter,
+          data,
+          signature,
+        ]);
+        json = await response.json();
+      } catch (e) {
+        error = e;
+      }
+      if (error || json.error) {
+        this.setPartial({sync: 'NOT_SYNCED', syncError: error || json.error});
+        return; // TODO retry ?
+      }
+      if (!json.success) {
+        this.setPartial({sync: 'NOT_SYNCED', syncError: 'no success'});
+        return; // TODO retry ?
+      }
+
+      this.setPartial({sync: 'SYNCED'});
+    }
+  }
+
+  _saveToLocalStorage(address: string, chainId: string, data?: SecretData) {
+    if (!data) {
+      return; // TODO ?
+    }
+    const toStorage = JSON.stringify(data);
+    const encrypted = this.encrypt(toStorage);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY(address, chainId), encrypted);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async _setData(
+    address: string,
+    chainId: string,
+    data: SecretData,
+    fleetIdsToDelete: string[] = [],
+    exitsToDelete: string[] = [],
+    capturesToDelete: string[] = []
+  ) {
+    this._saveToLocalStorage(address, chainId, data);
+    this._sync(fleetIdsToDelete, exitsToDelete, capturesToDelete); // TODO fetch before set local storage to avoid aother encryption roundtrip
+  }
+
+  async clearData(): Promise<void> {
+    const syncDownResult = await this._syncDown();
+    if (!syncDownResult) {
+      throw new Error(`failed to sync down`);
+    }
+    if (!wallet.address || !wallet.chain.chainId) {
+      console.log(` no: ${wallet.address}, ${wallet.chain.chainId}`);
+      return;
+    }
+    if (!this.$store.wallet) {
+      throw new Error(`no this.$store.wallet`);
+    }
+    const key = LOCAL_STORAGE_KEY(wallet.address, wallet.chain.chainId);
+    localStorage.removeItem(key);
+    const data = '';
+    const counter = syncDownResult.counter.add(1).toString();
+    const signature = await this.$store.wallet.signMessage(
+      'put:' + 'planet-wars-test' + ':' + counter + ':' + data
+    );
+    await this.syncRequest('wallet_putString', [
+      this.$store.wallet.address,
+      'planet-wars-test',
+      counter,
+      data,
+      signature,
+    ]);
+  }
+
+  start(walletAddress?: string, chainId?: string): void {
+    // console.log("START", {walletAddress, chainId});
+    const walletDiff =
+      !this.$store.walletAddress ||
+      walletAddress?.toLowerCase() !== this.$store.walletAddress.toLowerCase();
+    const chainDiff = !this.$store.chainId || chainId !== this.$store.chainId;
+
+    if (chainId && walletAddress) {
+      // console.log("READY");
+      const existingData = this.walletData[walletAddress.toLowerCase()];
+      if (existingData) {
+        this.setPartial({
+          step: 'READY', // TODO why READY ?
           wallet: existingData.wallet,
           aesKey: existingData.aesKey,
           walletAddress,
           chainId,
+        });
+      } else {
+        this.setPartial({
+          wallet: undefined,
+          aesKey: undefined,
+          walletAddress,
+          chainId,
           data: undefined,
         });
-        console.log('loading data');
-        _loadData($data.walletAddress, $data.chainId);
+        if (this.$store.step === 'READY') {
+          this.setPartial({step: 'IDLE'});
+        }
+      }
+      if (walletDiff || chainDiff) {
+        console.log({walletDiff, chainDiff});
+        if (this.$store.walletAddress && this.$store.chainId && existingData) {
+          this.setPartial({
+            wallet: existingData.wallet,
+            aesKey: existingData.aesKey,
+            walletAddress,
+            chainId,
+            data: undefined,
+          });
+          console.log('loading data');
+          this._loadData(this.$store.walletAddress, this.$store.chainId);
+        }
+      }
+    } else {
+      // console.log("STOP");
+      this.setPartial({walletAddress, chainId});
+      this.stopMonitoring();
+    }
+  }
+
+  stopMonitoring() {
+    if (this.monitorProcess !== undefined) {
+      clearInterval(this.monitorProcess);
+      this.monitorProcess = undefined;
+    }
+  }
+
+  startMonitoring(address: string, chainId: string) {
+    this.stopMonitoring();
+    this.checking(address, chainId);
+    this.monitorProcess = setInterval(
+      () => this.checking(address, chainId),
+      5000
+    ); // TODO time config
+  }
+
+  async checking(address: string, chainId: string) {
+    // TODO check blockNumber and only perform if different ?
+    this.listenForFleets(address, chainId);
+    this.listenForExits(address, chainId);
+    this.listenForCaptures(address, chainId);
+  }
+
+  async listenForExits(address: string, chainId: string): Promise<void> {
+    if (!this.$store.data) {
+      return;
+    }
+    if (!wallet.provider) {
+      throw new Error(`no wallet.provider`);
+    }
+    const latestBlock = await wallet.provider.getBlock('latest');
+    const latestBlockNumber = latestBlock.number;
+    if (!this.$store.data) {
+      return;
+    }
+    const exitIds = Object.keys(this.$store.data.exits);
+    for (const exitId of exitIds) {
+      const split = exitId.split('_');
+      const location = split[0];
+      const timestamp = parseInt(split[1]);
+
+      if (
+        latestBlock.timestamp >
+        timestamp + contractsInfo.contracts.OuterSpace.linkedData.exitDuration
+      ) {
+        let planetData;
+        try {
+          planetData = await wallet.contracts?.OuterSpace.callStatic.getPlanetStates(
+            [location],
+            {blockTag: Math.max(0, latestBlockNumber - finality)}
+          );
+        } catch (e) {
+          console.error(e);
+        }
+        if (
+          !this.$store.walletAddress ||
+          this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+          this.$store.chainId !== chainId
+        ) {
+          return;
+        }
+
+        if (
+          planetData &&
+          (planetData[0].exitTime === 0 || planetData[0].owner !== address)
+        ) {
+          this.deleteExit(exitId);
+        }
       }
     }
-  } else {
-    // console.log("STOP");
-    _set({walletAddress, chainId});
-    stopMonitoring();
   }
-}
 
-chain.subscribe(($chain) => {
-  if ($chain.state === 'Ready') {
-    start($data.walletAddress, $chain.chainId);
-  } else {
-    _set({wallet: undefined, aesKey: undefined});
-    if ($data.step === 'READY') {
-      _set({step: 'IDLE', chainId: undefined, data: undefined});
+  async listenForCaptures(address: string, chainId: string): Promise<void> {
+    if (!this.$store.data) {
+      return;
     }
-    stopMonitoring();
-  }
-});
-
-wallet.subscribe(($wallet) => {
-  if ($wallet.address) {
-    start($wallet.address, $data.chainId);
-  } else {
-    _set({wallet: undefined, aesKey: undefined});
-    if ($data.step === 'READY') {
-      _set({step: 'IDLE', walletAddress: undefined, data: undefined});
+    if (!wallet.provider) {
+      throw new Error(`no wallet.provider`);
     }
-    stopMonitoring();
+    const latestBlock = await wallet.provider.getBlock('latest');
+    const latestBlockNumber = latestBlock.number;
+    if (!this.$store.data) {
+      return;
+    }
+    const locations = Object.keys(this.$store.data.captures);
+    for (const location of locations) {
+      const capture = this.$store.data.captures[location];
+      const receipt = await wallet.provider.getTransactionReceipt(
+        capture.txHash
+      );
+      if (
+        !this.$store.walletAddress ||
+        this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+        this.$store.chainId !== chainId
+      ) {
+        return;
+      }
+      if (receipt) {
+        if (receipt.status && receipt.status === 0) {
+          // TODO record Error ?
+        }
+        if (receipt.confirmations == finality) {
+          // TODO finality
+          this.deleteCapture(location); // TODO pending
+        }
+      } else {
+        if (!wallet.address) {
+          throw new Error(`no wallet.address`);
+        }
+        const finalNonce = await wallet.provider.getTransactionCount(
+          wallet.address,
+          latestBlockNumber - finality
+        );
+        if (
+          !this.$store.walletAddress ||
+          this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+          this.$store.chainId !== chainId
+        ) {
+          return;
+        }
+        if (finalNonce > capture.nonce) {
+          // TODO check equality or not
+          this.deleteCapture(location);
+        }
+      }
+    }
   }
-});
 
-function stopMonitoring() {
-  if (monitorProcess !== undefined) {
-    clearInterval(monitorProcess);
-    monitorProcess = undefined;
-  }
-}
+  async listenForFleets(address: string, chainId: string): Promise<void> {
+    if (!this.$store.data) {
+      return;
+    }
+    if (!wallet.provider) {
+      throw new Error(`no wallet.provider`);
+    }
+    const latestBlock = await wallet.provider.getBlock('latest');
+    const latestBlockNumber = latestBlock.number;
 
-function startMonitoring(address: string, chainId: string) {
-  stopMonitoring();
-  checking(address, chainId);
-  monitorProcess = setInterval(() => checking(address, chainId), 5000); // TODO time config
-}
-
-async function checking(address: string, chainId: string) {
-  // TODO check blockNumber and only perform if different ?
-  listenForFleets(address, chainId);
-  listenForExits(address, chainId);
-  listenForCaptures(address, chainId);
-}
-
-async function listenForExits(address: string, chainId: string): Promise<void> {
-  if (!$data.data) {
-    return;
-  }
-  if (!wallet.provider) {
-    throw new Error(`no wallet.provider`);
-  }
-  const latestBlock = await wallet.provider.getBlock('latest');
-  const latestBlockNumber = latestBlock.number;
-  if (!$data.data) {
-    return;
-  }
-  const exitIds = Object.keys($data.data.exits);
-  for (const exitId of exitIds) {
-    const split = exitId.split('_');
-    const location = split[0];
-    const timestamp = parseInt(split[1]);
-
-    if (
-      latestBlock.timestamp >
-      timestamp + contractsInfo.contracts.OuterSpace.linkedData.exitDuration
-    ) {
-      let planetData;
+    const latestFinalityBlock = await wallet.provider.getBlock(
+      latestBlockNumber - finality
+    );
+    if (!this.$store.data) {
+      return;
+    }
+    const fleetIds = Object.keys(this.$store.data.fleets);
+    for (const fleetId of fleetIds) {
+      const fleet = this.$store.data.fleets[fleetId];
+      let fleetData;
       try {
-        planetData = await wallet.contracts?.OuterSpace.callStatic.getPlanetStates(
-          [location],
+        fleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
+          // TODO batch getFleets
+          fleetId,
           {blockTag: Math.max(0, latestBlockNumber - finality)}
         );
       } catch (e) {
-        console.error(e);
+        //
+      }
+      let currentFleetData;
+      try {
+        currentFleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
+          // TODO batch getFleets
+          fleetId
+        );
+      } catch (e) {
+        //
       }
       if (
-        !$data.walletAddress ||
-        $data.walletAddress.toLowerCase() !== address.toLowerCase() ||
-        $data.chainId !== chainId
+        !this.$store.walletAddress ||
+        this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+        this.$store.chainId !== chainId
       ) {
         return;
       }
 
       if (
-        planetData &&
-        (planetData[0].exitTime === 0 || planetData[0].owner !== address)
+        fleet.resolveTxHash &&
+        currentFleetData &&
+        currentFleetData.launchTime > 0
       ) {
-        deleteExit(exitId);
+        if (currentFleetData.quantity == 0) {
+          this._txPerformed[fleet.resolveTxHash] = true;
+        } else {
+          this._txPerformed[fleet.resolveTxHash] = false;
+          const launchTime = currentFleetData.launchTime;
+          const resolveWindow =
+            contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
+          console.log({
+            duration: fleet.duration,
+            launchTime: launchTime,
+            resolveWindow,
+          });
+          const expiryTime = launchTime + fleet.duration + resolveWindow;
+          if (latestFinalityBlock.timestamp > expiryTime) {
+            console.log({expirted: fleetId});
+            this.deleteFleet(fleetId);
+            continue;
+          }
+        }
       }
-    }
-  }
-}
 
-async function listenForCaptures(
-  address: string,
-  chainId: string
-): Promise<void> {
-  if (!$data.data) {
-    return;
-  }
-  if (!wallet.provider) {
-    throw new Error(`no wallet.provider`);
-  }
-  const latestBlock = await wallet.provider.getBlock('latest');
-  const latestBlockNumber = latestBlock.number;
-  if (!$data.data) {
-    return;
-  }
-  const locations = Object.keys($data.data.captures);
-  for (const location of locations) {
-    const capture = $data.data.captures[location];
-    const receipt = await wallet.provider.getTransactionReceipt(capture.txHash);
-    if (
-      !$data.walletAddress ||
-      $data.walletAddress.toLowerCase() !== address.toLowerCase() ||
-      $data.chainId !== chainId
-    ) {
-      return;
-    }
-    if (receipt) {
-      if (receipt.status && receipt.status === 0) {
-        // TODO record Error ?
-      }
-      if (receipt.confirmations == finality) {
-        // TODO finality
-        deleteCapture(location); // TODO pending
-      }
-    } else {
-      if (!wallet.address) {
-        throw new Error(`no wallet.address`);
-      }
-      const finalNonce = await wallet.provider.getTransactionCount(
-        wallet.address,
-        latestBlockNumber - finality
-      );
-      if (
-        !$data.walletAddress ||
-        $data.walletAddress.toLowerCase() !== address.toLowerCase() ||
-        $data.chainId !== chainId
-      ) {
-        return;
-      }
-      if (finalNonce > capture.nonce) {
-        // TODO check equality or not
-        deleteCapture(location);
-      }
-    }
-  }
-}
-
-async function listenForFleets(
-  address: string,
-  chainId: string
-): Promise<void> {
-  if (!$data.data) {
-    return;
-  }
-  if (!wallet.provider) {
-    throw new Error(`no wallet.provider`);
-  }
-  const latestBlock = await wallet.provider.getBlock('latest');
-  const latestBlockNumber = latestBlock.number;
-
-  const latestFinalityBlock = await wallet.provider.getBlock(
-    latestBlockNumber - finality
-  );
-  if (!$data.data) {
-    return;
-  }
-  const fleetIds = Object.keys($data.data.fleets);
-  for (const fleetId of fleetIds) {
-    const fleet = $data.data.fleets[fleetId];
-    let fleetData;
-    try {
-      fleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
-        // TODO batch getFleets
-        fleetId,
-        {blockTag: Math.max(0, latestBlockNumber - finality)}
-      );
-    } catch (e) {
-      //
-    }
-    let currentFleetData;
-    try {
-      currentFleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
-        // TODO batch getFleets
-        fleetId
-      );
-    } catch (e) {
-      //
-    }
-    if (
-      !$data.walletAddress ||
-      $data.walletAddress.toLowerCase() !== address.toLowerCase() ||
-      $data.chainId !== chainId
-    ) {
-      return;
-    }
-
-    if (
-      fleet.resolveTxHash &&
-      currentFleetData &&
-      currentFleetData.launchTime > 0
-    ) {
-      if (currentFleetData.quantity == 0) {
-        _txPerformed[fleet.resolveTxHash] = true;
-      } else {
-        _txPerformed[fleet.resolveTxHash] = false;
-        const launchTime = currentFleetData.launchTime;
-        const resolveWindow =
-          contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
-        console.log({
-          duration: fleet.duration,
-          launchTime: launchTime,
-          resolveWindow,
-        });
-        const expiryTime = launchTime + fleet.duration + resolveWindow;
-        if (latestFinalityBlock.timestamp > expiryTime) {
-          console.log({expirted: fleetId});
-          deleteFleet(fleetId);
+      if (fleetData && fleetData.launchTime > 0) {
+        const launchTime = fleetData.launchTime;
+        if (fleetData.quantity === 0) {
+          // TODO use resolveTxHash instead ? // this would allow resolve to clear storage in OuterSpace.sol
+          this.deleteFleet(fleetId);
+          continue;
+        } else {
+          const resolveWindow =
+            contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
+          console.log({
+            duration: fleet.duration,
+            launchTime: launchTime,
+            resolveWindow,
+          });
+          const expiryTime = launchTime + fleet.duration + resolveWindow;
+          if (latestFinalityBlock.timestamp > expiryTime) {
+            console.log({expirted: fleetId});
+            this.deleteFleet(fleetId);
+          }
           continue;
         }
-      }
-    }
-
-    if (fleetData && fleetData.launchTime > 0) {
-      const launchTime = fleetData.launchTime;
-      if (fleetData.quantity === 0) {
-        // TODO use resolveTxHash instead ? // this would allow resolve to clear storage in OuterSpace.sol
-        deleteFleet(fleetId);
-        continue;
       } else {
-        const resolveWindow =
-          contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
-        console.log({
-          duration: fleet.duration,
-          launchTime: launchTime,
-          resolveWindow,
-        });
-        const expiryTime = launchTime + fleet.duration + resolveWindow;
-        if (latestFinalityBlock.timestamp > expiryTime) {
-          console.log({expirted: fleetId});
-          deleteFleet(fleetId);
+        if (fleet.resolveTxHash) {
+          // TODO should not happen
+        } else {
+          // TODO check for replaced tx
         }
-        continue;
-      }
-    } else {
-      if (fleet.resolveTxHash) {
-        // TODO should not happen
-      } else {
-        // TODO check for replaced tx
       }
     }
   }
-}
 
-async function login(): Promise<void> {
-  await execute();
-}
-
-let _promise: Promise<void> | undefined;
-let _resolve: (() => void) | undefined;
-let _reject: ((error: unknown) => void) | undefined;
-let _func: (() => Promise<void>) | undefined;
-let _contracts: Contracts | undefined;
-
-async function confirm(): Promise<void> {
-  _set({step: 'SIGNATURE_REQUESTED'});
-  if (!wallet.provider) {
-    throw new Error(`no wallet.provider`);
+  async login(): Promise<void> {
+    await this.execute();
   }
-  if (!wallet.address) {
-    throw new Error(`no wallet.address`);
-  }
-  if (!wallet.chain.chainId) {
-    throw new Error(`no chainId, not connected?`);
-  }
-  try {
-    const walletAddress = wallet.address.toLowerCase();
-    const signature = await wallet.provider
-      .getSigner()
-      .signMessage('Only sign this message on "planet-wars"');
-    const privateWallet = new Wallet(signature.slice(0, 130));
-    const aesKeySignature = await privateWallet.signMessage('AES KEY');
-    const aesKey = aes.utils.hex.toBytes(aesKeySignature.slice(2, 66)); // TODO mix ?
-    walletData[walletAddress] = {wallet: privateWallet, aesKey};
 
-    _set({step: 'LOADING'});
-
-    _set({step: 'READY', wallet: privateWallet, aesKey});
-
-    await _loadData(walletAddress, wallet.chain.chainId);
-
-    if (_func) {
-      await _func();
+  async confirm(): Promise<void> {
+    this.setPartial({step: 'SIGNATURE_REQUESTED'});
+    if (!wallet.provider) {
+      throw new Error(`no wallet.provider`);
     }
-  } catch (e) {
-    _set({step: 'IDLE', wallet: undefined, aesKey: undefined});
-    _reject && _reject(e);
-    _resolve = undefined;
-    _reject = undefined;
-    _promise = undefined;
-    _contracts = undefined;
-    return;
-  }
-  _resolve && _resolve();
-  _resolve = undefined;
-  _reject = undefined;
-  _promise = undefined;
-  _contracts = undefined;
-}
-
-function execute(
-  func?: (contracts: Contracts) => Promise<void>
-): Promise<Contracts> {
-  if (_promise) {
-    return _promise.then(() => _contracts as Contracts); // TODO check _contracts undefined case
-  }
-  // TODO if already connected skip
-  if ($data.step !== 'READY') {
-    _set({step: 'CONNECTING'});
-  }
-
-  return flow.execute(
-    (contracts: Contracts): Promise<void> => {
-      if ($data.step !== 'READY') {
-        _set({step: 'SIGNATURE_REQUIRED'});
-        _promise = new Promise<void>((resolve, reject) => {
-          _contracts = contracts;
-          _resolve = resolve;
-          _reject = reject;
-          if (func) {
-            _func = () => func(contracts);
-          }
-        });
-        return _promise;
-      }
-      if (func) {
-        return func(contracts);
-      } else {
-        return Promise.resolve();
-      }
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
     }
-  );
-}
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    try {
+      const walletAddress = wallet.address.toLowerCase();
+      const signature = await wallet.provider
+        .getSigner()
+        .signMessage('Only sign this message on "planet-wars"');
+      const privateWallet = new Wallet(signature.slice(0, 130));
+      const aesKeySignature = await privateWallet.signMessage('AES KEY');
+      const aesKey = aes.utils.hex.toBytes(aesKeySignature.slice(2, 66)); // TODO mix ?
+      this.walletData[walletAddress] = {wallet: privateWallet, aesKey};
 
-function recordExit(location: string, timestamp: number): void {
-  if (!wallet.address) {
-    throw new Error(`no wallet.address`);
-  }
-  if (!wallet.chain.chainId) {
-    throw new Error(`no chainId, not connected?`);
-  }
-  if (!$data.data) {
-    $data.data = {fleets: {}, exits: {}, captures: {}}; // TODO everywhere
-  }
-  const exits = $data.data.exits;
-  exits[location + '_' + timestamp] = timestamp;
-  _set({
-    data: $data.data,
-  });
-  _setData(wallet.address, wallet.chain.chainId, $data.data);
-}
+      this.setPartial({step: 'LOADING'});
 
-// function recordWithdrawal(loctions: string[], txHash: string): void {
-//   // TODO
-// }
+      this.setPartial({step: 'READY', wallet: privateWallet, aesKey});
 
-function recordCapture(
-  location: string,
-  txHash: string,
-  time: number,
-  nonce: number
-): void {
-  if (!wallet.address) {
-    throw new Error(`no wallet.address`);
-  }
-  if (!wallet.chain.chainId) {
-    throw new Error(`no chainId, not connected?`);
-  }
-  console.log(`record capture ${location}`);
-  if (!$data.data) {
-    $data.data = {fleets: {}, exits: {}, captures: {}}; // TODO everywhere
-  }
-  const captures = $data.data.captures;
-  captures[location] = {
-    txHash,
-    time,
-    nonce,
-  };
-  _set({
-    data: $data.data,
-  });
-  _setData(wallet.address, wallet.chain.chainId, $data.data);
-}
+      await this._loadData(walletAddress, wallet.chain.chainId);
 
-function deleteCapture(id: string) {
-  if (!wallet.address) {
-    throw new Error(`no wallet.address`);
+      if (this._func) {
+        await this._func();
+      }
+    } catch (e) {
+      this.setPartial({step: 'IDLE', wallet: undefined, aesKey: undefined});
+      this._reject && this._reject(e);
+      this._resolve = undefined;
+      this._reject = undefined;
+      this._promise = undefined;
+      this._contracts = undefined;
+      return;
+    }
+    this._resolve && this._resolve();
+    this._resolve = undefined;
+    this._reject = undefined;
+    this._promise = undefined;
+    this._contracts = undefined;
   }
-  if (!wallet.chain.chainId) {
-    throw new Error(`no chainId, not connected?`);
-  }
-  console.log(`delete capture ${id}`);
-  if (!$data.data) {
-    return;
-  }
-  const captures = $data.data.captures;
-  delete captures[id];
-  _set({
-    data: $data.data,
-  });
-  _setData(wallet.address, wallet.chain.chainId, $data.data, [], [], [id]);
-}
 
-function deleteExit(id: string) {
-  if (!wallet.address) {
-    throw new Error(`no wallet.address`);
-  }
-  if (!wallet.chain.chainId) {
-    throw new Error(`no chainId, not connected?`);
-  }
-  if (!$data.data) {
-    return;
-  }
-  const exits = $data.data.exits;
-  delete exits[id];
-  _set({
-    data: $data.data,
-  });
-  _setData(wallet.address, wallet.chain.chainId, $data.data, [], [id]);
-}
+  execute(func?: (contracts: Contracts) => Promise<void>): Promise<Contracts> {
+    if (this._promise) {
+      return this._promise.then(() => this._contracts as Contracts); // TODO check _contracts undefined case
+    }
+    // TODO if already connected skip
+    if (this.$store.step !== 'READY') {
+      this.setPartial({step: 'CONNECTING'});
+    }
 
-function recordFleet(fleetId: string, fleet: OwnFleet): void {
-  if (!wallet.address) {
-    throw new Error(`no wallet.address`);
+    return flow.execute(
+      (contracts: Contracts): Promise<void> => {
+        if (this.$store.step !== 'READY') {
+          this.setPartial({step: 'SIGNATURE_REQUIRED'});
+          this._promise = new Promise<void>((resolve, reject) => {
+            this._contracts = contracts;
+            this._resolve = resolve;
+            this._reject = reject;
+            if (func) {
+              this._func = () => func(contracts);
+            }
+          });
+          return this._promise;
+        }
+        if (func) {
+          return func(contracts);
+        } else {
+          return Promise.resolve();
+        }
+      }
+    );
   }
-  if (!wallet.chain.chainId) {
-    throw new Error(`no chainId, not connected?`);
-  }
-  if (!$data.data) {
-    $data.data = {fleets: {}, exits: {}, captures: {}};
-  }
-  const fleets = $data.data.fleets;
-  fleets[fleetId] = fleet;
-  _set({
-    data: $data.data,
-  });
-  _setData(wallet.address, wallet.chain.chainId, $data.data);
-}
 
-function deleteFleet(fleetId: string) {
-  if (!wallet.address) {
-    throw new Error(`no wallet.address`);
-  }
-  if (!wallet.chain.chainId) {
-    throw new Error(`no chainId, not connected?`);
-  }
-  if (!$data.data) {
-    return;
-  }
-  const fleets = $data.data.fleets;
-  delete fleets[fleetId];
-  _set({
-    data: $data.data,
-  });
-  _setData(wallet.address, wallet.chain.chainId, $data.data, [fleetId]);
-}
-
-function _hashString() {
-  if (!$data.wallet) {
-    throw new Error(`no $data.wallet`);
-  }
-  // TODO cache
-  return keccak256(
-    ['bytes32', 'bytes32'],
-    [
-      $data.wallet.privateKey.slice(0, 66),
-      '0x' + $data.wallet.privateKey.slice(66, 130),
-    ]
-  );
-}
-
-async function hashFleet(
-  from: {x: number; y: number},
-  to: {x: number; y: number}
-): Promise<{toHash: string; fleetId: string; secret: string}> {
-  // TODO use timestamp to allow user to retrieve a lost secret by knowing `to` and approximate time of launch
-  const randomNonce =
-    '0x' +
-    Array.from(crypto.getRandomValues(new Uint8Array(32)))
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-  const toString = xyToLocation(to.x, to.y);
-  const fromString = xyToLocation(from.x, from.y);
-  console.log({randomNonce, toString, fromString});
-  const secretHash = keccak256(
-    ['bytes32', 'bytes32'],
-    [_hashString(), randomNonce]
-  );
-  console.log({secretHash});
-  const toHash = keccak256(['bytes32', 'uint256'], [secretHash, toString]);
-  const fleetId = keccak256(['bytes32', 'uint256'], [toHash, fromString]);
-  return {toHash, fleetId, secret: secretHash};
-}
-
-function fleetSecret(fleetId: string): string {
-  if (!$data.data) {
-    throw new Error(`no $data.data`);
-  }
-  return $data.data.fleets[fleetId].secret;
-}
-
-function recordFleetResolvingTxhash(fleetId: string, txHash: string): void {
-  if (!wallet.address) {
-    throw new Error(`no wallet.address`);
-  }
-  if (!wallet.chain.chainId) {
-    throw new Error(`no chainId, not connected?`);
-  }
-  if (!$data.data) {
-    $data.data = {fleets: {}, exits: {}, captures: {}};
-  }
-  const fleets = $data.data.fleets;
-  const fleet = fleets[fleetId];
-  if (fleet) {
-    fleet.resolveTxHash = txHash;
-    _set({
-      data: $data.data,
+  recordExit(location: string, timestamp: number) {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      this.$store.data = {fleets: {}, exits: {}, captures: {}}; // TODO everywhere
+    }
+    const exits = this.$store.data.exits;
+    exits[location + '_' + timestamp] = timestamp;
+    this.setPartial({
+      data: this.$store.data,
     });
-    _setData(wallet.address, wallet.chain.chainId, $data.data); // TODO chainId / wallet address (when wallet account changes) // TODO test
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
+  }
+
+  recordWithdrawal(loctions: string[], txHash: string) {
+    // TODO
+  }
+
+  recordCapture(location: string, txHash: string, time: number, nonce: number) {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    console.log(`record capture ${location}`);
+    if (!this.$store.data) {
+      this.$store.data = {fleets: {}, exits: {}, captures: {}}; // TODO everywhere
+    }
+    const captures = this.$store.data.captures;
+    captures[location] = {
+      txHash,
+      time,
+      nonce,
+    };
+    this.setPartial({
+      data: this.$store.data,
+    });
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
+  }
+
+  deleteCapture(id: string) {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    console.log(`delete capture ${id}`);
+    if (!this.$store.data) {
+      return;
+    }
+    const captures = this.$store.data.captures;
+    delete captures[id];
+    this.setPartial({
+      data: this.$store.data,
+    });
+    this._setData(
+      wallet.address,
+      wallet.chain.chainId,
+      this.$store.data,
+      [],
+      [],
+      [id]
+    );
+  }
+
+  deleteExit(id: string) {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      return;
+    }
+    const exits = this.$store.data.exits;
+    delete exits[id];
+    this.setPartial({
+      data: this.$store.data,
+    });
+    this._setData(
+      wallet.address,
+      wallet.chain.chainId,
+      this.$store.data,
+      [],
+      [id]
+    );
+  }
+
+  recordFleet(fleetId: string, fleet: OwnFleet): void {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      this.$store.data = {fleets: {}, exits: {}, captures: {}};
+    }
+    const fleets = this.$store.data.fleets;
+    fleets[fleetId] = fleet;
+    this.setPartial({
+      data: this.$store.data,
+    });
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
+  }
+
+  deleteFleet(fleetId: string) {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      return;
+    }
+    const fleets = this.$store.data.fleets;
+    delete fleets[fleetId];
+    this.setPartial({
+      data: this.$store.data,
+    });
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data, [
+      fleetId,
+    ]);
+  }
+
+  _hashString() {
+    if (!this.$store.wallet) {
+      throw new Error(`no this.$store.wallet`);
+    }
+    // TODO cache
+    return keccak256(
+      ['bytes32', 'bytes32'],
+      [
+        this.$store.wallet.privateKey.slice(0, 66),
+        '0x' + this.$store.wallet.privateKey.slice(66, 130),
+      ]
+    );
+  }
+
+  async hashFleet(
+    from: {x: number; y: number},
+    to: {x: number; y: number}
+  ): Promise<{toHash: string; fleetId: string; secret: string}> {
+    // TODO use timestamp to allow user to retrieve a lost secret by knowing `to` and approximate time of launch
+    const randomNonce =
+      '0x' +
+      Array.from(crypto.getRandomValues(new Uint8Array(32)))
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
+    const toString = xyToLocation(to.x, to.y);
+    const fromString = xyToLocation(from.x, from.y);
+    console.log({randomNonce, toString, fromString});
+    const secretHash = keccak256(
+      ['bytes32', 'bytes32'],
+      [this._hashString(), randomNonce]
+    );
+    console.log({secretHash});
+    const toHash = keccak256(['bytes32', 'uint256'], [secretHash, toString]);
+    const fleetId = keccak256(['bytes32', 'uint256'], [toHash, fromString]);
+    return {toHash, fleetId, secret: secretHash};
+  }
+
+  fleetSecret(fleetId: string): string {
+    if (!this.$store.data) {
+      throw new Error(`no this.$store.data`);
+    }
+    return this.$store.data.fleets[fleetId].secret;
+  }
+
+  recordFleetResolvingTxhash(fleetId: string, txHash: string): void {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      this.$store.data = {fleets: {}, exits: {}, captures: {}};
+    }
+    const fleets = this.$store.data.fleets;
+    const fleet = fleets[fleetId];
+    if (fleet) {
+      fleet.resolveTxHash = txHash;
+      this.setPartial({
+        data: this.$store.data,
+      });
+      this._setData(wallet.address, wallet.chain.chainId, this.$store.data); // TODO chainId / wallet address (when wallet account changes) // TODO test
+    }
+  }
+
+  getFleets(): OwnFleet[] {
+    if (this.$store.data) {
+      return Object.values(this.$store.data.fleets);
+    } else {
+      return [];
+    }
+  }
+
+  isTxPerformed(txHash?: string): boolean {
+    if (!txHash) {
+      return false;
+    }
+    return this._txPerformed[txHash];
+  }
+
+  isCapturing(location: string): boolean {
+    if (!this.$store.data) {
+      return false;
+    }
+    return (
+      this.$store.data &&
+      this.$store.data.captures[location] &&
+      this.$store.data.captures[location].txHash !== null
+    );
+  }
+
+  getFleet(fleetId: string): OwnFleet | null {
+    if (this.$store.data) {
+      return this.$store.data.fleets[fleetId];
+    }
+    return null;
+  }
+
+  get walletAddress() {
+    return this.$store.walletAddress;
   }
 }
 
-function getFleets(): OwnFleet[] {
-  if ($data.data) {
-    return Object.values($data.data.fleets);
-  } else {
-    return [];
-  }
-}
-
-function isTxPerformed(txHash?: string): boolean {
-  if (!txHash) {
-    return false;
-  }
-  return _txPerformed[txHash];
-}
-
-function isCapturing(location: string): boolean {
-  if (!$data.data) {
-    return false;
-  }
-  return (
-    $data.data &&
-    $data.data.captures[location] &&
-    $data.data.captures[location].txHash !== null
-  );
-}
-
-function getFleet(fleetId: string): OwnFleet | null {
-  if ($data.data) {
-    return $data.data.fleets[fleetId];
-  }
-  return null;
-}
-
-export default {
-  subscribe,
-  login,
-  confirm,
-  execute,
-  recordFleet,
-  recordFleetResolvingTxhash,
-  recordExit,
-  recordCapture,
-  isCapturing,
-  get privateWallet(): Wallet | undefined {
-    return $data.wallet;
-  },
-  hashFleet,
-  fleetSecret,
-  getFleets,
-  getFleet,
-  isTxPerformed,
-  get walletAddress(): string | undefined {
-    return $data.walletAddress;
-  },
-  clearData,
-};
+export default new PrivateAccountStore();

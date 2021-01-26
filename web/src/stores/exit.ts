@@ -1,8 +1,12 @@
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
 import {xyToLocation} from '../common/src';
-import {BaseStore} from '../lib/utils/stores';
+import {BaseStoreWithData} from '../lib/utils/stores';
 
+type Data = {
+  txHash?: string;
+  location: {x: number; y: number};
+};
 export type ExitFlow = {
   type: 'EXIT';
   step:
@@ -11,14 +15,11 @@ export type ExitFlow = {
     | 'WAITING_CONFIRMATION'
     | 'WAITING_TX'
     | 'SUCCESS';
-  data?: {
-    txHash?: string;
-    location: {x: number; y: number};
-  };
+  data?: Data;
   error?: unknown; // TODO
 };
 
-class ExitFlowStore extends BaseStore<ExitFlow> {
+class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
   public constructor() {
     super({
       type: 'EXIT',
@@ -27,7 +28,7 @@ class ExitFlowStore extends BaseStore<ExitFlow> {
   }
 
   async exitFrom(location: {x: number; y: number}): Promise<void> {
-    this.setRecursivePartial({data: {location}, step: 'CONNECTING'});
+    this.setData({location}, {step: 'CONNECTING'});
     await privateAccount.login();
     this.setPartial({step: 'WAITING_CONFIRMATION'});
   }
@@ -59,10 +60,7 @@ class ExitFlowStore extends BaseStore<ExitFlow> {
 
     privateAccount.recordExit(locationId, latestBlock.timestamp);
 
-    this.setRecursivePartial({
-      step: 'SUCCESS',
-      data: {txHash: tx.hash},
-    });
+    this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
   }
 
   async cancel(): Promise<void> {

@@ -2,7 +2,14 @@ import {wallet} from './wallet';
 import privateAccount from './privateAccount';
 import {xyToLocation} from '../common/src';
 import {spaceInfo} from '../app/mapState';
-import {BaseStore} from '../lib/utils/stores';
+import {BaseStoreWithData} from '../lib/utils/stores';
+
+type Data = {
+  txHash?: string;
+  to: {x: number; y: number};
+  from: {x: number; y: number};
+  fleet: number;
+};
 
 export type SendFlow = {
   type: 'SEND';
@@ -15,15 +22,10 @@ export type SendFlow = {
     | 'CREATING_TX'
     | 'WAITING_TX'
     | 'SUCCESS';
-  data?: {
-    txHash?: string;
-    to: {x: number; y: number};
-    from: {x: number; y: number};
-    fleet: number;
-  };
+  data?: Data;
 };
 
-class SendFlowStore extends BaseStore<SendFlow> {
+class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
   constructor() {
     super({
       type: 'SEND',
@@ -35,7 +37,7 @@ class SendFlowStore extends BaseStore<SendFlow> {
     if (this.$store.step == 'PICK_ORIGIN') {
       this.pickOrigin(from);
     } else {
-      this.setRecursivePartial({data: {from}, step: 'CONNECTING'});
+      this.setData({from}, {step: 'CONNECTING'});
       await privateAccount.login();
       this.setPartial({step: 'PICK_DESTINATION'});
     }
@@ -45,7 +47,7 @@ class SendFlowStore extends BaseStore<SendFlow> {
     if (this.$store.step == 'PICK_DESTINATION') {
       this.pickDestination(to);
     } else {
-      this.setRecursivePartial({data: {to}, step: 'CONNECTING'});
+      this.setData({to}, {step: 'CONNECTING'});
       await privateAccount.login();
       this.setPartial({step: 'PICK_ORIGIN'});
     }
@@ -55,14 +57,14 @@ class SendFlowStore extends BaseStore<SendFlow> {
     if (this.$store.step !== 'PICK_DESTINATION') {
       throw new Error(`Need to be in step PICK_DESTINATION`);
     }
-    this.setRecursivePartial({data: {to}, step: 'CHOOSE_FLEET_AMOUNT'});
+    this.setData({to}, {step: 'CHOOSE_FLEET_AMOUNT'});
   }
 
   async pickOrigin(from: {x: number; y: number}): Promise<void> {
     if (this.$store.step !== 'PICK_ORIGIN') {
       throw new Error(`Need to be in step PICK_ORIGIN`);
     }
-    this.setRecursivePartial({data: {from}, step: 'CHOOSE_FLEET_AMOUNT'});
+    this.setData({from}, {step: 'CHOOSE_FLEET_AMOUNT'});
   }
 
   async confirm(fleetAmount: number): Promise<void> {
@@ -111,10 +113,7 @@ class SendFlowStore extends BaseStore<SendFlow> {
       secret: secret,
     });
 
-    this.setRecursivePartial({
-      step: 'SUCCESS',
-      data: {txHash: tx.hash},
-    });
+    this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
 
     // TODO REMOVE DEBUG :
     // await tx.wait();
@@ -129,6 +128,18 @@ class SendFlowStore extends BaseStore<SendFlow> {
     //   distance,
     //   secretHash
     // );
+  }
+
+  async cancel(): Promise<void> {
+    this._reset();
+  }
+
+  async acknownledgeSuccess(): Promise<void> {
+    this._reset();
+  }
+
+  private _reset() {
+    this.setPartial({step: 'IDLE', data: undefined});
   }
 }
 
