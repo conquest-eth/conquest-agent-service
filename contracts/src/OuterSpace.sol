@@ -18,7 +18,7 @@ contract OuterSpace is Proxied {
 
     uint256 internal constant STAKE_MULTIPLIER = 5e18; // = 5 DAI min
     uint32 internal constant ACTIVE_MASK = 2**31;
-    int256 internal constant UINT32_MAX = 2**32-1;
+    int256 internal constant UINT32_MAX = 2**32 - 1;
 
     bytes32 internal immutable _genesis;
     IERC20 internal immutable _stakingToken;
@@ -101,13 +101,7 @@ contract OuterSpace is Proxied {
         _timePerDistance = t;
         _exitDuration = exitDuration;
 
-        postUpgrade(
-            stakingToken,
-            genesis,
-            resolveWindow,
-            timePerDistance,
-            exitDuration
-        );
+        postUpgrade(stakingToken, genesis, resolveWindow, timePerDistance, exitDuration);
     }
 
     function postUpgrade(
@@ -118,12 +112,7 @@ contract OuterSpace is Proxied {
         uint16
     ) public proxied {
         if (_discovered.minX == 0) {
-            _discovered = Discovered({
-                minX: 6,
-                maxX: 6,
-                minY: 6,
-                maxY: 6
-            });
+            _discovered = Discovered({minX: 6, maxX: 6, minY: 6, maxY: 6});
         }
     }
 
@@ -320,9 +309,13 @@ contract OuterSpace is Proxied {
         stats = _getPlanetStats(location);
     }
 
-    function getPlanetStates(uint256[] calldata locations) external view returns (ExternalPlanet[] memory planetStates, Discovered memory discovered) {
+    function getPlanetStates(uint256[] calldata locations)
+        external
+        view
+        returns (ExternalPlanet[] memory planetStates, Discovered memory discovered)
+    {
         planetStates = new ExternalPlanet[](locations.length);
-        for(uint256 i = 0; i < locations.length; i ++) {
+        for (uint256 i = 0; i < locations.length; i++) {
             Planet storage planet = _getPlanet(locations[i]);
             (bool active, uint32 numSpaceships) = _activeNumSpaceships(planet.numSpaceships);
             planetStates[i] = ExternalPlanet({
@@ -492,11 +485,9 @@ contract OuterSpace is Proxied {
         require(attacker == fleet.owner, "not owner of fleet");
 
         require(
-            uint256(keccak256(abi.encodePacked(
-                keccak256(abi.encodePacked(secret, to)),
-                from
-            ))) == fleetId, "invalid 'to', 'from' or 'secret'");
-
+            uint256(keccak256(abi.encodePacked(keccak256(abi.encodePacked(secret, to)), from))) == fleetId,
+            "invalid 'to', 'from' or 'secret'"
+        );
 
         require(fleet.quantity > 0, "no more");
 

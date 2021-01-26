@@ -1,11 +1,9 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
-import {AddressZero} from '@ethersproject/constants';
-import {parseEther} from '@ethersproject/units';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deployer} = await hre.getNamedAccounts();
-  const {deploy, execute} = hre.deployments;
+  const {deploy} = hre.deployments;
   const {getChainId} = hre;
 
   // await deploy('StableToken', {
@@ -23,7 +21,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
     autoMine: true,
   });
-
 };
 export default func;
-func.tags = ["StableToken", "StableToken_deploy"]
+func.tags = ['StableToken', 'StableToken_deploy'];

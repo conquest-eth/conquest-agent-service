@@ -1,6 +1,5 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
-import {AddressZero} from '@ethersproject/constants';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deployer} = await hre.getNamedAccounts();
@@ -9,7 +8,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const tokenManager = deployer; // TODO tokenManager
 
   const stableToken = await hre.deployments.get('StableToken');
-
 
   await deploy('PlayToken', {
     from: deployer,
@@ -20,5 +18,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 };
 export default func;
-func.dependencies = ["StableToken_deploy"]
-func.tags = ["PlayToken", "PlayToken_deploy"]
+func.dependencies = ['StableToken_deploy'];
+func.tags = ['PlayToken', 'PlayToken_deploy'];

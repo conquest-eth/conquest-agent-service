@@ -1,11 +1,11 @@
 // import {expect} from '../chai-setup';
 import {expectRevert, waitFor} from '../test-utils';
 import {sendInSecret, setupOuterSpace, fetchPlanetState} from './utils';
-import {BigNumber} from '@ethersproject/bignumber';
+// import {BigNumber} from '@ethersproject/bignumber';
 // import {expect} from '../chai-setup';
 import {ethers} from 'hardhat';
 
-const stableTokenUnit = BigNumber.from('1000000000000000000');
+// const stableTokenUnit = BigNumber.from('1000000000000000000');
 describe('OuterSpace', function () {
   it('user can acquire virgin planet', async function () {
     const {players, spaceInfo} = await setupOuterSpace();
@@ -63,7 +63,6 @@ describe('OuterSpace', function () {
       spaceInfo,
       outerSpaceContract,
       increaseTime,
-      getTime,
     } = await setupOuterSpace();
     let planet = await fetchPlanetState(
       outerSpaceContract,

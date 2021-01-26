@@ -354,6 +354,7 @@ export class Space {
     this.timeKeeper.setTimeout(this._timeBasedUpdate.bind(this), 1);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected isCapturing(planetId: string): boolean {
     return false;
   }

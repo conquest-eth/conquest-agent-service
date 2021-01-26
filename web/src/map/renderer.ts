@@ -445,6 +445,7 @@ export class Renderer {
           if (!frameType) {
             throw new Error(`no frame type for ${planet.type}`);
           }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const frameInfo = (planetsFrame.frames as any)[frameType];
           if (!frameInfo) {
             throw new Error(`not frameInfo for ${frameType}`);
