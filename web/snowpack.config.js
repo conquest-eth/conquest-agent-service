@@ -17,7 +17,6 @@ module.exports = {
       {
         filter: filterFiles({
           includes: ['src/stores/*'],
-          excludes: ['src/stores/privateAccount.js'], // TODO investigate why it fails
         }),
       },
     ],
@@ -26,7 +25,6 @@ module.exports = {
       {
         filter: filterFiles({
           includes: ['src/stores/*'],
-          excludes: ['src/stores/privateAccount.js'], // TODO investigate why it fails
         }),
       },
     ],
