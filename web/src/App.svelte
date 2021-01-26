@@ -12,7 +12,6 @@
   <!-- <Navbar links={['Home', 'Wallet']} /> -->
   <CurrentPage>
     <Loading />
-    Loading...
   </CurrentPage>
   <Navigating component={Loading} />
 </Router>
