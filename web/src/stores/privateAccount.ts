@@ -808,9 +808,9 @@ class PrivateAccountStore extends BaseStoreWithData<
     this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
   }
 
-  recordWithdrawal(loctions: string[], txHash: string) {
-    // TODO
-  }
+  // recordWithdrawal(loctions: string[], txHash: string) {
+  //   // TODO
+  // }
 
   recordCapture(location: string, txHash: string, time: number, nonce: number) {
     if (!wallet.address) {
