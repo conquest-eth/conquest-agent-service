@@ -1,7 +1,6 @@
 node_modules/
 .newsh.json
-.env*
-!.env*.default
 planet-wars.code-workspace
+.env*
 .vscode/*
-!.vscode/settings.json.default
+!*.default
