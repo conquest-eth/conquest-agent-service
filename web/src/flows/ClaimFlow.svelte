@@ -1,7 +1,7 @@
 <script lang="ts">
   import claimFlow from '../stores/claim';
   import Modal from '../components/Modal.svelte';
-  import Button from '../components/navigation/NavButton.svelte'; // TODO use different button ?
+  import Button from '../components/PanelButton.svelte';
   import {planetAt} from '../stores/planets';
   import {playTokenAccount} from '../stores/playToken';
   import {BigNumber} from '@ethersproject/bignumber';

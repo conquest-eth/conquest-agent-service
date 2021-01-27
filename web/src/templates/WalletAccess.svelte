@@ -1,7 +1,7 @@
 <script lang="ts">
   export let title: string = '';
   import NavButton from '../components/navigation/NavButton.svelte';
-  import Toast from '../components/notification/Toast.svelte';
+  import Button from '../components/PanelButton.svelte';
   import Modal from '../components/Modal.svelte';
 
   import {
@@ -90,7 +90,7 @@
         <div class="flex flex-wrap justify-center pb-3">
           {#each options as option}
             <img
-              class="cursor-pointer p-2 m-2 border-2 h-12 w-12 object-contain"
+              class="cursor-pointer p-2 m-2 border-2 h-12 w-12 object-contain border-cyan-300"
               alt={`Login with ${option.name}`}
               src={`${base}${option.img}`}
               on:click={() => wallet.connect(option.id)} />
@@ -105,7 +105,7 @@
               href="https://metamask.io/download.html"
               class="m-4 w-max-content">
               <img
-                class="cursor-pointer p-0 mx-2 h-10 w-10 object-contain"
+                class="cursor-pointer p-0 m-auto h-10 w-10 object-contain"
                 alt={`Download Metamask}`}
                 src={`${base}images/metamask.svg`} />
               Download metamask
@@ -117,9 +117,9 @@
       {#if $wallet.unlocking}
         Please accept the application to access your wallet.
       {:else}
-        <NavButton label="Unlock Wallet" on:click={() => wallet.unlock()}>
+        <Button label="Unlock Wallet" on:click={() => wallet.unlock()}>
           Unlock
-        </NavButton>
+        </Button>
       {/if}
     {:else if $chain.state === 'Idle'}
       {#if $chain.connecting}Connecting...{/if}
@@ -134,8 +134,10 @@
         Please accept signature...
       {:else}Please accept request...{/if}
     {:else if $privateAccount.step === 'SIGNATURE_REQUIRED'}
-      Planet Wars require your signature to operate. Do not sign this message
-      outside of Planet Wars!
+      <p>
+        Planet Wars require your signature to operate. Do not sign this message
+        outside of Planet Wars!
+      </p>
       <!-- TODO store and then auto connect if present -->
       <!-- <div class="flex mt-6">
         <label class="flex items-center">
@@ -143,9 +145,9 @@
           <span class="ml-2">Trust computer and do not ask again (store locally)</span>
         </label>
       </div> -->
-      <NavButton label="sign" on:click={() => privateAccount.confirm()}>
+      <Button label="sign" on:click={() => privateAccount.confirm()}>
         sign
-      </NavButton>
+      </Button>
     {:else if $privateAccount.step === 'LOADING'}
       Loading Data...
     {:else if executionError}
@@ -154,7 +156,7 @@
       {:else if executionError.message}
         {executionError.message}
       {:else}Error: {executionError}{/if}
-      <NavButton label="Retry" on:click={() => flow.retry()}>Retry</NavButton>
+      <Button label="Retry" on:click={() => flow.retry()}>Retry</Button>
     {/if}
   </Modal>
 {/if}

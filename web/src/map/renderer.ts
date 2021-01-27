@@ -607,7 +607,7 @@ export class Renderer {
       Math.round(this.renderState.space.discovered.y2 * 8 * 48 + 48 * 4)
     );
     ctx.lineWidth = lineWidth;
-    ctx.strokeStyle = 'blue';
+    ctx.strokeStyle = '#a5f3fc'; // '#67e8f9';
     ctx.setLineDash([]);
 
     if (x1 != leftX) {

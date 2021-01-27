@@ -66,11 +66,11 @@
 
   <!--modal-->
   <div
-    class="absolute dark:bg-black dark:border-2 dark:border-gray-800 bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg overflow-y-auto">
+    class="absolute border-2 w-11/12 md:max-w-md mx-auto overflow-y-auto text-cyan-300 border-cyan-300 bg-gray-900 ">
     {#if globalCloseButton}
       <div
         on:click={close}
-        class="modal-close absolute top-0 right-0 cursor-pointer flex flex-col items-center mt-4 mr-4 text-white text-sm">
+        class="modal-close absolute top-0 right-0 cursor-pointer flex flex-col items-center mt-4 mr-4 text-sm">
         <svg
           class="fill-current text-white"
           xmlns="http://www.w3.org/2000/svg"

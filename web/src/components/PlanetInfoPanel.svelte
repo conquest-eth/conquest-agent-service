@@ -39,20 +39,8 @@
   }
 </script>
 
-<style>
-  .frame label,
-  .frame .value {
-    display: inline-block;
-  }
-  .frame label {
-    min-width: 110px;
-  }
-</style>
-
 <div
-  class="frame"
-  style=" background-color: #00000077; color: gray; position: absolute; ">
-  <!-- <img class="h-16 w-16 rounded-full mx-auto" src="avatar.jpg"> -->
+  class="absolute inline-block min-w-min bg-gray-900 bg-opacity-80 text-cyan-300">
   <div>
     <div class="flex m-1">
       <h2 class="flex-auto text-white font-bold">
