@@ -3,9 +3,9 @@
   const dispatch = createEventDispatcher();
 </script>
 
-<div class="relative bg-indigo-600">
+<div class="relative bg-gray-900 border-2 border-cyan-300 top-1 mx-1">
   <div class="max-w-screen-xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
-    <div class="pr-16 sm:text-center sm:px-16">
+    <div class="pr-16 sm:text-center sm:px-16 text-cyan-300">
       <slot />
     </div>
     <div

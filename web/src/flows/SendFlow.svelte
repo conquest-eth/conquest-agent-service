@@ -12,7 +12,7 @@
 
 {#if pickNeeded}
   <Banner on:close={() => sendFlow.cancel()}>
-    <p class="font-medium text-white">
+    <p class="font-medium">
       <span class="inline" />
       {#if pickNeeded === 'destination'}
         Pick the Destination

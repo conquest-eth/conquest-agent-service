@@ -43,16 +43,20 @@
 
 <!-- TODO fliter on to-->
 
-<div class="border mt-3 mr-1 flex flex-col">
-  {#if fleets.length > 0}
-    <h2 class="text-white p-1">Fleets to Resolve</h2>
-  {/if}
-  {#each fleets as fleet}
-    <PanelButton
-      class="m-1"
-      label="Resolve Fleet"
-      on:click={() => resolve(fleet.id)}>
-      resolve
-    </PanelButton>
-  {/each}
-</div>
+{#if fleets.length > 0}
+  <div
+    class="border-2 border-red-600 mt-3 mr-1 flex flex-col text-center text-cyan-300">
+    <h2 class="p-1">Fleets to Resolve</h2>
+    <div class="w-full h-1 bg-red-600 mt-1 mb-2" />
+    {#each fleets as fleet}
+      <PanelButton
+        class="m-1"
+        label="Resolve Fleet"
+        on:click={() => resolve(fleet.id)}>
+        {fleet.to.x},
+        {fleet.to.y}
+      </PanelButton>
+    {/each}
+    <div class="w-full mt-1" />
+  </div>
+{/if}

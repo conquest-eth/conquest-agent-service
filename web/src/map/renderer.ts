@@ -322,7 +322,8 @@ export class Renderer {
 
     // console.log(JSON.stringify({gridLevelRoot, gridSize, gridLevel}));
 
-    if (gridLevel < 10) {
+    // used to be gridLevel < 10
+    if (gridLevel < 4) {
       // console.log(JSON.stringify({gridLevel, gridSize, nextLevelGridSize}));
 
       // console.log(offset, camera);
@@ -689,7 +690,7 @@ export class Renderer {
       );
       if (segment) {
         ctx.beginPath();
-        ctx.strokeStyle = '#FDFBF3';
+        ctx.strokeStyle = '#67e8f9'; //'#FDFBF3';
         ctx.lineWidth = 8 / scale;
         ctx.moveTo(segment.x1, segment.y1);
         // TODO dash for past
@@ -741,7 +742,7 @@ export class Renderer {
       }
       ctx.fillStyle = 'green';
       // ctx.fillRect(fx - 50, fy - 50, 100, 100);
-      const headlen = 64; // length of head in pixels
+      const headlen = 64 / scale; // length of head in pixels
 
       ctx.beginPath();
       ctx.moveTo(fx, fy);
