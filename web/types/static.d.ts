@@ -63,6 +63,8 @@ interface Window {
   basepath?: string;
   relpath?: string;
   onFailingResource?: () => void;
+  params: Record<string, string>;
+  hashParams: Record<string, string>;
 }
 
 declare module '@curi/svelte';

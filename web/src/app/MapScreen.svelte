@@ -1,6 +1,5 @@
 <script lang="ts">
   import Map from './Map.svelte';
-  import WalletAccess from '../templates/WalletAccess.svelte';
   import ConnectPanel from '../components/ConnectPanel.svelte';
 
   import claimFlow from '../stores/claim';
@@ -14,28 +13,26 @@
   import FleetsToResolve from '../components/FleetsToResolve.svelte';
 </script>
 
-<WalletAccess>
-  <Map />
-  <div class="absolute right-0">
-    <ConnectPanel />
-  </div>
-  <div class="absolute right-0 top-10">
-    <FleetsToResolve />
-  </div>
+<Map />
+<div class="absolute right-0">
+  <ConnectPanel />
+</div>
+<div class="absolute right-0 top-10">
+  <FleetsToResolve />
+</div>
 
-  {#if $claimFlow.step !== 'IDLE'}
-    <ClaimFlow />
-  {/if}
+{#if $claimFlow.step !== 'IDLE'}
+  <ClaimFlow />
+{/if}
 
-  {#if $sendFlow.step !== 'IDLE'}
-    <SendFlow />
-  {/if}
+{#if $sendFlow.step !== 'IDLE'}
+  <SendFlow />
+{/if}
 
-  {#if $resolveFlow.step !== 'IDLE'}
-    <ResolveFlow />
-  {/if}
+{#if $resolveFlow.step !== 'IDLE'}
+  <ResolveFlow />
+{/if}
 
-  {#if $exitFlow.step !== 'IDLE'}
-    <ExitFlow />
-  {/if}
-</WalletAccess>
+{#if $exitFlow.step !== 'IDLE'}
+  <ExitFlow />
+{/if}

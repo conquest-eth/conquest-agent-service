@@ -58,20 +58,19 @@
 
 <svelte:window on:keydown={handle_keydown} />
 
+<!-- container -->
 <div
-  class="modal z-50 opacity-80 fixed w-full h-full top-0 left-0 flex items-center justify-center">
-  <div
-    on:click={close}
-    class="z-50 modal-overlay absolute w-full h-full bg-gray-900 opacity-50" />
+  class="z-50 fixed w-full h-full top-0 left-0 flex items-center justify-center">
+  <!-- clickable dark overlay -->
+  <div on:click={close} class="absolute w-full h-full bg-gray-900 opacity-80" />
 
+  <!--modal-->
   <div
-    class="z-50 modal-container dark:bg-black dark:border-2 dark:border-gray-800 bg-white w-11/12 md:max-w-md mx-auto rounded
-    shadow-lg overflow-y-auto">
+    class="absolute dark:bg-black dark:border-2 dark:border-gray-800 bg-white w-11/12 md:max-w-md mx-auto rounded shadow-lg overflow-y-auto">
     {#if globalCloseButton}
       <div
         on:click={close}
-        class="modal-close absolute top-0 right-0 cursor-pointer flex flex-col items-center mt-4 mr-4 text-white text-sm
-          z-50">
+        class="modal-close absolute top-0 right-0 cursor-pointer flex flex-col items-center mt-4 mr-4 text-white text-sm">
         <svg
           class="fill-current text-white"
           xmlns="http://www.w3.org/2000/svg"
