@@ -33,16 +33,21 @@
         Play Token but you have only
         {$playTokenAccount.balance.div('1000000000000000000').toString()}
       {:else}
-        <h2>
-          Claim Planet
-          {$planet.location.x},{$planet.location.y}
-          for
-          {stake}
-          ZTOKEN
-        </h2>
-        <Button label="Stake" on:click={() => claimFlow.confirm()}>
-          Confirm
-        </Button>
+        <div class="text-center">
+          <h2>
+            Claim
+            <span class="text-green-500">Planet
+              {$planet.location.x},{$planet.location.y}</span>
+            for
+            <span class="text-yellow-500">{stake} Play Token</span>
+          </h2>
+          <Button
+            class="mt-5"
+            label="Stake"
+            on:click={() => claimFlow.confirm()}>
+            Confirm
+          </Button>
+        </div>
       {/if}
     {/if}
   </Modal>

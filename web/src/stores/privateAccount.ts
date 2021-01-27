@@ -712,7 +712,15 @@ class PrivateAccountStore extends BaseStoreWithData<
     await this.execute();
   }
 
-  async confirm(): Promise<void> {
+  async confirm({
+    storeSignatureLocally,
+    syncRemotely,
+  }: {
+    storeSignatureLocally: boolean;
+    syncRemotely: boolean;
+  }): Promise<void> {
+    // TODO
+    console.log({storeSignatureLocally, syncRemotely});
     this.setPartial({step: 'SIGNATURE_REQUESTED'});
     if (!wallet.provider) {
       throw new Error(`no wallet.provider`);

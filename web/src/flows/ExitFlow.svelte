@@ -15,10 +15,12 @@
 {:else}
   <Modal>
     {#if $exitFlow.step === 'SUCCESS'}
-      You ll be able to claim back the stake 24h after the tx is mined<br />
-      <PanelButton label="OK" on:click={() => exitFlow.acknownledgeSuccess()}>
-        OK
-      </PanelButton>
+      <div class="text-center">
+        <p>You'll be able to claim back the stake 24h after the tx is mined</p>
+        <PanelButton label="OK" on:click={() => exitFlow.acknownledgeSuccess()}>
+          OK
+        </PanelButton>
+      </div>
     {:else if $exitFlow.step === 'CONNECTING'}
       Connecting...
     {:else if $exitFlow.step === 'WAITING_TX'}

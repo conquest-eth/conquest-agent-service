@@ -214,6 +214,8 @@ function line2rect(
   return newSegment;
 }
 
+export const instances: Renderer[] = [];
+
 export class Renderer {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private hPattern: any;
@@ -230,6 +232,7 @@ export class Renderer {
   private lastRenderStateChangeCounter = 0;
 
   constructor(private renderState: RenderState) {
+    instances.push(this);
     // TODO remove:
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).renderState = this.renderState;
@@ -607,7 +610,7 @@ export class Renderer {
       Math.round(this.renderState.space.discovered.y2 * 8 * 48 + 48 * 4)
     );
     ctx.lineWidth = lineWidth;
-    ctx.strokeStyle = '#a5f3fc'; // '#67e8f9';
+    ctx.strokeStyle = '#034c4c'; // '#90e1e7'; //'#a5f3fc'; // '#67e8f9';
     ctx.setLineDash([]);
 
     if (x1 != leftX) {
@@ -766,3 +769,17 @@ export class Renderer {
     ctx.stroke();
   }
 }
+
+(async () => {
+  if (import.meta.hot) {
+    const moduleUrl = import.meta.url;
+    const previousModule = await import(moduleUrl);
+    import.meta.hot.accept(({module}) => {
+      for (const instance of previousModule.instances) {
+        const prototype = (module as any).Renderer.prototype;
+        console.log({prototype});
+        Reflect.setPrototypeOf(instance, prototype);
+      }
+    });
+  }
+})();

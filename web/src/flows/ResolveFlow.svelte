@@ -6,10 +6,14 @@
 
 <Modal>
   {#if $resolveFlow.step === 'SUCCESS'}
-    The fleet will resovle if mined in time<br />
-    <PanelButton label="OK" on:click={() => resolveFlow.acknownledgeSuccess()}>
-      OK
-    </PanelButton>
+    <div class="text-center">
+      <p>The fleet will resovle if mined in time</p>
+      <PanelButton
+        label="OK"
+        on:click={() => resolveFlow.acknownledgeSuccess()}>
+        OK
+      </PanelButton>
+    </div>
   {:else if $resolveFlow.step === 'CONNECTING'}
     Connecting...
   {:else if $resolveFlow.step === 'CREATING_TX'}

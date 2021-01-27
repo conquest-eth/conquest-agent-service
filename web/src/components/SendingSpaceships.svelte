@@ -36,24 +36,36 @@
   on:confirm={() => sendFlow.confirm(fleetAmount)}>
   <!-- <h2 slot="header">Claim Planet {location.x},{location.y}</h2> -->
 
-  <p>How many spaceships?</p>
+  <div class="text-center">
+    <p class="font-bold">How many spaceships?</p>
+  </div>
+  <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
 
   <div>
-    <!-- TODO show DAI balance and warn when cannot buy // DAI balance could be shown in navbar (once connected)-->
-    <input
-      type="range"
-      id="fleetAmount"
-      name="fleetAmount"
-      bind:value={fleetAmount}
-      min="1"
-      max={maxSpaceships} />
-    <!-- TODO max range = numSpaceships-->
-    <label for="fleetAmount">Number Of Spaceships</label>
-    <input type="text" id="textInput" value={fleetAmount} />
+    <div>
+      <!-- TODO show Token balance and warn when cannot buy // Token balance could be shown in navbar (once connected)-->
+      <input
+        class="text-cyan-300 bg-cyan-300"
+        type="range"
+        id="fleetAmount"
+        name="fleetAmount"
+        bind:value={fleetAmount}
+        min="1"
+        max={maxSpaceships} />
+      <!-- <label for="fleetAmount">Number Of Spaceships</label> -->
+      <input
+        class="bg-gray-700 border-cyan-800 border-2"
+        type="text"
+        id="textInput"
+        bind:value={fleetAmount} />
+    </div>
+    <div class="text-center">
+      <PanelButton
+        class="mt-5"
+        label="Fleet Amount"
+        on:click={() => sendFlow.confirm(fleetAmount)}>
+        Confirm
+      </PanelButton>
+    </div>
   </div>
-  <PanelButton
-    label="Fleet Amount"
-    on:click={() => sendFlow.confirm(fleetAmount)}>
-    Confirm
-  </PanelButton>
 </Modal>

@@ -86,7 +86,7 @@
 
     <!-- Add margin if you want to see some of the overlay behind the modal-->
     <div class="modal-content py-4 text-left px-6" bind:this={modal}>
-      <div class="flex justify-between items-center pb-3">
+      <div class="flex justify-between items-center">
         <!--Title-->
         {#if title}
           <p class="text-2xl font-bold">{title}</p>

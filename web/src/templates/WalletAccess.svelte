@@ -67,6 +67,9 @@
         name: v,
       };
     });
+
+  let storeSignatureLocally = false;
+  let syncRemotely = true;
 </script>
 
 <slot />
@@ -134,29 +137,54 @@
         Please accept signature...
       {:else}Please accept request...{/if}
     {:else if $privateAccount.step === 'SIGNATURE_REQUIRED'}
-      <p>
-        Planet Wars require your signature to operate. Do not sign this message
-        outside of Planet Wars!
-      </p>
-      <!-- TODO store and then auto connect if present -->
-      <!-- <div class="flex mt-6">
-        <label class="flex items-center">
-          <input type="checkbox" class="form-checkbox" />
-          <span class="ml-2">Trust computer and do not ask again (store locally)</span>
-        </label>
-      </div> -->
-      <Button label="sign" on:click={() => privateAccount.confirm()}>
-        sign
-      </Button>
+      <div class="text-center">
+        <p>
+          Planet Wars require your signature to operate. Do not sign this
+          message outside of Planet Wars!
+        </p>
+        <!-- TODO store and then auto connect if present -->
+        <div class="ml-8 mt-6 text-cyan-100 text-xs">
+          <label class="flex items-center">
+            <input
+              type="checkbox"
+              class="form-checkbox"
+              bind:checked={storeSignatureLocally} />
+            <span class="ml-2">Do not ask again. (trust computer and
+              {window.location.host})</span>
+          </label>
+          <label class="flex items-center">
+            <input
+              type="checkbox"
+              class="form-checkbox"
+              bind:checked={syncRemotely} />
+            <span class="ml-2">enable encrypted sync across devices</span>
+          </label>
+        </div>
+        <Button
+          label="sign"
+          class="mt-5"
+          on:click={() => privateAccount.confirm({
+              storeSignatureLocally,
+              syncRemotely,
+            })}>
+          sign
+        </Button>
+      </div>
     {:else if $privateAccount.step === 'LOADING'}
       Loading Data...
     {:else if executionError}
-      {#if executionError.code === 4001}
-        You rejected the request
-      {:else if executionError.message}
-        {executionError.message}
-      {:else}Error: {executionError}{/if}
-      <Button label="Retry" on:click={() => flow.retry()}>Retry</Button>
+      <div class="text-center">
+        <p>
+          {#if executionError.code === 4001}
+            You rejected the request
+          {:else if executionError.message}
+            {executionError.message}
+          {:else}Error: {executionError}{/if}
+        </p>
+        <Button class="mt-4" label="Retry" on:click={() => flow.retry()}>
+          Retry
+        </Button>
+      </div>
     {/if}
   </Modal>
 {/if}
