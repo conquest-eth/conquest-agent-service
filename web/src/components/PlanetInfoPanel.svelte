@@ -110,8 +110,16 @@
         {#if $planet.state.capturing}
           Capturing...
         {:else if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
-          <PanelButton label="Capture" class="m-2" on:click={capture}>
-            <div class="w-20">Capture</div>
+          <PanelButton
+            label="Capture"
+            class="m-2"
+            disabled={!$planet.state.inReach}
+            on:click={capture}>
+            <div class="w-20">
+              Capture
+              <span class="text-sm">
+                {!$planet.state.inReach ? ' (unreachable)' : ''}</span>
+            </div>
           </PanelButton>
           {#if $planet.state.natives}
             <PanelButton label="Attack" class="m-2" on:click={sendTo}>
@@ -123,11 +131,22 @@
             </PanelButton>
           {/if}
         {:else if wallet.address.toLowerCase() === $planet.state.owner.toLowerCase() && !$planet.state.active}
-          <PanelButton label="Capture" class="m-2" on:click={capture}>
-            <div class="w-20">Capture</div>
+          <PanelButton
+            label="Capture"
+            class="m-2"
+            disabled={!$planet.state.inReach}
+            on:click={capture}>
+            <div class="w-20">
+              Capture
+              <span class="text-sm">
+                {!$planet.state.inReach ? ' (unreachable)' : ''}</span>
+            </div>
           </PanelButton>
           <PanelButton label="Send To" class="m-2" on:click={sendTo}>
             <div class="w-20">Send To</div>
+          </PanelButton>
+          <PanelButton label="Send From" class="m-2" on:click={sendFrom}>
+            <div class="w-20">Send From</div>
           </PanelButton>
         {:else if $planet.state.owner.toLowerCase() === $wallet.address.toLowerCase()}
           <PanelButton label="Send To" class="m-2" on:click={sendTo}>
@@ -157,8 +176,16 @@
       {#if $planet.state.capturing}
         Capturing...
       {:else}
-        <PanelButton label="Capture" class="m-2" on:click={capture}>
-          <div class="w-20">Capture</div>
+        <PanelButton
+          label="Capture"
+          class="m-2"
+          disabled={!$planet.state.inReach}
+          on:click={capture}>
+          <div class="w-20">
+            Capture
+            <span class="text-sm">
+              {!$planet.state.inReach ? ' (unreachable)' : ''}</span>
+          </div>
         </PanelButton>
       {/if}
     {:else}Loading...{/if}

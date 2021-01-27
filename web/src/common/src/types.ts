@@ -42,6 +42,7 @@ export type PlanetState = {
   exitTimeLeft: number;
   natives: boolean;
   capturing: boolean;
+  inReach: boolean;
 };
 
 // object representing a Plnet with both its static and dynamic state

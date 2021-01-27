@@ -459,16 +459,20 @@ export class Renderer {
           ctx.imageSmoothingEnabled = false;
           const planetX = planet.location.globalX * 2 * 48;
           const planetY = planet.location.globalY * 2 * 48;
+
+          const numStars = 1 + Math.floor(planet.stats.stake / 25);
+
+          const multiplier = planet.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
           ctx.drawImage(
             planetSpriteSheet,
             lavaFrame.x,
             lavaFrame.y,
             lavaFrame.w,
             lavaFrame.h,
-            Math.round(planetX - 48 / 2),
-            Math.round(planetY - 48 / 2),
-            48,
-            48
+            Math.round(planetX - (48 * multiplier) / 2),
+            Math.round(planetY - (48 * multiplier) / 2),
+            48 * multiplier,
+            48 * multiplier
           );
 
           let exitRatio = Number.MAX_SAFE_INTEGER;
@@ -563,14 +567,18 @@ export class Renderer {
             ctx.ellipse(
               Math.round(planetX),
               Math.round(planetY),
-              72,
-              72,
+              72 * multiplier,
+              72 * multiplier,
               circleRotate ? time / 500 : 0,
               0,
               2 * Math.PI
             );
             ctx.stroke();
           }
+
+          // for (let star = 0; star < numStars; i++) {
+
+          // }
 
           if (exitRatio < 1) {
             ctx.beginPath();
@@ -778,7 +786,6 @@ export class Renderer {
     import.meta.hot.accept(({module}) => {
       for (const instance of previousModule.instances) {
         const prototype = (module as any).Renderer.prototype;
-        console.log({prototype});
         Reflect.setPrototypeOf(instance, prototype);
       }
     });

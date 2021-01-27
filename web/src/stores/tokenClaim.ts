@@ -18,11 +18,11 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       state: 'Loading',
     });
 
-    this.wallet.subscribe(($wallet) => {
+    this.wallet.subscribe(() => {
       this.onConnection();
     });
 
-    this.chain.subscribe(($wallet) => {
+    this.chain.subscribe(() => {
       this.onConnection();
     });
   }
@@ -48,6 +48,9 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
   }
 
   async check() {
+    if (!this.$store.inUrl) {
+      return;
+    }
     if (!wallet.provider) {
       throw new Error(`no wallet.provider`);
     }

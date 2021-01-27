@@ -73,6 +73,7 @@ export type WorldSetup = {
   zoom: number;
 };
 
+export const instances: Camera[] = [];
 export class Camera {
   private zoomIndex: number;
   public render: CameraSetup;
@@ -81,6 +82,7 @@ export class Camera {
   private controller: Controller;
 
   constructor(private renderState: RenderState) {
+    instances.push(this);
     // avoid type errors
     this.canvas = (undefined as unknown) as HTMLCanvasElement;
     this.controller = (undefined as unknown) as Controller;
@@ -176,27 +178,8 @@ export class Camera {
 
     const onClick = (x: number, y: number) => {
       const worldPos = screenToWorld(x, y);
-      const gridPos = {
-        x: Math.round(worldPos.x / 48 / 2),
-        y: Math.round(worldPos.y / 48 / 2),
-      };
-      const shifted = {
-        x: gridPos.x + 2,
-        y: gridPos.y + 2,
-      };
-      if (shifted.x % 4 == 0 || shifted.y % 4 == 0) {
-        // console.log('boundaries');
-        return;
-      }
-      const locX = Math.floor(shifted.x / 4);
-      const locY = Math.floor(shifted.y / 4);
-      const location = {
-        x: locX,
-        y: locY,
-        globalX: locX * 4 + ((shifted.x % 4) - 2 * Math.sign(shifted.x)),
-        globalY: locY * 4 + ((shifted.y % 4) - 2 * Math.sign(shifted.y)),
-        id: xyToLocation(locX, locY),
-      };
+      const globalX = worldPos.x / 48 / 2;
+      const globalY = worldPos.y / 48 / 2;
 
       // TODO ? // or instead use zoom level to show info or not : buble on top of planet / fleets
       // const fleets = this.renderState.getOwnFleets();
@@ -237,13 +220,32 @@ export class Camera {
       //   }
       // }
 
+      const locX = Math.floor((Math.round(globalX) + 2) / 4);
+      const locY = Math.floor((Math.round(globalY) + 2) / 4);
+      // const locationX = Math.floor(globalX / 4);
+      // const locationY = Math.floor(globalY / 4);
       // console.log('onClick', JSON.stringify({worldPos, gridPos, location, shifted}, null, '  '));
       // TODO emit event // This should actually be moved to Screen
-      const planet = this.renderState.space.planetAt(location.x, location.y);
+      // const planet = this.renderState.space.planetAt(locationX, locationY);
+      const planet = this.renderState.space.planetAt(locX, locY);
+
+      // console.log({
+      //   locX,
+      //   locY,
+      //   locationX,
+      //   locationY,
+      //   globalX,
+      //   globalY,
+      //   planetGlobalX: planet?.location.globalX,
+      //   planetGlobalY: planet?.location.globalY,
+      // });
+      console.log({zoom: this.world.zoom});
       if (
         planet &&
-        planet.location.globalX === location.globalX &&
-        planet.location.globalY === location.globalY
+        Math.sqrt(
+          Math.pow(planet.location.globalX - globalX, 2) +
+            Math.pow(planet.location.globalY - globalY, 2)
+        ) <= (this.world.zoom < 1 / 5 ? 1 / this.world.zoom / 5 : 1)
       ) {
         // console.log(JSON.stringify(planet, null, '  '));
         if (this.controller) {

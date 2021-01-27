@@ -40,9 +40,11 @@ export function getParamsFromURLHash(str?: string): Record<string, string> {
 }
 
 export function rebuildLocationHash(hashParams: Record<string, string>): void {
-  let reconstructedHash = '#';
+  let reconstructedHash = '';
   Object.entries(hashParams).forEach((param) => {
-    if (reconstructedHash !== '#') {
+    if (reconstructedHash === '') {
+      reconstructedHash += '#';
+    } else {
       reconstructedHash += '&';
     }
     reconstructedHash += param.join('=');

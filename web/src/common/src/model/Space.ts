@@ -370,6 +370,11 @@ export class Space {
       // SKIP UNTIL THERE IS A CONTRACT STATE TO COMPUTE PREDICTED VALUES FROM TIME
       return;
     }
+    const inReach =
+      planetRecord.planet.location.x >= this.discovered.x1 &&
+      planetRecord.planet.location.x <= this.discovered.x2 &&
+      planetRecord.planet.location.y >= this.discovered.y1 &&
+      planetRecord.planet.location.y <= this.discovered.y2;
     let capturing = false;
     let owner = contractState.owner;
     let active = contractState.active;
@@ -414,6 +419,7 @@ export class Space {
         exitTimeLeft,
         natives,
         capturing,
+        inReach,
       };
     } else {
       planetRecord.planet.state.owner = owner;
@@ -423,7 +429,7 @@ export class Space {
       planetRecord.planet.state.exitTimeLeft = exitTimeLeft;
       planetRecord.planet.state.natives = natives;
       planetRecord.planet.state.capturing = capturing;
-      // planetRecord.planet.state.outOfReach = // TODO
+      planetRecord.planet.state.inReach = inReach;
     }
 
     this._callListeners(planetId, planetRecord.planet);

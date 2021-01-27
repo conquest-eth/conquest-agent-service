@@ -4,9 +4,12 @@
   export let label: string;
   export let color: string | undefined = undefined;
   export let borderColor: string | undefined = undefined;
+  export let disabled: boolean = false;
 
-  let actualColor = color || 'cyan-300';
-  let actualBorderColor = borderColor
+  let actualColor = disabled ? 'gray-600' : color || 'cyan-300';
+  let actualBorderColor = disabled
+    ? 'gray-600'
+    : borderColor
     ? borderColor
     : color
     ? color
@@ -14,7 +17,7 @@
 </script>
 
 <div class="inline-block text-{actualColor} border-{actualColor} {class_names}">
-  <button {label} class="relative p-1">
+  <button on:click {disabled} {label} class="relative p-1">
     <div
       class="absolute left-0 -top-0 w-4 h-4 border-r-0 border-l-2 border-t-2 border-b-0 border-{actualColor}" />
     <div
@@ -26,7 +29,7 @@
     <div
       class="block relative border overflow-hidden border-{actualBorderColor}">
       <div>
-        <div on:click class="px-4 py-2 relative">
+        <div class="px-4 py-2 relative">
           <slot />
         </div>
       </div>
