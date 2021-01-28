@@ -42,9 +42,8 @@
 <div
   class="absolute inline-block w-48 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4">
   <div class="flex m-1">
-    <h2 class="flex-auto text-white font-bold">
-      Planet
-      {$planet.location.x},{$planet.location.y}
+    <h2 class="flex-auto text-green-500 text-center pt-1 font-bold">
+      {$planet.stats.name}
     </h2>
     {#if $planet.state && $planet.state.owner !== '0x0000000000000000000000000000000000000000'}
       <div>

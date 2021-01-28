@@ -35,9 +35,8 @@
       {:else}
         <div class="text-center">
           <h2>
-            Claim
-            <span class="text-green-500">Planet
-              {$planet.location.x},{$planet.location.y}</span>
+            Claim Planet
+            <span class="text-green-500">"{$planet.stats.name}"</span>
             for
             <span class="text-yellow-500">{stake} Play Token</span>
           </h2>

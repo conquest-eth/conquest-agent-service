@@ -8,6 +8,7 @@ import {
   xyToLocation,
   topleftLocationFromArea,
 } from '../util/location';
+import {uniqueName} from '../../../lib/random/uniqueName';
 
 function skip(): Promise<void> {
   return new Promise<void>((resolve) => {
@@ -192,6 +193,8 @@ export class SpaceInfo {
 
     const type = _genesis.r_u8(location, 255, 23);
 
+    const name = uniqueName(2, location);
+
     const data = {
       location: {
         id: location,
@@ -202,6 +205,7 @@ export class SpaceInfo {
       },
       type,
       stats: {
+        name,
         stake,
         production,
         attack,

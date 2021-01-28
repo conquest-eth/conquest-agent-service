@@ -9,6 +9,7 @@ export type PlanetLocation = {
 
 // object describing the static attributes of a planet // do not change
 export type Statistics = {
+  name: string;
   stake: number;
   production: number;
   attack: number;
