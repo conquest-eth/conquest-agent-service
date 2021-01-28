@@ -4,17 +4,16 @@ pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./Libraries/Random.sol";
+import "./Libraries/Extraction.sol";
+import "./Libraries/Math.sol";
 import "hardhat-deploy/solc_0.7/proxy/Proxied.sol";
-
-// import "hardhat/console.sol";
 
 // TODO transfer Planet ?
 // cons:
 // - allow a player to easily have multiple address hiding its true potential
 
 contract OuterSpace is Proxied {
-    using Random for bytes32;
+    using Extraction for bytes32;
 
     uint256 internal constant STAKE_MULTIPLIER = 5e18; // = 5 DAI min
     uint32 internal constant ACTIVE_MASK = 2**31;
@@ -120,7 +119,9 @@ contract OuterSpace is Proxied {
         address sender = _msgSender();
         Planet storage planet = _getPlanet(location);
 
-        uint16 production = _production(location);
+        bytes32 data = _planetData(location);
+
+        uint16 production = _production(data);
         address owner = planet.owner;
         uint32 lastUpdated = planet.lastUpdated;
         uint32 numSpaceshipsData = planet.numSpaceships;
@@ -135,7 +136,7 @@ contract OuterSpace is Proxied {
         bool justExited;
         uint32 defense;
         if (lastUpdated == 0) {
-            uint16 natives = _natives(location);
+            uint16 natives = _natives(data);
             defense = natives;
         } else {
             if (exitTime != 0) {
@@ -423,7 +424,8 @@ contract OuterSpace is Proxied {
         address newOwner,
         uint32 spaceshipsData
     ) internal {
-        uint16 stake = _stake(location);
+        bytes32 data = _planetData(location);
+        uint16 stake = _stake(data);
         planet.exitTime = 0;
         planet.owner = newOwner; // This is fine as long as _actualiseExit is called on every move
         planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move
@@ -454,7 +456,8 @@ contract OuterSpace is Proxied {
 
         require(owner == planet.owner, "not owner of the planet");
 
-        uint16 production = _production(from);
+        bytes32 data = _planetData(from);
+        uint16 production = _production(data);
 
         (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
             planet.numSpaceships,
@@ -493,7 +496,7 @@ contract OuterSpace is Proxied {
 
         Planet memory toPlanet = _getPlanet(to);
 
-        uint16 production = _production(to);
+        uint16 production = _production(_planetData(to));
 
         _checkDistance(distance, from, to);
         _checkTime(distance, from, fleet.launchTime);
@@ -511,8 +514,8 @@ contract OuterSpace is Proxied {
         uint256 from,
         uint256 to
     ) internal view {
-        (int8 fromSubX, int8 fromSubY) = _subLocation(from);
-        (int8 toSubX, int8 toSubY) = _subLocation(to);
+        (int8 fromSubX, int8 fromSubY) = _subLocation(_planetData(from));
+        (int8 toSubX, int8 toSubY) = _subLocation(_planetData(to));
         // check input instead of compute sqrt
         uint256 distanceSquared = uint256( // check input instead of compute sqrt
             ((int128(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) * 4 + toSubX) -
@@ -528,7 +531,7 @@ contract OuterSpace is Proxied {
         uint256 from,
         uint32 launchTime
     ) internal view {
-        uint256 reachTime = launchTime + (distance * (_timePerDistance * 10000)) / _speed(from);
+        uint256 reachTime = launchTime + (distance * (_timePerDistance * 10000)) / _speed(_planetData(from));
         require(block.timestamp >= reachTime, "too early");
         require(block.timestamp < reachTime + _resolveWindow, "too late, your spaceships are lost in space");
     }
@@ -538,37 +541,41 @@ contract OuterSpace is Proxied {
     }
 
     // ------------------------- PLANET STATS -------------------------------
-    function _subLocation(uint256 location) internal view returns (int8 subX, int8 subY) {
-        subX = int8(1 - _genesis.r_u8(location, 2, 3));
-        subY = int8(1 - _genesis.r_u8(location, 3, 3));
+    function _planetData(uint256 location) internal view returns (bytes32) {
+        return keccak256(abi.encodePacked(_genesis, location));
     }
 
-    function _stake(uint256 location) internal view returns (uint16) {
-        return _genesis.r_normalFrom(location, 4, 0x0001000200030004000500070009000A000A000C000F00140019001E00320064); //_genesis.r_u256_minMax(location, 3, 10**18, 1000**18),
+    function _subLocation(bytes32 data) internal pure returns (int8 subX, int8 subY) {
+        subX = int8(1 - data.value8Mod(0, 3));
+        subY = int8(1 - data.value8Mod(2, 3));
     }
 
-    function _production(uint256 location) internal view returns (uint16) {
-        return _genesis.r_normalFrom(location, 5, 0x0708083409600a8c0bb80ce40e100e100e100e101068151819c81e7823282ee0); // per hour
+    function _stake(bytes32 data) internal pure returns (uint16) {
+        return data.normal16(4, 0x0001000200030004000500070009000A000A000C000F00140019001E00320064); //_genesis.r_u256_minMax(location, 3, 10**18, 1000**18),
     }
 
-    function _attack(uint256 location) internal view returns (uint16) {
-        return 4000 + _genesis.r_normal(location, 6) * 400; // 1/10,000
+    function _production(bytes32 data) internal pure returns (uint16) {
+        return data.normal16(12, 0x0708083409600a8c0bb80ce40e100e100e100e101068151819c81e7823282ee0); // per hour
     }
 
-    function _defense(uint256 location) internal view returns (uint16) {
-        return 4000 + _genesis.r_normal(location, 7) * 400; // 1/10,000
+    function _attack(bytes32 data) internal pure returns (uint16) {
+        return 4000 + data.normal8(20) * 400; // 1/10,000
     }
 
-    function _speed(uint256 location) internal view returns (uint16) {
-        return 4090 + _genesis.r_normal(location, 8) * 334; // 1/10,000
+    function _defense(bytes32 data) internal pure returns (uint16) {
+        return 4000 + data.normal8(28) * 400; // 1/10,000
     }
 
-    function _natives(uint256 location) internal view returns (uint16) {
-        return 2000 + _genesis.r_normal(location, 9) * 100;
+    function _speed(bytes32 data) internal pure returns (uint16) {
+        return 4090 + data.normal8(36) * 334; // 1/10,000
     }
 
-    function _exists(uint256 location) internal view returns (bool) {
-        return _genesis.r_u8(location, 1, 16) == 1; // 16 => 36 so : 1 planet per 6 (=24 min unit) square
+    function _natives(bytes32 data) internal pure returns (uint16) {
+        return 2000 + data.normal8(44) * 100;
+    }
+
+    function _exists(bytes32 data) internal pure returns (bool) {
+        return data.value8Mod(52, 16) == 1; // 16 => 36 so : 1 planet per 6 (=24 min unit) square
         // also:
         // 20000 average starting numSpaceships (or max?)
         // speed of min unit = 30 min ( 1 hour per square)
@@ -579,19 +586,20 @@ contract OuterSpace is Proxied {
     // ---------------------------------------------------------------------
 
     function _getPlanetStats(uint256 location) internal view returns (PlanetStats memory) {
-        require(_exists(location), "no planet in this location");
+        bytes32 data = _planetData(location);
+        require(_exists(data), "no planet in this location");
 
-        (int8 subX, int8 subY) = _subLocation(location);
+        (int8 subX, int8 subY) = _subLocation(data);
         return
             PlanetStats({
                 subX: subX,
                 subY: subY,
-                stake: _stake(location),
-                production: _production(location),
-                attack: _attack(location),
-                defense: _defense(location),
-                speed: _speed(location),
-                natives: _natives(location)
+                stake: _stake(data),
+                production: _production(data),
+                attack: _attack(data),
+                defense: _defense(data),
+                speed: _speed(data),
+                natives: _natives(data)
             });
     }
 
@@ -647,10 +655,11 @@ contract OuterSpace is Proxied {
         uint256 fleetId,
         uint32 numAttack
     ) internal {
+        bytes32 toData = _planetData(to);
         if (toPlanet.lastUpdated == 0) {
             // TODO revisit : allow partial destruction of natives ? => does not count as discovered ? (if not how do we detect it ?)
             // probably better to keep native untouched : detect that on frontend to not trigger this
-            uint16 natives = _natives(to);
+            uint16 natives = _natives(toData);
             (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, natives, 10000, 10000); // TODO compute fight like acquire (update)
             if (defenderLoss == natives && numAttack > attackerLoss) {
                 uint32 numSpaceships = numAttack - attackerLoss;
@@ -665,31 +674,44 @@ contract OuterSpace is Proxied {
             _setPlanetAfterExit(to, toPlanet.owner, _planets[to], attacker, numAttack);
             emit FleetArrived(attacker, fleetId, to, numAttack);
         } else {
-            uint16 attack = _attack(from);
-            uint16 defense = _defense(to);
-            (bool active, uint32 numDefense) = _getCurrentNumSpaceships(
-                toPlanet.numSpaceships,
-                toPlanet.lastUpdated,
-                production
-            );
+            uint16 attack = _attack(_planetData(from));
+            uint16 defense = _defense(toData);
+            _actualAttack(attacker, attack, defense, toPlanet, to, production, fleetId, numAttack);
+        }
+    }
 
-            (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, numDefense, attack, defense);
+    function _actualAttack(
+        address attacker,
+        uint16 attack,
+        uint16 defense,
+        Planet memory toPlanet,
+        uint256 to,
+        uint16 production,
+        uint256 fleetId,
+        uint32 numAttack
+    ) internal {
+        (bool active, uint32 numDefense) = _getCurrentNumSpaceships(
+            toPlanet.numSpaceships,
+            toPlanet.lastUpdated,
+            production
+        );
 
-            if (attackerLoss == numAttack) {
-                uint32 numSpaceships = numDefense - defenderLoss;
-                _planets[to].numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
-                _planets[to].lastUpdated = uint32(block.timestamp);
-                emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, false, numSpaceships);
-            } else if (defenderLoss == numDefense) {
-                uint32 numSpaceships = numAttack - attackerLoss;
-                _planets[to].owner = attacker;
-                _planets[to].exitTime = 0;
-                _planets[to].numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
-                _planets[to].lastUpdated = uint32(block.timestamp);
-                emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);
-            } else {
-                revert("nobody won"); // should not happen
-            }
+        (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, numDefense, attack, defense);
+
+        if (attackerLoss == numAttack) {
+            uint32 numSpaceships = numDefense - defenderLoss;
+            _planets[to].numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
+            _planets[to].lastUpdated = uint32(block.timestamp);
+            emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, false, numSpaceships);
+        } else if (defenderLoss == numDefense) {
+            uint32 numSpaceships = numAttack - attackerLoss;
+            _planets[to].owner = attacker;
+            _planets[to].exitTime = 0;
+            _planets[to].numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
+            _planets[to].lastUpdated = uint32(block.timestamp);
+            emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);
+        } else {
+            revert("nobody won"); // should not happen
         }
     }
 
