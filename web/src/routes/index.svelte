@@ -3,34 +3,12 @@
   import MapScreen from '../app/MapScreen.svelte';
   import time from '../stores/time';
   import {fade} from 'svelte/transition';
-  import tokenClaim from '../stores/tokenClaim';
-  import {wallet, flow} from '../stores/wallet';
+  import ClaimTokenScreen from '../screens/ClaimTokenScreen.svelte';
   const startTime = $time;
 </script>
 
 <WalletAccess>
-  {#if $tokenClaim.inUrl}
-    <div class="fixed z-10 inset-0 overflow-y-auto bg-black">
-      <div class="justify-center mt-10 text-center text-white">
-        <p>Welcome to conquest.eth</p>
-        <p>You have been given some tokens to claim.</p>
-        {#if $wallet.state === 'Ready'}
-          {#if $tokenClaim.state === 'Loading'}
-            Loading claim...
-          {:else if $tokenClaim.state === 'Available'}
-            <button on:click={() => tokenClaim.claim()}>Claim</button>
-          {:else if $tokenClaim.state === 'Claiming'}
-            Claiming...
-          {:else if $tokenClaim.state === 'Claimed'}
-            <button on:click={() => tokenClaim.clearURL()}>Continue</button>
-          {/if}
-        {:else}
-          <p>Please connect to your wallet</p>
-          <button on:click={() => flow.connect()}>Connect</button>
-        {/if}
-      </div>
-    </div>
-  {/if}
+  <ClaimTokenScreen />
   <MapScreen />
 </WalletAccess>
 

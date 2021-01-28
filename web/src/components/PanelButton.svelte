@@ -4,30 +4,37 @@
   export let label: string;
   export let color: string | undefined = undefined;
   export let borderColor: string | undefined = undefined;
+  export let cornerColor: string | undefined = undefined;
   export let disabled: boolean = false;
 
-  let actualColor = disabled ? 'gray-600' : color || 'cyan-300';
-  let actualBorderColor = disabled
-    ? 'gray-600'
+  let actualColor = disabled ? 'text-gray-600' : color || 'text-cyan-300';
+  let actualCornerColor = disabled
+    ? 'border-gray-600'
+    : cornerColor
+    ? cornerColor
     : borderColor
     ? borderColor
-    : color
-    ? color
-    : 'cyan-600';
+    : 'border-cyan-300';
+  let actualBorderColor = disabled
+    ? 'border-gray-600'
+    : borderColor
+    ? borderColor
+    : cornerColor
+    ? cornerColor
+    : 'border-cyan-600';
 </script>
 
-<div class="inline-block text-{actualColor} border-{actualColor} {class_names}">
+<div class="inline-block {actualColor} {class_names}">
   <button on:click {disabled} {label} class="relative p-1">
     <div
-      class="absolute left-0 -top-0 w-4 h-4 border-r-0 border-l-2 border-t-2 border-b-0 border-{actualColor}" />
+      class="absolute left-0 -top-0 w-4 h-4 border-r-0 border-l-2 border-t-2 border-b-0 {actualCornerColor}" />
     <div
-      class="absolute -left-0 -bottom-0 w-4 h-4 border-r-0 border-l-2 border-b-2 border-t-0 border-{actualColor}" />
+      class="absolute -left-0 -bottom-0 w-4 h-4 border-r-0 border-l-2 border-b-2 border-t-0 {actualCornerColor}" />
     <div
-      class="absolute -right-0 -top-0 w-4 h-4 border-r-2 border-l-0 border-t-2 border-b-0 border-{actualColor}" />
+      class="absolute -right-0 -top-0 w-4 h-4 border-r-2 border-l-0 border-t-2 border-b-0 {actualCornerColor}" />
     <div
-      class="absolute -right-0 -bottom-0 w-4 h-4 border-r-2 border-l-0 border-t-0 border-b-2 border-{actualColor}" />
-    <div
-      class="block relative border overflow-hidden border-{actualBorderColor}">
+      class="absolute -right-0 -bottom-0 w-4 h-4 border-r-2 border-l-0 border-t-0 border-b-2 {actualCornerColor}" />
+    <div class="block relative border overflow-hidden {actualBorderColor}">
       <div>
         <div class="px-4 py-2 relative">
           <slot />

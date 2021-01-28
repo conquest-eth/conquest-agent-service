@@ -5,6 +5,7 @@ import planetsDataURL from '../assets/planets.png';
 import type {CameraSetup, WorldSetup} from './camera';
 import type {RenderState} from './RenderState';
 import {hmrClass} from '../lib/utils/hmr';
+import type {Controller} from './controller';
 
 // pre-render
 const planetSpriteSheet = new Image();
@@ -222,6 +223,8 @@ export class Renderer {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private vPattern: any;
 
+  private controller: Controller = (undefined as unknown) as Controller; // Force as setup need to be called
+
   private lastCamera: WorldSetup = {
     x: 0,
     y: 0,
@@ -237,7 +240,8 @@ export class Renderer {
     (window as any).renderState = this.renderState;
   }
 
-  setup(ctx: CanvasRenderingContext2D): void {
+  setup(ctx: CanvasRenderingContext2D, controller: Controller): void {
+    this.controller = controller;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ctx as any).mozImageSmoothingEnabled = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -490,12 +494,12 @@ export class Renderer {
                   planet.state?.owner.toLowerCase() ===
                   this.renderState.space.player.toLowerCase()
                 ) {
-                  circleColor = 'green';
+                  circleColor = '#34D399';
                 } else if (
                   planet.state?.owner !==
                   '0x0000000000000000000000000000000000000000'
                 ) {
-                  circleColor = 'red';
+                  circleColor = '#DC2626';
                 } else {
                   circleColor = undefined;
                 }
@@ -504,9 +508,9 @@ export class Renderer {
                   planet.state?.owner !==
                   '0x0000000000000000000000000000000000000000'
                 ) {
-                  circleColor = 'white';
+                  circleColor = '#E5E7EB';
                 } else {
-                  circleColor = 'white';
+                  circleColor = '#E5E7EB';
                 }
               }
               // TODO : productionEnabled // see OuterSpace.sol : can use owner and numSpaceships
@@ -536,27 +540,27 @@ export class Renderer {
                     planet.state?.owner.toLowerCase() ===
                     this.renderState.space.player.toLowerCase()
                   ) {
-                    circleColor = 'forestgreen';
+                    circleColor = '#10B981';
                   } else {
-                    circleColor = 'red';
+                    circleColor = '#DC2626';
                   }
                 } else {
-                  circleColor = 'white';
+                  circleColor = '#E5E7EB';
                 }
               }
             }
           } else {
-            circleColor = 'white'; // TODO remove
+            circleColor = '#E5E7EB'; // TODO remove
             circleDash = [5, 15];
             circleRotate = true;
           }
 
-          // circleColor = 'white'; // TODO remove
+          // circleColor = '#E5E7EB'; // TODO remove
 
           if (circleColor) {
             ctx.beginPath();
             ctx.setLineDash(circleDash);
-            if (circleColor === 'white') {
+            if (circleColor === '#E5E7EB') {
               ctx.lineWidth = 1 / render.scale;
             } else {
               ctx.lineWidth = 1 / render.scale;
@@ -571,6 +575,20 @@ export class Renderer {
               circleRotate ? time / 500 : 0,
               0,
               2 * Math.PI
+            );
+            ctx.stroke();
+          }
+
+          if (this.controller.selectedPlanet === planet.location.id) {
+            ctx.lineWidth = lineWidth;
+            ctx.strokeStyle = '#67e8f9';
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.rect(
+              Math.round(planetX) - (200 * Math.sqrt(multiplier)) / 2,
+              Math.round(planetY) - (200 * Math.sqrt(multiplier)) / 2,
+              200 * Math.sqrt(multiplier),
+              200 * Math.sqrt(multiplier)
             );
             ctx.stroke();
           }
@@ -743,11 +761,11 @@ export class Renderer {
 
         if (camera.zoom > 0.25) {
           ctx.font = '48px serif';
-          ctx.fillStyle = 'white';
+          ctx.fillStyle = '#E5E7EB';
           ctx.fillText(`${Math.floor(timeLeft / 1000)}s`, fx - 24, fy - 80);
         }
       }
-      ctx.fillStyle = 'green';
+      ctx.fillStyle = '#34D399';
       // ctx.fillRect(fx - 50, fy - 50, 100, 100);
       const headlen = 64 / scale; // length of head in pixels
 

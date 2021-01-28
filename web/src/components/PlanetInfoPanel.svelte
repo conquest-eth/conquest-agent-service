@@ -157,7 +157,8 @@
           </PanelButton>
           <PanelButton
             label="Exit"
-            color="red-400"
+            color="text-red-400"
+            borderColor="border-red-400"
             class="m-2"
             on:click={exitFrom}>
             <div class="w-20">Exit</div>

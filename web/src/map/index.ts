@@ -23,10 +23,11 @@ export default class Map {
       throw new Error(`cannot create 2d context`);
     }
     this.ctx = ctx;
-    this.renderer.setup(this.ctx);
+    const controller = new Controller(canvas);
+    this.renderer.setup(this.ctx, controller);
     this.camera.setup({
       canvas: this.canvas,
-      controller: new Controller(canvas),
+      controller,
     });
 
     return this.startRendering();

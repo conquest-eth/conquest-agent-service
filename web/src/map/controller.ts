@@ -4,14 +4,17 @@ import PlanetInfoPanel from '../components/PlanetInfoPanel.svelte';
 export class Controller {
   private parent: Element;
   private planetInfoComponent: PlanetInfoPanel | undefined;
+  public selectedPlanet: string | undefined;
   constructor(canvas: HTMLCanvasElement) {
     this.parent = canvas.parentNode as Element;
     this.planetInfoComponent = undefined;
   }
   onPlanetSelected(planet?: Planet): void {
     if (planet) {
+      this.selectedPlanet = planet.location.id;
       this.showPlanetInfo(planet);
     } else {
+      this.selectedPlanet = undefined;
       this.hidePlanetInfo();
     }
   }
