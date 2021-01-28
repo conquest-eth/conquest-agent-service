@@ -16,7 +16,7 @@ module.exports = {
       'snowpack-plugin-window-modules',
       {
         filter: filterFiles({
-          includes: ['src/stores/*'],
+          includes: ['src/**'],
         }),
       },
     ],
@@ -24,7 +24,7 @@ module.exports = {
       'snowpack-plugin-hmr-inject',
       {
         filter: filterFiles({
-          includes: ['src/stores/*'],
+          includes: ['src/**'],
         }),
       },
     ],

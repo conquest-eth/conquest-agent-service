@@ -12,7 +12,8 @@
     const renderer = new Renderer(renderState);
     const camera = new Camera(renderState);
     const map = new Map(renderer, camera);
-    return map.setup(canvas);
+    map.setup(canvas);
+    return map.startRendering();
   });
 </script>
 

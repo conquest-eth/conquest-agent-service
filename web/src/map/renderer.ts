@@ -4,6 +4,7 @@ import planetsFrame from '../assets/planets.json';
 import planetsDataURL from '../assets/planets.png';
 import type {CameraSetup, WorldSetup} from './camera';
 import type {RenderState} from './RenderState';
+import {hmrClass} from '../lib/utils/hmr';
 
 // pre-render
 const planetSpriteSheet = new Image();
@@ -214,8 +215,7 @@ function line2rect(
   return newSegment;
 }
 
-export const instances: Renderer[] = [];
-
+@hmrClass
 export class Renderer {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private hPattern: any;
@@ -232,7 +232,6 @@ export class Renderer {
   private lastRenderStateChangeCounter = 0;
 
   constructor(private renderState: RenderState) {
-    instances.push(this);
     // TODO remove:
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).renderState = this.renderState;
@@ -778,16 +777,3 @@ export class Renderer {
     ctx.stroke();
   }
 }
-
-(async () => {
-  if (import.meta.hot) {
-    const moduleUrl = import.meta.url;
-    const previousModule = await import(moduleUrl);
-    import.meta.hot.accept(({module}) => {
-      for (const instance of previousModule.instances) {
-        const prototype = (module as any).Renderer.prototype;
-        Reflect.setPrototypeOf(instance, prototype);
-      }
-    });
-  }
-})();

@@ -5,43 +5,57 @@ import {Controller} from './controller';
 export default class Map {
   public renderer: Renderer;
   public camera: Camera;
+  protected pendingFrame: number | undefined;
+  protected ctx: CanvasRenderingContext2D = (undefined as unknown) as CanvasRenderingContext2D; // force type as setup is required to be called
+  protected canvas: HTMLCanvasElement = (undefined as unknown) as HTMLCanvasElement; // force type as setup is required to be called
   constructor(renderer: Renderer, camera: Camera) {
     this.renderer = renderer;
     this.camera = camera;
   }
+
+  // TODO use constructor ?
   setup(canvas: HTMLCanvasElement): () => void {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
+    this.canvas = canvas;
     const ctx: CanvasRenderingContext2D = canvas.getContext(
       '2d'
     ) as CanvasRenderingContext2D;
     if (!ctx) {
       throw new Error(`cannot create 2d context`);
     }
-    this.renderer.setup(ctx);
+    this.ctx = ctx;
+    this.renderer.setup(this.ctx);
+    this.camera.setup({
+      canvas: this.canvas,
+      controller: new Controller(canvas),
+    });
 
-    const draw = (time: number) => {
-      ctx.save();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    return this.startRendering();
+  }
 
-      const scale = this.camera.render.scale;
-      ctx.scale(scale, scale);
-      ctx.translate(this.camera.render.x, this.camera.render.y);
-
-      this.renderer.render(time, ctx, this.camera.world, this.camera.render);
-      ctx.restore();
-    };
-
-    this.camera.setup({canvas, controller: new Controller(canvas)});
-
-    let frame: number;
-    (function loop(time: number) {
-      frame = requestAnimationFrame(loop);
-      self.camera.onRender();
-      draw(time);
-    })(performance.now());
+  startRendering(): () => void {
+    this.pendingFrame = requestAnimationFrame((t) => this._loop(t));
     return () => {
-      cancelAnimationFrame(frame);
+      if (this.pendingFrame) {
+        cancelAnimationFrame(this.pendingFrame);
+      }
     };
+  }
+
+  protected _loop(time: number): void {
+    this.camera.onRender();
+    this._draw(time);
+    this.pendingFrame = requestAnimationFrame((t) => this._loop(t));
+  }
+
+  protected _draw(time: number): void {
+    this.ctx.save();
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    const scale = this.camera.render.scale;
+    this.ctx.scale(scale, scale);
+    this.ctx.translate(this.camera.render.x, this.camera.render.y);
+
+    this.renderer.render(time, this.ctx, this.camera.world, this.camera.render);
+    this.ctx.restore();
   }
 }
