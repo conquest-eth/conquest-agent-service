@@ -1,6 +1,9 @@
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
 import {BaseStoreWithData} from '../lib/utils/stores';
+import {spaceInfo} from '../app/mapState';
+import {locationToXY} from '../common/src';
+import {BigNumber} from '@ethersproject/bignumber';
 
 type Data = {txHash?: string; location: string};
 export type ClaimFlow = {
@@ -48,7 +51,17 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
       throw new Error(`can't fetch latest block`);
     }
     console.log('HELLO');
-    const tx = await wallet.contracts?.OuterSpace.acquire(flow.data?.location);
+    const location = flow.data?.location;
+    const {x, y} = locationToXY(location);
+    const planetInfo = spaceInfo.getPlanetInfo(x, y);
+    if (!planetInfo) {
+      throw new Error(`no planet at ${location}`);
+    }
+    const tx = await wallet.contracts?.PlayToken.transferAndCall(
+      wallet.contracts?.OuterSpace.address,
+      BigNumber.from(planetInfo.stats.stake).mul(spaceInfo.stakeMultiplier),
+      location
+    );
 
     privateAccount.recordCapture(
       flow.data.location,

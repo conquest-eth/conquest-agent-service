@@ -4,20 +4,51 @@ import {sendInSecret, setupOuterSpace, fetchPlanetState} from './utils';
 // import {BigNumber} from '@ethersproject/bignumber';
 // import {expect} from '../chai-setup';
 import {ethers} from 'hardhat';
+import {BigNumber} from '@ethersproject/bignumber';
 
 // const stableTokenUnit = BigNumber.from('1000000000000000000');
 describe('OuterSpace', function () {
   it('user can acquire virgin planet', async function () {
-    const {players, spaceInfo} = await setupOuterSpace();
+    const {players, spaceInfo, outerSpaceContract} = await setupOuterSpace();
     const pointer = spaceInfo.findNextPlanet();
-    await waitFor(players[0].OuterSpace.acquire(pointer.data.location.id));
+    // console.log({
+    //   location: pointer.data.location.id,
+    //   stake: pointer.data.stats.stake,
+    //   stakeMultiplier: spaceInfo.stakeMultiplier.toString(),
+    // });
+    const amount = BigNumber.from(pointer.data.stats.stake).mul(
+      spaceInfo.stakeMultiplier
+    );
+    await waitFor(
+      players[0].PlayToken.transferAndCall(
+        outerSpaceContract.address,
+        amount,
+        pointer.data.location.id
+      )
+    );
   });
 
   it('user cannot acquire planet already onwed by another player', async function () {
-    const {players, spaceInfo} = await setupOuterSpace();
+    const {players, spaceInfo, outerSpaceContract} = await setupOuterSpace();
     const pointer = spaceInfo.findNextPlanet();
-    await waitFor(players[0].OuterSpace.acquire(pointer.data.location.id));
-    await expectRevert(players[1].OuterSpace.acquire(pointer.data.location.id));
+    const amount = BigNumber.from(pointer.data.stats.stake).mul(
+      spaceInfo.stakeMultiplier
+    );
+    await waitFor(
+      players[0].PlayToken.transferAndCall(
+        outerSpaceContract.address,
+        amount,
+        pointer.data.location.id
+      )
+    );
+    await expectRevert(
+      players[1].PlayToken.transferAndCall(
+        outerSpaceContract.address,
+        amount,
+        pointer.data.location.id
+      ),
+      'STILL_ACTIVE'
+    );
   });
 
   it("user can attack other player's planet", async function () {
@@ -34,8 +65,26 @@ describe('OuterSpace', function () {
       outerSpaceContract,
       spaceInfo.findNextPlanet(p0).data
     );
-    await waitFor(players[0].OuterSpace.acquire(planet0.location.id));
-    await waitFor(players[1].OuterSpace.acquire(planet1.location.id));
+    const amount0 = BigNumber.from(planet0.stats.stake).mul(
+      spaceInfo.stakeMultiplier
+    );
+    await waitFor(
+      players[0].PlayToken.transferAndCall(
+        outerSpaceContract.address,
+        amount0,
+        planet0.location.id
+      )
+    );
+    const amount1 = BigNumber.from(planet1.stats.stake).mul(
+      spaceInfo.stakeMultiplier
+    );
+    await waitFor(
+      players[1].PlayToken.transferAndCall(
+        outerSpaceContract.address,
+        amount1,
+        planet1.location.id
+      )
+    );
     planet0 = await fetchPlanetState(outerSpaceContract, planet0);
     planet1 = await fetchPlanetState(outerSpaceContract, planet1);
 
@@ -68,7 +117,16 @@ describe('OuterSpace', function () {
       outerSpaceContract,
       spaceInfo.findNextPlanet().data
     );
-    await waitFor(players[0].OuterSpace.acquire(planet.location.id));
+    const amount = BigNumber.from(planet.stats.stake).mul(
+      spaceInfo.stakeMultiplier
+    );
+    await waitFor(
+      players[0].PlayToken.transferAndCall(
+        outerSpaceContract.address,
+        amount,
+        planet.location.id
+      )
+    );
     planet = await fetchPlanetState(outerSpaceContract, planet);
     const fistTime = (await ethers.provider.getBlock('latest')).timestamp;
     console.log({fistTime});

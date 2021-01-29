@@ -1,3 +1,4 @@
+import {BigNumber} from '@ethersproject/bignumber';
 import {getUnnamedAccounts, ethers, deployments} from 'hardhat';
 import {SpaceInfo} from 'planet-wars-common';
 
@@ -17,10 +18,18 @@ async function main() {
       'OuterSpace',
       players[i]
     );
+    const playTokenContract = await ethers.getContract('PlayToken', players[i]);
     planetPointer = spaceInfo.findNextPlanet(planetPointer);
 
-    // TODO approve // (TODO using permit)
-    await waitFor(outerSpaceContract.acquire(planetPointer.data.location.id));
+    await waitFor(
+      playTokenContract.transferAndCall(
+        outerSpaceContract.address,
+        BigNumber.from(planetPointer.data.stats.stake).mul(
+          spaceInfo.stakeMultiplier
+        ),
+        planetPointer.data.location.id
+      )
+    );
     console.log(
       `staked: ${planetPointer.data.location.id}, (${planetPointer.data.location.x},${planetPointer.data.location.y})`
     );

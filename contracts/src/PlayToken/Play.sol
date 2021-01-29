@@ -7,6 +7,22 @@ import "../Interfaces/ITokenManager.sol";
 import "./PlayInternal.sol";
 import "./PlayPermit.sol";
 
+interface ITransferReceiver {
+    function onTokenTransfer(
+        address,
+        uint256,
+        bytes calldata
+    ) external returns (bool);
+}
+
+interface IApprovalReceiver {
+    function onTokenApproval(
+        address,
+        uint256,
+        bytes calldata
+    ) external returns (bool);
+}
+
 contract Play is IERC20, PlayInternal, PlayPermit {
     using Address for address;
 
@@ -83,6 +99,15 @@ contract Play is IERC20, PlayInternal, PlayPermit {
         return true;
     }
 
+    function transferAndCall(
+        address to,
+        uint256 amount,
+        bytes calldata data
+    ) external returns (bool) {
+        _transfer(msg.sender, to, amount);
+        return ITransferReceiver(to).onTokenTransfer(msg.sender, amount, data);
+    }
+
     function transferFrom(
         address from,
         address to,
@@ -104,6 +129,15 @@ contract Play is IERC20, PlayInternal, PlayPermit {
         // TODO support metatx ?
         _approveFor(msg.sender, spender, amount);
         return true;
+    }
+
+    function approveAndCall(
+        address spender,
+        uint256 amount,
+        bytes calldata data
+    ) external returns (bool) {
+        _approveFor(msg.sender, spender, amount);
+        return IApprovalReceiver(spender).onTokenApproval(msg.sender, amount, data);
     }
 
     function _approveFor(

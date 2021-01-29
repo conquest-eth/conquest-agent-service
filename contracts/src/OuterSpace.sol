@@ -8,6 +8,8 @@ import "./Libraries/Extraction.sol";
 import "./Libraries/Math.sol";
 import "hardhat-deploy/solc_0.7/proxy/Proxied.sol";
 
+import "hardhat/console.sol";
+
 // TODO transfer Planet ?
 // cons:
 // - allow a player to easily have multiple address hiding its true potential
@@ -115,13 +117,50 @@ contract OuterSpace is Proxied {
         }
     }
 
-    function acquire(uint256 location) external payable {
+    function onTokenTransfer(
+        address from,
+        uint256 amount,
+        bytes calldata data
+    ) external returns (bool) {
+        require(msg.sender == address(_stakingToken), "INVALID_ERC20");
+        uint256 location = abi.decode(data, (uint256));
+        _acquire(from, amount, location);
+        return true;
+    }
+
+    function acquireViaTransferFrom(uint256 location, uint256 amount) public {
         address sender = _msgSender();
-        Planet storage planet = _getPlanet(location);
+        _acquire(sender, amount, location);
+        _stakingToken.transferFrom(sender, address(this), amount);
+    }
 
+    // function acquir
+    // if (msg.value > 0) {
+    // TODO in playerVault ?
+    // uint256[] memory amounts = _uniswapV2Router01.swapExactETHForTokens{value:msg.value}(stakeAmount, [_weth, _stakingToken], _vault, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
+    // if (amounts[1] > stakeAmount) {
+    //     _stakingToken.transfer(sender, amounts[1] - stakeAmount); // TODO send to Player Account (via PaymentGateway)
+    // }
+
+    function _acquire(
+        address sender,
+        uint256 paidFor,
+        uint256 location
+    ) internal {
+        console.logBytes32(bytes32(location));
         bytes32 data = _planetData(location);
+        require(paidFor == uint256(_stake(data)) * (STAKE_MULTIPLIER), "INVALID_AMOUNT");
 
-        uint16 production = _production(data);
+        _handleSpaceships(sender, location, data);
+        _handleDiscovery(location);
+    }
+
+    function _handleSpaceships(
+        address sender,
+        uint256 location,
+        bytes32 data
+    ) internal {
+        Planet storage planet = _getPlanet(location);
         address owner = planet.owner;
         uint32 lastUpdated = planet.lastUpdated;
         uint32 numSpaceshipsData = planet.numSpaceships;
@@ -130,7 +169,7 @@ contract OuterSpace is Proxied {
         (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
             numSpaceshipsData,
             lastUpdated,
-            production
+            _production(data)
         );
 
         bool justExited;
@@ -168,20 +207,6 @@ contract OuterSpace is Proxied {
             planet.numSpaceships = _setActiveNumSpaceships(true, currentNumSpaceships);
             planet.lastUpdated = uint32(block.timestamp);
         }
-
-        if (msg.value > 0) {
-            // TODO in playerVault ?
-            // uint256[] memory amounts = _uniswapV2Router01.swapExactETHForTokens{value:msg.value}(stakeAmount, [_weth, _stakingToken], _vault, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
-            // if (amounts[1] > stakeAmount) {
-            //     _stakingToken.transfer(sender, amounts[1] - stakeAmount); // TODO send to Player Account (via PaymentGateway)
-            // }
-        } else {
-            // get from Player account ?
-            // TODO _stakingToken.transferFrom(sender, address(this), stakeAmount);
-        }
-
-        _handleDiscovery(location);
-
         emit PlanetStake(sender, location, currentNumSpaceships);
     }
 
@@ -559,19 +584,19 @@ contract OuterSpace is Proxied {
     }
 
     function _attack(bytes32 data) internal pure returns (uint16) {
-        return 4000 + data.normal8(20) * 400; // 1/10,000
+        return 4000 + data.normal8(20) * 400; // 4,000 - 7,000 - 10,000
     }
 
     function _defense(bytes32 data) internal pure returns (uint16) {
-        return 4000 + data.normal8(28) * 400; // 1/10,000
+        return 4000 + data.normal8(28) * 400; // 4,000 - 7,000 - 10,000
     }
 
     function _speed(bytes32 data) internal pure returns (uint16) {
-        return 4090 + data.normal8(36) * 334; // 1/10,000
+        return 5005 + data.normal8(36) * 333; // 5,005 - 7,502.5 - 10,000
     }
 
     function _natives(bytes32 data) internal pure returns (uint16) {
-        return 2000 + (data.normal8(44) * uint16(100));
+        return 2000 + (data.normal8(44) * uint16(100)); // 2,000 - 2,750 - 3,500
     }
 
     function _exists(bytes32 data) internal pure returns (bool) {

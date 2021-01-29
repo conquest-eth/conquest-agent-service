@@ -68,6 +68,11 @@
       {/if}
     {/if}
 
+    <!--TODO remove-->
+    <div class="m-1">
+      <label for="stake">type:</label>
+      <span id="stake" class="value">{$planet.type}</span>
+    </div>
     <div class="m-1">
       <label for="stake">stake:</label>
       <span id="stake" class="value">{$planet.stats.stake}</span>

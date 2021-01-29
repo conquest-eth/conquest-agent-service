@@ -31,29 +31,32 @@ pctx.fillRect(0, 46, 1, 2);
 
 const planetTypesToFrame = [
   'Baren.png',
+  'Baren.png',
+  'Tech_2.png',
+  'Baren.png',
+  'Barren_2.png',
+  'Tech_2.png',
+  'Jungle48.png',
+  'Jungle48.png',
+  'Tundra.png',
+  'Baren.png',
   'Desert.png',
+  'Tech_2.png',
+  'Barren_2.png',
+  'Ocean_1.png',
+  'Desert_2.png',
+  'Jungle48.png',
   'Forest.png',
+  'Terran_1.png',
   'Ice.png',
-  'Lava.png',
+  'Ice.png',
+  'Gas_1.png',
+  'Ice.png',
+  'Lava_1.png',
+  'Terran_2.png',
+  'Tech_1.png',
   'Ocean.png',
   'Terran.png',
-  'Barren_2.png',
-  'Desert_1.png',
-  'Desert_2.png',
-  'Gas_1.png',
-  'Ice_1.png',
-  'Ice_2.png',
-  'Jungle32.png',
-  'Jungle64.png',
-  'Lava_1.png',
-  'Lava_2.png',
-  // 'Moon.png',
-  'Ocean_1.png',
-  'Tech_1.png',
-  'Tech_2.png',
-  'Terran_1.png',
-  'Terran_2.png',
-  'Tundra.png',
 ];
 
 function line2line(
@@ -326,49 +329,60 @@ export class Renderer {
     // console.log(JSON.stringify({gridLevelRoot, gridSize, gridLevel}));
 
     // used to be gridLevel < 10
-    if (gridLevel < 4) {
+    const showGrid = gridLevel < 4;
+    if (showGrid) {
       // console.log(JSON.stringify({gridLevel, gridSize, nextLevelGridSize}));
 
       // console.log(offset, camera);
       // console.log({lineWidth,gridStart, gridOffset, gridSize, canvasWidth: canvas.width, canvasHeight: canvas.height, zoom: camera.zoom});
 
+      // const ln = '#000000';
+      // const l0 = '#28304c';
+      // const l1 = '#323b5e';
+      // const l2 = '#3e4974';
+      // const l3 = '#4f5d94';
+      const ln = '#000000';
+      const l0 = '#151515';
+      const l1 = '#202020';
+      const l2 = '#252525';
+      const l3 = '#303030';
       // eslint-disable-next-line no-inner-declarations
       function setColor(x: number) {
         if (gridSize == 48) {
           if (Math.floor(x / (8 * 48)) == x / (8 * 48)) {
-            ctx.strokeStyle = '#4f5d94'; //"#6c7fc9";
+            ctx.strokeStyle = l3; //"#6c7fc9";
           } else if (Math.floor(x / (4 * 48)) == x / (4 * 48)) {
-            ctx.strokeStyle = '#3e4974'; //"#5665a1";
+            ctx.strokeStyle = l2; //"#5665a1";
           } else if (Math.floor(x / (2 * 48)) == x / (2 * 48)) {
-            ctx.strokeStyle = '#323b5e'; //"#434f7d";
+            ctx.strokeStyle = l1; //"#434f7d";
           } else if (Math.floor(x / (1 * 48)) == x / (1 * 48)) {
-            ctx.strokeStyle = '#28304c'; //"#323b52";
+            ctx.strokeStyle = l0; //"#323b52";
           } else {
-            ctx.strokeStyle = '#00000';
+            ctx.strokeStyle = ln;
           }
         } else if (gridSize == 2 * 48) {
           if (Math.floor(x / (8 * 48)) == x / (8 * 48)) {
-            ctx.strokeStyle = '#3e4974'; //"#6c7fc9";
+            ctx.strokeStyle = l2; //"#6c7fc9";
           } else if (Math.floor(x / (4 * 48)) == x / (4 * 48)) {
-            ctx.strokeStyle = '#323b5e'; //"#5665a1";
+            ctx.strokeStyle = l1; //"#5665a1";
           } else if (Math.floor(x / (2 * 48)) == x / (2 * 48)) {
-            ctx.strokeStyle = '#28304c'; //"#434f7d";
+            ctx.strokeStyle = l0; //"#434f7d";
           } else {
-            ctx.strokeStyle = '#00000';
+            ctx.strokeStyle = ln;
           }
         } else if (gridSize == 4 * 48) {
           if (Math.floor(x / (8 * 48)) == x / (8 * 48)) {
-            ctx.strokeStyle = '#323b5e'; //"#6c7fc9";
+            ctx.strokeStyle = l1; //"#6c7fc9";
           } else if (Math.floor(x / (4 * 48)) == x / (4 * 48)) {
-            ctx.strokeStyle = '#28304c'; //"#5665a1";
+            ctx.strokeStyle = l0; //"#5665a1";
           } else {
-            ctx.strokeStyle = '#00000';
+            ctx.strokeStyle = ln;
           }
         } else if (gridSize == 8 * 48) {
           if (Math.floor(x / (8 * 48)) == x / (8 * 48)) {
-            ctx.strokeStyle = '#28304c'; //"#5665a1";
+            ctx.strokeStyle = l0; //"#5665a1";
           } else {
-            ctx.strokeStyle = '#00000';
+            ctx.strokeStyle = ln;
           }
         }
       }
@@ -453,7 +467,7 @@ export class Renderer {
       Math.round(this.renderState.space.discovered.y2 * 8 * 48 + 48 * 4)
     );
     ctx.lineWidth = lineWidth;
-    ctx.strokeStyle = '#034c4c'; // '#90e1e7'; //'#a5f3fc'; // '#67e8f9';
+    ctx.strokeStyle = showGrid ? '#444444' : '#353535'; //'#034c4c'; // '#90e1e7'; //'#a5f3fc'; // '#67e8f9';
     ctx.setLineDash([]);
 
     if (x1 != leftX) {
@@ -496,10 +510,14 @@ export class Renderer {
       for (let y = gridY; y <= gridEndY + 1; y++) {
         const planet = this.renderState.space.planetAt(x, y);
         if (planet) {
-          const frameType = planetTypesToFrame[planet.type];
+          const frameType =
+            planetTypesToFrame[planet.type % planetTypesToFrame.length];
           if (!frameType) {
             throw new Error(`no frame type for ${planet.type}`);
           }
+          // if (planet.state && !planet.state.inReach) {
+          //   frameType = frameType.slice(0, frameType.length - 4) + '_cloud.png';
+          // }
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const frameInfo = (planetsFrame.frames as any)[frameType];
           if (!frameInfo) {
@@ -784,14 +802,14 @@ export class Renderer {
       ctx.fill();
     }
 
-    ctx.beginPath();
-    ctx.strokeStyle = '#FDFBF3';
-    ctx.lineWidth = 8 / scale;
-    ctx.setLineDash([]);
-    ctx.moveTo(-64 / scale, 0);
-    ctx.lineTo(64 / scale, 0);
-    ctx.moveTo(0, -64 / scale);
-    ctx.lineTo(0, 64 / scale);
-    ctx.stroke();
+    // ctx.beginPath();
+    // ctx.strokeStyle = '#FDFBF3';
+    // ctx.lineWidth = 8 / scale;
+    // ctx.setLineDash([]);
+    // ctx.moveTo(-64 / scale, 0);
+    // ctx.lineTo(64 / scale, 0);
+    // ctx.moveTo(0, -64 / scale);
+    // ctx.lineTo(0, 64 / scale);
+    // ctx.stroke();
   }
 }

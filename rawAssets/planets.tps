@@ -4,9 +4,9 @@
         <key>fileFormatVersion</key>
         <int>4</int>
         <key>texturePackerVersion</key>
-        <string>4.3.3</string>
+        <string>4.4.0</string>
         <key>fileName</key>
-        <string>C:/dev/projects/wighawag/planet-wars-svite/rawAssets/planets.tps</string>
+        <string>C:/dev/wighawag/planet-wars-snowpack/rawAssets/planets.tps</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -172,6 +172,8 @@
         <false/>
         <key>prependSmartFolderName</key>
         <false/>
+        <key>autodetectAnimations</key>
+        <true/>
         <key>globalSpriteSettings</key>
         <struct type="SpriteSettings">
             <key>scale</key>
@@ -207,6 +209,7 @@
             <key type="filename">Ice.png</key>
             <key type="filename">Ice_1.png</key>
             <key type="filename">Ice_2.png</key>
+            <key type="filename">Jungle48.png</key>
             <key type="filename">Lava.png</key>
             <key type="filename">Lava_1.png</key>
             <key type="filename">Lava_2.png</key>
@@ -308,6 +311,7 @@
             <filename>Terran_1.png</filename>
             <filename>Terran_2.png</filename>
             <filename>Tundra.png</filename>
+            <filename>Jungle48.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

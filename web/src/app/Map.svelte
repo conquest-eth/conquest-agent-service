@@ -22,7 +22,7 @@
     width: 100%;
     height: 100%;
     position: absolute;
-    background-color: #21262c; /*#1f253a;*/ /*#272e49;*/
+    background-color: #000; /* #21262c; */ /*#1f253a;*/ /*#272e49;*/
     image-rendering: -moz-crisp-edges;
     image-rendering: -webkit-crisp-edges;
     image-rendering: pixelated;

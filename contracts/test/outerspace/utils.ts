@@ -35,7 +35,10 @@ export async function setupOuterSpace(): Promise<{
   await deployments.fixture();
   const playersAsContracts = [];
   for (const player of players) {
-    const playerObj = await createPlayerAsContracts(player, ['OuterSpace']);
+    const playerObj = await createPlayerAsContracts(player, [
+      'OuterSpace',
+      'PlayToken',
+    ]);
     playersAsContracts.push(playerObj);
   }
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
