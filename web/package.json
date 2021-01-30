@@ -65,6 +65,7 @@
     "snowpack-plugin-window-modules": "^0.1.2",
     "svelte-preprocess": "^4.0.8",
     "tailwindcss": "^2.0.2",
+    "tailwindcss-question-mark": "^0.1.0",
     "typescript": "^4.0.0"
   },
   "scripts": {
