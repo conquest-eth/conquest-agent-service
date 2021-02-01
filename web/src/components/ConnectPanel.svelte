@@ -72,7 +72,7 @@
     <div
       on:click={(e) => e.stopPropagation()}
       class="absolute z-10 right-0 top-14 border-cyan-500 border-2 p-5 bg-opacity-80 bg-black flex mr-2 flex-col items-center">
-      <NavButton class="m-1" label="Withdrawals" href="wallet">
+      <NavButton class="m-1" label="withdrawals" href="withdrawals">
         Withdrawals
       </NavButton>
       <PanelButton class="m-1" label="Disconnect" on:click={disconnect}>
