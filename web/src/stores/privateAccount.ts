@@ -723,13 +723,13 @@ class PrivateAccountStore extends BaseStoreWithData<
     console.log({storeSignatureLocally, syncRemotely});
     this.setPartial({step: 'SIGNATURE_REQUESTED'});
     if (!wallet.provider) {
-      throw new Error(`no wallet.provider`);
+      return this.cancel(new Error(`no wallet.provider`));
     }
     if (!wallet.address) {
-      throw new Error(`no wallet.address`);
+      return this.cancel(new Error(`no wallet.address`));
     }
     if (!wallet.chain.chainId) {
-      throw new Error(`no chainId, not connected?`);
+      return this.cancel(new Error(`no chainId, not connected?`));
     }
     try {
       const walletAddress = wallet.address.toLowerCase();
@@ -751,15 +751,22 @@ class PrivateAccountStore extends BaseStoreWithData<
         await this._func();
       }
     } catch (e) {
-      this.setPartial({step: 'IDLE', wallet: undefined, aesKey: undefined});
-      this._reject && this._reject(e);
-      this._resolve = undefined;
-      this._reject = undefined;
-      this._promise = undefined;
-      this._contracts = undefined;
-      return;
+      return this.cancel(e);
     }
     this._resolve && this._resolve();
+    this._resolve = undefined;
+    this._reject = undefined;
+    this._promise = undefined;
+    this._contracts = undefined;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  cancel(e?: any): void {
+    flow.cancel();
+    this.setPartial({step: 'IDLE', wallet: undefined, aesKey: undefined});
+    if (e) {
+      this._reject && this._reject(e);
+    }
     this._resolve = undefined;
     this._reject = undefined;
     this._promise = undefined;
