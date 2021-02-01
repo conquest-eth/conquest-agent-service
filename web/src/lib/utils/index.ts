@@ -12,3 +12,7 @@ export function wait<T>(numSeconds: number, v: T): Promise<T> {
 }
 
 export const base64 = base64Module;
+
+export function timeToText(timeInSec: number): string {
+  return `${Math.floor(timeInSec)}s`;
+}

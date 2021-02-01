@@ -3,9 +3,10 @@
   import resolveFlow from '../stores/resolve';
   import privateAccount from '../stores/privateAccount';
   import PanelButton from './PanelButton.svelte';
-  import {spaceInfo} from '../app/mapState';
+  import {spaceInfo, space} from '../app/mapState';
   import time from '../stores/time';
   import type {OwnFleet} from '../common/src/types';
+  import {timeToText} from '../lib/utils';
 
   function resolve(fleetId: string) {
     resolveFlow.resolve(fleetId);
@@ -53,8 +54,9 @@
         class="m-1"
         label="Resolve Fleet"
         on:click={() => resolve(fleet.id)}>
-        {fleet.to.x},
-        {fleet.to.y}
+        {timeToText(space.spaceInfo.resolveWindow + space.timeLeftForFleet($time, fleet).timeLeft)}
+        left
+        <!-- {spaceInfo.getPlanetInfo(fleet.to.x, fleet.to.y)?.stats.name} -->
       </PanelButton>
     {/each}
     <div class="w-full mt-1" />

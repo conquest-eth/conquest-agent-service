@@ -6,6 +6,7 @@ import type {CameraSetup, WorldSetup} from './camera';
 import type {RenderState} from './RenderState';
 import {trackInstances} from '../lib/utils/tools';
 import type {Controller} from './controller';
+import {timeToText} from '../lib/utils';
 
 // pre-render
 const planetSpriteSheet = new Image();
@@ -328,8 +329,17 @@ export class Renderer {
 
     // console.log(JSON.stringify({gridLevelRoot, gridSize, gridLevel}));
 
+    let scale = render.scale * 8;
+    if (scale > 2) {
+      scale = 1;
+    }
+    if (scale < 0.25) {
+      scale = 0.25;
+    }
+
     // used to be gridLevel < 10
-    const showGrid = gridLevel < 4;
+    const showGrid = gridLevel < 6;
+    const showStars = gridLevel < 4;
     if (showGrid) {
       // console.log(JSON.stringify({gridLevel, gridSize, nextLevelGridSize}));
 
@@ -531,7 +541,7 @@ export class Renderer {
           const planetX = planet.location.globalX * 2 * 48;
           const planetY = planet.location.globalY * 2 * 48;
 
-          const numStars = 1 + Math.floor(planet.stats.stake / 25);
+          const numStars = Math.floor(planet.stats.stake / 25);
 
           const multiplier = planet.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
           ctx.drawImage(
@@ -545,6 +555,49 @@ export class Renderer {
             48 * multiplier,
             48 * multiplier
           );
+
+          // if (showStars) {
+          //   const size = (scale * 10) / 1;
+          //   ctx.fillStyle = 'gold';
+          //   const topRightCornerX =
+          //     planetX + ((48 * multiplier) / 2 + (size * 4) / 3);
+          //   const topRightCornerY =
+          //     planetY - ((48 * multiplier) / 2 + (size * 4) / 3);
+          //   // for (let i = 0; i < numStars; i++) {
+          //   //   const modif = i * 15;
+          //   //   const modifX = i * 10;
+          //   //   const size = scale * multiplier * 10;
+          //   //   ctx.beginPath();
+          //   //   ctx.moveTo(
+          //   //     topRightCornerX - (size + modifX),
+          //   //     topRightCornerY + size
+          //   //   );
+          //   //   ctx.lineTo(topRightCornerX, topRightCornerY - (size + modif));
+          //   //   ctx.lineTo(
+          //   //     topRightCornerX + (size + modifX),
+          //   //     topRightCornerY + size
+          //   //   );
+          //   //   // ctx.moveTo(topRightCornerX, topRightCornerY - size);
+          //   //   // ctx.lineTo(topRightCornerX + size, topRightCornerY + size);
+          //   //   // ctx.lineTo(topRightCornerX - size, topRightCornerY + size);
+          //   //   // ctx.closePath();
+          //   //   ctx.stroke();
+          //   // }
+
+          //   for (let i = 0; i < numStars; i++) {
+          //     ctx.beginPath();
+          //     ctx.ellipse(
+          //       topRightCornerX + i * size * 2.2,
+          //       topRightCornerY,
+          //       size,
+          //       size,
+          //       0,
+          //       0,
+          //       Math.PI * 2
+          //     );
+          //     ctx.fill();
+          //   }
+          // }
 
           let exitRatio = Number.MAX_SAFE_INTEGER;
 
@@ -687,14 +740,6 @@ export class Renderer {
       }
     }
 
-    let scale = render.scale * 8;
-    if (scale > 2) {
-      scale = 1;
-    }
-    if (scale < 0.25) {
-      scale = 0.25;
-    }
-
     ctx.setLineDash([]);
     const fleets = this.renderState.space.getOwnFleets();
     for (const fleet of fleets) {
@@ -716,8 +761,10 @@ export class Renderer {
       const destX = gToX * 2 * 48;
       const destY = gToY * 2 * 48;
 
-      const dirX = (gToX - gFromX) / Math.abs(gToX - gFromX);
-      const dirY = (gToY - gFromY) / Math.abs(gToY - gFromY);
+      const dirX =
+        (gToX - gFromX) / (gToX - gFromX === 0 ? 1 : Math.abs(gToX - gFromX));
+      const dirY =
+        (gToY - gFromY) / (gToY - gFromY === 0 ? 1 : Math.abs(gToY - gFromY));
       const fGx1 = gFromX * 2 * 48 + dirX * 48;
       const fGy1 = gFromY * 2 * 48 + dirY * 48;
       const fGx2 = destX - dirX * 48;
@@ -743,22 +790,17 @@ export class Renderer {
         ctx.stroke();
       }
 
-      const speed = fromPlanet.stats.speed;
-      const fullDistance = Math.floor(
-        Math.sqrt(Math.pow(gToX - gFromX, 2) + Math.pow(gToY - gFromY, 2))
-      );
-      const fullTime =
-        fullDistance *
-        ((this.renderState.space.spaceInfo.timePerDistance * 10000) / speed) *
-        1000;
-      const timePassed = timeMs - fleet.launchTime * 1000;
+      const {
+        timeLeft,
+        timePassed,
+        fullTime,
+      } = this.renderState.space.timeLeftForFleet(timeMs / 1000, fleet);
       let ratio = timePassed / fullTime;
       let fx;
       let fy;
-      const timeLeft = fullTime - timePassed;
       let facingAngle;
       if (timePassed > fullTime) {
-        const angle = (timePassed - fullTime) / 2000;
+        const angle = (timePassed - fullTime) / 2;
         const orbit = 48 * 2;
         fx = destX + Math.cos(angle) * orbit;
         fy = destY + Math.sin(angle) * orbit;
@@ -782,7 +824,8 @@ export class Renderer {
         if (camera.zoom > 0.25) {
           ctx.font = '48px serif';
           ctx.fillStyle = '#E5E7EB';
-          ctx.fillText(`${Math.floor(timeLeft / 1000)}s`, fx - 24, fy - 80);
+          ctx.fillText(timeToText(timeLeft), fx - 24, fy - 60);
+          ctx.fillText('' + fleet.fleetAmount, fx - 24, fy + 90);
         }
       }
       ctx.fillStyle = '#34D399';

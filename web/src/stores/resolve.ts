@@ -37,15 +37,19 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
       Math.pow(to.location.globalY - from.location.globalY, 2);
     const distance = Math.floor(Math.sqrt(distanceSquared));
     this.setPartial({step: 'WAITING_TX'});
-    const tx = await wallet.contracts?.OuterSpace.resolveFleet(
-      fleetId,
-      xyToLocation(fleet.from.x, fleet.from.y),
-      xyToLocation(fleet.to.x, fleet.to.y),
-      distance,
-      secretHash
-    );
-    privateAccount.recordFleetResolvingTxhash(fleetId, tx.hash);
-    this.setPartial({step: 'SUCCESS'}); // TODO IDLE ?
+    try {
+      const tx = await wallet.contracts?.OuterSpace.resolveFleet(
+        fleetId,
+        xyToLocation(fleet.from.x, fleet.from.y),
+        xyToLocation(fleet.to.x, fleet.to.y),
+        distance,
+        secretHash
+      );
+      privateAccount.recordFleetResolvingTxhash(fleetId, tx.hash);
+      this.setPartial({step: 'SUCCESS'}); // TODO IDLE ?
+    } catch (e) {
+      this.cancel();
+    }
   }
 
   async cancel(): Promise<void> {
