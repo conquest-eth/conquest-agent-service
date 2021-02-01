@@ -23,6 +23,7 @@
     "named-logs-console": "0.0.14",
     "planet-wars-common": "workspace:*",
     "svelte": "^3.24.0",
+    "sveltejs-tippy": "^3.0.0",
     "web3w": "^0.2.38",
     "web3w-torus-loader": "^0.2.4",
     "web3w-walletconnect-loader": "^0.2.0",

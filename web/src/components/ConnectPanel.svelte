@@ -4,6 +4,7 @@
   import {playTokenAccount} from '../stores/playToken';
   import privateAccount from '../stores/privateAccount';
   import Blockie from './Blockie.svelte';
+  import Help from './Help.svelte';
 
   function connect() {
     privateAccount.login();
@@ -66,5 +67,9 @@
 {:else}
   <PanelButton class="m-1" label="Connect" on:click={connect}>
     Connect
+    <!-- <Help inverted={true} class="w-4 h-4">
+      Hello d
+      <span class="text-red-500">s dsads ad</span>sdas dWorld!
+    </Help> -->
   </PanelButton>
 {/if}

@@ -68,3 +68,4 @@ interface Window {
 }
 
 declare module '@curi/svelte';
+declare module 'sveltejs-tippy';

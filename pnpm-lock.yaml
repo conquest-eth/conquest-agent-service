@@ -148,6 +148,7 @@ importers:
       named-logs-console: 0.0.14
       planet-wars-common: 'link:../common-lib'
       svelte: 3.31.2
+      sveltejs-tippy: 3.0.0
       web3w: 0.2.39_f8c5c6c5a36736b4270727584b5e3a18
       web3w-torus-loader: 0.2.4
       web3w-walletconnect-loader: 0.2.0
@@ -248,6 +249,7 @@ importers:
       snowpack-plugin-window-modules: ^0.1.2
       svelte: ^3.24.0
       svelte-preprocess: ^4.0.8
+      sveltejs-tippy: ^3.0.0
       tailwindcss: ^2.0.2
       tailwindcss-question-mark: ^0.1.0
       typescript: ^4.0.0
@@ -1194,6 +1196,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-AemZEsQYtUp1WRkcmZm1div5ORfTpLquLaziCIrSagjxyKdmObxuaY1yjQ5SHFMctR8rLwp706NXTbiIRJg7pw==
+  /@popperjs/core/2.6.0:
+    dev: false
+    resolution:
+      integrity: sha512-cPqjjzuFWNK3BSKLm0abspP0sp/IGOli4p5I5fKFAzdS8fvjdOwDCfZqAaIiXd9lPkOWi3SUUfZof3hEb7J/uw==
   /@protobufjs/utf8/1.1.0:
     dev: true
     resolution:
@@ -11666,6 +11672,12 @@ packages:
       node: '>= 8'
     resolution:
       integrity: sha512-TxZGrXzX2ggFH3BIKY5fmbeMdJuZrMIMDYPMX6R9255bueuYIuVaBQSLUeY2oD7W4IdeqRZiAVGCjDw2POKBRA==
+  /sveltejs-tippy/3.0.0:
+    dependencies:
+      tippy.js: 6.0.3
+    dev: false
+    resolution:
+      integrity: sha512-LAfQikm61AeqZW1hCFWUsmGEMmhMHDvrPV0JhbT38Ell9SqBjmFaY//+YKUxaJvx6nLMxGQdlcHA1rDg2Ml8tQ==
   /table-layout/1.0.1:
     dependencies:
       array-back: 4.0.1
@@ -11876,6 +11888,12 @@ packages:
     dev: true
     resolution:
       integrity: sha512-vJhccZPs965sV/L2sU4oRQVAos0pQXwsvTLkWYdqJ+a8Q5kPFzJTuOFwy7UniPli44NKQGAglksjvOcpo95aZA==
+  /tippy.js/6.0.3:
+    dependencies:
+      '@popperjs/core': 2.6.0
+    dev: false
+    resolution:
+      integrity: sha512-buQF6HugTA4YeSA/s9xBhu0ferEAx7sRSn45G+Juh3p+Dz3vEKfxtqdg6JUnHIWDCV/r0u8Lrobs9AB4dtYcUQ==
   /tmp/0.0.33:
     dependencies:
       os-tmpdir: 1.0.2
