@@ -39,7 +39,7 @@
       handlePageLink = (event) => {
         if (canNavigate(event, target)) {
           event.preventDefault();
-          router.navigate({url, state});
+          router.navigate({url: url === '' ? '/' : url, state}); // TODO check / rules here
         }
       };
     } else {

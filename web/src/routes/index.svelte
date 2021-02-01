@@ -1,10 +1,9 @@
 <script lang="ts">
   import WalletAccess from '../templates/WalletAccess.svelte';
   import MapScreen from '../app/MapScreen.svelte';
-  import time from '../stores/time';
+  import {time, startTime} from '../stores/time';
   import {fade} from 'svelte/transition';
   import ClaimTokenScreen from '../screens/ClaimTokenScreen.svelte';
-  const startTime = $time;
 </script>
 
 <WalletAccess>

@@ -4,7 +4,7 @@
   import privateAccount from '../stores/privateAccount';
   import PanelButton from './PanelButton.svelte';
   import {spaceInfo, space} from '../app/mapState';
-  import time from '../stores/time';
+  import {time} from '../stores/time';
   import type {OwnFleet} from '../common/src/types';
   import {timeToText} from '../lib/utils';
 

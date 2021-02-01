@@ -14,10 +14,8 @@
 </script>
 
 <Map />
-<div class="absolute right-0">
-  <ConnectPanel />
-</div>
-<div class="absolute right-0 top-10">
+<ConnectPanel />
+<div class="absolute right-0 top-12">
   <FleetsToResolve />
 </div>
 

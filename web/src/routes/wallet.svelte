@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from '../components/PanelButton.svelte';
+  import NavButton from '../components/navigation/NavButton.svelte';
   import WalletAccess from '../templates/WalletAccess.svelte';
   import {wallet, builtin, chain, flow, transactions} from '../stores/wallet';
   import type {Contract} from '@ethersproject/contracts';
@@ -49,6 +50,8 @@
           }),
       }));
 </script>
+
+<NavButton label="Home" href="/">Home</NavButton>
 
 <WalletAccess>
   <div class="flex justify-center flex-wrap">
