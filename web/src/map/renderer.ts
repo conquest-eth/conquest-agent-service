@@ -4,7 +4,7 @@ import planetsFrame from '../assets/planets.json';
 import planetsDataURL from '../assets/planets.png';
 import type {CameraSetup, WorldSetup} from './camera';
 import type {RenderState} from './RenderState';
-import {hmrClass} from '../lib/utils/hmr';
+import {trackInstances} from '../lib/utils/tools';
 import type {Controller} from './controller';
 
 // pre-render
@@ -219,7 +219,7 @@ function line2rect(
   return newSegment;
 }
 
-@hmrClass
+@trackInstances
 export class Renderer {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private hPattern: any;

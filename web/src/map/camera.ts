@@ -1,8 +1,7 @@
-import {xyToLocation} from '../common/src';
 import type {RenderState} from './RenderState';
 import type {Controller} from './controller';
 import {space} from '../app/mapState';
-import {hmrClass} from '../lib/utils/hmr';
+import {trackInstances} from '../lib/utils/tools';
 
 const lowZoomOrder = [
   0.5,
@@ -74,7 +73,7 @@ export type WorldSetup = {
   zoom: number;
 };
 
-@hmrClass
+@trackInstances
 export class Camera {
   private zoomIndex: number;
   public render: CameraSetup;
