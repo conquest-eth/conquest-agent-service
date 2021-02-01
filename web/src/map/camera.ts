@@ -467,7 +467,7 @@ export class Camera {
     this.render.devicePixelRatio = 0.5; //window.devicePixelRatio;
 
     const zero = this.worldToScreen(0, 0);
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 4; i++) {
       this.updateZoom(zero.x, zero.y, 1);
     }
 

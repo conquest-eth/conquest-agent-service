@@ -37,10 +37,10 @@ export class Space {
   private y1 = 0;
 
   public discovered: {x1: number; y1: number; x2: number; y2: number} = {
-    x1: -1,
-    y1: -1,
-    x2: 1,
-    y2: 1,
+    x1: 0,
+    y1: 0,
+    x2: 0,
+    y2: 0,
   };
 
   private planetListeners: Record<string, number[] | undefined> = {};

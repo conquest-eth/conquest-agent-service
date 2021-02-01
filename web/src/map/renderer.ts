@@ -450,52 +450,54 @@ export class Renderer {
       }
     }
 
-    const x1 = Math.max(
-      leftX,
-      Math.round(this.renderState.space.discovered.x1 * 8 * 48 - 48 * 4)
-    );
-    const x2 = Math.min(
-      leftX + camera.width,
-      Math.round(this.renderState.space.discovered.x2 * 8 * 48 + 48 * 4)
-    );
-    const y1 = Math.max(
-      topY,
-      Math.round(this.renderState.space.discovered.y1 * 8 * 48 - 48 * 4)
-    );
-    const y2 = Math.min(
-      topY + camera.height,
-      Math.round(this.renderState.space.discovered.y2 * 8 * 48 + 48 * 4)
-    );
-    ctx.lineWidth = lineWidth;
-    ctx.strokeStyle = showGrid ? '#444444' : '#353535'; //'#034c4c'; // '#90e1e7'; //'#a5f3fc'; // '#67e8f9';
-    ctx.setLineDash([]);
+    if (this.renderState.space.discovered.x1 !== 0) {
+      const x1 = Math.max(
+        leftX,
+        Math.round(this.renderState.space.discovered.x1 * 8 * 48 - 48 * 4)
+      );
+      const x2 = Math.min(
+        leftX + camera.width,
+        Math.round(this.renderState.space.discovered.x2 * 8 * 48 + 48 * 4)
+      );
+      const y1 = Math.max(
+        topY,
+        Math.round(this.renderState.space.discovered.y1 * 8 * 48 - 48 * 4)
+      );
+      const y2 = Math.min(
+        topY + camera.height,
+        Math.round(this.renderState.space.discovered.y2 * 8 * 48 + 48 * 4)
+      );
+      ctx.lineWidth = lineWidth;
+      ctx.strokeStyle = showGrid ? '#444444' : '#353535'; //'#034c4c'; // '#90e1e7'; //'#a5f3fc'; // '#67e8f9';
+      ctx.setLineDash([]);
 
-    if (x1 != leftX) {
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x1, y2);
-      ctx.stroke();
-    }
+      if (x1 != leftX) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x1, y2);
+        ctx.stroke();
+      }
 
-    if (x2 != leftX + camera.width) {
-      ctx.beginPath();
-      ctx.moveTo(x2, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-    }
+      if (x2 != leftX + camera.width) {
+        ctx.beginPath();
+        ctx.moveTo(x2, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
 
-    if (y1 != topY) {
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y1);
-      ctx.stroke();
-    }
+      if (y1 != topY) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y1);
+        ctx.stroke();
+      }
 
-    if (y2 != topY + camera.height) {
-      ctx.beginPath();
-      ctx.moveTo(x1, y2);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
+      if (y2 != topY + camera.height) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y2);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
     }
 
     const gridX = Math.floor(gridStart.x / 48 / 4 / 2);

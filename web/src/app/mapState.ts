@@ -30,7 +30,7 @@ async function fetch(
   } else {
     console.log('not ready');
   }
-  return {planetStates: [], discovered: {minX: 1, minY: 1, maxX: 1, maxY: 1}};
+  return {planetStates: [], discovered: {minX: 0, minY: 0, maxX: 0, maxY: 0}};
 }
 
 export const spaceInfo = new SpaceInfo(

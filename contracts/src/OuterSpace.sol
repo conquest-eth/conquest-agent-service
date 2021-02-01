@@ -113,7 +113,7 @@ contract OuterSpace is Proxied {
         uint16
     ) public proxied {
         if (_discovered.minX == 0) {
-            _discovered = Discovered({minX: 6, maxX: 6, minY: 6, maxY: 6});
+            _discovered = Discovered({minX: 12, maxX: 12, minY: 12, maxY: 12});
         }
     }
 
