@@ -139,8 +139,8 @@
     {:else if $privateAccount.step === 'SIGNATURE_REQUIRED'}
       <div class="text-center">
         <p>
-          Planet Wars require your signature to operate. Do not sign this
-          message outside of Planet Wars!
+          conquest.eth require your signature to operate. Do not sign this
+          message outside of conquest.eth or other trusted frontend!
         </p>
         <!-- TODO store and then auto connect if present -->
         <div class="ml-8 mt-6 text-cyan-100 text-xs">

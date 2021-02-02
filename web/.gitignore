@@ -2,6 +2,8 @@
 !*.default
 
 .snowpack
+snowpack.crt
+snowpack.key
 build/
 
 node_modules/
@@ -17,3 +19,4 @@ public/robots.txt
 
 .yalc/
 yalc.lock
+
