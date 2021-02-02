@@ -98,7 +98,18 @@
       <div class="flex flex-col">
         <div class="flex flex-row justify-between">
           <span class="text-green-600">{$planetFrom.stats.name}</span>
-          <span>&#x279C;</span>
+          <svg
+            class="w-4"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
           <span class="text-green-600 text-right">{$planetTo.stats.name}</span>
         </div>
 
