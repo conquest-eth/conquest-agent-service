@@ -736,7 +736,9 @@ class PrivateAccountStore extends BaseStoreWithData<
       const walletAddress = wallet.address.toLowerCase();
       const signature = await wallet.provider
         .getSigner()
-        .signMessage('Only sign this message on "planet-wars"');
+        .signMessage(
+          'Only sign this message on "conquest.eth" or other trusted frontend'
+        );
       const privateWallet = new Wallet(signature.slice(0, 130));
       const aesKeySignature = await privateWallet.signMessage('AES KEY');
       const aesKey = aes.utils.hex.toBytes(aesKeySignature.slice(2, 66)); // TODO mix ?

@@ -790,11 +790,12 @@ export class Renderer {
         ctx.stroke();
       }
 
-      const {
-        timeLeft,
-        timePassed,
-        fullTime,
-      } = this.renderState.space.timeLeftForFleet(timeMs / 1000, fleet);
+      const {timeLeft, timePassed, fullTime} = this.renderState.space.timeLeft(
+        timeMs / 1000,
+        fleet.from,
+        fleet.to,
+        fleet.launchTime
+      );
       let ratio = timePassed / fullTime;
       let fx;
       let fy;

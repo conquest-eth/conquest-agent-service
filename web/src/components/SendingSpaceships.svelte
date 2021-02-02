@@ -5,9 +5,15 @@
   import {onMount} from 'svelte';
   import {planetAt} from '../stores/planets';
   import {xyToLocation} from '../common/src';
+  import {space} from '../app/mapState';
+  import {timeToText} from '../lib/utils';
 
   $: planetFrom = $sendFlow.data?.from
     ? planetAt(xyToLocation($sendFlow.data.from.x, $sendFlow.data.from.y))
+    : undefined;
+
+  $: planetTo = $sendFlow.data?.to
+    ? planetAt(xyToLocation($sendFlow.data.to.x, $sendFlow.data.to.y))
     : undefined;
 
   // TODO maxSpaceshipsLoaded and invalid message if maxSpaceships == 0
@@ -23,7 +29,25 @@
     }
   }
 
-  $: console.log({maxSpaceships, planetFrom, fleetAmount, fleetAmountSet});
+  let prediction:
+    | {
+        arrivalTime: string;
+        numSpaceshipsAtArrival: number;
+        outcome: {captured: boolean; numSpaceshipsLeft: number};
+      }
+    | undefined = undefined;
+  $: {
+    if (planetTo && planetFrom) {
+      prediction = {
+        arrivalTime: timeToText(space.timeToArrive($planetFrom, $planetTo)),
+        numSpaceshipsAtArrival: space.numSpaceshipsAtArrival(
+          $planetFrom,
+          $planetTo
+        ),
+        outcome: space.outcome($planetFrom, $planetTo, fleetAmount),
+      };
+    }
+  }
 
   onMount(() => {
     fleetAmount = 1;
@@ -42,7 +66,7 @@
   <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
 
   <div>
-    <div>
+    <div class="text-center">
       <!-- TODO show Token balance and warn when cannot buy // Token balance could be shown in navbar (once connected)-->
       <input
         class="text-cyan-300 bg-cyan-300"
@@ -59,6 +83,55 @@
         id="textInput"
         bind:value={fleetAmount} />
     </div>
+    <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
+
+    {#if planetFrom && planetTo}
+      <div class="flex flex-col">
+        <div class="flex flex-row justify-between">
+          <span class="text-green-600">{$planetFrom.stats.name}</span>
+          <span>&#x279C;</span>
+          <span class="text-green-600 text-right">{$planetTo.stats.name}</span>
+        </div>
+
+        <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
+          <span>Spaceships</span><span class="text-right">Spaceships</span>
+        </div>
+        <div class="flex flex-row justify-between">
+          <span>{$planetFrom.state?.numSpaceships}</span><span
+            class="text-right">{$planetTo.state?.numSpaceships}</span>
+        </div>
+
+        <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
+          <span>Attack</span><span class="text-right">Defense</span>
+        </div>
+        <div class="flex flex-row justify-between">
+          <span>{$planetFrom.stats.attack}</span><span
+            class="text-right">{$planetTo.stats.defense}</span>
+        </div>
+
+        <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
+          <span>Arrives in</span><span class="text-right">Spaceships Then</span>
+        </div>
+        <div class="flex flex-row justify-between">
+          <span>{prediction?.arrivalTime}</span><span
+            class="text-right">{prediction?.numSpaceshipsAtArrival}</span>
+        </div>
+
+        <div class="flex flex-row  justify-center mt-2 text-xs text-gray-500">
+          <span>Predicted outcome at time of arrival</span>
+        </div>
+        <div class="flex flex-row justify-center">
+          {#if prediction?.outcome.captured}
+            <span class="text-green-600">{prediction?.outcome.numSpaceshipsLeft}
+              (captured)</span>
+          {:else}
+            <span class="text-red-400">{prediction?.outcome.numSpaceshipsLeft}
+              (attack failed)</span>
+          {/if}
+        </div>
+      </div>
+      <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
+    {/if}
     <div class="text-center">
       <PanelButton
         class="mt-5"

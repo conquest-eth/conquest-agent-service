@@ -54,7 +54,7 @@
         class="m-1"
         label="Resolve Fleet"
         on:click={() => resolve(fleet.id)}>
-        {timeToText(space.spaceInfo.resolveWindow + space.timeLeftForFleet($time, fleet).timeLeft)}
+        {timeToText(space.spaceInfo.resolveWindow + space.timeLeft($time, fleet.from, fleet.to, fleet.launchTime).timeLeft)}
         left
         <!-- {spaceInfo.getPlanetInfo(fleet.to.x, fleet.to.y)?.stats.name} -->
       </PanelButton>
