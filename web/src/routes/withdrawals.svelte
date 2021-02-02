@@ -9,14 +9,15 @@
   <NavButton label="Home" href="/">Home</NavButton>
 
   <WalletAccess>
-    <div class="flex justify-center flex-wrap">
-      <Button
+    <div class="flex justify-center flex-wrap text-cyan-300">
+      Work In Progress...
+      <!-- <Button
         class="w-max-content m-4"
         label="connect"
         disabled={!$builtin.available || $wallet.connecting}
         on:click={() => flow.connect()}>
         connect
-      </Button>
+      </Button> -->
     </div>
   </WalletAccess>
 </div>
