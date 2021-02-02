@@ -31,6 +31,7 @@ type SecretData = {
   exits: Record<string, number>;
   captures: Record<string, Capture>;
   lastWithdrawal?: Withdrawal;
+  welcomed?: boolean;
 };
 
 type PrivateAccountData = {
@@ -912,6 +913,24 @@ class PrivateAccountStore extends BaseStoreWithData<
     }
     const fleets = this.$store.data.fleets;
     fleets[fleetId] = fleet;
+    this.setPartial({
+      data: this.$store.data,
+    });
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
+  }
+
+  recordWelcomed(): void {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      this.$store.data = {fleets: {}, exits: {}, captures: {}, welcomed: true};
+    } else {
+      this.$store.data.welcomed = true;
+    }
     this.setPartial({
       data: this.$store.data,
     });
