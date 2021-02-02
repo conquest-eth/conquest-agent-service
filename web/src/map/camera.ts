@@ -83,6 +83,7 @@ export class Camera {
 
   private isPanning = false;
   private lastClientPos = {x: 0, y: 0};
+  private firstClientPos = {x: 0, y: 0};
   private isZooming = false;
   private lastDist = 0;
   private zoomPoint = {x: 0, y: 0};
@@ -252,32 +253,40 @@ export class Camera {
   onmousedown(e: TouchEvent | MouseEvent): void {
     // console.log('startPanning');
     this.isPanning = true;
+    let eventX;
+    let eventY;
     if ('clientX' in e) {
-      const eventX = e.clientX;
-      const eventY = e.clientY;
-      this.lastClientPos = {x: eventX, y: eventY};
+      // console.log('mouse');
+      eventX = e.clientX;
+      eventY = e.clientY;
     } else {
-      const eventX = e.touches[0].clientX;
-      const eventY = e.touches[0].clientY;
-      this.lastClientPos = {x: eventX, y: eventY};
+      // console.log('touch', e);
+      eventX = e.touches[0].clientX;
+      eventY = e.touches[0].clientY;
     }
+    this.lastClientPos = {x: eventX, y: eventY};
+    this.firstClientPos = {x: eventX, y: eventY};
   }
 
   onmouseup(e: TouchEvent | MouseEvent): void {
     // console.log('endPanning');
     this.isPanning = false;
-    let dist;
+
+    let eventX;
+    let eventY;
     if ('clientX' in e) {
-      // endtouch always trigger ? // TODO fix
-      dist = 0;
+      // console.log('mouse');
+      eventX = e.clientX;
+      eventY = e.clientY;
     } else {
-      const eventX = e.touches[0].clientX;
-      const eventY = e.touches[0].clientY;
-      dist = Math.hypot(
-        eventX - this.lastClientPos.x,
-        eventY - this.lastClientPos.y
-      );
+      // console.log('touch', e);
+      eventX = e.changedTouches[0].clientX;
+      eventY = e.changedTouches[0].clientY;
     }
+    const dist = Math.hypot(
+      eventX - this.firstClientPos.x,
+      eventY - this.firstClientPos.y
+    );
     if (dist < 22) {
       // TODO : devicePixelRatio?
       // TODO time too ?
