@@ -11,6 +11,7 @@ const walletStores = WalletStores({
     autoDelete: true,
     finality,
   },
+  autoSelectPrevious: true,
   localStoragePrefix:
     window.basepath &&
     (window.basepath.startsWith('/ipfs/') ||

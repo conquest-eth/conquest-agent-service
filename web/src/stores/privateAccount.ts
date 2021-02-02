@@ -26,6 +26,11 @@ type Withdrawal = {
   nonce: number;
 };
 
+type LocalData = {
+  signature: string;
+  syncRemotely: boolean;
+};
+
 type SecretData = {
   fleets: Record<string, OwnFleet>;
   exits: Record<string, number>;
@@ -45,6 +50,7 @@ type PrivateAccountData = {
     | 'LOADING'
     | 'IDLE';
   data: SecretData | undefined;
+  syncEnabled: boolean;
   sync: 'IDLE' | 'SYNCING' | 'SYNCED' | 'NOT_SYNCED';
   syncError: unknown;
   walletAddress?: string;
@@ -54,6 +60,17 @@ type PrivateAccountData = {
 type Contracts = {
   [name: string]: Contract;
 };
+
+const LOCAL_ONLY_STORAGE = '_local_only_';
+function LOCAL_ONLY_STORAGE_KEY(address: string, chainId: string) {
+  const localStoragePrefix =
+    window.basepath &&
+    (window.basepath.startsWith('/ipfs/') ||
+      window.basepath.startsWith('/ipns/'))
+      ? window.basepath.slice(6)
+      : ''; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
+  return `${localStoragePrefix}_${LOCAL_ONLY_STORAGE}_${address.toLowerCase()}_${chainId}`;
+}
 
 const LOCAL_STORAGE_PRIVATE_ACCOUNT = '_privateAccount';
 function LOCAL_STORAGE_KEY(address: string, chainId: string) {
@@ -88,6 +105,7 @@ class PrivateAccountStore extends BaseStoreWithData<
       step: 'IDLE',
       data: undefined,
       sync: 'IDLE',
+      syncEnabled: false,
       syncError: undefined,
     });
 
@@ -164,6 +182,9 @@ class PrivateAccountStore extends BaseStoreWithData<
     | {newDataOnLocal: boolean; newDataOnRemote: boolean; counter: BigNumber}
     | undefined
   > {
+    if (!this.$store.syncEnabled) {
+      return;
+    }
     this.setPartial({sync: 'SYNCING'});
     let json;
     let error;
@@ -312,6 +333,9 @@ class PrivateAccountStore extends BaseStoreWithData<
     exitsToDelete: string[] = [],
     capturesToDelete: string[] = []
   ) {
+    if (!this.$store.syncEnabled) {
+      return;
+    }
     const syncDownResult = await this._syncDown();
 
     if (
@@ -427,7 +451,7 @@ class PrivateAccountStore extends BaseStoreWithData<
     ]);
   }
 
-  start(walletAddress?: string, chainId?: string): void {
+  async start(walletAddress?: string, chainId?: string): Promise<void> {
     // console.log("START", {walletAddress, chainId});
     const walletDiff =
       !this.$store.walletAddress ||
@@ -436,15 +460,49 @@ class PrivateAccountStore extends BaseStoreWithData<
 
     if (chainId && walletAddress) {
       // console.log("READY");
+
+      let storage: LocalData | undefined;
+      let fromStorage;
+      try {
+        fromStorage = localStorage.getItem(
+          LOCAL_ONLY_STORAGE_KEY(walletAddress, chainId)
+        );
+      } catch (e) {
+        console.error(e);
+      }
+      if (fromStorage) {
+        try {
+          storage = JSON.parse(fromStorage);
+        } catch (e) {
+          console.error(e);
+        }
+        if (storage) {
+          const signature = storage.signature;
+          if (signature) {
+            const {privateWallet, aesKey} = await this.generateKeys(signature);
+            this.walletData[walletAddress.toLowerCase()] = {
+              wallet: privateWallet,
+              aesKey,
+            };
+          }
+        }
+      }
+
       const existingData = this.walletData[walletAddress.toLowerCase()];
       if (existingData) {
         this.setPartial({
           step: 'READY', // TODO why READY ?
           wallet: existingData.wallet,
           aesKey: existingData.aesKey,
+          syncEnabled: storage?.syncRemotely,
           walletAddress,
           chainId,
         });
+        this._resolve && this._resolve();
+        this._resolve = undefined;
+        this._reject = undefined;
+        this._promise = undefined;
+        this._contracts = undefined;
       } else {
         this.setPartial({
           wallet: undefined,
@@ -713,6 +771,15 @@ class PrivateAccountStore extends BaseStoreWithData<
     await this.execute();
   }
 
+  async generateKeys(
+    signature: string
+  ): Promise<{privateWallet: Wallet; aesKey: Uint8Array}> {
+    const privateWallet = new Wallet(signature.slice(0, 130));
+    const aesKeySignature = await privateWallet.signMessage('AES KEY');
+    const aesKey = aes.utils.hex.toBytes(aesKeySignature.slice(2, 66)); // TODO mix ?
+    return {privateWallet, aesKey};
+  }
+
   async confirm({
     storeSignatureLocally,
     syncRemotely,
@@ -721,7 +788,6 @@ class PrivateAccountStore extends BaseStoreWithData<
     syncRemotely: boolean;
   }): Promise<void> {
     // TODO
-    console.log({storeSignatureLocally, syncRemotely});
     this.setPartial({step: 'SIGNATURE_REQUESTED'});
     if (!wallet.provider) {
       return this.cancel(new Error(`no wallet.provider`));
@@ -739,12 +805,22 @@ class PrivateAccountStore extends BaseStoreWithData<
         .signMessage(
           'Only sign this message on "conquest.eth" or other trusted frontend'
         );
-      const privateWallet = new Wallet(signature.slice(0, 130));
-      const aesKeySignature = await privateWallet.signMessage('AES KEY');
-      const aesKey = aes.utils.hex.toBytes(aesKeySignature.slice(2, 66)); // TODO mix ?
+      const {privateWallet, aesKey} = await this.generateKeys(signature);
       this.walletData[walletAddress] = {wallet: privateWallet, aesKey};
 
-      this.setPartial({step: 'LOADING'});
+      if (storeSignatureLocally) {
+        const toStorage = JSON.stringify({signature, syncRemotely});
+        try {
+          localStorage.setItem(
+            LOCAL_ONLY_STORAGE_KEY(walletAddress, wallet.chain.chainId),
+            toStorage
+          );
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      this.setPartial({step: 'LOADING', syncEnabled: syncRemotely});
 
       this.setPartial({step: 'READY', wallet: privateWallet, aesKey});
 
