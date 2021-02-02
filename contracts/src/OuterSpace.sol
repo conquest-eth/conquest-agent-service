@@ -197,7 +197,7 @@ contract OuterSpace is Proxied {
         } else {
             planet.owner = sender;
             if (defense != 0) {
-                (uint32 attackerLoss, ) = _computeFight(3600, defense, 10000, 10000); // attacker alwasy win as defense (and stats.native) is restricted to 3500
+                (uint32 attackerLoss, ) = _computeFight(3600, defense, 10000, _natives(data)); // attacker alwasy win as defense (and stats.native) is restricted to 3500
                 currentNumSpaceships = 3600 - attackerLoss;
             } else {
                 currentNumSpaceships += 3600;
@@ -682,10 +682,12 @@ contract OuterSpace is Proxied {
     ) internal {
         bytes32 toData = _planetData(to);
         if (toPlanet.lastUpdated == 0) {
+            uint16 attack = _attack(_planetData(from));
+            uint16 defense = _defense(toData);
             // TODO revisit : allow partial destruction of natives ? => does not count as discovered ? (if not how do we detect it ?)
             // probably better to keep native untouched : detect that on frontend to not trigger this
             uint16 natives = _natives(toData);
-            (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, natives, 10000, 10000); // TODO compute fight like acquire (update)
+            (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, natives, attack, defense); // TODO compute fight like acquire (update)
             if (defenderLoss == natives && numAttack > attackerLoss) {
                 uint32 numSpaceships = numAttack - attackerLoss;
                 _planets[to].numSpaceships = _setActiveNumSpaceships(false, numSpaceships);

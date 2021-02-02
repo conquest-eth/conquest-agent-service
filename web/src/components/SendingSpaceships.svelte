@@ -49,6 +49,15 @@
     }
   }
 
+  let confirmDisabled = false;
+  $: {
+    if (planetTo) {
+      confirmDisabled = !!(
+        $planetTo.state?.natives && !prediction?.outcome.captured
+      );
+    }
+  }
+
   onMount(() => {
     fleetAmount = 1;
     fleetAmountSet = false;
@@ -124,6 +133,9 @@
           {#if prediction?.outcome.captured}
             <span class="text-green-600">{prediction?.outcome.numSpaceshipsLeft}
               (captured)</span>
+          {:else if $planetTo.state?.natives}
+            <span class="text-red-400">{prediction?.outcome.numSpaceshipsLeft}
+              (native population resists)</span>
           {:else}
             <span class="text-red-400">{prediction?.outcome.numSpaceshipsLeft}
               (attack failed)</span>
@@ -131,14 +143,16 @@
         </div>
       </div>
       <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
+      <div class="text-center">
+        <PanelButton
+          class="mt-5"
+          label="Fleet Amount"
+          disabled={confirmDisabled}
+          on:click={() => sendFlow.confirm(fleetAmount)}>
+          <p>Confirm</p>
+          {#if confirmDisabled}(need higher attack){/if}
+        </PanelButton>
+      </div>
     {/if}
-    <div class="text-center">
-      <PanelButton
-        class="mt-5"
-        label="Fleet Amount"
-        on:click={() => sendFlow.confirm(fleetAmount)}>
-        Confirm
-      </PanelButton>
-    </div>
   </div>
 </Modal>

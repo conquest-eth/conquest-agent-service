@@ -116,8 +116,14 @@ export class Space {
   ): number {
     const duration = this.timeToArrive(planetFrom, planetTo);
     // TODO extract
+    const numSpaceships = planetTo.state.numSpaceships;
+
+    if (!planetTo.state.active) {
+      return numSpaceships;
+    }
+
     return (
-      planetTo.state.numSpaceships +
+      numSpaceships +
       Math.floor((duration * planetTo.stats.production) / (60 * 60))
     );
   }
@@ -160,7 +166,9 @@ export class Space {
     if (attackerLoss.eq(numAttack)) {
       return {
         captured: false,
-        numSpaceshipsLeft: numDefense.sub(defenderLoss).toNumber(),
+        numSpaceshipsLeft: planetTo.state.natives
+          ? planetTo.stats.natives
+          : numDefense.sub(defenderLoss).toNumber(),
       };
     }
     return {
@@ -176,6 +184,22 @@ export class Space {
       return planetRecord.planet;
     }
     return undefined;
+  }
+
+  prediction(
+    planetFrom: Planet & {state: PlanetState},
+    planetTo: Planet & {state: PlanetState},
+    fleetAmount: number
+  ): {
+    arrivalTime: number;
+    numSpaceshipsAtArrival: number;
+    outcome: {captured: boolean; numSpaceshipsLeft: number};
+  } {
+    return {
+      arrivalTime: this.timeToArrive(planetFrom, planetTo),
+      numSpaceshipsAtArrival: this.numSpaceshipsAtArrival(planetFrom, planetTo),
+      outcome: this.outcome(planetFrom, planetTo, fleetAmount),
+    };
   }
 
   ensurePlanetAt(x: number, y: number): Planet {

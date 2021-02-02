@@ -48,7 +48,7 @@
   <div class="fixed z-10 inset-0 overflow-y-auto bg-black" out:fade>
     <div class="justify-center mt-10 text-center">
       <img
-        class="mb-8 mx-auto"
+        class="mb-8 mx-auto max-w-md"
         src="./conquest.png"
         alt="conquest.eth"
         style="width:80%;" />
@@ -63,7 +63,7 @@
   <div class="fixed z-10 inset-0 overflow-y-auto bg-black" out:fade>
     <div class="justify-center mt-10 text-center">
       <img
-        class="mb-8 mx-auto"
+        class="mb-8 mx-auto max-w-xs"
         src="./etherplay_logo_text_under.png"
         alt="etherplay.eth"
         style="width:40%; heigh: 40%;" />

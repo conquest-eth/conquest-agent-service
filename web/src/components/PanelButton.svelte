@@ -7,15 +7,15 @@
   export let cornerColor: string | undefined = undefined;
   export let disabled: boolean = false;
 
-  let actualColor = disabled ? 'text-gray-600' : color || 'text-cyan-300';
-  let actualCornerColor = disabled
+  $: actualColor = disabled ? 'text-gray-600' : color || 'text-cyan-300';
+  $: actualCornerColor = disabled
     ? 'border-gray-600'
     : cornerColor
     ? cornerColor
     : borderColor
     ? borderColor
     : 'border-cyan-300';
-  let actualBorderColor = disabled
+  $: actualBorderColor = disabled
     ? 'border-gray-600'
     : borderColor
     ? borderColor
