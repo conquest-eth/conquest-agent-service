@@ -129,7 +129,11 @@
     {:else if $chain.state === 'Connected'}
       {#if $chain.loadingData}
         Loading contracts...
-      {:else if $chain.notSupported}Please switch to {chainName}{/if}
+      {:else if $chain.notSupported}
+        Please switch to
+        {chainName}
+        <!-- ({$chain.chainId}) -->
+      {/if}
     {:else if $wallet.pendingUserConfirmation}
       {#if $wallet.pendingUserConfirmation[0] === 'transaction'}
         Please accept transaction...
