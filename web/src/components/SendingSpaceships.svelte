@@ -121,37 +121,48 @@
             class="text-right">{$planetTo.state?.numSpaceships}</span>
         </div>
 
-        <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
-          <span>Attack</span><span class="text-right">Defense</span>
-        </div>
-        <div class="flex flex-row justify-between">
-          <span>{$planetFrom.stats.attack}</span><span
-            class="text-right">{$planetTo.stats.defense}</span>
-        </div>
+        {#if $planetFrom.state?.owner !== $planetTo.state?.owner}
+          <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
+            <span>Attack</span><span class="text-right">Defense</span>
+          </div>
+          <div class="flex flex-row justify-between">
+            <span>{$planetFrom.stats.attack}</span><span
+              class="text-right">{$planetTo.stats.defense}</span>
+          </div>
 
-        <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
-          <span>Arrives in</span><span class="text-right">Spaceships Then</span>
-        </div>
-        <div class="flex flex-row justify-between">
-          <span>{prediction?.arrivalTime}</span><span
-            class="text-right">{prediction?.numSpaceshipsAtArrival}</span>
-        </div>
+          <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
+            <span>Arrives in</span><span class="text-right">Spaceships Then</span>
+          </div>
+          <div class="flex flex-row justify-between">
+            <span>{prediction?.arrivalTime}</span><span
+              class="text-right">{prediction?.numSpaceshipsAtArrival}</span>
+          </div>
 
-        <div class="flex flex-row  justify-center mt-2 text-xs text-gray-500">
-          <span>Predicted outcome at time of arrival</span>
-        </div>
-        <div class="flex flex-row justify-center">
-          {#if prediction?.outcome.captured}
-            <span class="text-green-600">{prediction?.outcome.numSpaceshipsLeft}
-              (captured)</span>
-          {:else if $planetTo.state?.natives}
-            <span class="text-red-400">{prediction?.outcome.numSpaceshipsLeft}
-              (native population resists)</span>
-          {:else}
-            <span class="text-red-400">{prediction?.outcome.numSpaceshipsLeft}
-              (attack failed)</span>
-          {/if}
-        </div>
+          <div class="flex flex-row  justify-center mt-2 text-xs text-gray-500">
+            <span>Predicted outcome at time of arrival</span>
+          </div>
+          <div class="flex flex-row justify-center">
+            {#if prediction?.outcome.captured}
+              <span
+                class="text-green-600">{prediction?.outcome.numSpaceshipsLeft}
+                (captured)</span>
+            {:else if $planetTo.state?.natives}
+              <span class="text-red-400">{prediction?.outcome.numSpaceshipsLeft}
+                (native population resists)</span>
+            {:else}
+              <span class="text-red-400">{prediction?.outcome.numSpaceshipsLeft}
+                (attack failed)</span>
+            {/if}
+          </div>
+        {:else}
+          <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
+            <span>Arrives in</span><span class="text-right">Spaceships Then</span>
+          </div>
+          <div class="flex flex-row justify-between">
+            <span>{prediction?.arrivalTime}</span><span
+              class="text-right">{(prediction?.numSpaceshipsAtArrival || 0) + fleetAmount}</span>
+          </div>
+        {/if}
       </div>
       <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
       <div class="text-center">
