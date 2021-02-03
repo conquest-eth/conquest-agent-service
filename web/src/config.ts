@@ -11,4 +11,8 @@ if (chainId === '1337' || chainId === '31337') {
   finality = 2;
 }
 
+if (chainId !== '1') {
+  finality = 3; // TODO
+}
+
 export {finality, nodeUrl, chainId};

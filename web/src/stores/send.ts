@@ -76,17 +76,22 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     const to = flow.data.to;
     const {toHash, fleetId, secret} = await privateAccount.hashFleet(from, to);
 
+    const fromPlanetInfo = spaceInfo.getPlanetInfo(from.x, from.y);
+    const toPlanetInfo = spaceInfo.getPlanetInfo(to.x, to.y);
+    if (!fromPlanetInfo || !toPlanetInfo) {
+      throw new Error(`cannot get to or from planet info`);
+    }
+    if (!wallet.address) {
+      throw new Error(`no wallet address`);
+    }
+
     this.setPartial({step: 'WAITING_TX'});
     const tx = await wallet.contracts?.OuterSpace.send(
       xyToLocation(from.x, from.y),
       fleetAmount,
       toHash
     );
-    const fromPlanetInfo = spaceInfo.getPlanetInfo(from.x, from.y);
-    const toPlanetInfo = spaceInfo.getPlanetInfo(to.x, to.y);
-    if (!fromPlanetInfo || !toPlanetInfo) {
-      throw new Error(`cannot get to or from planet info`);
-    }
+
     const gToX = toPlanetInfo.location.globalX;
     const gToY = toPlanetInfo.location.globalY;
     const gFromX = fromPlanetInfo.location.globalX;
@@ -97,10 +102,6 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     );
     const fleetDuration =
       fullDistance * ((spaceInfo.timePerDistance * 10000) / speed);
-
-    if (!wallet.address) {
-      throw new Error(`no wallet address`);
-    }
 
     privateAccount.recordFleet(fleetId, {
       to: {...to}, // TODO handle it better

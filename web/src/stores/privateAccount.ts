@@ -27,7 +27,7 @@ type Withdrawal = {
 };
 
 type LocalData = {
-  signature: string;
+  signature?: string;
   syncRemotely: boolean;
 };
 
@@ -197,6 +197,9 @@ class PrivateAccountStore extends BaseStoreWithData<
         'planet-wars-test',
       ]);
       json = await response.json();
+      if (json.error) {
+        throw new Error(json.error);
+      }
     } catch (e) {
       error = e;
     }
@@ -340,7 +343,10 @@ class PrivateAccountStore extends BaseStoreWithData<
 
     if (
       syncDownResult &&
-      (syncDownResult.newDataOnLocal || fleetsToDelete.length > 0)
+      (syncDownResult.newDataOnLocal ||
+        fleetsToDelete.length > 0 ||
+        exitsToDelete.length > 0 ||
+        capturesToDelete.length > 0)
     ) {
       this.setPartial({sync: 'SYNCING'});
 
@@ -382,6 +388,9 @@ class PrivateAccountStore extends BaseStoreWithData<
           signature,
         ]);
         json = await response.json();
+        if (json.error) {
+          throw new Error(json.error);
+        }
       } catch (e) {
         error = e;
       }
@@ -461,7 +470,9 @@ class PrivateAccountStore extends BaseStoreWithData<
     if (chainId && walletAddress) {
       // console.log("READY");
 
-      let storage: LocalData | undefined;
+      let storage: LocalData = {
+        syncRemotely: true,
+      };
       let fromStorage;
       try {
         fromStorage = localStorage.getItem(
@@ -494,7 +505,7 @@ class PrivateAccountStore extends BaseStoreWithData<
           step: 'READY', // TODO why READY ?
           wallet: existingData.wallet,
           aesKey: existingData.aesKey,
-          syncEnabled: storage?.syncRemotely,
+          syncEnabled: storage.syncRemotely,
           walletAddress,
           chainId,
         });

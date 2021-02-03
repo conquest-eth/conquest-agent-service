@@ -5,6 +5,22 @@
   import Navigating from './lib/routing/curi/Navigating.svelte';
   import Loading from './components/Loading.svelte';
   import Notifications from './components/notification/Notifications.svelte';
+
+  // import LogWidget from './components/LogWidget.svelte';
+  // import logs from './stores/logs';
+  // window.addEventListener('unhandledrejection', function (
+  //   event: PromiseRejectionEvent
+  // ) {
+  //   if (typeof event.reason === 'string') {
+  //     logs.add(event.reason);
+  //   } else {
+  //     if (typeof event.reason.message) {
+  //       logs.add(event.reason.message);
+  //     } else {
+  //       logs.add(event.reason.toString());
+  //     }
+  //   }
+  // });
 </script>
 
 <Router {routes} globalQueryStrings={['subgraph', 'debug', 'log', 'trace']}>
@@ -15,3 +31,5 @@
   </CurrentPage>
   <Navigating component={Loading} />
 </Router>
+
+<!-- <LogWidget /> -->
