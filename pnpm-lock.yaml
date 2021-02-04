@@ -154,6 +154,7 @@ importers:
       svelte: 3.31.2
       sveltejs-tippy: 3.0.0
       web3w: 0.2.42_f8c5c6c5a36736b4270727584b5e3a18
+      web3w-portis-loader: 0.2.0
       web3w-torus-loader: 0.2.4
       web3w-walletconnect-loader: 0.2.0
       wonka: 4.0.15
@@ -258,6 +259,7 @@ importers:
       tailwindcss-question-mark: ^0.1.0
       typescript: ^4.0.0
       web3w: ^0.2.42
+      web3w-portis-loader: ^0.2.0
       web3w-torus-loader: ^0.2.4
       web3w-walletconnect-loader: ^0.2.0
       wonka: ^4.0.14
@@ -12462,6 +12464,12 @@ packages:
     dev: true
     resolution:
       integrity: sha1-8LDc+RW8X/FSivrbLA4XtTLaL+g=
+  /web3w-portis-loader/0.2.0:
+    dependencies:
+      named-logs: 0.0.13
+    dev: false
+    resolution:
+      integrity: sha512-ssB/wwwTD1VyS7ZIRZNvAuq/8rIXuzWWAE8urIa6PBbZKROFlBuqZhPed/TTlyydk+++E/EbTuDpB5hAiaAXZA==
   /web3w-torus-loader/0.2.4:
     dependencies:
       named-logs: 0.0.13
