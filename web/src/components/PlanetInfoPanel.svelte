@@ -9,6 +9,7 @@
   import PanelButton from './PanelButton.svelte';
   import Blockie from './Blockie.svelte';
   import {locationToXY} from '../common/src';
+  import Stat from './Stat.svelte';
 
   export let location: string;
   export let close: () => void;
@@ -56,10 +57,10 @@
   <div class="m-2">
     {#if $planet.state}
       <!-- if active-->
-      <div class="m-1">
+      <!-- <div class="m-1">
         <label for="active">active:</label>
         <span id="active" class="value">{$planet.state.active}</span>
-      </div>
+      </div> -->
       {#if $planet.state.exiting}
         <div class="m-1">
           <label for="exiting">exiting:</label>
@@ -68,32 +69,7 @@
       {/if}
     {/if}
 
-    <!--TODO remove-->
-    <div class="m-1">
-      <label for="stake">type:</label>
-      <span id="stake" class="value">{$planet.type}</span>
-    </div>
-    <div class="m-1">
-      <label for="stake">stake:</label>
-      <span id="stake" class="value">{$planet.stats.stake}</span>
-    </div>
-    <div class="m-1">
-      <label for="production">production:</label>
-      <span id="production" class="value">{$planet.stats.production}</span>
-    </div>
-    <div class="m-1">
-      <label for="attack">attack:</label>
-      <span id="attack" class="value">{$planet.stats.attack}</span>
-    </div>
-    <div class="m-1">
-      <label for="defense">defense:</label>
-      <span id="defense" class="value">{$planet.stats.defense}</span>
-    </div>
-    <div class="m-1">
-      <label for="speed">speed:</label>
-      <span id="speed" class="value">{$planet.stats.speed}</span>
-    </div>
-    {#if !$planet.state || $planet.state.natives}
+    <!-- {#if !$planet.state || $planet.state.natives}
       <div class="m-1">
         <label for="natives">natives:</label>
         <span id="natives" class="value">{$planet.stats.natives}</span>
@@ -105,7 +81,30 @@
           id="numSpaceships"
           class="value">{$planet.state.numSpaceships}</span>
       </div>
-    {/if}
+    {/if} -->
+
+    <div class="m-1 w-36 text-green-400 flex justify-between">
+      <p class="p-0 mb-1">Spaceships:</p>
+      <p class="p-0 mb-1">
+        {!$planet.state || $planet.state.natives ? $planet.stats.natives : $planet.state.numSpaceships}
+      </p>
+    </div>
+
+    <div class="m-1 w-36 text-yellow-400 ">
+      <div class="w-full box-border">
+        <p class="p-0 mb-1">stake</p>
+        <p class="float-right relative -top-6">{$planet.stats.stake} $</p>
+        <div class="box-border rounded-md bg-gray-600">
+          <div
+            class="w-full h-3 rounded-md bg-yellow-400"
+            style="width: {Math.floor($planet.stats.stake / 1)}%;" />
+        </div>
+      </div>
+    </div>
+    <Stat name="production" value={$planet.stats.production} />
+    <Stat name="attack" value={$planet.stats.attack} />
+    <Stat name="defense" value={$planet.stats.defense} />
+    <Stat name="launch speed" value={$planet.stats.speed} />
   </div>
   <div class="w-full h-1 bg-cyan-300 mt-4 mb-2" />
   <div class="flex flex-col text-center">
