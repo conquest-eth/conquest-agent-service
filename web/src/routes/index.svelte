@@ -46,28 +46,31 @@
 
 {#if $time - startTime < 5}
   <div class="fixed z-10 inset-0 overflow-y-auto bg-black" out:fade>
-    <div class="justify-center mt-10 text-center">
+    <div class="justify-center mt-32 text-center">
       <img
         class="mb-8 mx-auto max-w-md"
         src="./conquest.png"
         alt="conquest.eth"
         style="width:80%;" />
-      <p class="m-6 text-gray-500 dark:text-gray-400 text-xl">
-        An unstoppable game of war and diplomacy running on ethereum
+      <p class="m-6 mt-20 text-gray-500 text-2xl font-black">
+        An unstoppable and open-ended game of war and diplomacy running on
+        ethereum.
       </p>
     </div>
   </div>
 {/if}
 
 {#if $time - startTime < 2}
-  <div class="fixed z-10 inset-0 overflow-y-auto bg-black" out:fade>
-    <div class="justify-center mt-10 text-center">
+  <div class="fixed z-10 inset-0 overflow-y-auto bg-black h-full" out:fade>
+    <div class="justify-center text-center h-full flex items-center">
       <img
         class="mb-8 mx-auto max-w-xs"
         src="./etherplay_logo_text_under.png"
         alt="etherplay.eth"
-        style="width:40%; heigh: 40%;" />
-      <p class="m-6 text-gray-500 dark:text-gray-400 text-xl">presents</p>
+        style="width:80%; heigh: 40%;" />
+      <!-- <p class="m-6 text-gray-400 dark:text-gray-500 text-4xl font-black">
+      presents
+    </p> -->
     </div>
   </div>
 {/if}

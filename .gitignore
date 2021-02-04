@@ -4,3 +4,4 @@ planet-wars.code-workspace
 .env*
 .vscode/*
 !*.default
+.claimKeys.mnemonics

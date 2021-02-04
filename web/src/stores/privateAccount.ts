@@ -721,6 +721,8 @@ class PrivateAccountStore extends BaseStoreWithData<
         return;
       }
 
+      // TODO use currentFleetData to update launchTime :
+
       if (
         fleet.resolveTxHash &&
         currentFleetData &&
