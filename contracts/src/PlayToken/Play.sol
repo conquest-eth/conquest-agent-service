@@ -94,8 +94,25 @@ contract Play is IERC20, PlayInternal, PlayPermit {
     }
 
     function transfer(address to, uint256 amount) external override returns (bool) {
-        // TODO support metatx ?
         _transfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function transferAlongWithETH(address payable to, uint256 amount) external payable returns (bool) {
+        _transfer(msg.sender, to, amount);
+        to.transfer(msg.value);
+        return true;
+    }
+
+    function distributeAlongWithETH(address payable[] memory tos, uint256 totalAmount) external payable returns (bool) {
+        uint256 val = msg.value / tos.length;
+        require(msg.value == val * tos.length, "INVALID_MSG_VALUE");
+        uint256 amount = totalAmount / tos.length;
+        require(totalAmount == amount * tos.length, "INVALID_TOTAL_AMOUNT");
+        for (uint256 i = 0; i < tos.length; i++) {
+            _transfer(msg.sender, tos[i], amount);
+            tos[i].transfer(val);
+        }
         return true;
     }
 

@@ -11,3 +11,5 @@ deployments/localhost/
 
 .vscode/*
 !.vscode/settings.json.default
+
+.claimKeys*

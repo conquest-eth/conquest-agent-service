@@ -65,6 +65,7 @@ importers:
       '@types/chai': 4.2.14
       '@types/mocha': 8.2.0
       '@types/node': 14.14.22
+      '@types/qrcode': 1.3.5
       chai: 4.2.0
       chai-ethers: 0.0.1
       cross-env: 7.0.3
@@ -75,6 +76,7 @@ importers:
       hardhat-deploy-ethers: 0.3.0-beta.7_ethers@5.0.26+hardhat@2.0.8
       mocha: 8.2.1
       planet-wars-common: 'link:../common-lib'
+      qrcode: 1.4.4
       ts-node: 9.1.1_typescript@3.9.7
       typescript: 3.9.7
     specifiers:
@@ -90,6 +92,7 @@ importers:
       '@types/chai': ^4.2.11
       '@types/mocha': ^8.0.2
       '@types/node': ^14.10.2
+      '@types/qrcode': ^1.3.5
       chai: ^4.2.0
       chai-ethers: 0.0.1
       cross-env: ^7.0.2
@@ -100,6 +103,7 @@ importers:
       hardhat-deploy-ethers: ^0.3.0-beta.7
       mocha: ^8.1.1
       planet-wars-common: 'workspace:*'
+      qrcode: ^1.4.4
       ts-node: ^9.0.0
       typescript: ^3.8.3
   subgraph:
@@ -149,7 +153,7 @@ importers:
       planet-wars-common: 'link:../common-lib'
       svelte: 3.31.2
       sveltejs-tippy: 3.0.0
-      web3w: 0.2.41_f8c5c6c5a36736b4270727584b5e3a18
+      web3w: 0.2.42_f8c5c6c5a36736b4270727584b5e3a18
       web3w-torus-loader: 0.2.4
       web3w-walletconnect-loader: 0.2.0
       wonka: 4.0.15
@@ -253,7 +257,7 @@ importers:
       tailwindcss: ^2.0.2
       tailwindcss-question-mark: ^0.1.0
       typescript: ^4.0.0
-      web3w: ^0.2.41
+      web3w: ^0.2.42
       web3w-torus-loader: ^0.2.4
       web3w-walletconnect-loader: ^0.2.0
       wonka: ^4.0.14
@@ -1620,6 +1624,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-g+f/qj/cNcqKkc3tFqlXOYjrmZA+jNBiDzbP3kH+B+otKFqAdPgVTGP1IeKRdMml/aE69as5S4FqtxAbl+LaMw==
+  /@types/node/14.14.23:
+    dev: true
+    resolution:
+      integrity: sha512-pkKXgf96TELUhrc8C01J0e+If5qb0WqF+WF09FbCINywIk+iUEQgMlA8IxgdZ79qQ88Bljw+9NcqwvWGXknWDw==
   /@types/normalize-package-data/2.4.0:
     dev: true
     resolution:
@@ -1642,6 +1650,12 @@ packages:
     dev: true
     resolution:
       integrity: sha1-h3L80EGOPNLMFxVV1zAHQVBR9LI=
+  /@types/qrcode/1.3.5:
+    dependencies:
+      '@types/node': 14.14.23
+    dev: true
+    resolution:
+      integrity: sha512-92QMnMb9m0ErBU20za5Eqtf4lzUcSkk5w/Cz30q5qod0lWHm2loztmFs2EnCY06yT51GY1+m/oFq2D8qVK2Bjg==
   /@types/qs/6.9.5:
     dev: true
     resolution:
@@ -4563,6 +4577,10 @@ packages:
       node: '>=0.3.1'
     resolution:
       integrity: sha512-/VTCrvm5Z0JGty/BWHljh+BAiw3IK+2j87NGMu8Nwc/f48WoDAC395uomO9ZD117ZOBaHmkX1oyLvkVM/aIT3w==
+  /dijkstrajs/1.0.1:
+    dev: true
+    resolution:
+      integrity: sha1-082BIh4+pAdCz83lVtTpnpjdxxs=
   /dir-glob/3.0.1:
     dependencies:
       path-type: 4.0.0
@@ -7290,6 +7308,10 @@ packages:
     dev: true
     resolution:
       integrity: sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=
+  /isarray/2.0.5:
+    dev: true
+    resolution:
+      integrity: sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw==
   /isbinaryfile/4.0.6:
     dev: true
     engines:
@@ -10308,6 +10330,21 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-EXtzRZmC+YGmGlDFbXKxQiMZNwCLEO6BANKXG4iCtSIM0yqc/pappSx3RIKr4r0uh5JsBckOXeKrB3Iz7mdQpQ==
+  /qrcode/1.4.4:
+    dependencies:
+      buffer: 5.7.1
+      buffer-alloc: 1.2.0
+      buffer-from: 1.1.1
+      dijkstrajs: 1.0.1
+      isarray: 2.0.5
+      pngjs: 3.4.0
+      yargs: 13.3.2
+    dev: true
+    engines:
+      node: '>=4'
+    hasBin: true
+    resolution:
+      integrity: sha512-oLzEC5+NKFou9P0bMj5+v6Z40evexeE29Z9cummZXZ9QXyMr3lphkURzxjXgPJC5azpxcshoDWV1xE46z+/c3Q==
   /qs/6.5.2:
     dev: true
     engines:
@@ -12437,7 +12474,7 @@ packages:
     dev: false
     resolution:
       integrity: sha512-tF2mdo910sA14WuvumoekFCyfO5gsvbkzuvaRtW7QUCT3E4YAzGVr6PWTrUdA+Y6pCIfYkKUMLZcYTPFSyacCg==
-  /web3w/0.2.41_f8c5c6c5a36736b4270727584b5e3a18:
+  /web3w/0.2.42_f8c5c6c5a36736b4270727584b5e3a18:
     dependencies:
       '@ethersproject/abi': 5.0.10
       '@ethersproject/bignumber': 5.0.13
@@ -12451,7 +12488,7 @@ packages:
       '@ethersproject/contracts': ^5.0.0
       '@ethersproject/providers': ^5.0.0
     resolution:
-      integrity: sha512-SwK44gczm2d6gv50cGplZ4fiCaDN+qjT4Vu9+s7kB9jXMwwmyGhV9hIr/AZGtdmNQiSQhGY69GuTjm5MAwjo8g==
+      integrity: sha512-teyyETbwlpmOjT1ymHeUbzdL/lsiB6Zmd3MlBinyuxh79Y2GkgzOPMDT0S7/ityO1LTvcViZsuImiuSQKAdu0w==
   /webidl-conversions/6.1.0:
     dev: true
     engines:

@@ -74,15 +74,33 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
     if (!wallet.chain.contracts) {
       throw new Error(`no wallet.chain.contracts`);
     }
-    const claimWallet = new Wallet('', wallet.provider);
+    const claimWallet = this.getClaimtWallet().connect(wallet.provider);
     const playToken = wallet.chain.contracts.PlayToken.connect(claimWallet);
-    const balance = await playToken.balanceOf(claimWallet.address);
-    if (balance.eq(0)) {
+    const ethBalance = await wallet.provider.getBalance(claimWallet.address);
+    const tokenBalance = await playToken.balanceOf(claimWallet.address);
+    if (tokenBalance.eq(0)) {
       // TODO
     }
 
-    const tx = await playToken.transferAll(wallet.address, balance);
+    const estimate = await playToken.estimateGas.transferAlongWithETH(
+      wallet.address,
+      tokenBalance,
+      {value: 1, nonce: 0}
+    );
+    const gasPrice = await wallet.provider.getGasPrice();
+
+    const ethLeft = ethBalance.sub(estimate.mul(gasPrice));
+    const tx = await playToken.transferAlongWithETH(
+      wallet.address,
+      tokenBalance,
+      {
+        value: ethLeft,
+        nonce: 0,
+      }
+    );
     this.setPartial({state: 'Claiming'});
+    await tx.wait();
+    this.setPartial({state: 'Claimed'});
   }
 
   // protected async fetchFor<T, P>(

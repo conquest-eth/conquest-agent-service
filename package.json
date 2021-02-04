@@ -52,6 +52,7 @@
     "contracts": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:dev -- --export ../web/src/contracts.json",
     "shell:contracts": "newsh \"npm run contracts\"",
     "contracts:deploy": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:deploy -- --export ../web/src/contracts.json",
+    "contracts:local:run": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:run",
     "contracts:export": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:export -- --export ../web/src/contracts.json",
     "contracts:fundingFromGethCoinbase": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:run scripts/fundingFromGethCoinbase.ts",
     "seed": "wait-on web/src/contracts.json && dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:seed",
