@@ -7,6 +7,8 @@ import type {RenderState} from './RenderState';
 import {trackInstances} from '../lib/utils/tools';
 import type {Controller} from './controller';
 import {timeToText} from '../lib/utils';
+import {locationToXY} from '../common/src';
+import type {Planet} from '../common/src/types';
 
 // pre-render
 const planetSpriteSheet = new Image();
@@ -518,6 +520,12 @@ export class Renderer {
     const gridEndY = Math.floor(
       (gridStart.y + camera.height + gridOffset) / 48 / 4 / 2
     );
+
+    let selectedPlanet: Planet | undefined = undefined;
+    if (this.controller.selectedPlanet) {
+      const {x, y} = locationToXY(this.controller.selectedPlanet);
+      selectedPlanet = this.renderState.space.ensurePlanetAt(x, y);
+    }
     for (let x = gridX; x <= gridEndX + 1; x++) {
       for (let y = gridY; y <= gridEndY + 1; y++) {
         const planet = this.renderState.space.planetAt(x, y);
@@ -620,7 +628,13 @@ export class Renderer {
                   planet.state?.owner !==
                   '0x0000000000000000000000000000000000000000'
                 ) {
-                  circleColor = '#DC2626';
+                  circleColor = '#E5E7EB';
+                  if (
+                    selectedPlanet &&
+                    selectedPlanet.state?.owner === planet.state?.owner
+                  ) {
+                    circleColor = '#DC2626';
+                  }
                 } else {
                   circleColor = undefined;
                 }
@@ -663,7 +677,13 @@ export class Renderer {
                   ) {
                     circleColor = '#10B981';
                   } else {
-                    circleColor = '#DC2626';
+                    circleColor = '#E5E7EB';
+                    if (
+                      selectedPlanet &&
+                      selectedPlanet.state?.owner === planet.state?.owner
+                    ) {
+                      circleColor = '#DC2626';
+                    }
                   }
                 } else {
                   circleColor = '#E5E7EB';
