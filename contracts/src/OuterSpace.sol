@@ -17,7 +17,7 @@ import "hardhat/console.sol";
 contract OuterSpace is Proxied {
     using Extraction for bytes32;
 
-    uint256 internal constant STAKE_MULTIPLIER = 5e18; // = 5 DAI min
+    uint256 internal constant DECIMALS_18 = 1e18;
     uint32 internal constant ACTIVE_MASK = 2**31;
     int256 internal constant UINT32_MAX = 2**32 - 1;
 
@@ -149,7 +149,7 @@ contract OuterSpace is Proxied {
     ) internal {
         console.logBytes32(bytes32(location));
         bytes32 data = _planetData(location);
-        require(paidFor == uint256(_stake(data)) * (STAKE_MULTIPLIER), "INVALID_AMOUNT");
+        require(paidFor == uint256(_stake(data)) * (DECIMALS_18), "INVALID_AMOUNT");
 
         _handleSpaceships(sender, location, data);
         _handleDiscovery(location);
@@ -380,7 +380,7 @@ contract OuterSpace is Proxied {
     //         planet.owner = address(0); // This is fine as long as _actualiseExit is called on every move
     //         planet.numSpaceships = 0; // This is fine as long as _actualiseExit is called on every move
     //         planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move
-    //         _stakeReadyToBeWithdrawn[owner] += stake * STAKE_MULTIPLIER;
+    //         _stakeReadyToBeWithdrawn[owner] += stake * DECIMALS_18;
     //     }
     // }
 
@@ -455,7 +455,7 @@ contract OuterSpace is Proxied {
         planet.owner = newOwner; // This is fine as long as _actualiseExit is called on every move
         planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move
         planet.numSpaceships = spaceshipsData;
-        uint256 newStake = _stakeReadyToBeWithdrawn[owner] + stake * STAKE_MULTIPLIER;
+        uint256 newStake = _stakeReadyToBeWithdrawn[owner] + stake * DECIMALS_18;
         _stakeReadyToBeWithdrawn[owner] = newStake;
         emit StakeToWithdraw(owner, newStake);
     }
@@ -576,7 +576,7 @@ contract OuterSpace is Proxied {
     }
 
     function _stake(bytes32 data) internal pure returns (uint16) {
-        return data.normal16(4, 0x0001000200030004000500070009000A000A000C000F00140019001E00320064); //_genesis.r_u256_minMax(location, 3, 10**18, 1000**18),
+        return data.normal16(4, 0x0001000200030004000500070009000A000A000C000F00140019001E00320064) * 5; //_genesis.r_u256_minMax(location, 3, 10**18, 1000**18),
     }
 
     function _production(bytes32 data) internal pure returns (uint16) {

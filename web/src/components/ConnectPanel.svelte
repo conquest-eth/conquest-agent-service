@@ -6,6 +6,7 @@
   import privateAccount from '../stores/privateAccount';
   import Blockie from './Blockie.svelte';
   import Help from './Help.svelte';
+  import PlayCoin from './PlayCoin.svelte';
 
   function connect() {
     privateAccount.login();
@@ -27,8 +28,12 @@
         {#if $playTokenAccount.balance}
           {'' + $playTokenAccount.balance
               .div('10000000000000000')
-              .toNumber() / 100 + '\u00A0$'}
-        {:else}...&nbsp;${/if}
+              .toNumber() / 100 + ''}
+          <PlayCoin class="inline w-4" />
+        {:else}
+          ...
+          <PlayCoin class="inline w-4" />
+        {/if}
       </span>
       <span class="inline-block align-middle" on:click={() => (menu = !menu)}>
         <Blockie class="w-10 h-10 m-1" address={$wallet.address} />

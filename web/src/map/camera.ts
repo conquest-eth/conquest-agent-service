@@ -191,7 +191,7 @@ export class Camera {
     //     )
     //   );
     //   const fullTime = fullDistance * ((3600 * 10000) / speed);
-    //   const timePassed = Math.floor(Date.now() / 1000) - fleet.launchTime;
+    //   const timePassed = now() - fleet.launchTime;
     //   let ratio = timePassed / fullTime;
     //   if (timePassed > fullTime) {
     //     // TODO disapear

@@ -1,7 +1,10 @@
 <script lang="ts">
+  import {timeToText} from '../lib/utils';
+
   import Modal from '../components/Modal.svelte';
   import PanelButton from '../components/PanelButton.svelte';
   import exitFlow from '../stores/exit';
+  import {spaceInfo} from '../app/mapState';
 </script>
 
 {#if $exitFlow.step === 'WAITING_CONFIRMATION'}
@@ -16,7 +19,11 @@
   <Modal>
     {#if $exitFlow.step === 'SUCCESS'}
       <div class="text-center">
-        <p>You'll be able to claim back the stake 24h after the tx is mined</p>
+        <p>
+          You'll be able to claim back the stake
+          {timeToText(spaceInfo.exitDuration)}
+          after the tx is mined
+        </p>
         <PanelButton label="OK" on:click={() => exitFlow.acknownledgeSuccess()}>
           OK
         </PanelButton>

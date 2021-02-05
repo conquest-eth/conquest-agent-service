@@ -10,7 +10,6 @@ import {
 } from '../util/location';
 import {normal16, normal8, value8Mod} from '../util/extraction';
 import {uniqueName} from '../../../lib/random/uniqueName';
-import {BigNumber} from '@ethersproject/bignumber';
 
 function skip(): Promise<void> {
   return new Promise<void>((resolve) => {
@@ -26,7 +25,6 @@ export class SpaceInfo {
   public resolveWindow: number;
   public timePerDistance: number;
   public exitDuration: number;
-  public stakeMultiplier: BigNumber;
 
   constructor(config: {
     genesisHash: string;
@@ -38,7 +36,6 @@ export class SpaceInfo {
     this.timePerDistance = Math.floor(config.timePerDistance / 4); // Same as in OuterSpace.sol: the coordinates space is 4 times bigger
     this.exitDuration = config.exitDuration;
     this.genesis = config.genesisHash;
-    this.stakeMultiplier = BigNumber.from('5000000000000000000'); // TODO
   }
 
   computeArea(areaId: string): void {
@@ -181,11 +178,12 @@ export class SpaceInfo {
     const subX = 1 - value8Mod(data, 0, 3);
     const subY = 1 - value8Mod(data, 2, 3);
 
-    const stake = normal16(
-      data,
-      4,
-      '0x0001000200030004000500070009000A000A000C000F00140019001E00320064'
-    );
+    const stake =
+      normal16(
+        data,
+        4,
+        '0x0001000200030004000500070009000A000A000C000F00140019001E00320064'
+      ) * 5;
     const production = normal16(
       data,
       12,

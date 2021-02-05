@@ -3,6 +3,7 @@ import privateAccount from './privateAccount';
 import {xyToLocation} from '../common/src';
 import {spaceInfo} from '../app/mapState';
 import {BaseStoreWithData} from '../lib/utils/stores';
+import {now, correctTime, isCorrected} from './time';
 
 type Data = {
   txHash?: string;
@@ -84,6 +85,15 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     if (!wallet.address) {
       throw new Error(`no wallet address`);
     }
+    if (!wallet.provider) {
+      throw new Error(`no provider`);
+    }
+
+    if (!isCorrected) {
+      // TODO extreact or remove (assume time will be corrected by then)
+      const latestBlock = await wallet.provider.getBlock('latest');
+      correctTime(latestBlock.timestamp);
+    }
 
     this.setPartial({step: 'WAITING_TX'});
     const tx = await wallet.contracts?.OuterSpace.send(
@@ -108,7 +118,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       from: {...from},
       fleetAmount,
       duration: fleetDuration, // TODO stricly speaking not necessary but allow us to not need to refetch the stats from spaceInfo
-      launchTime: Math.floor(Date.now() / 1000), //TODO adjust + service to adjust once tx is mined // use block time instead of Date.now
+      launchTime: now(), //TODO adjust + service to adjust once tx is mined // use block time instead of Date.now
       owner: wallet.address,
       sendTxHash: tx.hash,
       secret: secret,

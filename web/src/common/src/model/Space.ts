@@ -426,7 +426,7 @@ export class Space {
         if (!planetDatum.owner) {
           console.error(`missing owner for ${location}`);
         }
-        // const queryTime = Math.floor(Date.now() / 1000); // TODO use latest block number for queries
+        // const queryTime = now(); // TODO use latest block number for queries
         const contractState = {
           owner: planetDatum.owner,
           exitTime: planetDatum.exitTime,

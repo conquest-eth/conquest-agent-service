@@ -10,6 +10,8 @@
   import Blockie from './Blockie.svelte';
   import {locationToXY} from '../common/src';
   import Stat from './Stat.svelte';
+  import PlayCoin from './PlayCoin.svelte';
+  import {timeToText} from '../lib/utils';
 
   export let location: string;
   export let close: () => void;
@@ -62,9 +64,9 @@
         <span id="active" class="value">{$planet.state.active}</span>
       </div> -->
       {#if $planet.state.exiting}
-        <div class="m-1">
-          <label for="exiting">exiting:</label>
-          <span id="exiting" class="value">{$planet.state.exitTimeLeft}</span>
+        <div class="m-1 w-36 flex justify-between text-red-400">
+          <p class="p-0 mb-1">Exiting in:</p>
+          <p class="p-0 mb-1">{timeToText($planet.state.exitTimeLeft)}</p>
         </div>
       {/if}
     {/if}
@@ -83,7 +85,8 @@
       </div>
     {/if} -->
 
-    <div class="m-1 w-36 text-green-400 flex justify-between">
+    <div
+      class={'m-1 w-36 flex justify-between' + ($planet.state?.active ? ' text-green-400' : ' text-gray-400')}>
       <p class="p-0 mb-1">Spaceships:</p>
       <p class="p-0 mb-1">
         {!$planet.state || $planet.state.natives ? $planet.stats.natives : $planet.state.numSpaceships}
@@ -93,7 +96,10 @@
     <div class="m-1 w-36 text-yellow-400 ">
       <div class="w-full box-border">
         <p class="p-0 mb-1">stake</p>
-        <p class="float-right relative -top-6">{$planet.stats.stake} $</p>
+        <p class="float-right relative -top-6">
+          {$planet.stats.stake}
+          <PlayCoin class="inline w-4" />
+        </p>
         <div class="box-border rounded-md bg-gray-600">
           <div
             class="w-full h-3 rounded-md bg-yellow-400"

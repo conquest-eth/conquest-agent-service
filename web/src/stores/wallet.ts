@@ -4,6 +4,7 @@ import {PortisModuleLoader} from 'web3w-portis-loader';
 import contractsInfo from '../contracts.json';
 import {notifications} from './notifications';
 import {finality, nodeUrl, chainId} from '../config';
+import {isCorrected, correctTime} from './time';
 
 const walletStores = WalletStores({
   chainConfigs: contractsInfo,
@@ -76,6 +77,28 @@ transactions.subscribe(($transactions) => {
       } else {
         // auto acknowledge
         transactions.acknowledge(tx.hash, tx.status);
+      }
+    }
+  }
+});
+
+chain.subscribe(async (v) => {
+  if (!isCorrected()) {
+    if (v.state === 'Connected' || v.state === 'Ready') {
+      const latestBlock = await wallet.provider?.getBlock('latest');
+      if (latestBlock) {
+        correctTime(latestBlock.timestamp);
+      }
+    }
+  }
+});
+
+fallback.subscribe(async (v) => {
+  if (!isCorrected()) {
+    if (v.state === 'Connected' || v.state === 'Ready') {
+      const latestBlock = await wallet.provider?.getBlock('latest');
+      if (latestBlock) {
+        correctTime(latestBlock.timestamp);
       }
     }
   }

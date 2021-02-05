@@ -2,6 +2,7 @@ import {PrivateSpace, SpaceInfo, PlanetData} from '../common/src';
 import contractsInfo from '../contracts.json';
 import privateAccount from '../stores/privateAccount';
 import {fallback, chain} from '../stores/wallet';
+import {now} from '../stores/time';
 
 const timeKeeper = {
   setTimeout(fn: () => void, sec: number) {
@@ -11,7 +12,7 @@ const timeKeeper = {
     return clearTimeout(t);
   },
   getTime() {
-    return Math.floor(Date.now() / 1000);
+    return now();
   },
 };
 

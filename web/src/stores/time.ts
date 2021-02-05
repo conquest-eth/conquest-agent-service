@@ -1,10 +1,25 @@
 import {readable} from 'svelte/store';
 
-function now() {
-  return Math.floor(Date.now() / 1000);
+export let startTime = window.startTime;
+
+export function now(): number {
+  return Math.floor(performance.now() / 1000) + startTime;
 }
 
-export const startTime = now();
+let _corrected = false;
+export function correctTime(actualTime: number): void {
+  const currentTime = now();
+  const diff = actualTime - currentTime;
+  if (Math.abs(diff) > 60) {
+    // only adapt if difference is significant
+    startTime += diff;
+  }
+  _corrected = true;
+}
+
+export function isCorrected(): boolean {
+  return _corrected;
+}
 
 export const time = readable(now(), function start(set) {
   const interval = setInterval(() => {

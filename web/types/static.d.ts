@@ -65,6 +65,7 @@ interface Window {
   onFailingResource?: () => void;
   params: Record<string, string>;
   hashParams: Record<string, string>;
+  startTime: number;
 }
 
 declare module '@curi/svelte';

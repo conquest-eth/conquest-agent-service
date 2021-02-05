@@ -28,8 +28,12 @@
           }
 
           const resolveWindow = spaceInfo.resolveWindow;
-          const timeToResolve = fleet.launchTime + fleet.duration; // TODO launchTime : use actual launchTime
-          const expiryTime = fleet.launchTime + fleet.duration + resolveWindow;
+          const timeToResolve =
+            (fleet.actualLaunchTime || fleet.launchTime) + fleet.duration;
+          const expiryTime =
+            (fleet.actualLaunchTime || fleet.launchTime) +
+            fleet.duration +
+            resolveWindow;
           if (now > expiryTime) {
             return false;
           }
@@ -54,7 +58,7 @@
         class="m-1"
         label="Resolve Fleet"
         on:click={() => resolve(fleet.id)}>
-        {timeToText(space.spaceInfo.resolveWindow + space.timeLeft($time, fleet.from, fleet.to, fleet.launchTime).timeLeft)}
+        {timeToText(space.spaceInfo.resolveWindow + space.timeLeft($time, fleet.from, fleet.to, fleet.actualLaunchTime || fleet.launchTime).timeLeft)}
         left
         <!-- {spaceInfo.getPlanetInfo(fleet.to.x, fleet.to.y)?.stats.name} -->
       </PanelButton>

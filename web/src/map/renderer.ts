@@ -9,6 +9,7 @@ import type {Controller} from './controller';
 import {timeToText} from '../lib/utils';
 import {locationToXY} from '../common/src';
 import type {Planet} from '../common/src/types';
+import {now} from '../stores/time';
 
 // pre-render
 const planetSpriteSheet = new Image();
@@ -304,7 +305,7 @@ export class Renderer {
       return;
     }
 
-    const timeMs = Date.now();
+    const currentTime = now();
 
     let gridLevel = 1;
     if (camera.zoom < 1) {
@@ -549,7 +550,7 @@ export class Renderer {
           const planetX = planet.location.globalX * 2 * 48;
           const planetY = planet.location.globalY * 2 * 48;
 
-          const numStars = Math.floor(planet.stats.stake / 25);
+          const numStars = Math.floor(planet.stats.stake / 25); // TODO ?
 
           const multiplier = planet.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
           ctx.drawImage(
@@ -811,10 +812,10 @@ export class Renderer {
       }
 
       const {timeLeft, timePassed, fullTime} = this.renderState.space.timeLeft(
-        timeMs / 1000,
+        currentTime,
         fleet.from,
         fleet.to,
-        fleet.launchTime
+        fleet.actualLaunchTime || fleet.launchTime
       );
       let ratio = timePassed / fullTime;
       let fx;

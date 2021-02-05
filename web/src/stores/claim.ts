@@ -59,7 +59,7 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
     }
     const tx = await wallet.contracts?.PlayToken.transferAndCall(
       wallet.contracts?.OuterSpace.address,
-      BigNumber.from(planetInfo.stats.stake).mul(spaceInfo.stakeMultiplier),
+      BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'),
       location
     );
 

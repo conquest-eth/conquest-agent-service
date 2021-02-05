@@ -5,12 +5,13 @@
   import {planetAt} from '../stores/planets';
   import {playTokenAccount} from '../stores/playToken';
   import {BigNumber} from '@ethersproject/bignumber';
+  import PlayCoin from '../components/PlayCoin.svelte';
 
   $: location = $claimFlow.data?.location;
   $: planet = location ? planetAt(location) : undefined;
   $: stats = planet ? $planet.stats : undefined;
   $: stake = stats && stats.stake;
-  $: cost = planet ? BigNumber.from($planet.stats.stake).mul(5) : undefined; // TODO multiplier from config/contract
+  $: cost = planet ? BigNumber.from($planet.stats.stake) : undefined; // TODO multiplier from config/contract
 </script>
 
 {#if $claimFlow.step === 'CONNECTING'}
@@ -28,10 +29,15 @@
         You do not have any Play token. You need
         {cost.toString()}
       {:else if $playTokenAccount.balance.lt(cost.mul('1000000000000000000'))}
-        Not enough play token. You need
-        {cost.toString()}
-        Play Token but you have only
-        {$playTokenAccount.balance.div('1000000000000000000').toString()}
+        Not enough
+        <PlayCoin class="inline w-4" />. You need
+        <span class="text-yellow-400">{cost.toString()}</span>
+        <PlayCoin class="inline w-4" />
+        but you have only
+        <span
+          class="text-yellow-400">{$playTokenAccount.balance
+            .div('1000000000000000000')
+            .toString()}</span>
       {:else}
         <div class="text-center">
           <h2>
