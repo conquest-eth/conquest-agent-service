@@ -6,6 +6,7 @@
   import ClaimTokenScreen from '../screens/ClaimTokenScreen.svelte';
   import privateAccount from '../stores/privateAccount';
   import Banner from '../components/Banner.svelte';
+  import PlayCoin from '../components/PlayCoin.svelte';
 </script>
 
 <WalletAccess>
@@ -24,7 +25,9 @@
       </p>
       <p class="mt-3">
         To participate you'll have to first acquire planets by depositing a
-        stake in form of Play tokens
+        stake in form of
+        <PlayCoin class="inline w-4" />
+        (Play tokens)
       </p>
       <p class="mt-3">
         These planets will then produce spaceships that you can use to attack

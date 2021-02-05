@@ -26,8 +26,10 @@
       {#if !$playTokenAccount.balance}
         Fetching Balance...
       {:else if $playTokenAccount.balance.eq(0)}
-        You do not have any Play token. You need
+        You do not have any
+        <PlayCoin class="inline w-4" />. You need
         {cost.toString()}
+        <PlayCoin class="inline w-4" />.
       {:else if $playTokenAccount.balance.lt(cost.mul('1000000000000000000'))}
         Not enough
         <PlayCoin class="inline w-4" />. You need
@@ -44,7 +46,8 @@
             Claim Planet
             <span class="text-green-500">"{$planet.stats.name}"</span>
             for
-            <span class="text-yellow-500">{stake} Play Token</span>
+            <span class="text-yellow-500">{stake}
+              <PlayCoin class="inline w-4" /></span>
           </h2>
           <Button
             class="mt-5"
