@@ -82,10 +82,15 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       // TODO
     }
 
+    const nonce = wallet.provider.getTransactionCount(
+      claimWallet.address,
+      'latest'
+    );
+
     const estimate = await playToken.estimateGas.transferAlongWithETH(
       wallet.address,
       tokenBalance,
-      {value: 1, nonce: 0}
+      {value: 1, nonce}
     );
     const gasPrice = await wallet.provider.getGasPrice();
 
@@ -95,7 +100,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       tokenBalance,
       {
         value: ethLeft,
-        nonce: 0,
+        nonce,
       }
     );
     this.setPartial({state: 'Claiming'});
