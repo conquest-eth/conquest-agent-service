@@ -125,7 +125,16 @@
         </Button>
       {/if}
     {:else if $chain.state === 'Idle'}
-      {#if $chain.connecting}Connecting...{/if}
+      {#if $chain.connecting}
+        Connecting...
+      {:else if $chain.error}
+        <div class="text-center">
+          <p>{$chain.error?.message || '' + $chain.error}</p>
+          <Button class="mt-4" label="OK" on:click={() => flow.cancel()}>
+            OK
+          </Button>
+        </div>
+      {/if}
     {:else if $chain.state === 'Connected'}
       {#if $chain.loadingData}
         Loading contracts...
@@ -189,6 +198,6 @@
           Retry
         </Button>
       </div>
-    {/if}
+    {:else}Error: let us know{/if}
   </Modal>
 {/if}

@@ -101,7 +101,7 @@
         </div>
       </div>
     </div>
-    <Stat name="production" value={$planet.stats.production} />
+    <Stat name="production" value={$planet.stats.production} div={120} />
     <Stat name="attack" value={$planet.stats.attack} />
     <Stat name="defense" value={$planet.stats.defense} />
     <Stat name="launch speed" value={$planet.stats.speed} />
