@@ -462,6 +462,16 @@ export class Camera {
     this._update();
   }
 
+  initZoom(): void {
+    const zero = this.worldToScreen(0, 0);
+    for (let i = 0; i < 4; i++) {
+      this.updateZoom(zero.x, zero.y, 1);
+    }
+    while (this.world.width < 48 * 8 * 7) {
+      this.updateZoom(zero.x, zero.y, 1);
+    }
+  }
+
   setup({
     canvas,
     controller,
@@ -473,11 +483,6 @@ export class Camera {
     this.canvas = canvas;
     // this.windowDevicePxelRatio = window.devicePixelRatio;
     this.render.devicePixelRatio = 0.5; //window.devicePixelRatio;
-
-    const zero = this.worldToScreen(0, 0);
-    for (let i = 0; i < 4; i++) {
-      this.updateZoom(zero.x, zero.y, 1);
-    }
 
     // function logEvent(name, func, options) {
     //   return function (e) {

@@ -30,6 +30,8 @@ export default class Map {
       controller,
     });
 
+    this._loop(performance.now());
+    this.camera.initZoom();
     return this.startRendering();
   }
 
