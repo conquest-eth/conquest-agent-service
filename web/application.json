@@ -5,12 +5,12 @@
   "appShortDescription": "A Game of War and Diplomacy running on ethereum",
   "developerName": "Nobody",
   "developerURL": "",
-  "url": "https://conquest.eth.link",
-  "ensName": "conquest.eth",
+  "url": "https://alpha.conquest.eth.link",
+  "ensName": "alpha.conquest.eth",
   "background": "#1f253a",
   "theme_color": "#1f253a",
   "appleStatusBarStyle": "black-translucent",
   "display": "fullscreen",
-  "icon": "icon.svg",
+  "icon": "icon.png",
   "maskable_icon": "android-chrome-512x512.png"
 }
