@@ -6,6 +6,7 @@
   import Loading from './components/Loading.svelte';
   import Notifications from './components/notification/Notifications.svelte';
   import NoInstallPrompt from './components/NoInstallPrompt.svelte';
+  import NewVersionNotification from './components/NewVersionNotification.svelte';
   // import Install from './components/Install.svelte';
 
   // import LogWidget from './components/LogWidget.svelte';
@@ -27,6 +28,7 @@
 
 <!-- disable prompt -->
 <NoInstallPrompt />
+<NewVersionNotification />
 <Router {routes} globalQueryStrings={['subgraph', 'debug', 'log', 'trace']}>
   <Notifications />
   <!-- <Navbar links={['Home', 'Wallet']} /> -->
