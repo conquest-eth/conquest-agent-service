@@ -68,7 +68,7 @@
     <div class="justify-center text-center h-full flex items-center">
       <img
         class="mb-8 mx-auto max-w-xs"
-        src="./etherplay_logo_text_under.png"
+        src="./logo_with_text_on_black.png"
         alt="etherplay.eth"
         style="width:80%; heigh: 40%;" />
       <!-- <p class="m-6 text-gray-400 dark:text-gray-500 text-4xl font-black">
