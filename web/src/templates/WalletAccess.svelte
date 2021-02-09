@@ -70,6 +70,12 @@
 
   let storeSignatureLocally = false;
   let syncRemotely = true;
+
+  let onSharedStorage = !!(
+    window.basepath &&
+    (window.basepath.startsWith('/ipfs/') ||
+      window.basepath.startsWith('/ipns/'))
+  );
 </script>
 
 <slot />
@@ -161,9 +167,15 @@
             <input
               type="checkbox"
               class="form-checkbox"
-              bind:checked={storeSignatureLocally} />
-            <span class="ml-2">Do not ask again. (trust computer and
-              {window.location.host})</span>
+              bind:checked={storeSignatureLocally}
+              disabled={onSharedStorage} />
+            {#if onSharedStorage}
+              <span class="ml-2 text-gray-500">Do not ask again. (option
+                disabled as app is served from shared host)</span>
+            {:else}
+              <span class="ml-2">Do not ask again. (trust computer and
+                {window.location.host})</span>
+            {/if}
           </label>
           <label class="flex items-center">
             <input

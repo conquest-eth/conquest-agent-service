@@ -16,11 +16,16 @@
       </div>
     </div>
     <div class="justify-center mt-10 text-center text-white">
-      <p>You have been given some tokens to claim.</p>
       {#if $wallet.state === 'Ready'}
         {#if $tokenClaim.state === 'Loading'}
-          Loading claim...
+          <p class="text-green-500">
+            Congratulation! You have been given some tokens to claim.
+          </p>
+          <p class="mt-5">Loading claim...</p>
         {:else if $tokenClaim.state === 'Available'}
+          <p class="text-green-500">
+            Congratulation! You have been given some tokens to claim.
+          </p>
           <Button
             class="mt-4"
             label="claim"
@@ -28,8 +33,9 @@
             Claim
           </Button>
         {:else if $tokenClaim.state === 'Claiming'}
-          Claiming...
+          <p class="mt-5">Please wait while the claim is being executed...</p>
         {:else if $tokenClaim.state === 'Claimed'}
+          <p class="m-5">The tokens have been claimed.</p>
           <Button
             class="mt-4"
             label="continue"
@@ -38,7 +44,10 @@
           </Button>
         {/if}
       {:else}
-        <p>Please connect to your wallet</p>
+        <p class="text-green-500">
+          Congratulation! You have been given some tokens to claim.
+        </p>
+        <p class="m-5">Please connect to your wallet</p>
         <Button class="mt-4" label="connect" on:click={() => flow.connect()}>
           Connect
         </Button>
