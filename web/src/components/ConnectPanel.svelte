@@ -19,7 +19,15 @@
 
 <svelte:window on:click={() => (menu = false)} />
 
-{#if $wallet.address && $privateAccount.step === 'READY'}
+{#if $wallet.address}
+  {#if !($privateAccount.step === 'READY')}
+    <div class="absolute right-32 bg-gray-900 bg-opacity-80 z-10">
+      <PanelButton class="m-1" label="Connect" on:click={connect}>
+        Show Fleets
+      </PanelButton>
+    </div>
+  {/if}
+
   <div
     on:click={(e) => e.stopPropagation()}
     class="absolute right-0 bg-gray-900 bg-opacity-80 z-10">
