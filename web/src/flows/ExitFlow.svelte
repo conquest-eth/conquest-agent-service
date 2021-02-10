@@ -11,9 +11,21 @@
   <Modal
     on:close={() => exitFlow.cancel()}
     on:confirm={() => exitFlow.confirm()}>
-    <PanelButton label="Exit" on:click={() => exitFlow.confirm()}>
-      Confirm Exit
-    </PanelButton>
+    <p class="text-center">
+      Exiting a planet will allow you to claim the stake back. But be careful,
+      while you are exiting, you cannot operate with the spaceships and someone
+      else might be able to capture the planet before exit complete. Note
+      however that the planet will continue producting spaceships for its
+      defense. Upon exit, the number of spaceships will then be zero.
+    </p>
+    <p class="text-center">
+      <PanelButton
+        class="mt-5"
+        label="Exit"
+        on:click={() => exitFlow.confirm()}>
+        Confirm Exit
+      </PanelButton>
+    </p>
   </Modal>
 {:else}
   <Modal>
