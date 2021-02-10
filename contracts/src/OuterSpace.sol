@@ -142,74 +142,6 @@ contract OuterSpace is Proxied {
     //     _stakingToken.transfer(sender, amounts[1] - stakeAmount); // TODO send to Player Account (via PaymentGateway)
     // }
 
-    function _acquire(
-        address sender,
-        uint256 paidFor,
-        uint256 location
-    ) internal {
-        console.logBytes32(bytes32(location));
-        bytes32 data = _planetData(location);
-        require(paidFor == uint256(_stake(data)) * (DECIMALS_18), "INVALID_AMOUNT");
-
-        _handleSpaceships(sender, location, data);
-        _handleDiscovery(location);
-    }
-
-    function _handleSpaceships(
-        address sender,
-        uint256 location,
-        bytes32 data
-    ) internal {
-        Planet storage planet = _getPlanet(location);
-        address owner = planet.owner;
-        uint32 lastUpdated = planet.lastUpdated;
-        uint32 numSpaceshipsData = planet.numSpaceships;
-        uint32 exitTime = planet.exitTime;
-
-        (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
-            numSpaceshipsData,
-            lastUpdated,
-            _production(data)
-        );
-
-        bool justExited;
-        uint32 defense;
-        if (lastUpdated == 0) {
-            uint16 natives = _natives(data);
-            defense = natives;
-        } else {
-            if (exitTime != 0) {
-                require(_hasJustExited(exitTime), "STILL_EXITING");
-                justExited = true;
-            } else {
-                require(!active, "STILL_ACTIVE");
-                if (owner != sender) {
-                    defense = currentNumSpaceships; // TODO natives ?
-                    require(defense <= 3500, "defense spaceship > 3500"); // you can first attack the planet
-                } else {
-                    defense = 0;
-                }
-            }
-        }
-        if (justExited) {
-            currentNumSpaceships = 3600;
-            _setPlanetAfterExit(location, owner, planet, sender, _setActiveNumSpaceships(true, currentNumSpaceships));
-        } else {
-            planet.owner = sender;
-            if (defense != 0) {
-                (uint32 attackerLoss, ) = _computeFight(3600, defense, 10000, _natives(data)); // attacker alwasy win as defense (and stats.native) is restricted to 3500
-                currentNumSpaceships = 3600 - attackerLoss;
-            } else {
-                currentNumSpaceships += 3600;
-            }
-
-            // planet.exitTime = 0; // should not be needed : // TODO actualiseExit
-            planet.numSpaceships = _setActiveNumSpaceships(true, currentNumSpaceships);
-            planet.lastUpdated = uint32(block.timestamp);
-        }
-        emit PlanetStake(sender, location, currentNumSpaceships);
-    }
-
     function exitFor(address owner, uint256 location) external {
         Planet storage planet = _getPlanet(location);
         require(owner == planet.owner, "NOT_OWNER");
@@ -233,10 +165,8 @@ contract OuterSpace is Proxied {
     function withdrawFor(address owner) public {
         uint256 amount = _stakeReadyToBeWithdrawn[owner];
         _stakeReadyToBeWithdrawn[owner] = 0;
-        // TODO transfer amount;
-        // - if StakingToken own by contract is enouygh, take it
-        // - else extract from interest bearing token
-        // and then transfer
+        require(_stakingToken.transfer(owner, amount), "FAILED_TRANSFER"); // TODO FundManager
+        emit StakeToWithdraw(owner, 0);
     }
 
     function resolveFleet(
@@ -383,6 +313,73 @@ contract OuterSpace is Proxied {
     //         _stakeReadyToBeWithdrawn[owner] += stake * DECIMALS_18;
     //     }
     // }
+
+    function _acquire(
+        address sender,
+        uint256 paidFor,
+        uint256 location
+    ) internal {
+        console.logBytes32(bytes32(location));
+        bytes32 data = _planetData(location);
+        require(paidFor == uint256(_stake(data)) * (DECIMALS_18), "INVALID_AMOUNT");
+
+        _handleSpaceships(sender, location, data);
+        _handleDiscovery(location);
+    }
+
+    function _handleSpaceships(
+        address sender,
+        uint256 location,
+        bytes32 data
+    ) internal {
+        Planet storage planet = _getPlanet(location);
+        address owner = planet.owner;
+        uint32 lastUpdated = planet.lastUpdated;
+        uint32 numSpaceshipsData = planet.numSpaceships;
+        uint32 exitTime = planet.exitTime;
+
+        (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
+            numSpaceshipsData,
+            lastUpdated,
+            _production(data)
+        );
+
+        bool justExited;
+        uint32 defense;
+        if (lastUpdated == 0) {
+            defense = _natives(data);
+        } else {
+            if (exitTime != 0) {
+                require(_hasJustExited(exitTime), "STILL_EXITING");
+                justExited = true;
+            } else {
+                require(!active, "STILL_ACTIVE");
+                if (owner != sender) {
+                    defense = currentNumSpaceships;
+                } else {
+                    defense = 0;
+                }
+            }
+        }
+        if (justExited) {
+            currentNumSpaceships = 3600;
+            _setPlanetAfterExit(location, owner, planet, sender, _setActiveNumSpaceships(true, currentNumSpaceships));
+        } else {
+            planet.owner = sender;
+            if (defense != 0) {
+                (uint32 attackerLoss, ) = _computeFight(3600, defense, 10000, _defense(data)); // attacker alwasy win as defense (and stats.native) is restricted to 3500
+                require(attackerLoss <= 3600, "FAILED_CAPTURED");
+                currentNumSpaceships = 3600 - attackerLoss;
+            } else {
+                currentNumSpaceships += 3600;
+            }
+
+            // planet.exitTime = 0; // should not be needed : // TODO actualiseExit
+            planet.numSpaceships = _setActiveNumSpaceships(true, currentNumSpaceships);
+            planet.lastUpdated = uint32(block.timestamp);
+        }
+        emit PlanetStake(sender, location, currentNumSpaceships);
+    }
 
     // solhint-disable-next-line code-complexity
     function _handleDiscovery(uint256 location) internal {
