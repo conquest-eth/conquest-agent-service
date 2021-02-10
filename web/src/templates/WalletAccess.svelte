@@ -11,6 +11,7 @@
     transactions,
     balance,
     flow,
+    fallback,
   } from '../stores/wallet';
 
   import privateAccount from '../stores/privateAccount';
@@ -80,11 +81,22 @@
 
 <slot />
 
-<!-- {#if $chain.state === 'Idle'}
-  <div class="fixed top-0 mx-auto z-50 text-red-600">No network</div>
-{:else  -->
-{#if $chain.notSupported}
-  <div class="w-full flex items-center justify-center fixed z-50">
+{#if $chain.state === 'Idle' && !$chain.connecting && $fallback.state === 'Idle' && !$fallback.connecting}
+  <div class="w-full flex items-center justify-center fixed z-40">
+    <p
+      class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
+      Please Connect.
+    </p>
+  </div>
+{:else if $chain.state === 'Idle' && !$chain.connecting && $fallback.error}
+  <div class="w-full flex items-center justify-center fixed z-40">
+    <p
+      class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
+      Network Issues, Please Connect.
+    </p>
+  </div>
+{:else if $chain.notSupported}
+  <div class="w-full flex items-center justify-center fixed z-40">
     <p
       class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
       Wrong network, use

@@ -48,7 +48,7 @@
 </WalletAccess>
 
 {#if $time - startTime < 5}
-  <div class="fixed z-10 inset-0 overflow-y-auto bg-black" out:fade>
+  <div class="fixed z-50 inset-0 overflow-y-auto bg-black" out:fade>
     <div class="justify-center mt-32 text-center">
       <img
         class="mb-8 mx-auto max-w-md"
@@ -64,7 +64,7 @@
 {/if}
 
 {#if $time - startTime < 2}
-  <div class="fixed z-10 inset-0 overflow-y-auto bg-black h-full" out:fade>
+  <div class="fixed z-50 inset-0 overflow-y-auto bg-black h-full" out:fade>
     <div class="justify-center text-center h-full flex items-center">
       <img
         class="mb-8 mx-auto max-w-xs"
