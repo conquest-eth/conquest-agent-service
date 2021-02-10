@@ -21,7 +21,7 @@
 
 {#if $wallet.address}
   {#if !($privateAccount.step === 'READY')}
-    <div class="absolute right-32 bg-gray-900 bg-opacity-80 z-10">
+    <div class="absolute right-0 top-16 bg-gray-900 bg-opacity-80 z-10">
       <PanelButton class="m-1" label="Connect" on:click={connect}>
         Show Fleets
       </PanelButton>

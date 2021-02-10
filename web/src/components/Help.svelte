@@ -5,19 +5,23 @@
 
   import tippy from 'sveltejs-tippy';
 
+  // let currentTippy: {setProps: (props: {content: string}) => void};
   function tooltip(node: Element, wrapper: HTMLElement) {
     let content;
     if (wrapper) {
       content = wrapper.innerHTML;
+      tippy(node, {
+        content,
+        allowHTML: true,
+      });
     }
-    tippy(node, {
-      content,
-      allowHTML: true,
-    });
     return {
       update: (wrapper: HTMLElement) => {
         const content = wrapper.innerHTML;
-        return tippy(node, {content, allowHTML: true});
+        tippy(node, {
+          content,
+          allowHTML: true,
+        });
       },
     };
   }

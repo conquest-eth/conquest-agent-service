@@ -12,6 +12,7 @@
   import Stat from './Stat.svelte';
   import PlayCoin from './PlayCoin.svelte';
   import {timeToText} from '../lib/utils';
+  import Help from './Help.svelte';
 
   export let location: string;
   export let close: () => void;
@@ -43,7 +44,7 @@
 </script>
 
 <div
-  class="absolute inline-block w-48 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4">
+  class="absolute inline-block w-48 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4 text-sm">
   <div class="flex m-1">
     <h2 class="flex-auto text-green-500 text-center pt-1 font-bold">
       {$planet.stats.name}
@@ -87,15 +88,36 @@
 
     <div
       class={'m-1 w-36 flex justify-between' + ($planet.state?.active ? ' text-green-400' : ' text-gray-400')}>
-      <p class="p-0 mb-1">Spaceships:</p>
-      <p class="p-0 mb-1">
-        {!$planet.state || $planet.state.natives ? $planet.stats.natives : $planet.state.numSpaceships}
-      </p>
+      {#if !$planet.state}
+        <p class="p-0 mb-1">loading ...</p>
+      {:else if $planet.state.natives}
+        <p class="p-0 mb-1">
+          Natives
+          <Help class="inline w-4 h-4">
+            When a planet is not owned by anyone, it has some natives population
+            that need to be conquered.
+          </Help>
+          :
+        </p>
+        <p class="p-0 mb-1">{$planet.stats.natives}</p>
+      {:else}
+        <p class="p-0 mb-1">Spaceships:</p>
+        <p class="p-0 mb-1">{$planet.state.numSpaceships}</p>
+      {/if}
     </div>
 
     <div class="m-1 w-36 text-yellow-400 ">
       <div class="w-full box-border">
-        <p class="p-0 mb-1">stake</p>
+        <p class="p-0 mb-1">
+          Stake
+          <Help class="inline w-4 h-4">
+            This is the amount of
+            <PlayCoin class="inline w-4" />
+            required to stake to produce spaceships. This is also the amount
+            that you (or someone capturing the planet) can withdraw back after
+            exiting the planet.
+          </Help>
+        </p>
         <p class="float-right relative -top-6">
           {$planet.stats.stake}
           <PlayCoin class="inline w-4" />
@@ -107,10 +129,31 @@
         </div>
       </div>
     </div>
-    <Stat name="production" value={$planet.stats.production} div={120} />
-    <Stat name="attack" value={$planet.stats.attack} />
-    <Stat name="defense" value={$planet.stats.defense} />
-    <Stat name="launch speed" value={$planet.stats.speed} />
+    <Stat
+      name="Production"
+      value={$planet.stats.production}
+      max={12000}
+      min={1500}>
+      <Help class="inline w-4 h-4">
+        This is the rate of spaceship production per hour.
+      </Help>
+    </Stat>
+    <Stat name="Attack" value={$planet.stats.attack} max={10000} min={3600}>
+      <Help class="inline w-4 h-4">
+        This is the attack strength of spaceships sent from this planet.
+      </Help>
+    </Stat>
+    <Stat name="Defense" value={$planet.stats.defense} max={10000} min={3600}>
+      <Help class="inline w-4 h-4">
+        This is the defense strength of spaceships defending this planet.
+      </Help>
+    </Stat>
+    <Stat name="Speed" value={$planet.stats.speed} max={10000} min={4500}>
+      <Help class="inline w-4 h-4">
+        This is the speed at which spaceship sent from this planet travels in
+        unit per hour.
+      </Help>
+    </Stat>
   </div>
   <div class="w-full h-1 bg-cyan-300 mt-4 mb-2" />
   <div class="flex flex-col text-center">
