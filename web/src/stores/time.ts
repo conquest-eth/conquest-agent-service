@@ -1,5 +1,9 @@
 import {readable} from 'svelte/store';
 
+// TODO investigate why init.ts is not called first
+if (!window.startTime) {
+  window.startTime = Math.floor(Date.now() / 1000);
+}
 export let startTime = window.startTime;
 
 export function now(): number {
@@ -30,3 +34,13 @@ export const time = readable(now(), function start(set) {
     clearInterval(interval);
   };
 });
+
+// TODO remove
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(window as any).time = {
+  now,
+  startTime,
+  correctTime,
+  isCorrected,
+  time,
+};
