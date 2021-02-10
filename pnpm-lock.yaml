@@ -193,7 +193,7 @@ importers:
       snowpack: 3.0.11
       snowpack-plugin-folder2routes: 0.1.1
       snowpack-plugin-hmr-inject: 0.1.5
-      snowpack-plugin-ipfs: 0.1.3
+      snowpack-plugin-ipfs: 0.1.5
       snowpack-plugin-window-modules: 0.1.2
       svelte-preprocess: 4.6.3_a36d02c4e5aa7819d629bb09e38fdf83
       tailwindcss: 2.0.2_d337930ac9ab3cde8278bf6b015e1ea7
@@ -254,7 +254,7 @@ importers:
       snowpack: ^3.0.1
       snowpack-plugin-folder2routes: ^0.1.1
       snowpack-plugin-hmr-inject: ^0.1.5
-      snowpack-plugin-ipfs: ^0.1.3
+      snowpack-plugin-ipfs: ^0.1.5
       snowpack-plugin-window-modules: ^0.1.2
       svelte: ^3.24.0
       svelte-preprocess: ^4.0.8
@@ -11219,14 +11219,14 @@ packages:
     dev: true
     resolution:
       integrity: sha512-/c30BXcQPYTznajJ3osHpsYh1/JdERhgnoaXKIp3vy06buFVj1xqD62ClB80G1KflNeUsHjVsAyd4cPQqx9Ebg==
-  /snowpack-plugin-ipfs/0.1.3:
+  /snowpack-plugin-ipfs/0.1.5:
     dependencies:
       eth-ens-namehash: 2.0.8
       fs-extra: 9.1.0
       slash: 3.0.0
     dev: true
     resolution:
-      integrity: sha512-kgxkadjvppItwpaKANCFO6O7QhNlkU8EVOcLV44Z3X0aFAZK2AfT+VLm48L7AdQRz0U+zepFTK/lUUwrYBxMRQ==
+      integrity: sha512-UTuQ0Nb0jgiEBeZziTz/Mgt/GJAYcvUbuvLrdO92w0K9KQ9pUqAKx2ecVO9ZaYz3Q62iZOv/aBVfX2d1vHTKzw==
   /snowpack-plugin-window-modules/0.1.2:
     dependencies:
       fs-extra: 9.1.0

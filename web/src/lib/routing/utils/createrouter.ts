@@ -79,8 +79,10 @@ export function createRouter(
         resolve() {
           return asyncComponent()
             .then((c) => c.default)
-            .catch(() => {
+            .catch((e) => {
+              console.error(e);
               window.onFailingResource && window.onFailingResource();
+              // TODO (snowpack-plugin-ipfs: add url to callback) window.onFailingResource(routePath.path);
             });
         },
       });

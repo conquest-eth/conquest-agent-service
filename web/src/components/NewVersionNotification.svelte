@@ -9,6 +9,8 @@
     $updateAvailable = false;
     location.reload();
   }
+
+  const base: string = window.basepath || '/';
 </script>
 
 <svelte:window on:click={skip} />
@@ -37,7 +39,7 @@
           <div class="flex-shrink-0 pt-0.5">
             <img
               class="h-10 w-10 rounded-full"
-              src="/maskable_icon_512x512.png"
+              src={`${base}maskable_icon_512x512.png`}
               alt="Etherplay" />
           </div>
           <div class="ml-3 w-0 flex-1">
