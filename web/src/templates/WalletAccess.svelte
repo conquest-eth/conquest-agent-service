@@ -126,7 +126,10 @@
       {#if $wallet.unlocking}
         Please accept the application to access your wallet.
       {:else}
-        <Button label="Unlock Wallet" on:click={() => wallet.unlock()}>
+        <Button
+          class="mt-4"
+          label="Unlock Wallet"
+          on:click={() => wallet.unlock()}>
           Unlock
         </Button>
       {/if}

@@ -721,8 +721,10 @@ class PrivateAccountStore extends BaseStoreWithData<
         return;
       }
 
-      // TODO use currentFleetData to update launchTime :
-      // fleet.actualLaunchTime // save it
+      if (fleet.actualLaunchTime !== currentFleetData.launchTime) {
+        fleet.actualLaunchTime = currentFleetData.launchTime;
+        this.recordFleet(fleetId, fleet);
+      }
 
       if (
         fleet.resolveTxHash &&
