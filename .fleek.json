@@ -1,7 +1,7 @@
 {
   "build": {
     "image": "wighawag/pnpm:latest",
-    "command": "pnpm i --store=node_modules/.pnpm && pnpm run --filter planet-wars-web ethers-module && pnpm run staging:web:build && pnpm run --filter planet-wars-web fix_SNOWPACK_PUBLIC_ENV",
-    "publicDir": "web/dist"
+    "command": "pnpm i --store=node_modules/.pnpm && pnpm run --filter planet-wars-web ethers-module && pnpm run staging:web:build",
+    "publicDir": "web/build"
   }
 }
