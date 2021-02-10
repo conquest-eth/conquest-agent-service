@@ -10,6 +10,8 @@ window.params = getParamsFromURL();
 window.hashParams = getParamsFromURLHash();
 window.startTime = Math.floor(Date.now() / 1000);
 
+console.log({startTime: window.startTime});
+
 // if (window.hashParams.clearLocalStorage) {
 //   delete window.hashParams.clearLocalStorage;
 //   rebuildLocationHash(window.hashParams);
