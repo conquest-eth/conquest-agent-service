@@ -41,7 +41,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       timePerDistance,
       exitDuration,
     ],
-    proxy: 'postUpgrade', // TODO remove // dev only // rinkeby
+    proxy: hre.network.name !== 'mainnet' ? 'postUpgrade' : undefined,
     log: true,
     autoMine: true,
   });

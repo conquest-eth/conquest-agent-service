@@ -29,8 +29,16 @@ const config: HardhatUserConfig = {
   },
   namedAccounts: {
     deployer: 0,
-    stableTokenBeneficiary: 9,
-    claimKeyDistributor: 0,
+    stableTokenBeneficiary: {
+      hardhat: 9,
+      1337: 9,
+      4: 1,
+    },
+    claimKeyDistributor: {
+      hardhat: 0,
+      1337: 0,
+      4: 2,
+    },
   },
   networks: {
     hardhat: {

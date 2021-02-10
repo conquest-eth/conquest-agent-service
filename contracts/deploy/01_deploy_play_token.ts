@@ -13,6 +13,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     contract: 'Play',
     args: [stableToken.address, tokenManager],
+    proxy: hre.network.name !== 'mainnet',
     log: true,
     autoMine: true,
   });

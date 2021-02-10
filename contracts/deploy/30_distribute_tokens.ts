@@ -47,22 +47,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     claimKeyDistributor,
     parseEther('1000000')
   );
-
-  const accounts = await getUnnamedAccounts();
-  const distribution = [1000, 500, 3000, 100];
-  for (let i = 0; i < distribution.length; i++) {
-    const account = accounts[i];
-    const amount = distribution[i];
-    await execute(
-      'PlayToken',
-      {from: stableTokenBeneficiary, log: true, autoMine: true},
-      'transfer',
-      account,
-      parseEther(amount.toString())
-    );
-  }
-
-  // TODO giftKeys
 };
 export default func;
 func.tags = ['StableToken', 'PlayToken'];
