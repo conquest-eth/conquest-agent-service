@@ -25,8 +25,8 @@
       <PanelButton class="m-1" label="Connect" on:click={connect}>
         Sign In
         <Help class="w-4 h-4">
-          By signingin in, you ll be able to send spaceships and see your
-          travelling fleets.
+          By signing in, you ll be able to send spaceships and see your
+          travelling fleets (if any).
         </Help>
       </PanelButton>
     </div>
