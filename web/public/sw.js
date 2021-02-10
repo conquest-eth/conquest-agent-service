@@ -20,7 +20,12 @@ self.addEventListener('message', function (event) {
 const pathname = self.location.pathname;
 const base = pathname.substr(0, pathname.length - 5); // assume service worker is named `sw.js`
 
-const urlsToPreCache = URLS_TO_PRE_CACHE.map((v) => base + v);
+const urlsToPreCache = URLS_TO_PRE_CACHE.concat([
+  // add some extra assets to pre-cache
+  'planets.png',
+  'conquest.png',
+  'logo_with_text_on_black.png',
+]).map((v) => base + v);
 
 // Regexes are sorted by priority
 
