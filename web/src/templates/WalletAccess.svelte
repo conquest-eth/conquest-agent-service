@@ -82,21 +82,21 @@
 <slot />
 
 {#if $chain.state === 'Idle' && !$chain.connecting && $fallback.state === 'Idle' && !$fallback.connecting}
-  <div class="w-full flex items-center justify-center fixed z-40">
+  <div class="w-full flex items-center justify-center fixed z-10">
     <p
       class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
       Please Connect.
     </p>
   </div>
 {:else if $chain.state === 'Idle' && !$chain.connecting && $fallback.error}
-  <div class="w-full flex items-center justify-center fixed z-40">
+  <div class="w-full flex items-center justify-center fixed z-10">
     <p
       class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
       Network Issues, Please Connect.
     </p>
   </div>
 {:else if $chain.notSupported}
-  <div class="w-full flex items-center justify-center fixed z-40">
+  <div class="w-full flex items-center justify-center fixed z-10">
     <p
       class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
       Wrong network, use
