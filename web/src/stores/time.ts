@@ -2,11 +2,12 @@ import {readable} from 'svelte/store';
 
 // TODO investigate why init.ts is not called first
 if (!window.startTime) {
-  console.log('need to set startTime');
+  // console.log('need to set startTime');
   window.startTime = Math.floor(Date.now() / 1000);
-} else {
-  console.log('startTime already set');
 }
+// else {
+//   console.log('startTime already set');
+// }
 export let startTime = window.startTime;
 
 export function now(): number {
@@ -47,4 +48,4 @@ export const time = readable(now(), function start(set) {
   isCorrected,
   time,
 };
-console.log((window as any).time);
+// console.log((window as any).time);

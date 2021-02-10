@@ -8,9 +8,7 @@ hookup();
 
 window.params = getParamsFromURL();
 window.hashParams = getParamsFromURLHash();
-window.startTime = Math.floor(Date.now() / 1000);
-
-console.log({startTime: window.startTime});
+window.startTime = window.startTime || Math.floor(Date.now() / 1000);
 
 // if (window.hashParams.clearLocalStorage) {
 //   delete window.hashParams.clearLocalStorage;

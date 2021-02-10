@@ -22,7 +22,7 @@ const base = pathname.substr(0, pathname.length - 5); // assume service worker i
 
 const urlsToPreCache = URLS_TO_PRE_CACHE.concat([
   // add some extra assets to pre-cache
-  'planets.png',
+  'dist/assets/planets.png',
   'conquest.png',
   'logo_with_text_on_black.png',
 ]).map((v) => base + v);
