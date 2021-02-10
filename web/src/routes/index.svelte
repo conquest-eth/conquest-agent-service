@@ -1,12 +1,52 @@
 <script lang="ts">
   import WalletAccess from '../templates/WalletAccess.svelte';
   import MapScreen from '../app/MapScreen.svelte';
-  import {time, startTime} from '../stores/time';
+  import {time, startTime, now} from '../stores/time';
   import {fade} from 'svelte/transition';
   import ClaimTokenScreen from '../screens/ClaimTokenScreen.svelte';
   import privateAccount from '../stores/privateAccount';
   import Banner from '../components/Banner.svelte';
   import PlayCoin from '../components/PlayCoin.svelte';
+
+  let result;
+  try {
+    result = localStorage.getItem('_conquest_visited');
+  } catch (e) {}
+  const visited = result === 'true';
+
+  let stageTime = startTime;
+  let stage = visited ? 1 : 0;
+  let timeout: number | undefined;
+
+  function loaded(timeIn: number) {
+    return () => {
+      const diff = now() - stageTime;
+      if (diff > timeIn) {
+        nextStage();
+      } else {
+        timeout = (setTimeout(
+          nextStage,
+          (timeIn - diff) * 1000
+        ) as unknown) as number;
+      }
+    };
+  }
+
+  const gameLogoReady = visited ? loaded(2) : loaded(5);
+  const etherplayLogoReady = loaded(2);
+
+  function nextStage() {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    stageTime = now();
+    stage++;
+    if (stage === 2) {
+      try {
+        localStorage.setItem('_conquest_visited', 'true');
+      } catch (e) {}
+    }
+  }
 </script>
 
 <WalletAccess>
@@ -47,14 +87,18 @@
   {/if}
 </WalletAccess>
 
-{#if $time - startTime < 5}
-  <div class="fixed z-50 inset-0 overflow-y-auto bg-black" out:fade>
+{#if stage === 1}
+  <div
+    class="fixed z-50 inset-0 overflow-y-auto bg-black"
+    out:fade
+    on:click={() => nextStage()}>
     <div class="justify-center mt-32 text-center">
       <img
-        class="mb-8 mx-auto max-w-md"
+        class="mb-8 mx-auto max-w-md h-36"
         src="./conquest.png"
         alt="conquest.eth"
-        style="width:80%;" />
+        style="width:80%;"
+        on:load={() => gameLogoReady()} />
       <p class="m-6 mt-20 text-gray-500 text-2xl font-black">
         An unstoppable and open-ended game of war and diplomacy running on
         ethereum.
@@ -63,14 +107,18 @@
   </div>
 {/if}
 
-{#if $time - startTime < 2}
-  <div class="fixed z-50 inset-0 overflow-y-auto bg-black h-full" out:fade>
+{#if stage === 0}
+  <div
+    class="fixed z-50 inset-0 overflow-y-auto bg-black h-full"
+    out:fade
+    on:click={() => nextStage()}>
     <div class="justify-center text-center h-full flex items-center">
       <img
         class="mb-8 mx-auto max-w-xs"
         src="./logo_with_text_on_black.png"
         alt="etherplay.eth"
-        style="width:80%; heigh: 40%;" />
+        style="width:80%; heigh: 40%;"
+        on:load={() => etherplayLogoReady()} />
       <!-- <p class="m-6 text-gray-400 dark:text-gray-500 text-4xl font-black">
       presents
     </p> -->
