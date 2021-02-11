@@ -98,7 +98,7 @@
     </div>
   {/if}
 {:else}
-  <div class="absolute right-0 bg-gray-900 bg-opacity-80">
+  <div class="absolute right-0 bg-gray-900 bg-opacity-80 z-10">
     <PanelButton class="m-1" label="Connect" on:click={connect}>
       Connect
       <!-- <Help inverted={true} class="w-4 h-4">
