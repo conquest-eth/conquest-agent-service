@@ -7,7 +7,7 @@
 
   function reload() {
     $updateAvailable = false;
-    window.location.reload();
+    window.location.reload(true);
   }
 
   const base: string = window.basepath || '/';
