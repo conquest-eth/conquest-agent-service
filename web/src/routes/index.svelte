@@ -94,7 +94,7 @@
     on:click={() => nextStage()}>
     <div class="justify-center mt-32 text-center">
       <img
-        class="mb-8 mx-auto max-w-md h-36"
+        class="mb-8 mx-auto max-w-md"
         src="./conquest.png"
         alt="conquest.eth"
         style="width:80%;"
