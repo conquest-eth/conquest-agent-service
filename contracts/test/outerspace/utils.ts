@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */ // TODO remove
 import {increaseTime, waitFor, objMap} from '../test-utils';
-import {ethers, getUnnamedAccounts, deployments} from 'hardhat';
+import {ethers, getUnnamedAccounts, deployments, getNamedAccounts} from 'hardhat';
 import {BigNumber} from '@ethersproject/bignumber';
 import {Wallet} from '@ethersproject/wallet';
 import {keccak256} from '@ethersproject/solidity';
@@ -8,6 +8,7 @@ import {SpaceInfo} from 'planet-wars-common';
 import type {PlanetInfo} from 'planet-wars-common';
 import {ContractReceipt} from '@ethersproject/contracts';
 import {Provider} from '@ethersproject/providers';
+import {parseEther} from '@ethersproject/units';
 
 type AnyContract = any; // TODO ?
 type User = {address: string; [contractName: string]: AnyContract};
@@ -31,8 +32,23 @@ export async function setupOuterSpace(): Promise<{
   players: User[];
   provider: Provider;
 }> {
+  const {stableTokenBeneficiary} = await getNamedAccounts();
   const players = await getUnnamedAccounts();
   await deployments.fixture();
+
+  const distribution = [1000, 500, 3000, 100];
+  for (let i = 0; i < distribution.length; i++) {
+    const account = players[i];
+    const amount = distribution[i];
+    await deployments.execute(
+      'PlayToken',
+      {from: stableTokenBeneficiary, log: true, autoMine: true},
+      'transfer',
+      account,
+      parseEther(amount.toString())
+    );
+  }
+
   const playersAsContracts = [];
   for (const player of players) {
     const playerObj = await createPlayerAsContracts(player, [

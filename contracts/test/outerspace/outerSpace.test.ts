@@ -16,9 +16,7 @@ describe('OuterSpace', function () {
     //   stake: pointer.data.stats.stake,
     //   stakeMultiplier: spaceInfo.stakeMultiplier.toString(),
     // });
-    const amount = BigNumber.from(pointer.data.stats.stake).mul(
-      spaceInfo.stakeMultiplier
-    );
+    const amount = BigNumber.from(pointer.data.stats.stake).mul("1000000000000000000");
     await waitFor(
       players[0].PlayToken.transferAndCall(
         outerSpaceContract.address,
@@ -31,9 +29,7 @@ describe('OuterSpace', function () {
   it('user cannot acquire planet already onwed by another player', async function () {
     const {players, spaceInfo, outerSpaceContract} = await setupOuterSpace();
     const pointer = spaceInfo.findNextPlanet();
-    const amount = BigNumber.from(pointer.data.stats.stake).mul(
-      spaceInfo.stakeMultiplier
-    );
+    const amount = BigNumber.from(pointer.data.stats.stake).mul("1000000000000000000");
     await waitFor(
       players[0].PlayToken.transferAndCall(
         outerSpaceContract.address,
@@ -65,9 +61,7 @@ describe('OuterSpace', function () {
       outerSpaceContract,
       spaceInfo.findNextPlanet(p0).data
     );
-    const amount0 = BigNumber.from(planet0.stats.stake).mul(
-      spaceInfo.stakeMultiplier
-    );
+    const amount0 = BigNumber.from(planet0.stats.stake).mul("1000000000000000000");
     await waitFor(
       players[0].PlayToken.transferAndCall(
         outerSpaceContract.address,
@@ -75,9 +69,7 @@ describe('OuterSpace', function () {
         planet0.location.id
       )
     );
-    const amount1 = BigNumber.from(planet1.stats.stake).mul(
-      spaceInfo.stakeMultiplier
-    );
+    const amount1 = BigNumber.from(planet1.stats.stake).mul("1000000000000000000");
     await waitFor(
       players[1].PlayToken.transferAndCall(
         outerSpaceContract.address,
@@ -117,9 +109,7 @@ describe('OuterSpace', function () {
       outerSpaceContract,
       spaceInfo.findNextPlanet().data
     );
-    const amount = BigNumber.from(planet.stats.stake).mul(
-      spaceInfo.stakeMultiplier
-    );
+    const amount = BigNumber.from(planet.stats.stake).mul("1000000000000000000");
     await waitFor(
       players[0].PlayToken.transferAndCall(
         outerSpaceContract.address,

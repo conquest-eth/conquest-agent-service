@@ -10,6 +10,7 @@ describe('JS <-> Solidity equivalence', function () {
     const planet = await players[0].OuterSpace.callStatic.getPlanet(
       location.id
     );
+    delete (stats as any).name; // TODO
     const statsFromContract = objMap(planet.stats, convertPlanetCallData);
     console.log({stats});
     console.log({statsFromContract});

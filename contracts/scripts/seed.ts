@@ -44,9 +44,7 @@ async function main() {
     await waitFor(
       playTokenContract.transferAndCall(
         outerSpaceContract.address,
-        BigNumber.from(planetPointer.data.stats.stake).mul(
-          spaceInfo.stakeMultiplier
-        ),
+        BigNumber.from(planetPointer.data.stats.stake).mul("1000000000000000000"),
         planetPointer.data.location.id
       )
     );

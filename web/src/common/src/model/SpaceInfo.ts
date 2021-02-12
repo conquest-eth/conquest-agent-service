@@ -182,8 +182,8 @@ export class SpaceInfo {
       normal16(
         data,
         4,
-        '0x0001000200030004000500070009000A000A000C000F00140019001E00320064'
-      ) * 5;
+        '0x000400050005000A000A000F000F00140014001E001E00280028005000500064'
+      );
     const production = normal16(
       data,
       12,
@@ -195,7 +195,7 @@ export class SpaceInfo {
     const defense = 4000 + defenseRoll * 400;
     const speedRoll = normal8(data, 36);
     const speed = 5005 + speedRoll * 333;
-    const natives = 2000 + normal8(data, 44) * 100;
+    const natives = 12500 + normal8(data, 44) * 2500;
 
     // const type = value8Mod(data, 60, 23);
     const attackGrade = attackRoll < 6 ? 0 : attackRoll < 10 ? 1 : 2;

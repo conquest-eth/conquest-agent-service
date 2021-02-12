@@ -602,7 +602,7 @@ contract OuterSpace is Proxied {
     }
 
     function _natives(bytes32 data) internal pure returns (uint16) {
-        return 5000 + data.normal8(44) * 1000; // 5,000 - 12,500 - 20,000
+        return 12500 + data.normal8(44) * 2500; // 12,500 - 31,250 - 50,000
     }
 
     function _exists(bytes32 data) internal pure returns (bool) {
