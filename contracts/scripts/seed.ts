@@ -1,5 +1,11 @@
 import {BigNumber} from '@ethersproject/bignumber';
-import {getUnnamedAccounts, ethers, deployments} from 'hardhat';
+import {parseEther} from '@ethersproject/units';
+import {
+  getUnnamedAccounts,
+  ethers,
+  deployments,
+  getNamedAccounts,
+} from 'hardhat';
 import {SpaceInfo} from 'planet-wars-common';
 
 // TODO move to util
@@ -7,7 +13,21 @@ const waitFor = <T>(p: Promise<{wait: () => Promise<T>}>) =>
   p.then((tx) => tx.wait());
 
 async function main() {
+  const {stableTokenBeneficiary} = await getNamedAccounts();
   const players = await getUnnamedAccounts();
+
+  const distribution = [1000, 500, 3000, 100];
+  for (let i = 0; i < distribution.length; i++) {
+    const account = players[i];
+    const amount = distribution[i];
+    await deployments.execute(
+      'PlayToken',
+      {from: stableTokenBeneficiary, log: true, autoMine: true},
+      'transfer',
+      account,
+      parseEther(amount.toString())
+    );
+  }
 
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
   const spaceInfo = new SpaceInfo(OuterSpaceDeployment.linkedData);

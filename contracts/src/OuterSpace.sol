@@ -573,10 +573,15 @@ contract OuterSpace is Proxied {
     }
 
     function _stake(bytes32 data) internal pure returns (uint16) {
-        return data.normal16(4, 0x0001000200030004000500070009000A000A000C000F00140019001E00320064) * 5; //_genesis.r_u256_minMax(location, 3, 10**18, 1000**18),
+        // 4,5,5,10,10,15,15, 20, 20, 30,30,40,40,80,80,100
+        return data.normal16(4, 0x000400050005000A000A000F000F00140014001E001E00280028005000500064);
     }
 
     function _production(bytes32 data) internal pure returns (uint16) {
+        // TODO TRY : 1800,2100,2400,2700,3000,3300,3600, 3600, 3600, 3600,4000,4400,4800,5400,6200,7200 ?
+
+        // 1800,2100,2400,2700,3000,3300,3600, 3600, 3600, 3600,4200,5400,6600,7800,9000,12000
+        // 0x0708083409600a8c0bb80ce40e100e100e100e101068151819c81e7823282ee0
         return data.normal16(12, 0x0708083409600a8c0bb80ce40e100e100e100e101068151819c81e7823282ee0); // per hour
     }
 

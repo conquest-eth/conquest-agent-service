@@ -125,7 +125,7 @@
         <div class="box-border rounded-md bg-gray-600">
           <div
             class="w-full h-3 rounded-md bg-yellow-400"
-            style="width: {Math.floor($planet.stats.stake / 5)}%;" />
+            style="width: {Math.floor($planet.stats.stake)}%;" />
         </div>
       </div>
     </div>
