@@ -20,8 +20,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const genesisHash =
     '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
   const resolveWindow = hours(2);
-  const timePerDistance = minutes(20);
-  const exitDuration = hours(2*24);
+  const timePerDistance = minutes(60);
+  const exitDuration = hours(3*24);
+  const acquireNumSpaceships = 100000;
 
   // use a command to increase time in 1337
   // if (chainId === '1337') {
@@ -41,6 +42,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       resolveWindow,
       timePerDistance,
       exitDuration,
+      acquireNumSpaceships
     ],
     proxy: hre.network.name !== 'mainnet' ? 'postUpgrade' : undefined,
     log: true,

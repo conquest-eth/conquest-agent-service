@@ -26,6 +26,7 @@ contract OuterSpace is Proxied {
     uint256 internal immutable _resolveWindow;
     uint256 internal immutable _timePerDistance;
     uint256 internal immutable _exitDuration;
+    uint32 internal immutable _acquireNumSpaceships;
 
     mapping(uint256 => Planet) internal _planets;
     mapping(uint256 => Fleet) internal _fleets;
@@ -89,11 +90,12 @@ contract OuterSpace is Proxied {
     constructor(
         IERC20 stakingToken,
         bytes32 genesis,
-        uint16 resolveWindow,
-        uint16 timePerDistance,
-        uint16 exitDuration
+        uint32 resolveWindow,
+        uint32 timePerDistance,
+        uint32 exitDuration,
+        uint32 acquireNumSpaceships
     ) {
-        uint16 t = timePerDistance / 4; // the coordinates space is 4 times bigger
+        uint32 t = timePerDistance / 4; // the coordinates space is 4 times bigger
         require(t * 4 == timePerDistance, "TIMEPDIST_NOT_DIVISIBLE_4");
 
         _stakingToken = stakingToken;
@@ -101,16 +103,18 @@ contract OuterSpace is Proxied {
         _resolveWindow = resolveWindow;
         _timePerDistance = t;
         _exitDuration = exitDuration;
+        _acquireNumSpaceships = acquireNumSpaceships;
 
-        postUpgrade(stakingToken, genesis, resolveWindow, timePerDistance, exitDuration);
+        postUpgrade(stakingToken, genesis, resolveWindow, timePerDistance, exitDuration, acquireNumSpaceships);
     }
 
     function postUpgrade(
         IERC20,
         bytes32,
-        uint16,
-        uint16,
-        uint16
+        uint32,
+        uint32,
+        uint32,
+        uint32
     ) public proxied {
         if (_discovered.minX == 0) {
             _discovered = Discovered({minX: 12, maxX: 12, minY: 12, maxY: 12});
@@ -362,16 +366,16 @@ contract OuterSpace is Proxied {
             }
         }
         if (justExited) {
-            currentNumSpaceships = 3600;
+            currentNumSpaceships = _acquireNumSpaceships;
             _setPlanetAfterExit(location, owner, planet, sender, _setActiveNumSpaceships(true, currentNumSpaceships));
         } else {
             planet.owner = sender;
             if (defense != 0) {
-                (uint32 attackerLoss, ) = _computeFight(3600, defense, 10000, _defense(data)); // attacker alwasy win as defense (and stats.native) is restricted to 3500
-                require(attackerLoss <= 3600, "FAILED_CAPTURED");
-                currentNumSpaceships = 3600 - attackerLoss;
+                (uint32 attackerLoss, ) = _computeFight(_acquireNumSpaceships, defense, 10000, _defense(data)); // attacker alwasy win as defense (and stats.native) is restricted to 3500
+                require(attackerLoss <= _acquireNumSpaceships, "FAILED_CAPTURED");
+                currentNumSpaceships = _acquireNumSpaceships - attackerLoss;
             } else {
-                currentNumSpaceships += 3600;
+                currentNumSpaceships += _acquireNumSpaceships;
             }
 
             // planet.exitTime = 0; // should not be needed : // TODO actualiseExit
@@ -598,7 +602,7 @@ contract OuterSpace is Proxied {
     }
 
     function _natives(bytes32 data) internal pure returns (uint16) {
-        return 2000 + (data.normal8(44) * uint16(100)); // 2,000 - 2,750 - 3,500
+        return 5000 + data.normal8(44) * 1000; // 5,000 - 12,500 - 20,000
     }
 
     function _exists(bytes32 data) internal pure returns (bool) {
