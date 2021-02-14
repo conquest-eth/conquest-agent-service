@@ -106,6 +106,7 @@
     "reconnect": "npm-run-all -l --parallel common:dev web subgraph:setup contracts subgraph",
     "shell:start": "npm-run-all -l externals:down --parallel shell:common shell:web shell:externals --sequential common:build subgraph:setup contracts:clean shell:contracts shell:subgraph seed",
     "shell:dev": "npm-run-all -l --parallel shell:common shell:web --sequential common:build subgraph:setup contracts:clean shell:contracts shell:subgraph seed",
+    "shell:min": "npm-run-all -l --parallel shell:common shell:web --sequential common:build contracts:clean shell:contracts seed",
     "shell:reconnect": "npm-run-all -l --parallel shell:common shell:web --sequential common:build subgraph:setup shell:contracts shell:subgraph",
 
     "// No Subgraph": "",

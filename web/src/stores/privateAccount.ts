@@ -12,6 +12,8 @@ import {
   compressToUint8Array,
   decompressFromUint8Array,
 } from '../lib/utils';
+import localCache from '../lib/utils/localCache';
+import {VERSION, params} from '../init';
 
 import contractsInfo from '../contracts.json';
 import {BaseStoreWithData} from '../lib/utils/stores';
@@ -61,26 +63,18 @@ type Contracts = {
   [name: string]: Contract;
 };
 
+const SYNC_URI = params.sync || import.meta.env.SNOWPACK_PUBLIC_SYNC_URI;
+const DB_NAME = 'conquest-v' + VERSION;
+
 const LOCAL_ONLY_STORAGE = '_local_only_';
 function LOCAL_ONLY_STORAGE_KEY(address: string, chainId: string) {
-  const localStoragePrefix =
-    window.basepath &&
-    (window.basepath.startsWith('/ipfs/') ||
-      window.basepath.startsWith('/ipns/'))
-      ? window.basepath.slice(6)
-      : ''; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
-  return `${localStoragePrefix}_${LOCAL_ONLY_STORAGE}_${address.toLowerCase()}_${chainId}`;
+
+  return `${LOCAL_ONLY_STORAGE}_${address.toLowerCase()}_${chainId}`;
 }
 
 const LOCAL_STORAGE_PRIVATE_ACCOUNT = '_privateAccount';
 function LOCAL_STORAGE_KEY(address: string, chainId: string) {
-  const localStoragePrefix =
-    window.basepath &&
-    (window.basepath.startsWith('/ipfs/') ||
-      window.basepath.startsWith('/ipns/'))
-      ? window.basepath.slice(6)
-      : ''; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
-  return `${localStoragePrefix}_${LOCAL_STORAGE_PRIVATE_ACCOUNT}_${address.toLowerCase()}_${chainId}`;
+  return `${LOCAL_STORAGE_PRIVATE_ACCOUNT}_${address.toLowerCase()}_${chainId}`;
 }
 
 class PrivateAccountStore extends BaseStoreWithData<
@@ -141,7 +135,7 @@ class PrivateAccountStore extends BaseStoreWithData<
 
   async _loadData(address: string, chainId: string) {
     // TODO load from signature based DB
-    const fromStorage = localStorage.getItem(
+    const fromStorage = localCache.getItem(
       LOCAL_STORAGE_KEY(address, chainId)
     );
     let data = {fleets: {}, exits: {}, captures: {}};
@@ -163,7 +157,7 @@ class PrivateAccountStore extends BaseStoreWithData<
   }
 
   async syncRequest(method: string, params: string[]): Promise<Response> {
-    return await fetch('https://cf-worker-2.rim.workers.dev/', {
+    return await fetch(SYNC_URI, {
       // TODO env variable
       method: 'POST',
       body: JSON.stringify({
@@ -194,7 +188,7 @@ class PrivateAccountStore extends BaseStoreWithData<
       }
       const response = await this.syncRequest('wallet_getString', [
         this.$store.wallet.address,
-        'planet-wars-test',
+        DB_NAME,
       ]);
       json = await response.json();
       if (json.error) {
@@ -374,7 +368,7 @@ class PrivateAccountStore extends BaseStoreWithData<
 
       const counter = syncDownResult.counter.add(1).toString();
       const signature = await this.$store.wallet.signMessage(
-        'put:' + 'planet-wars-test' + ':' + counter + ':' + data
+        'put:' + DB_NAME + ':' + counter + ':' + data
       );
 
       let json;
@@ -382,7 +376,7 @@ class PrivateAccountStore extends BaseStoreWithData<
       try {
         const response = await this.syncRequest('wallet_putString', [
           this.$store.wallet.address,
-          'planet-wars-test',
+          DB_NAME,
           counter,
           data,
           signature,
@@ -413,11 +407,7 @@ class PrivateAccountStore extends BaseStoreWithData<
     }
     const toStorage = JSON.stringify(data);
     const encrypted = this.encrypt(toStorage);
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY(address, chainId), encrypted);
-    } catch (e) {
-      console.error(e);
-    }
+    localCache.setItem(LOCAL_STORAGE_KEY(address, chainId), encrypted);
   }
 
   async _setData(
@@ -445,15 +435,15 @@ class PrivateAccountStore extends BaseStoreWithData<
       throw new Error(`no this.$store.wallet`);
     }
     const key = LOCAL_STORAGE_KEY(wallet.address, wallet.chain.chainId);
-    localStorage.removeItem(key);
+    localCache.removeItem(key);
     const data = '';
     const counter = syncDownResult.counter.add(1).toString();
     const signature = await this.$store.wallet.signMessage(
-      'put:' + 'planet-wars-test' + ':' + counter + ':' + data
+      'put:' + DB_NAME + ':' + counter + ':' + data
     );
     await this.syncRequest('wallet_putString', [
       this.$store.wallet.address,
-      'planet-wars-test',
+      DB_NAME,
       counter,
       data,
       signature,
@@ -473,14 +463,9 @@ class PrivateAccountStore extends BaseStoreWithData<
       let storage: LocalData = {
         syncRemotely: true,
       };
-      let fromStorage;
-      try {
-        fromStorage = localStorage.getItem(
-          LOCAL_ONLY_STORAGE_KEY(walletAddress, chainId)
-        );
-      } catch (e) {
-        console.error(e);
-      }
+      const fromStorage = localCache.getItem(
+        LOCAL_ONLY_STORAGE_KEY(walletAddress, chainId)
+      );
       if (fromStorage) {
         try {
           storage = JSON.parse(fromStorage);
@@ -826,14 +811,10 @@ class PrivateAccountStore extends BaseStoreWithData<
 
       if (storeSignatureLocally) {
         const toStorage = JSON.stringify({signature, syncRemotely});
-        try {
-          localStorage.setItem(
-            LOCAL_ONLY_STORAGE_KEY(walletAddress, wallet.chain.chainId),
-            toStorage
-          );
-        } catch (e) {
-          console.error(e);
-        }
+        localCache.setItem(
+          LOCAL_ONLY_STORAGE_KEY(walletAddress, wallet.chain.chainId),
+          toStorage
+        );
       }
 
       this.setPartial({step: 'LOADING', syncEnabled: syncRemotely});

@@ -29,7 +29,7 @@
 <!-- disable prompt -->
 <NoInstallPrompt />
 <NewVersionNotification />
-<Router {routes} globalQueryStrings={['subgraph', 'debug', 'log', 'trace']}>
+<Router {routes} globalQueryStrings={['subgraph', 'debug', 'log', 'trace', 'sync']}>
   <Notifications />
   <!-- <Navbar links={['Home', 'Wallet']} /> -->
   <CurrentPage>

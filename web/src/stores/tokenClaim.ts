@@ -4,6 +4,7 @@ import type {ChainStore, WalletStore} from 'web3w';
 import {BaseStore} from '../lib/utils/stores';
 import {Wallet} from '@ethersproject/wallet';
 import {rebuildLocationHash} from '../lib/utils/web';
+import {hashParams} from '../init';
 
 type TokenClaim = {
   inUrl: boolean;
@@ -14,7 +15,7 @@ type TokenClaim = {
 class TokenClaimStore extends BaseStore<TokenClaim> {
   constructor(private wallet: WalletStore, private chain: ChainStore) {
     super({
-      inUrl: !!window.hashParams.tokenClaim,
+      inUrl: !!hashParams.tokenClaim,
       state: 'Loading',
     });
 
@@ -38,12 +39,12 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
   }
 
   getClaimtWallet(): Wallet {
-    return new Wallet(window.hashParams.tokenClaim);
+    return new Wallet(hashParams.tokenClaim);
   }
 
   clearURL(): void {
-    delete window.hashParams.tokenClaim;
-    rebuildLocationHash(window.hashParams);
+    delete hashParams.tokenClaim;
+    rebuildLocationHash(hashParams);
     this.setPartial({inUrl: false});
   }
 

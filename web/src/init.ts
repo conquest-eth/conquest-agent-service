@@ -6,12 +6,20 @@ import {
 } from './lib/utils/web';
 hookup();
 
-window.params = getParamsFromURL();
-window.hashParams = getParamsFromURLHash();
-window.startTime = window.startTime || Math.floor(Date.now() / 1000);
+console.log('init');
+export let startTime = Math.floor(Date.now() / 1000);
+export const hashParams = getParamsFromURLHash();
+export const params = getParamsFromURL();
+export const VERSION = "1";
 
-// if (window.hashParams.clearLocalStorage) {
-//   delete window.hashParams.clearLocalStorage;
-//   rebuildLocationHash(window.hashParams);
-//   localStorage.clear();
-// }
+function setWindowStartTime() {
+  console.log({startTime});
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).startTime = startTime;
+}
+setWindowStartTime()
+
+export function init(): void {
+  startTime = Math.floor(Date.now() / 1000);
+  setWindowStartTime()
+}

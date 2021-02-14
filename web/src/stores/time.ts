@@ -1,14 +1,7 @@
 import {readable} from 'svelte/store';
+import {startTime as initStartTime} from '../init';
 
-// TODO investigate why init.ts is not called first
-if (!window.startTime) {
-  // console.log('need to set startTime');
-  window.startTime = Math.floor(Date.now() / 1000);
-}
-// else {
-//   console.log('startTime already set');
-// }
-export let startTime = window.startTime;
+export let startTime = initStartTime;
 
 export function now(): number {
   return Math.floor(performance.now() / 1000) + startTime;
