@@ -19,7 +19,7 @@ const offset = 0;
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {claimKeyDistributor} = await hre.getNamedAccounts();
-  const {network} = hre;
+  const {network, getChainId} = hre;
   const {execute} = hre.deployments;
 
   let mnemonic =
@@ -59,13 +59,29 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     totalTokenAmount
   );
 
+  let explorerLink = '';
+  let etherscanNetworkPrefix: string | undefined;
+  const chainId = await getChainId();
+  if (chainId === '1') {
+    etherscanNetworkPrefix = '';
+  } else if (chainId === '4') {
+    etherscanNetworkPrefix = 'rinkeby.';
+  } else if (chainId === '42') {
+    etherscanNetworkPrefix = 'kovan.';
+  } else if (chainId === '5') {
+    etherscanNetworkPrefix = 'goerli.';
+  } // TODO more
+  if (etherscanNetworkPrefix !== undefined) {
+    explorerLink = `https://${etherscanNetworkPrefix}etherscan.io/address/`;
+  }
+
   fs.writeFileSync(`.${network.name}.claimKeys`, JSON.stringify(claimKeys, null, 2));
   let csv = 'used,address,key,url,qrURL\n';
   for (const claimKey of claimKeys) {
     const url = 'https://conquest.eth.link/#tokenClaim=' + claimKey;
     const qrURL = await qrcode.toDataURL(url);
     const address = (new Wallet(claimKey)).address;
-    csv += `false,https://etherscan.io/address/${address},${claimKey},${url},"${qrURL}"\n`;
+    csv += `false,${explorerLink}${address},${claimKey},${url},"${qrURL}"\n`;
   }
   fs.writeFileSync(`.${network.name}.claimKeys.csv`, csv);
 }
