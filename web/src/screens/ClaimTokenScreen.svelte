@@ -5,7 +5,7 @@
 </script>
 
 {#if $tokenClaim.inUrl}
-  <div class="fixed z-10 inset-0 overflow-y-auto bg-black">
+  <div class="fixed z-40 inset-0 overflow-y-auto bg-black">
     <div class="relative bg-gray-900 border-2 border-cyan-300 top-1 mx-1">
       <div class="max-w-screen-xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
         <div class="sm:text-center sm:px-16 text-cyan-300 text-center">
@@ -35,7 +35,15 @@
         {:else if $tokenClaim.state === 'Claiming'}
           <p class="mt-5">Please wait while the claim is being executed...</p>
         {:else if $tokenClaim.state === 'Claimed'}
-          <p class="m-5">The tokens have been claimed.</p>
+          <p class="m-5 text-green-500">The tokens are now yours!</p>
+          <Button
+            class="mt-4"
+            label="continue"
+            on:click={() => tokenClaim.clearURL()}>
+            Continue
+          </Button>
+        {:else if $tokenClaim.state === 'AlreadyClaimed'}
+          <p class="m-5 text-red-500">The tokens have already been claimed. No more tokens to be given.</p>
           <Button
             class="mt-4"
             label="continue"
