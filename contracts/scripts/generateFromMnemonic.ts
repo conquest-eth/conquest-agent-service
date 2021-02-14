@@ -18,48 +18,16 @@ if (isNaN(numClaimKey) || numClaimKey === 0 || numClaimKey > 100) {
 const offset = 0;
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
-  const {claimKeyDistributor} = await hre.getNamedAccounts();
   const {network} = hre;
-  const {execute} = hre.deployments;
 
-  let mnemonic =
-    'curious erupt response napkin sick ketchup hard estate comic club female sudden';
-  if (network.live) {
-    mnemonic = Wallet.createRandom().mnemonic.phrase;
-    const pastMnemonicsPath = `.${network.name}.claimKeys.mnemonics`;
-    let pastMnemonics = [];
-    try {
-      pastMnemonics = JSON.parse(fs.readFileSync(pastMnemonicsPath).toString());
-    } catch (e) {}
-    pastMnemonics.push(mnemonic);
-    fs.writeFileSync(pastMnemonicsPath, JSON.stringify(pastMnemonics));
-  }
-
-  const claimKeyETHAmount = parseEther('0.1');
-  const claimKeyTokenAmount = parseEther('100');
-
+  const mnemonic = 'TODO';
   const claimKeys = [];
-  const addresses = [];
-  let totalETHAmount = BigNumber.from(0);
-  let totalTokenAmount = BigNumber.from(0);
   for (let i = offset; i < numClaimKey + offset; i++) {
     const path = "m/44'/60'/" + i + "'/0/0";
     const wallet = Wallet.fromMnemonic(mnemonic, path);
     claimKeys.push(wallet.privateKey);
-    addresses.push(wallet.address);
-    totalETHAmount = totalETHAmount.add(claimKeyETHAmount);
-    totalTokenAmount = totalTokenAmount.add(claimKeyTokenAmount);
   }
 
-  await execute(
-    'PlayToken',
-    {from: claimKeyDistributor, value: totalETHAmount.toString(), log: true},
-    'distributeAlongWithETH',
-    addresses,
-    totalTokenAmount
-  );
-
-  fs.writeFileSync(`.${network.name}.claimKeys`, JSON.stringify(claimKeys, null, 2));
   let csv = 'used,address,key,url,qrURL\n';
   for (const claimKey of claimKeys) {
     const url = 'https://conquest.eth.link/#tokenClaim=' + claimKey;
@@ -67,7 +35,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     const address = (new Wallet(claimKey)).address;
     csv += `false,https://etherscan.io/address/${address},${claimKey},${url},"${qrURL}"\n`;
   }
-  fs.writeFileSync(`.${network.name}.claimKeys.csv`, csv);
+  fs.writeFileSync(`.${network.name}.claimKeys.csv.test`, csv);
 }
 if (require.main === module) {
   func(hre);

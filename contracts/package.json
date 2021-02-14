@@ -45,16 +45,17 @@
     "staging:deploy": "hardhat --network staging deploy",
     "staging:export": "hardhat --network staging export",
     "staging:seed": "cross-env HARDHAT_NETWORK=staging ts-node --files scripts/seed.ts",
+    "staging:run": "cross-env HARDHAT_NETWORK=staging ts-node --files",
     "rinkeby:deploy": "hardhat --network rinkeby deploy",
     "rinkeby:export": "hardhat --network rinkeby export",
     "rinkeby:seed": "cross-env HARDHAT_NETWORK=rinkeby ts-node --files scripts/seed.ts",
+    "rinkeby:run": "cross-env HARDHAT_NETWORK=rinkeby ts-node --files",
     "kovan:deploy": "hardhat --network kovan deploy",
     "kovan:export": "hardhat --network kovan export",
     "goerli:deploy": "hardhat --network goerli deploy",
     "goerli:export": "hardhat --network goerli export",
     "mainnet:deploy": "hardhat --network mainnet deploy",
     "mainnet:export": "hardhat --network mainnet export",
-    "rinkeby:run": "cross-env HARDHAT_NETWORK=rinkeby ts-node --files",
     "hardhat": "hardhat"
   }
 }
