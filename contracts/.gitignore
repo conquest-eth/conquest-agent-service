@@ -2,6 +2,7 @@ coverage*
 
 cache/
 artifacts/
+metadata/
 
 node_modules/
 .env

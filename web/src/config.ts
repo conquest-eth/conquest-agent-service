@@ -1,6 +1,7 @@
 const chainId = import.meta.env.SNOWPACK_PUBLIC_CHAIN_ID;
 let nodeUrl: string | undefined;
 let finality = 12;
+let blockTime = 15;
 if (chainId !== '1') {
   finality = 5; // TODO
 }
@@ -13,6 +14,7 @@ if (chainId === '1337' || chainId === '31337') {
     nodeUrl = 'http://localhost:8545';
   }
   finality = 2;
+  blockTime = 5;
 }
 
 if (!nodeUrl) {
@@ -22,4 +24,4 @@ if (!nodeUrl) {
   }
 }
 
-export {finality, nodeUrl, chainId};
+export {finality, nodeUrl, chainId, blockTime};

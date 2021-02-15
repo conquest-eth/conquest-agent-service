@@ -1,10 +1,11 @@
+import { blockTime } from '../config';
 import {readable} from 'svelte/store';
 import {startTime as initStartTime} from '../init';
 
 export let startTime = initStartTime;
 
 export function now(): number {
-  return Math.floor(performance.now() / 1000) + startTime;
+  return Math.floor(performance.now() / 1000) + startTime - blockTime;
 }
 
 let _corrected = false;

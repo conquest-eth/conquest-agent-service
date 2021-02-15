@@ -17,6 +17,11 @@ if (isNaN(numClaimKey) || numClaimKey === 0 || numClaimKey > 100) {
 }
 const offset = 0;
 
+let mainURL = 'https://conquest-rinkeby.on.fleek.co';
+if (!mainURL.endsWith('/')) {
+  mainURL = mainURL + '/';
+}
+
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {claimKeyDistributor} = await hre.getNamedAccounts();
   const {network, getChainId} = hre;
@@ -36,7 +41,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   }
 
   const claimKeyETHAmount = parseEther('0.1');
-  const claimKeyTokenAmount = parseEther('100');
+  const claimKeyTokenAmount = parseEther('200');
 
   const claimKeys = [];
   const addresses = [];
@@ -78,7 +83,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   fs.writeFileSync(`.${network.name}.claimKeys`, JSON.stringify(claimKeys, null, 2));
   let csv = 'used,address,key,url,qrURL\n';
   for (const claimKey of claimKeys) {
-    const url = 'https://conquest.eth.link/#tokenClaim=' + claimKey;
+    const url = `${mainURL}#tokenClaim=${claimKey}`;
     const qrURL = await qrcode.toDataURL(url);
     const address = (new Wallet(claimKey)).address;
     csv += `false,${explorerLink}${address},${claimKey},${url},"${qrURL}"\n`;

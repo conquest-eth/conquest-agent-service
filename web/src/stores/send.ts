@@ -118,7 +118,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       from: {...from},
       fleetAmount,
       duration: fleetDuration, // TODO stricly speaking not necessary but allow us to not need to refetch the stats from spaceInfo
-      launchTime: now(), //TODO adjust + service to adjust once tx is mined // use block time instead of Date.now
+      launchTime: now(),
       owner: wallet.address,
       sendTxHash: tx.hash,
       secret: secret,
