@@ -14,6 +14,8 @@
     const start = new Date(timestamp * 1000);
     const end = new Date((timestamp + 2 * 60)  * 1000);
 
+    // const dropElem = document.getElementById('addeventatc1-drop') as HTMLElement;
+
     const children = elem.children;
     for (const child of children) {
       console.log(child.className);
@@ -41,6 +43,7 @@
     <span class="location">Location of the event</span>
     */
   })
+
 
   onDestroy(() => {
     if (elem) {

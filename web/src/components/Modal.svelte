@@ -66,7 +66,7 @@
 
   <!--modal-->
   <div
-    class="absolute border-2 w-11/12 md:max-w-md mx-auto overflow-y-auto text-cyan-300 border-cyan-300 bg-gray-900 ">
+    class="absolute border-2 w-11/12 md:max-w-md mx-auto overflow-y-auto text-cyan-300 border-cyan-300 bg-gray-900  max-h-screen">
     {#if globalCloseButton}
       <div
         on:click={close}

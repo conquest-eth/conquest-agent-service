@@ -23,15 +23,33 @@
 
 <Modal>
   <div class="text-center">
-    <p class="mb-4">Once the transaction is mined, the fleet will take {timeToText(duration, {verbose: true})} to reach the destination. Assuming it get mined instantly, it should arrive on {new Date(arrival * 1000).toString()}.</p>
+    <p class="mb-4">
+      Once the transaction is mined, the fleet will take
+      {timeToText(duration, {verbose: true})}
+      to reach the destination. Assuming it get mined instantly, it should
+      arrive on
+      {new Date(arrival * 1000).toString()}.
+    </p>
 
-    <p class="mb-4">Remember you need to ensure to execute the "resolution" transaction at that time. See <a href="./help" target="_blank">Help</a> for more details.</p>
+    <p class="mb-4">
+      Remember you need to ensure to execute the "resolution" transaction at
+      that time. See
+      <a href="./help" target="_blank">Help</a>
+      for more details.
+    </p>
 
-    <p class="mb-4">Or as always if you can have a computer running permanently, you can setup an agent <a href="./agent" target="_blank">here</a></p>
+    <p class="mb-4">
+      Or as always if you can have a computer running permanently, you can setup
+      an agent
+      <a href="./agent" target="_blank">here</a>
+    </p>
 
-    <p>You can also create a reminder here</p>
+    <p class="mb-4">You can also create a reminder here</p>
 
-    <AddToCalendar title="conquest.eth: Come Back To Resolve Fleet in Time!" description="Come back to conquest.eth and resolve your fleet." timestamp={arrival}/>
+    <AddToCalendar
+      title="conquest.eth: Come Back To Resolve Fleet in Time!"
+      description="Come back to conquest.eth and resolve your fleet."
+      timestamp={arrival} />
 
     <PanelButton
       label="OK"

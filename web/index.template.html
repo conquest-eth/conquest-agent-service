@@ -5,19 +5,24 @@
     <title>{{title}}</title>
     <!--SCRIPTS-->
     <link rel="stylesheet" href="/dist/global.css" />
+
+    <!-- AddEvent -->
+	  <link rel="stylesheet" href="/atc/css/theme6.css" type="text/css" media="screen" />
     <script type="text/javascript" src="/atc/atc.min.js" async defer></script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <script type="module" src="/dist/index.js"></script>
-    <div id="addeventatc1" style="display: none;" title="Add to Calendar" class="addeventatc">
+    <div id="addeventatc1" style="display: none;" title="Add to Calendar" class="addeventatc" data-styling="none">
       Add to Calendar
+      <span class="arrow">&nbsp;</span>
       <span class="start"></span>
       <span class="end"></span>
       <span class="timezone"></span>
       <span class="title"></span>
       <span class="description"></span>
       <span class="location"></span>
+      <span class="all_day_event">false</span>
     </div>
   </body>
 </html>

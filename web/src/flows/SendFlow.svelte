@@ -22,13 +22,16 @@
     </p>
   </Banner>
 {:else if $sendFlow.step === 'CHOOSE_FLEET_AMOUNT'}
+  <!-- <SpaceshipsSent /> -->
   <SendingSpaceships />
 {:else if $sendFlow.step === 'SUCCESS'}
-  <SpaceshipsSent/>
+  <SpaceshipsSent />
 {:else if $sendFlow.step === 'CONNECTING'}
-<Modal>Connecting...</Modal>
+  <Modal>Connecting...</Modal>
 {:else if $sendFlow.step === 'CREATING_TX'}
-<Modal>...</Modal>
+  <Modal>...</Modal>
 {:else if $sendFlow.step === 'WAITING_TX'}
-<Modal>Please Accept the Transaction...</Modal>
-{:else}<Modal>...</Modal>{/if}
+  <Modal>Please Accept the Transaction...</Modal>
+{:else}
+  <Modal>...</Modal>
+{/if}
