@@ -7,7 +7,7 @@
 <Modal>
   {#if $resolveFlow.step === 'SUCCESS'}
     <div class="text-center">
-      <p class="mb-4">The fleet will resovle if mined in time</p>
+      <p class="mb-4">The fleet will resolve if mined in time</p>
       <PanelButton
         label="OK"
         on:click={() => resolveFlow.acknownledgeSuccess()}>

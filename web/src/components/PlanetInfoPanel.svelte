@@ -8,7 +8,7 @@
 
   import PanelButton from './PanelButton.svelte';
   import Blockie from './Blockie.svelte';
-  import {locationToXY} from '../common/src';
+  import {locationToXY, xyToLocation} from '../common/src';
   import Stat from './Stat.svelte';
   import PlayCoin from './PlayCoin.svelte';
   import {timeToText} from '../lib/utils';
@@ -33,6 +33,10 @@
     close();
   }
 
+  function cancelSend() {
+    sendFlow.cancel();
+  }
+
   function exitFrom() {
     exitFlow.exitFrom(locationToXY(location));
     close();
@@ -41,18 +45,28 @@
   function connect() {
     privateAccount.login();
   }
+
+  $: walletIsOwner = $wallet.address && $wallet.address?.toLowerCase() === $planet.state?.owner.toLowerCase();
+  $: textColor =  $planet.state && $planet.state.owner !== '0x0000000000000000000000000000000000000000' ? (walletIsOwner ? 'text-green-500' : 'text-red-500') : 'text-gray-100';
+
+  $: destinationPlanet = $sendFlow.data?.to && planetAt(xyToLocation($sendFlow.data?.to.x as number, $sendFlow.data?.to.y  as number));
+  $: attacking =  $sendFlow.step === 'PICK_ORIGIN' && destinationPlanet && $destinationPlanet.state?.owner !== $wallet.address;
 </script>
 
 <div
   class="absolute inline-block w-48 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4 text-sm">
   <div class="flex m-1">
-    <h2 class="flex-auto text-green-500 text-center pt-1 font-bold">
-      {$planet.stats.name}
-    </h2>
     {#if $planet.state && $planet.state.owner !== '0x0000000000000000000000000000000000000000'}
+      <h2 class={`flex-auto text-center pt-1 font-bold ${textColor}`}>
+        {$planet.stats.name}
+      </h2>
       <div>
         <Blockie class="flex-auto w-8 h-8 flot" address={$planet.state.owner} />
       </div>
+    {:else }
+      <h2 class="flex-auto  ${textColor} text-center pt-1 font-bold">
+        {$planet.stats.name}
+      </h2>
     {/if}
   </div>
   <div class="w-full h-1 bg-cyan-300 my-2" />
@@ -140,7 +154,7 @@
     </Stat>
     <Stat name="Attack" value={$planet.stats.attack} max={10000} min={3600}>
       <Help class="inline w-4 h-4">
-        This is the attack strength of spaceships sent from this planet.
+        This is the attack strength of spaceships departing from this planet.
       </Help>
     </Stat>
     <Stat name="Defense" value={$planet.stats.defense} max={10000} min={3600}>
@@ -150,7 +164,7 @@
     </Stat>
     <Stat name="Speed" value={$planet.stats.speed} max={10000} min={4500}>
       <Help class="inline w-4 h-4">
-        This is the speed at which spaceship sent from this planet travels in
+        This is the speed at which spaceship departing from this planet travels in
         unit per hour.
       </Help>
     </Stat>
@@ -161,84 +175,122 @@
       {#if $wallet.address}
         {#if $planet.state.capturing}
           Capturing...
-        {:else if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
-          <PanelButton
-            label="Capture"
-            class="m-2"
-            disabled={!$planet.state.inReach}
-            on:click={capture}>
-            <div class="w-20">
-              Capture
-              <span class="text-sm">
-                {!$planet.state.inReach ? ' (unreachable)' : ''}</span>
-            </div>
-          </PanelButton>
-          {#if $planet.state.natives}
-            <PanelButton label="Attack" class="m-2" on:click={sendTo}>
-              <div class="w-20">Attack</div>
+        {:else}
+          {#if $sendFlow.step === 'PICK_DESTINATION'}
+            {#if $planet.state.owner === '0x0000000000000000000000000000000000000000'} <!-- SEND TO CONQUERE -->
+            <PanelButton label="Attack!" class="m-2" color="text-red-500" borderColor="border-red-500" on:click={sendTo}>
+              <div class="w-20">Attack!</div>
+            </PanelButton>
+            {:else if walletIsOwner && !$planet.state.active} <!-- SEND MORE -->
+            <PanelButton label="Send Hre" class="m-2" color="text-green-500" borderColor="border-green-500" on:click={sendTo}>
+              <div class="w-20">Send Here</div>
+            </PanelButton>
+            {:else if walletIsOwner} <!-- SEND PROTECTION -->
+            <PanelButton label="Send To" class="m-2" color="text-green-500" borderColor="border-green-500" on:click={sendTo}>
+              <div class="w-20">Send Here</div>
+            </PanelButton>
+            {:else} <!-- ATTACK -->
+            <PanelButton label="Attack!" class="m-2" color="text-red-500" borderColor="border-red-500" on:click={sendTo}>
+              <div class="w-20">Attack!</div>
+            </PanelButton>
+            {/if}
+            <PanelButton label="Cancel" class="m-2" on:click={cancelSend}>
+              <div class="w-20">Cancel</div>
+            </PanelButton>
+          {:else if $sendFlow.step === 'PICK_ORIGIN'}
+            {#if $planet.state.owner === '0x0000000000000000000000000000000000000000'} <!-- SEND TO CONQUERE -->
+            <p class="m-3">Pick a Planet you own.</p>
+            {:else if walletIsOwner && !$planet.state.active} <!-- SEND MORE -->
+              {#if attacking}
+              <PanelButton label="Attack From Here" class="m-2" color="text-red-500" borderColor="border-red-500" on:click={sendFrom}>
+                <div class="w-20">Attack From Here</div>
+              </PanelButton>
+              {:else}
+              <PanelButton label="Send From Here" class="m-2" color="text-green-500" borderColor="border-green-500" on:click={sendFrom}>
+                <div class="w-20">Send From Here</div>
+              </PanelButton>
+              {/if}
+            {:else if walletIsOwner} <!-- SEND PROTECTION -->
+              {#if attacking}
+              <PanelButton label="Attack From Here" class="m-2" color="text-red-500" borderColor="border-red-500" on:click={sendFrom}>
+                <div class="w-20">Attack From Here</div>
+              </PanelButton>
+              {:else}
+              <PanelButton label="Send From Here" class="m-2" color="text-green-500" borderColor="border-green-500" on:click={sendFrom}>
+                <div class="w-20">Send From Here</div>
+              </PanelButton>
+              {/if}
+            {:else} <!-- ATTACK -->
+            <p class="m-3">Pick a Planet you own.</p>
+            {/if}
+            <PanelButton label="Cancel" class="m-2" on:click={cancelSend}>
+              <div class="w-20">Cancel</div>
             </PanelButton>
           {:else}
-            <PanelButton label="Send To" class="m-2" on:click={sendTo}>
-              <div class="w-20">Send To</div>
-            </PanelButton>
+            {#if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
+              <PanelButton
+                label="Capture"
+                class="m-2"
+                disabled={!$planet.state.inReach}
+                on:click={capture}>
+                <div class="w-20">
+                  Capture
+                  <span class="text-sm">
+                    {!$planet.state.inReach ? ' (unreachable)' : ''}</span>
+                </div>
+              </PanelButton>
+              {#if $planet.state.natives}
+                <PanelButton label="Attack" class="m-2" color="text-red-500" borderColor="border-red-500" on:click={sendTo}>
+                  <div class="w-20">Attack</div>
+                </PanelButton>
+              {:else} <!-- unreachable ? -->
+                <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+                  <div class="w-20">Send Here</div>
+                </PanelButton>
+              {/if}
+            {:else if walletIsOwner && !$planet.state.active}
+              <PanelButton
+                label="Capture"
+                class="m-2"
+                disabled={!$planet.state.inReach}
+                on:click={capture}>
+                <div class="w-20">
+                  Capture
+                  <span class="text-sm">
+                    {!$planet.state.inReach ? ' (unreachable)' : ''}</span>
+                </div>
+              </PanelButton>
+              <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+                <div class="w-20">Send Here</div>
+              </PanelButton>
+              <PanelButton label="Send From" class="m-2" on:click={sendFrom}>
+                <div class="w-20">Send From</div>
+              </PanelButton>
+            {:else if walletIsOwner}
+              <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+                <div class="w-20">Send Here</div>
+              </PanelButton>
+              <PanelButton label="Send From" class="m-2" on:click={sendFrom}>
+                <div class="w-20">Send From</div>
+              </PanelButton>
+              <PanelButton
+                label="Exit"
+                color="text-yellow-400"
+                borderColor="border-yellow-400"
+                class="m-2"
+                on:click={exitFrom}>
+                <div class="w-20">Exit</div>
+              </PanelButton>
+            {:else}
+              <PanelButton label="Attack" class="m-2" color="text-red-500" borderColor="border-red-500"  on:click={sendTo}>
+                <div class="w-20">Attack</div>
+              </PanelButton>
+            {/if}
           {/if}
-        {:else if wallet.address.toLowerCase() === $planet.state.owner.toLowerCase() && !$planet.state.active}
-          <PanelButton
-            label="Capture"
-            class="m-2"
-            disabled={!$planet.state.inReach}
-            on:click={capture}>
-            <div class="w-20">
-              Capture
-              <span class="text-sm">
-                {!$planet.state.inReach ? ' (unreachable)' : ''}</span>
-            </div>
-          </PanelButton>
-          <PanelButton label="Send To" class="m-2" on:click={sendTo}>
-            <div class="w-20">Send To</div>
-          </PanelButton>
-          <PanelButton label="Send From" class="m-2" on:click={sendFrom}>
-            <div class="w-20">Send From</div>
-          </PanelButton>
-        {:else if $planet.state.owner.toLowerCase() === $wallet.address.toLowerCase()}
-          <PanelButton label="Send To" class="m-2" on:click={sendTo}>
-            <div class="w-20">Send To</div>
-          </PanelButton>
-          <PanelButton label="Send From" class="m-2" on:click={sendFrom}>
-            <div class="w-20">Send From</div>
-          </PanelButton>
-          <PanelButton
-            label="Exit"
-            color="text-red-400"
-            borderColor="border-red-400"
-            class="m-2"
-            on:click={exitFrom}>
-            <div class="w-20">Exit</div>
-          </PanelButton>
-        {:else}
-          <PanelButton label="Attack" class="m-2" on:click={sendTo}>
-            <div class="w-20">Attack</div>
-          </PanelButton>
         {/if}
       {:else}
         <PanelButton label="Connect your wallet" class="m-2" on:click={connect}>
           <div class="w-20">Connect Wallet</div>
-        </PanelButton>
-      {/if}
-    {:else if $planet.loaded}
-      {#if $planet.state.capturing}
-        Capturing...
-      {:else}
-        <PanelButton
-          label="Capture"
-          class="m-2"
-          disabled={!$planet.state.inReach}
-          on:click={capture}>
-          <div class="w-20">
-            Capture
-            <span class="text-sm">
-              {!$planet.state.inReach ? ' (unreachable)' : ''}</span>
-          </div>
         </PanelButton>
       {/if}
     {:else}Loading...{/if}

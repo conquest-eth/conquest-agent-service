@@ -14,6 +14,6 @@ export function wait<T>(numSeconds: number, v: T): Promise<T> {
 
 export const base64 = base64Module;
 
-export function timeToText(timeInSec: number): string {
-  return prettyMs(Math.floor(timeInSec) * 1000);
+export function timeToText(timeInSec: number, options?: prettyMs.Options): string {
+  return prettyMs(Math.floor(timeInSec) * 1000, options);
 }

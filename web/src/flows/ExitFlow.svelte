@@ -13,7 +13,7 @@
     on:confirm={() => exitFlow.confirm()}>
     <p class="text-center">
       Exiting a planet will allow you to claim the stake back. But be careful,
-      while you are exiting, you cannot operate with the spaceships and someone
+      while you are exiting (this take {timeToText(spaceInfo.exitDuration, {verbose: true})}), you cannot operate with the spaceships and someone
       else might be able to capture the planet before exit complete. Note
       however that the planet will continue producting spaceships for its
       defense. Upon exit, the number of spaceships will then be zero.
@@ -33,7 +33,7 @@
       <div class="text-center">
         <p>
           You'll be able to claim back the stake
-          {timeToText(spaceInfo.exitDuration)}
+          {timeToText(spaceInfo.exitDuration, {verbose: true})}
           after the tx is mined
         </p>
         <PanelButton label="OK" on:click={() => exitFlow.acknownledgeSuccess()}>

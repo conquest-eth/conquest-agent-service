@@ -45,7 +45,7 @@
       </p>
       <p class="mt-3">
         At any time (whether you acquired the planet via staking or via attack),
-        you can exit the planet. This take {timeToText(spaceInfo.exitDuration)} during which you cannot use it
+        you can exit the planet. This take {timeToText(spaceInfo.exitDuration, {verbose: true})} during which you cannot use it
         but at the end of which you ll get the deposit, ready to be withdrawn.
       </p>
       <p class="mt-3">
