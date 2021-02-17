@@ -10,7 +10,7 @@
   import {logo} from '../stores/logo';
 
   import {onMount} from 'svelte';
-  import { timeToText } from '../lib/utils';
+  import {timeToText} from '../lib/utils';
   import {spaceInfo} from '../app/mapState';
 
   onMount(() => {
@@ -21,8 +21,8 @@
 <WalletAccess>
   <ClaimTokenScreen />
   <MapScreen />
-  {#if $privateAccount.step === 'READY' && $privateAccount.data && !$privateAccount.data.welcomed}
-    <Banner on:close={() => privateAccount.recordWelcomed()}>
+  {#if $privateAccount.step === 'READY' && !privateAccount.ckeckCompletion($privateAccount.data?.welcomingStep, 0)}
+    <Banner on:close={() => privateAccount.recordWelcomingStep(0)}>
       <p>
         Welcome to
         <span class="text-cyan-600">conquest.eth</span>
@@ -45,8 +45,10 @@
       </p>
       <p class="mt-3">
         At any time (whether you acquired the planet via staking or via attack),
-        you can exit the planet. This take {timeToText(spaceInfo.exitDuration, {verbose: true})} during which you cannot use it
-        but at the end of which you ll get the deposit, ready to be withdrawn.
+        you can exit the planet. This take
+        {timeToText(spaceInfo.exitDuration, {verbose: true})}
+        during which you cannot use it but at the end of which you ll get the
+        deposit, ready to be withdrawn.
       </p>
       <p class="mt-3">
         Be careful though, you can lose your planet while waiting for the exit

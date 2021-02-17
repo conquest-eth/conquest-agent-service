@@ -9,7 +9,7 @@ type Data = {
   txHash?: string;
   to: {x: number; y: number};
   from: {x: number; y: number};
-  fleet: number;
+  fleetAmount: number;
 };
 
 export type SendFlow = {
@@ -19,6 +19,8 @@ export type SendFlow = {
     | 'CONNECTING'
     | 'PICK_DESTINATION'
     | 'PICK_ORIGIN'
+    | 'TUTORIAL_PRE_FLEET_AMOUNT'
+    | 'TUTORIAL_PRE_TRANSACTION'
     | 'CHOOSE_FLEET_AMOUNT'
     | 'CREATING_TX'
     | 'WAITING_TX'
@@ -58,17 +60,49 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     if (this.$store.step !== 'PICK_DESTINATION') {
       throw new Error(`Need to be in step PICK_DESTINATION`);
     }
-    this.setData({to}, {step: 'CHOOSE_FLEET_AMOUNT'});
+    this.setData({to});
+    this._chooseFleetAmount();
   }
 
   async pickOrigin(from: {x: number; y: number}): Promise<void> {
     if (this.$store.step !== 'PICK_ORIGIN') {
       throw new Error(`Need to be in step PICK_ORIGIN`);
     }
-    this.setData({from}, {step: 'CHOOSE_FLEET_AMOUNT'});
+    this.setData({from});
+    this._chooseFleetAmount();
   }
 
-  async confirm(fleetAmount: number): Promise<void> {
+  _chooseFleetAmount() {
+    if (!privateAccount.isWelcomingStepCompleted(1)) {
+      this.setPartial({step: 'TUTORIAL_PRE_FLEET_AMOUNT'});
+    } else {
+      this.setPartial({step: 'CHOOSE_FLEET_AMOUNT'});
+    }
+  }
+
+  async acknowledgeWelcomingStep1() {
+    privateAccount.recordWelcomingStep(1);
+    this._chooseFleetAmount();
+  }
+
+  confirm(fleetAmount: number) {
+    this.setData({fleetAmount});
+    if (!privateAccount.isWelcomingStepCompleted(2)) {
+      this.setPartial({step: 'TUTORIAL_PRE_TRANSACTION'});
+    } else {
+      this._confirm(fleetAmount);
+    }
+  }
+
+  async acknowledgeWelcomingStep2() {
+    if (!this.$store.data?.fleetAmount) {
+      throw new Error(`not fleetAmount recorded`);
+    }
+    privateAccount.recordWelcomingStep(2);
+    this.confirm(this.$store.data?.fleetAmount);
+  }
+
+  async _confirm(fleetAmount: number): Promise<void> {
     const flow = this.setPartial({step: 'CREATING_TX'});
     if (!flow.data) {
       throw new Error(`no data for send flow`);

@@ -38,7 +38,7 @@ type SecretData = {
   exits: Record<string, number>;
   captures: Record<string, Capture>;
   lastWithdrawal?: Withdrawal;
-  welcomed?: boolean;
+  welcomingStep?: number;
 };
 
 type PrivateAccountData = {
@@ -68,7 +68,6 @@ const DB_NAME = 'conquest-v' + VERSION;
 
 const LOCAL_ONLY_STORAGE = '_local_only_';
 function LOCAL_ONLY_STORAGE_KEY(address: string, chainId: string) {
-
   return `${LOCAL_ONLY_STORAGE}_${address.toLowerCase()}_${chainId}`;
 }
 
@@ -135,9 +134,7 @@ class PrivateAccountStore extends BaseStoreWithData<
 
   async _loadData(address: string, chainId: string) {
     // TODO load from signature based DB
-    const fromStorage = localCache.getItem(
-      LOCAL_STORAGE_KEY(address, chainId)
-    );
+    const fromStorage = localCache.getItem(LOCAL_STORAGE_KEY(address, chainId));
     let data = {fleets: {}, exits: {}, captures: {}};
     if (fromStorage) {
       try {
@@ -994,7 +991,20 @@ class PrivateAccountStore extends BaseStoreWithData<
     this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
   }
 
-  recordWelcomed(): void {
+  ckeckCompletion(value: number | undefined, bit: number): boolean {
+    return value === undefined
+      ? false
+      : (value & Math.pow(2, bit)) == Math.pow(2, bit);
+  }
+
+  isWelcomingStepCompleted(bit: number): boolean {
+    return this.ckeckCompletion(this.$store.data?.welcomingStep, bit);
+  }
+
+  recordWelcomingStep(bit: number): void {
+    if (bit > 32) {
+      throw new Error('bit > 32');
+    }
     if (!wallet.address) {
       throw new Error(`no wallet.address`);
     }
@@ -1002,9 +1012,19 @@ class PrivateAccountStore extends BaseStoreWithData<
       throw new Error(`no chainId, not connected?`);
     }
     if (!this.$store.data) {
-      this.$store.data = {fleets: {}, exits: {}, captures: {}, welcomed: true};
+      this.$store.data = {
+        fleets: {},
+        exits: {},
+        captures: {},
+        welcomingStep: Math.pow(2, bit),
+      };
     } else {
-      this.$store.data.welcomed = true;
+      if (this.$store.data.welcomingStep) {
+        this.$store.data.welcomingStep =
+          this.$store.data.welcomingStep | Math.pow(2, bit);
+      } else {
+        this.$store.data.welcomingStep = Math.pow(2, bit);
+      }
     }
     this.setPartial({
       data: this.$store.data,

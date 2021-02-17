@@ -24,6 +24,9 @@
 <Modal>
   <div class="text-center">
     <p class="mb-4">
+      Congratulations! Your fleets is on its way (transaction pending...)
+    </p>
+    <p class="mb-4">
       Once the transaction is mined, the fleet will take
       {timeToText(duration, {verbose: true})}
       to reach the destination. Assuming it get mined instantly, it should
@@ -31,20 +34,22 @@
       {new Date(arrival * 1000).toString()}.
     </p>
 
-    <p class="mb-4">
+    <!-- <p class="mb-4">
       Remember you need to ensure to execute the "resolution" transaction at
       that time. See
       <a href="./help" target="_blank">Help</a>
       for more details.
-    </p>
-
+    </p> -->
+    <!--
     <p class="mb-4">
       Or as always if you can have a computer running permanently, you can setup
       an agent
       <a href="./agent" target="_blank">here</a>
-    </p>
+    </p> -->
 
-    <p class="mb-4">You can also create a reminder here</p>
+    <!-- <p class="mb-4">You can also create a reminder here</p> -->
+
+    <p class="mb-4">You can create a reminder for yourself here</p>
 
     <AddToCalendar
       title="conquest.eth: Come Back To Resolve Fleet in Time!"
