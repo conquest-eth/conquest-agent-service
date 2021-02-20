@@ -3,7 +3,7 @@ import {Wallet} from '@ethersproject/wallet';
 import type {Contract} from '@ethersproject/contracts';
 import {keccak256} from '@ethersproject/solidity';
 import {xyToLocation} from '../common/src';
-import type {OwnFleet} from '../common/src/types';
+import type {OwnFleet, TxStatus} from '../common/src/types';
 import {BigNumber} from '@ethersproject/bignumber';
 import {finality} from '../config';
 import aes from 'aes-js';
@@ -17,10 +17,12 @@ import {VERSION, params} from '../init';
 
 import contractsInfo from '../contracts.json';
 import {BaseStoreWithData} from '../lib/utils/stores';
+
 type Capture = {
   txHash: string;
   nonce: number;
   time: number;
+  txStatus: TxStatus;
 };
 
 type Withdrawal = {
@@ -243,9 +245,6 @@ class PrivateAccountStore extends BaseStoreWithData<
     if (!this.$store.data) {
       this.$store.data = {fleets: {}, exits: {}, captures: {}};
     }
-    if (!this.$store.data.fleets) {
-      this.$store.data.fleets = {};
-    }
     let newDataOnLocal = false;
     let newDataOnRemote = false;
     const localFleets = this.$store.data.fleets;
@@ -298,6 +297,43 @@ class PrivateAccountStore extends BaseStoreWithData<
         newDataOnLocal = true;
       }
     }
+
+    const localCaptures = this.$store.data.captures;
+    const remoteCaptures = data.captures;
+    if (remoteCaptures) {
+      for (const key of Object.keys(remoteCaptures)) {
+        if (!localCaptures[key]) {
+          newDataOnRemote = true;
+          localCaptures[key] = remoteCaptures[key]; // new
+        } else {
+          const localCapture = localCaptures[key];
+          const remoteCapture = remoteCaptures[key];
+          if (localCapture.txHash != remoteCapture.txHash) {
+            // skip, local take precedence, TODO deal differently
+          } else {
+            const localTxStatus = localCapture.txStatus;
+            const remoteTxStatus = remoteCapture.txStatus;
+            if (localTxStatus && remoteTxStatus) {
+              if (remoteTxStatus.status !== localTxStatus.status) {
+                if (localTxStatus.status === 'Pending') {
+                  localCapture.txStatus.status = remoteTxStatus.status;
+                  newDataOnLocal = true;
+                }
+              }
+            } else if (remoteTxStatus) {
+              localCapture.txStatus = remoteTxStatus;
+              newDataOnLocal = true;
+            }
+          }
+        }
+      }
+    }
+    for (const key of Object.keys(localCaptures)) {
+      if (!remoteCaptures[key]) {
+        newDataOnLocal = true;
+      }
+    }
+
     this.set(this.$store);
     return {newDataOnLocal, newDataOnRemote};
   }
@@ -627,12 +663,24 @@ class PrivateAccountStore extends BaseStoreWithData<
         return;
       }
       if (receipt) {
-        if (receipt.status && receipt.status === 0) {
-          // TODO record Error ?
-        }
-        if (receipt.confirmations == finality) {
-          // TODO finality
-          this.deleteCapture(location); // TODO pending
+        const finalized = receipt.confirmations >= finality;
+        if (receipt.status !== undefined && receipt.status === 0) {
+          this.$store.data.captures[location].txStatus = {
+            finalized,
+            status: 'Failure',
+          };
+          this.set(this.$store);
+        } else {
+          // TODO !receipt.status ?
+          if (finalized) {
+            this.deleteCapture(location);
+          } else {
+            this.$store.data.captures[location].txStatus = {
+              finalized,
+              status: 'Success',
+            };
+            this.set(this.$store);
+          }
         }
       } else {
         if (!wallet.address) {
@@ -650,8 +698,14 @@ class PrivateAccountStore extends BaseStoreWithData<
           return;
         }
         if (finalNonce > capture.nonce) {
-          // TODO check equality or not
+          // TODO check for failure ? or success through contract call ?
           this.deleteCapture(location);
+        } else {
+          this.$store.data.captures[location].txStatus = {
+            finalized: false,
+            status: 'Pending',
+          };
+          this.set(this.$store);
         }
       }
     }
@@ -916,11 +970,26 @@ class PrivateAccountStore extends BaseStoreWithData<
       txHash,
       time,
       nonce,
+      txStatus: {
+        finalized: false,
+        status: 'Pending',
+      },
     };
     this.setPartial({
       data: this.$store.data,
     });
     this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
+  }
+
+  acknowledgeCaptureFailure(id: string) {
+    const capture = this.$store.data?.captures[id];
+    if (capture) {
+      if (capture.txStatus?.status === 'Failure') {
+        this.deleteCapture(id);
+      } else {
+        console.error(`no error on capture ${id}`);
+      }
+    }
   }
 
   deleteCapture(id: string) {
@@ -1132,15 +1201,18 @@ class PrivateAccountStore extends BaseStoreWithData<
     return this._txPerformed[txHash];
   }
 
-  isCapturing(location: string): boolean {
+  capturingStatus(location: string): TxStatus | null {
     if (!this.$store.data) {
-      return false;
+      return null;
     }
-    return (
+    if (
       this.$store.data &&
       this.$store.data.captures[location] &&
       this.$store.data.captures[location].txHash !== null
-    );
+    ) {
+      return this.$store.data.captures[location].txStatus;
+    }
+    return null;
   }
 
   getFleet(fleetId: string): OwnFleet | null {

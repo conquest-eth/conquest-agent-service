@@ -3,6 +3,7 @@ import type {
   PlanetContractState,
   PlanetState,
   Position,
+  TxStatus,
 } from '../types';
 import type {SpaceInfo} from './SpaceInfo';
 import {xyToLocation, locationToXY} from '../util/location';
@@ -473,8 +474,8 @@ export class Space {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected isCapturing(planetId: string): boolean {
-    return false;
+  protected capturingStatus(planetId: string): TxStatus | null {
+    return null;
   }
 
   private _updatePlanetRecord(planetId: string, time: number): void {
@@ -493,7 +494,7 @@ export class Space {
       planetRecord.planet.location.x <= this.discovered.x2 &&
       planetRecord.planet.location.y >= this.discovered.y1 &&
       planetRecord.planet.location.y <= this.discovered.y2;
-    let capturing = false;
+    let capturing: TxStatus | null = null;
     let owner = contractState.owner;
     let active = contractState.active;
     let numSpaceships = contractState.numSpaceships;
@@ -524,7 +525,7 @@ export class Space {
     }
 
     if (!active) {
-      capturing = this.isCapturing(planetId);
+      capturing = this.capturingStatus(planetId);
     }
 
     if (!planetRecord.planet.state) {

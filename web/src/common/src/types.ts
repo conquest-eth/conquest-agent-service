@@ -7,6 +7,11 @@ export type PlanetLocation = {
   globalY: number;
 };
 
+export type TxStatus = {
+  finalized: boolean;
+  status: 'Pending' | 'Success' | 'Cancelled' | 'Failure' | 'Mined';
+};
+
 // object describing the static attributes of a planet // do not change
 export type Statistics = {
   name: string;
@@ -42,7 +47,7 @@ export type PlanetState = {
   exiting: boolean;
   exitTimeLeft: number;
   natives: boolean;
-  capturing: boolean;
+  capturing: TxStatus | null;
   inReach: boolean;
 };
 
