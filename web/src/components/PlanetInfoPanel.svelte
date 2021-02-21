@@ -192,7 +192,9 @@
     {#if $planet.state}
       {#if $wallet.address}
         {#if !!$planet.state?.capturing}
-          {#if $planet.state.capturing.status === 'Failure'}
+          {#if $planet.state.capturing === 'Loading'}
+            <p>Please wait....</p>
+          {:else if $planet.state.capturing.status === 'Failure'}
             <p>The Transaction Failed.</p>
             <PanelButton
               label="Ok"

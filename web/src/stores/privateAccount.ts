@@ -22,7 +22,6 @@ type Capture = {
   txHash: string;
   nonce: number;
   time: number;
-  txStatus: TxStatus;
 };
 
 type Withdrawal = {
@@ -59,6 +58,7 @@ type PrivateAccountData = {
   syncError: unknown;
   walletAddress?: string;
   chainId?: string;
+  txStatuses: {[txHash: string]: TxStatus};
 };
 
 type Contracts = {
@@ -102,6 +102,7 @@ class PrivateAccountStore extends BaseStoreWithData<
       sync: 'IDLE',
       syncEnabled: false,
       syncError: undefined,
+      txStatuses: {},
     });
 
     // THIS sill trigger on all hmr reload what to do ?
@@ -171,7 +172,11 @@ class PrivateAccountStore extends BaseStoreWithData<
     });
   }
 
-  async _syncDown(): Promise<
+  async _syncDown(
+    fleetsToDelete: string[] = [],
+    exitsToDelete: string[] = [],
+    capturesToDelete: string[] = []
+  ): Promise<
     | {newDataOnLocal: boolean; newDataOnRemote: boolean; counter: BigNumber}
     | undefined
   > {
@@ -197,6 +202,7 @@ class PrivateAccountStore extends BaseStoreWithData<
       error = e;
     }
     if (error || json.error) {
+      console.error('syncDown', error || json.error);
       this.setPartial({sync: 'NOT_SYNCED', syncError: error || json.error});
       return; // TODO retry ?
     }
@@ -209,7 +215,22 @@ class PrivateAccountStore extends BaseStoreWithData<
         console.error(e);
       }
     }
+
+    // console.log('remote data', data);
+
+    for (const fleetToDelete of fleetsToDelete) {
+      delete data.fleets[fleetToDelete];
+    }
+    for (const exitToDelete of exitsToDelete) {
+      delete data.exits[exitToDelete];
+    }
+    for (const captureToDelete of capturesToDelete) {
+      delete data.captures[captureToDelete];
+    }
+
     const {newDataOnLocal, newDataOnRemote} = this._merge(data);
+
+    // console.log('post merge data', this.$store.data);
 
     if (!this.$store.walletAddress) {
       throw new Error(`no this.$store.walletAddress`);
@@ -311,19 +332,6 @@ class PrivateAccountStore extends BaseStoreWithData<
           if (localCapture.txHash != remoteCapture.txHash) {
             // skip, local take precedence, TODO deal differently
           } else {
-            const localTxStatus = localCapture.txStatus;
-            const remoteTxStatus = remoteCapture.txStatus;
-            if (localTxStatus && remoteTxStatus) {
-              if (remoteTxStatus.status !== localTxStatus.status) {
-                if (localTxStatus.status === 'Pending') {
-                  localCapture.txStatus.status = remoteTxStatus.status;
-                  newDataOnLocal = true;
-                }
-              }
-            } else if (remoteTxStatus) {
-              localCapture.txStatus = remoteTxStatus;
-              newDataOnLocal = true;
-            }
           }
         }
       }
@@ -366,7 +374,12 @@ class PrivateAccountStore extends BaseStoreWithData<
     if (!this.$store.syncEnabled) {
       return;
     }
-    const syncDownResult = await this._syncDown();
+    // console.log('syncing...');
+    const syncDownResult = await this._syncDown(
+      fleetsToDelete,
+      exitsToDelete,
+      capturesToDelete
+    );
 
     if (
       syncDownResult &&
@@ -383,17 +396,6 @@ class PrivateAccountStore extends BaseStoreWithData<
       if (!this.$store.wallet) {
         throw new Error(`no this.$store.wallet`);
       }
-
-      for (const fleetToDelete of fleetsToDelete) {
-        delete this.$store.data.fleets[fleetToDelete];
-      }
-      for (const exitToDelete of exitsToDelete) {
-        delete this.$store.data.exits[exitToDelete];
-      }
-      for (const captureToDelete of capturesToDelete) {
-        delete this.$store.data.captures[captureToDelete];
-      }
-      this.set(this.$store);
 
       const dataToEncrypt = JSON.stringify(this.$store.data); // TODO compression + encryption
 
@@ -422,12 +424,16 @@ class PrivateAccountStore extends BaseStoreWithData<
         error = e;
       }
       if (error || json.error) {
+        console.error(error || json.error);
         this.setPartial({sync: 'NOT_SYNCED', syncError: error || json.error});
         return; // TODO retry ?
       }
-      if (!json.success) {
+      if (!json.result || !json.result.success) {
+        console.error('sync no success', json);
         this.setPartial({sync: 'NOT_SYNCED', syncError: 'no success'});
         return; // TODO retry ?
+      } else {
+        // console.log('synced!');
       }
 
       this.setPartial({sync: 'SYNCED'});
@@ -451,6 +457,7 @@ class PrivateAccountStore extends BaseStoreWithData<
     exitsToDelete: string[] = [],
     capturesToDelete: string[] = []
   ) {
+    // console.log('_setData', data);
     this._saveToLocalStorage(address, chainId, data);
     this._sync(fleetIdsToDelete, exitsToDelete, capturesToDelete); // TODO fetch before set local storage to avoid aother encryption roundtrip
   }
@@ -545,7 +552,7 @@ class PrivateAccountStore extends BaseStoreWithData<
         }
       }
       if (walletDiff || chainDiff) {
-        console.log({walletDiff, chainDiff});
+        // console.log({walletDiff, chainDiff});
         if (this.$store.walletAddress && this.$store.chainId && existingData) {
           this.setPartial({
             wallet: existingData.wallet,
@@ -554,7 +561,7 @@ class PrivateAccountStore extends BaseStoreWithData<
             chainId,
             data: undefined,
           });
-          console.log('loading data');
+          // console.log('loading data');
           this._loadData(this.$store.walletAddress, this.$store.chainId);
         }
       }
@@ -665,7 +672,7 @@ class PrivateAccountStore extends BaseStoreWithData<
       if (receipt) {
         const finalized = receipt.confirmations >= finality;
         if (receipt.status !== undefined && receipt.status === 0) {
-          this.$store.data.captures[location].txStatus = {
+          this.$store.txStatuses[capture.txHash] = {
             finalized,
             status: 'Failure',
           };
@@ -675,7 +682,7 @@ class PrivateAccountStore extends BaseStoreWithData<
           if (finalized) {
             this.deleteCapture(location);
           } else {
-            this.$store.data.captures[location].txStatus = {
+            this.$store.txStatuses[capture.txHash] = {
               finalized,
               status: 'Success',
             };
@@ -701,7 +708,7 @@ class PrivateAccountStore extends BaseStoreWithData<
           // TODO check for failure ? or success through contract call ?
           this.deleteCapture(location);
         } else {
-          this.$store.data.captures[location].txStatus = {
+          this.$store.txStatuses[capture.txHash] = {
             finalized: false,
             status: 'Pending',
           };
@@ -774,11 +781,11 @@ class PrivateAccountStore extends BaseStoreWithData<
           const launchTime = currentFleetData.launchTime;
           const resolveWindow =
             contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
-          console.log({
-            duration: fleet.duration,
-            launchTime: launchTime,
-            resolveWindow,
-          });
+          // console.log({
+          //   duration: fleet.duration,
+          //   launchTime: launchTime,
+          //   resolveWindow,
+          // });
           const expiryTime = launchTime + fleet.duration + resolveWindow;
           if (latestFinalityBlock.timestamp > expiryTime) {
             console.log({expirted: fleetId});
@@ -797,11 +804,11 @@ class PrivateAccountStore extends BaseStoreWithData<
         } else {
           const resolveWindow =
             contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
-          console.log({
-            duration: fleet.duration,
-            launchTime: launchTime,
-            resolveWindow,
-          });
+          // console.log({
+          //   duration: fleet.duration,
+          //   launchTime: launchTime,
+          //   resolveWindow,
+          // });
           const expiryTime = launchTime + fleet.duration + resolveWindow;
           if (latestFinalityBlock.timestamp > expiryTime) {
             console.log({expirted: fleetId});
@@ -961,7 +968,7 @@ class PrivateAccountStore extends BaseStoreWithData<
     if (!wallet.chain.chainId) {
       throw new Error(`no chainId, not connected?`);
     }
-    console.log(`record capture ${location}`);
+    // console.log(`record capture ${location}`);
     if (!this.$store.data) {
       this.$store.data = {fleets: {}, exits: {}, captures: {}}; // TODO everywhere
     }
@@ -970,10 +977,6 @@ class PrivateAccountStore extends BaseStoreWithData<
       txHash,
       time,
       nonce,
-      txStatus: {
-        finalized: false,
-        status: 'Pending',
-      },
     };
     this.setPartial({
       data: this.$store.data,
@@ -984,11 +987,7 @@ class PrivateAccountStore extends BaseStoreWithData<
   acknowledgeCaptureFailure(id: string) {
     const capture = this.$store.data?.captures[id];
     if (capture) {
-      if (capture.txStatus?.status === 'Failure') {
-        this.deleteCapture(id);
-      } else {
-        console.error(`no error on capture ${id}`);
-      }
+      this.deleteCapture(id);
     }
   }
 
@@ -999,15 +998,21 @@ class PrivateAccountStore extends BaseStoreWithData<
     if (!wallet.chain.chainId) {
       throw new Error(`no chainId, not connected?`);
     }
-    console.log(`delete capture ${id}`);
     if (!this.$store.data) {
       return;
     }
+    // console.log(`delete capture ${id}`);
     const captures = this.$store.data.captures;
+    const capture = captures[id];
+    if (capture) {
+      const txHash = capture.txHash;
+      delete this.$store.txStatuses[txHash];
+    }
     delete captures[id];
-    this.setPartial({
-      data: this.$store.data,
-    });
+    this.set(this.$store);
+    // this.setPartial({
+    //   data: this.$store.data,
+    // });
     this._setData(
       wallet.address,
       wallet.chain.chainId,
@@ -1147,12 +1152,12 @@ class PrivateAccountStore extends BaseStoreWithData<
         .join('');
     const toString = xyToLocation(to.x, to.y);
     const fromString = xyToLocation(from.x, from.y);
-    console.log({randomNonce, toString, fromString});
+    // console.log({randomNonce, toString, fromString});
     const secretHash = keccak256(
       ['bytes32', 'bytes32'],
       [this._hashString(), randomNonce]
     );
-    console.log({secretHash});
+    // console.log({secretHash});
     const toHash = keccak256(['bytes32', 'uint256'], [secretHash, toString]);
     const fleetId = keccak256(['bytes32', 'uint256'], [toHash, fromString]);
     return {toHash, fleetId, secret: secretHash};
@@ -1201,7 +1206,7 @@ class PrivateAccountStore extends BaseStoreWithData<
     return this._txPerformed[txHash];
   }
 
-  capturingStatus(location: string): TxStatus | null {
+  capturingStatus(location: string): TxStatus | null | 'Loading' {
     if (!this.$store.data) {
       return null;
     }
@@ -1210,7 +1215,13 @@ class PrivateAccountStore extends BaseStoreWithData<
       this.$store.data.captures[location] &&
       this.$store.data.captures[location].txHash !== null
     ) {
-      return this.$store.data.captures[location].txStatus;
+      const txStatus = this.$store.txStatuses[
+        this.$store.data.captures[location].txHash
+      ];
+      if (!txStatus) {
+        return 'Loading';
+      }
+      return txStatus;
     }
     return null;
   }
