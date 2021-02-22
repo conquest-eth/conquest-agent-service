@@ -28,8 +28,8 @@ contract Play is IERC20, PlayInternal, PlayPermit {
 
     uint256 internal constant UINT256_MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
 
-    string public constant name = "Play";
-    string public constant symbol = "PLAY";
+    string public constant name = "Etherplay";
+    string public constant symbol = "ETHERPLAY";
 
     IERC20 internal immutable _wrappedToken;
     ITokenManager internal immutable _tokenManager;
@@ -44,7 +44,29 @@ contract Play is IERC20, PlayInternal, PlayPermit {
         wrappedToken.approve(address(tokenManager), UINT256_MAX); // TODO embed code in this contract
     }
 
-    function mintAndCall(
+    // function mintApproveAndCall(
+    //     uint256 amount,
+    //     address target,
+    //     bytes calldata data
+    // ) external {
+    //     // TODO support metatx ?
+    //     // TODO support permit or transfer gateways
+    //     // support ERC20 permit as appended calldata
+    //     address sender = msg.sender;
+    //     _wrappedToken.transferFrom(sender, address(this), amount);
+    //     _mint(address(this), amount);
+    //     if (_allowances[address(this)][target] < amount) {
+    //         // this is the only function that will let address(this) owns some token
+    //         // and it ensure it never keep it
+    //         // as such we can approve it all
+    //         _approveFor(address(this), target, UINT256_MAX);
+    //     }
+    //     target.functionCall(data);
+    //     _transferAllIfAny(address(this), sender);
+    //     // _approveFor(address(this), target, 0); // not necessary
+    // }
+
+    function mintAndApprovedCall(
         uint256 amount,
         address target,
         bytes calldata data
@@ -57,6 +79,20 @@ contract Play is IERC20, PlayInternal, PlayPermit {
         _mint(address(this), amount);
         target.functionCall(data);
         _transferAllIfAny(address(this), sender);
+    }
+
+    function mintAndCall(
+        uint256 amount,
+        address target,
+        bytes calldata data
+    ) external {
+        // TODO support metatx ?
+        // TODO support permit or transfer gateways
+        // support ERC20 permit as appended calldata
+        address sender = msg.sender;
+        _wrappedToken.transferFrom(sender, address(this), amount);
+        _mint(target, amount);
+        ITransferReceiver(target).onTokenTransfer(sender, amount, data);
     }
 
     function mint(uint256 amount) external {
@@ -86,6 +122,10 @@ contract Play is IERC20, PlayInternal, PlayPermit {
     }
 
     function allowance(address owner, address spender) external view override returns (uint256) {
+        if (owner == address(this)) {
+            // see transferFrom: address(this) allows anyone
+            return UINT256_MAX;
+        }
         return _allowances[owner][spender];
     }
 
@@ -130,7 +170,9 @@ contract Play is IERC20, PlayInternal, PlayPermit {
         address to,
         uint256 amount
     ) external override returns (bool) {
-        if (msg.sender != from) {
+        // anybody can transfer from this
+        // this allow mintAndApprovedCall without gas overhead
+        if (msg.sender != from && from != address(this)) {
             uint256 currentAllowance = _allowances[from][msg.sender];
             if (currentAllowance != UINT256_MAX) {
                 // save gas when allowance is maximal by not reducing it (see https://github.com/ethereum/EIPs/issues/717)
