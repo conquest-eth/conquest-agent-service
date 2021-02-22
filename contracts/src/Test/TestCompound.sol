@@ -5,7 +5,7 @@ import "../Interfaces/ICompoundERC20.sol";
 import "../PlayToken/Base.sol";
 import "../Libraries/Constants.sol";
 
-contract TestCompount is Base, ICompoundERC20 {
+contract TestCompound is Base, ICompoundERC20 {
     constructor() {}
 
     function name() public pure override returns (string memory) {

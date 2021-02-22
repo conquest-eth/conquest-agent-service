@@ -6,7 +6,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deploy} = hre.deployments;
 
   await deploy('CDai', {
-    contract: 'TestCompount',
+    contract: 'TestCompound',
     from: deployer,
     args: [],
     log: true,
