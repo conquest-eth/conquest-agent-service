@@ -125,11 +125,20 @@ contract OuterSpace is Proxied {
         address from,
         uint256 amount,
         bytes calldata data
-    ) external returns (bool) {
+    ) public returns (bool) {
         require(msg.sender == address(_stakingToken), "INVALID_ERC20");
         uint256 location = abi.decode(data, (uint256)); // TODO allow to pass the address that will acquire the token, potentially different than the payer
         _acquire(from, amount, location);
         return true;
+    }
+
+    function onTokenPaidFor(
+        address,
+        address forAddress,
+        uint256 amount,
+        bytes calldata data
+    ) external returns (bool) {
+        return onTokenTransfer(forAddress, amount, data); // we do not care who the payer is
     }
 
     function acquireViaTransferFrom(uint256 location, uint256 amount) public {

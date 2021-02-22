@@ -30,7 +30,7 @@ contract Reserve {
         address to,
         bytes calldata data
     ) external {
-        _payIn(_dai, amount, to, data);
+        _payIn(_dai, amount, to, data); // TODO decimal compatibility
     }
 
     function payInUSDC(
@@ -38,7 +38,7 @@ contract Reserve {
         address to,
         bytes calldata data
     ) external {
-        _payIn(_usdc, amount, to, data);
+        _payIn(_usdc, amount, to, data); // TODO decimal compatibility
     }
 
     function withdraw(
@@ -64,7 +64,7 @@ contract Reserve {
         // TODO use permit
         payToken.safeTransferFrom(sender, address(this), amount);
         if (data.length > 0) {
-            _playToken.transferAndCall(to, amount, data); // this does not work as the payment come from Reserve
+            _playToken.payForAndCall(sender, to, amount, data);
         } else {
             _playToken.transfer(to, amount);
         }

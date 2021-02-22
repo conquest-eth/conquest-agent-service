@@ -1,25 +1,30 @@
 // SPDX-License-Identifier: AGPL-1.0
 pragma solidity 0.7.5;
 
-import "./PlayInternal.sol";
+import "./BaseInternal.sol";
 import "../Interfaces/IERC2612Standalone.sol";
 
-abstract contract PlayPermit is PlayInternal, IERC2612Standalone {
+abstract contract WithPermitAndFixedDomain is BaseInternal, IERC2612Standalone {
     bytes32 internal constant PERMIT_TYPEHASH = keccak256(
         "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
     );
+
+    bytes32 public immutable override DOMAIN_SEPARATOR;
+
     mapping(address => uint256) internal _nonces;
 
-    function DOMAIN_SEPARATOR() public view override returns (bytes32) {
-        return
-            keccak256(
-                abi.encode(
-                    keccak256("EIP712Domain(string name,string version,address verifyingContract)"),
-                    keccak256(bytes("")),
-                    keccak256(bytes("1")), // TODO chainId
-                    address(this)
-                )
-            );
+    constructor(string memory version) {
+        if (bytes(version).length == 0) {
+            version = "1";
+        }
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,address verifyingContract)"),
+                keccak256(bytes(name())),
+                keccak256(bytes(version)),
+                address(this)
+            )
+        );
     }
 
     function nonces(address owner) external view override returns (uint256) {
@@ -41,7 +46,7 @@ abstract contract PlayPermit is PlayInternal, IERC2612Standalone {
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
-                DOMAIN_SEPARATOR(),
+                DOMAIN_SEPARATOR,
                 keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentNonce, deadline))
             )
         );
