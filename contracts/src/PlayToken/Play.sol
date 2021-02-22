@@ -6,17 +6,19 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "../Interfaces/ITokenManager.sol";
 import "./Base.sol";
 import "./WithPermitAndFixedDomain.sol";
+import "./CompoundAdapter.sol";
 
-contract Play is Base, WithPermitAndFixedDomain {
+contract Play is Base, WithPermitAndFixedDomain, CompoundAdapter {
     using Address for address;
 
-    IERC20 internal immutable _wrappedToken;
-    ITokenManager internal immutable _tokenManager;
+    address internal _owner; // TODO ownership as extension
 
-    constructor(IERC20 wrappedToken, ITokenManager tokenManager) WithPermitAndFixedDomain("1") {
-        _wrappedToken = wrappedToken;
-        _tokenManager = tokenManager;
-        wrappedToken.approve(address(tokenManager), UINT256_MAX); // TODO embed code in this contract
+    constructor(
+        IERC20 underlyingToken,
+        ICompoundERC20 cToken,
+        address owner
+    ) WithPermitAndFixedDomain("1") CompoundAdapter(underlyingToken, cToken) {
+        _owner = owner;
     }
 
     string public constant symbol = "ETHERPLAY";
@@ -56,7 +58,7 @@ contract Play is Base, WithPermitAndFixedDomain {
         // TODO support permit or transfer gateways
         // support ERC20 permit as appended calldata
         address sender = msg.sender;
-        _wrappedToken.transferFrom(sender, address(this), amount);
+        _use(amount, sender);
         _mint(address(this), amount);
         target.functionCall(data); // target can only assume the sender is the contract and will thus refund it if any
         _transferAllIfAny(address(this), sender);
@@ -71,26 +73,30 @@ contract Play is Base, WithPermitAndFixedDomain {
         // TODO support permit or transfer gateways
         // support ERC20 permit as appended calldata
         address sender = msg.sender;
-        _wrappedToken.transferFrom(sender, address(this), amount);
+        _use(amount, sender);
         _mint(target, amount);
-        ITransferReceiver(target).onTokenTransfer(sender, amount, data); // in this case the target will know the original sender and so refund will go to sender, no need to transfer any bacl afterward
+        ITransferReceiver(target).onTokenTransfer(sender, amount, data);
+        // in this case the target will know the original sender and so refund will go to sender, no need to transfer any bacl afterward
+        // but in case :
+        _transferAllIfAny(address(this), sender);
     }
 
     function mint(uint256 amount) external {
         // TODO support permit or transfer gateways
         // support ERC20 permit as appended calldata
         address sender = msg.sender;
-        _wrappedToken.transferFrom(sender, address(this), amount);
+        _use(amount, sender);
         _mint(sender, amount);
     }
 
     function burn(uint256 amount) external override {
         address sender = msg.sender;
-        uint256 currentBalance = _wrappedToken.balanceOf(address(this));
-        if (currentBalance < amount) {
-            _tokenManager.takeBack(amount - currentBalance); // TODO embed code in this contract
-        }
-        _wrappedToken.transfer(sender, amount);
         _burnFrom(sender, amount);
+        _takeBack(amount, sender);
+    }
+
+    function withdraw(uint256 upToAmount, address to) external returns (uint256) {
+        require(msg.sender == _owner, "NOT_AUTHORIZED");
+        return _withdrawInterest(upToAmount, to);
     }
 }

@@ -4,6 +4,7 @@ pragma solidity 0.7.5;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./BaseInternal.sol";
+import "../Libraries/Constants.sol";
 
 interface ITransferReceiver {
     function onTokenTransfer(
@@ -33,8 +34,6 @@ interface IApprovalReceiver {
 abstract contract Base is IERC20, BaseInternal {
     using Address for address;
 
-    uint256 internal constant UINT256_MAX = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
-
     uint256 internal _totalSupply;
     mapping(address => uint256) internal _balances;
     mapping(address => mapping(address => uint256)) internal _allowances;
@@ -44,8 +43,12 @@ abstract contract Base is IERC20, BaseInternal {
         _burnFrom(sender, amount);
     }
 
-    function totalSupply() external view override returns (uint256) {
+    function _internal_totalSupply() internal view override returns (uint256) {
         return _totalSupply;
+    }
+
+    function totalSupply() external view override returns (uint256) {
+        return _internal_totalSupply();
     }
 
     function balanceOf(address owner) external view override returns (uint256) {
@@ -55,7 +58,7 @@ abstract contract Base is IERC20, BaseInternal {
     function allowance(address owner, address spender) external view override returns (uint256) {
         if (owner == address(this)) {
             // see transferFrom: address(this) allows anyone
-            return UINT256_MAX;
+            return Constants.UINT256_MAX;
         }
         return _allowances[owner][spender];
     }
@@ -171,7 +174,7 @@ abstract contract Base is IERC20, BaseInternal {
         // this allow mintAndApprovedCall without gas overhead
         if (msg.sender != from && from != address(this)) {
             uint256 currentAllowance = _allowances[from][msg.sender];
-            if (currentAllowance != UINT256_MAX) {
+            if (currentAllowance != Constants.UINT256_MAX) {
                 // save gas when allowance is maximal by not reducing it (see https://github.com/ethereum/EIPs/issues/717)
                 require(currentAllowance >= amount, "NOT_AUTHOIZED_ALLOWANCE");
                 _allowances[from][msg.sender] = currentAllowance - amount;
@@ -203,13 +206,13 @@ abstract contract Base is IERC20, BaseInternal {
         }
     }
 
-    function _mint(address to, uint256 amount) internal {
+    function _mint(address to, uint256 amount) internal override {
         _totalSupply += amount;
         _balances[to] += amount;
         emit Transfer(address(0), to, amount);
     }
 
-    function _burnFrom(address from, uint256 amount) internal {
+    function _burnFrom(address from, uint256 amount) internal override {
         uint256 currentBalance = _balances[from];
         require(currentBalance >= amount, "NOT_ENOUGH_TOKENS");
         _balances[from] = currentBalance - amount;
