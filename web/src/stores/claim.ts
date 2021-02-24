@@ -50,7 +50,7 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
     if (!latestBlock) {
       throw new Error(`can't fetch latest block`);
     }
-    console.log('HELLO');
+    // console.log('HELLO');
     const location = flow.data?.location;
     const {x, y} = locationToXY(location);
     const planetInfo = spaceInfo.getPlanetInfo(x, y);

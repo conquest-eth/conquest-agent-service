@@ -67,7 +67,7 @@
 <Modal
   on:close={() => sendFlow.cancel()}
   on:confirm={() => sendFlow.confirm(fleetAmount)}>
-  <!-- <h2 slot="header">Claim Planet {location.x},{location.y}</h2> -->
+  <!-- <h2 slot="header">Capture Planet {location.x},{location.y}</h2> -->
 
   <div class="text-center">
     <p class="font-bold">How many spaceships?</p>

@@ -788,7 +788,7 @@ class PrivateAccountStore extends BaseStoreWithData<
           // });
           const expiryTime = launchTime + fleet.duration + resolveWindow;
           if (latestFinalityBlock.timestamp > expiryTime) {
-            console.log({expirted: fleetId});
+            console.log({fleetExpired: fleetId});
             this.deleteFleet(fleetId);
             continue;
           }
@@ -811,7 +811,7 @@ class PrivateAccountStore extends BaseStoreWithData<
           // });
           const expiryTime = launchTime + fleet.duration + resolveWindow;
           if (latestFinalityBlock.timestamp > expiryTime) {
-            console.log({expirted: fleetId});
+            console.log({fleetExpired: fleetId});
             this.deleteFleet(fleetId);
           }
           continue;

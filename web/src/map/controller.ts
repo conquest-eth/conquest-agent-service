@@ -20,15 +20,15 @@ export class Controller {
   }
 
   onFleetSelected(fleet: OwnFleet): void {
-    console.log({fleet});
+    // console.log({fleet});
   }
 
   showPlanetInfo(planet: Planet): void {
-    console.log('show');
+    // console.log('show');
     if (this.planetInfoComponent) {
       this.hidePlanetInfo();
     }
-    console.log('create');
+    // console.log('create');
     this.planetInfoComponent = new PlanetInfoPanel({
       target: this.parent,
       props: {
@@ -39,9 +39,9 @@ export class Controller {
   }
 
   hidePlanetInfo(): void {
-    console.log('hide');
+    // console.log('hide');
     if (this.planetInfoComponent) {
-      console.log('destroy');
+      // console.log('destroy');
       this.planetInfoComponent.$destroy();
       this.planetInfoComponent = undefined;
     }

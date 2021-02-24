@@ -12,13 +12,12 @@
     container.appendChild(elem);
 
     const start = new Date(timestamp * 1000);
-    const end = new Date((timestamp + 2 * 60)  * 1000);
+    const end = new Date((timestamp + 2 * 60) * 1000);
 
     // const dropElem = document.getElementById('addeventatc1-drop') as HTMLElement;
 
     const children = elem.children;
     for (const child of children) {
-      console.log(child.className);
       if (child.classList.contains('start')) {
         child.innerHTML = start.toISOString();
       } else if (child.classList.contains('end')) {
@@ -42,17 +41,14 @@
     <span class="description">Description of the event</span>
     <span class="location">Location of the event</span>
     */
-  })
-
+  });
 
   onDestroy(() => {
     if (elem) {
       elem.style.display = 'none';
       document.body.appendChild(elem);
     }
-  })
+  });
 </script>
 
-<div bind:this={container}>
-
-</div>
+<div bind:this={container} />

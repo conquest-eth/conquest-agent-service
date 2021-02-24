@@ -25,9 +25,12 @@
     You are about to confirm the launch of your fleet. Remember that you'll need
     to ensure an extra transaction is performed once the fleet reaches
     destination (around
-    {new Date(arrival).toString()}). You'll have a
+    {new Date(arrival * 1000).toString()}). You'll have a
     {timeToText(spaceInfo.resolveWindow, {verbose: true})}
-    time window for that.
+    time window to execute it.
+  </p>
+  <p>
+    Once the first transaction is submitted, we will help you create a reminder.
   </p>
   <div class="text-center">
     <PanelButton

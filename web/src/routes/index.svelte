@@ -36,7 +36,8 @@
         To participate you'll have to first acquire planets by depositing a
         stake in form of
         <PlayCoin class="inline w-4" />
-        (Play tokens)
+        (Play tokens). You can also stake directly in USDC or DAI as Play Token
+        can be redeemed for the same.
       </p>
       <p class="mt-3">
         These planets will then produce spaceships that you can use to attack
@@ -51,8 +52,8 @@
         deposit, ready to be withdrawn.
       </p>
       <p class="mt-3">
-        Be careful though, you can lose your planet while waiting for the exit
-        period to end.
+        Be careful, even though your planet will continue to produce spaceships,
+        you can lose it while waiting for the exit period to end.
       </p>
     </Banner>
   {/if}

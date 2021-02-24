@@ -29,7 +29,7 @@ async function fetch(
     // TODO should indicate fallback is being connected to on the UI ()
     throw new Error('no contracts to fetch with');
   } else {
-    console.log('not ready');
+    console.log('waiting to be connected to a chain...');
   }
   return {planetStates: [], discovered: {minX: 0, minY: 0, maxX: 0, maxY: 0}};
 }

@@ -6,6 +6,8 @@
   import {playTokenAccount} from '../stores/playToken';
   import {BigNumber} from '@ethersproject/bignumber';
   import PlayCoin from '../components/PlayCoin.svelte';
+  import {timeToText} from '../lib/utils';
+  import {spaceInfo} from '../app/mapState';
 
   $: location = $claimFlow.data?.location;
   $: planet = location ? planetAt(location) : undefined;
@@ -43,12 +45,17 @@
       {:else}
         <div class="text-center">
           <h2>
-            Claim Planet
-            <span class="text-green-500">"{$planet.stats.name}"</span>
-            for
+            Stake
             <span class="text-yellow-500">{stake}
               <PlayCoin class="inline w-4" /></span>
+            to capute Planet
+            <span class="text-green-500">"{$planet.stats.name}"</span>.
           </h2>
+          <p class="text-gray-300 mt-2 text-sm">
+            You'll be able to get your stake back if you manage to exit the
+            planet safely (this takes
+            {timeToText(spaceInfo.exitDuration, {verbose: true})}).
+          </p>
           <Button
             class="mt-5"
             label="Stake"

@@ -261,7 +261,7 @@ export class Space {
     locationY1: number
   ): Promise<void> {
     this.focusTimeout = undefined;
-    console.log('FOCUS', {locationX0, locationY0, locationX1, locationY1});
+    // console.log('FOCUS', {locationX0, locationY0, locationX1, locationY1});
     const width = locationX1 - locationX0;
     const height = locationY1 - locationY0;
     this.x0 = Math.floor(locationX0 - width / 2);

@@ -26,7 +26,7 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
       throw new Error(`no fleet with id ${fleetId}`);
     }
     const secretHash = privateAccount.fleetSecret(fleetId);
-    console.log('resolve', {secretHash});
+    // console.log('resolve', {secretHash});
     const to = spaceInfo.getPlanetInfo(fleet.to.x, fleet.to.y);
     const from = spaceInfo.getPlanetInfo(fleet.from.x, fleet.from.y);
     if (!from || !to) {
