@@ -21,7 +21,7 @@
   let fleetAmount: number = 1;
   let maxSpaceships: number;
   $: {
-    maxSpaceships = $planetFrom.state.numSpaceships;
+    maxSpaceships = (planetFrom && $planetFrom.state?.numSpaceships) || 0;
     if (maxSpaceships > 0 && !fleetAmountSet) {
       // TODO loading
       fleetAmount = Math.floor(maxSpaceships / 2);
