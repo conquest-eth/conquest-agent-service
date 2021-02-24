@@ -4,8 +4,9 @@ pragma solidity 0.7.5;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../Play.sol";
+import "ethereum-transfer-gateway/src/solc_0.7/BaseERC20TransferRecipient.sol";
 
-contract Reserve {
+contract Reserve is BaseERC20TransferRecipient {
     using SafeERC20 for IERC20;
 
     Play internal immutable _playToken;
@@ -17,28 +18,37 @@ contract Reserve {
         Play token,
         IERC20 dai,
         IERC20 usdc,
-        address owner
-    ) {
+        address owner,
+        address gateway
+    ) BaseERC20TransferRecipient(gateway) {
         _playToken = token;
         _owner = owner;
         _dai = dai;
         _usdc = usdc;
+        // TODO pre_approve
     }
 
-    function payInDAI(
+    function approved_payInDAI(
         uint256 amount,
         address to,
         bytes calldata data
     ) external {
-        _payIn(_dai, amount, to, data); // TODO decimal compatibility
+        _payInViaTransferFrom(msg.sender, _dai, amount, to, data); // TODO decimal compatibility
     }
 
-    function payInUSDC(
+    function approved_payInUSDC(
         uint256 amount,
         address to,
         bytes calldata data
     ) external {
-        _payIn(_usdc, amount, to, data); // TODO decimal compatibility
+        _payInViaTransferFrom(msg.sender, _usdc, amount, to, data); // TODO decimal compatibility
+    }
+
+    function payViaGateway(address to, bytes calldata data) external {
+        (address token, uint256 amount, address sender) = _getTokenTransfer(); // TODO import transfer-gateway repo
+        require(IERC20(token) == _dai || IERC20(token) == _usdc, "INVALID_PAYMENT_TOKEN");
+        // TODO decimal compatibility
+        _payIn(sender, amount, to, data);
     }
 
     function withdraw(
@@ -54,17 +64,25 @@ contract Reserve {
     //                        INTERNALS
     // ----------------------------------------------------------
 
-    function _payIn(
+    function _payInViaTransferFrom(
+        address payer,
         IERC20 payToken,
         uint256 amount,
         address to,
         bytes memory data
     ) internal {
-        address sender = msg.sender; // TODO _msgSender()
-        // TODO use permit
-        payToken.safeTransferFrom(sender, address(this), amount);
+        payToken.safeTransferFrom(payer, address(this), amount);
+        _payIn(payer, amount, to, data);
+    }
+
+    function _payIn(
+        address payer,
+        uint256 amount,
+        address to,
+        bytes memory data
+    ) internal {
         if (data.length > 0) {
-            _playToken.payForAndCall(sender, to, amount, data);
+            _playToken.payForAndCall(payer, to, amount, data);
         } else {
             _playToken.transfer(to, amount);
         }

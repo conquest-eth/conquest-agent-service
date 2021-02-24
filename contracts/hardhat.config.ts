@@ -75,6 +75,14 @@ const config: HardhatUserConfig = {
   mocha: {
     timeout: 0,
   },
+  external: {
+    contracts: [
+      {
+        artifacts: 'node_modules/ethereum-transfer-gateway/export/artifacts',
+        deploy: 'node_modules/ethereum-transfer-gateway/export/deploy',
+      },
+    ],
+  },
 };
 
 export default config;

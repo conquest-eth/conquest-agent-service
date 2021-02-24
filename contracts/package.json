@@ -21,6 +21,7 @@
     "chai-ethers": "0.0.1",
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
+    "ethereum-transfer-gateway": "^0.1.0-beta.8",
     "ethers": "^5.0.8",
     "hardhat": "^2.0.4",
     "hardhat-deploy": "^0.7.0-beta.38",

@@ -70,6 +70,7 @@ importers:
       chai-ethers: 0.0.1
       cross-env: 7.0.3
       dotenv: 8.2.0
+      ethereum-transfer-gateway: 0.1.0-beta.8
       ethers: 5.0.26
       hardhat: 2.0.8
       hardhat-deploy: 0.7.0-beta.44_hardhat@2.0.8
@@ -97,6 +98,7 @@ importers:
       chai-ethers: 0.0.1
       cross-env: ^7.0.2
       dotenv: ^8.2.0
+      ethereum-transfer-gateway: ^0.1.0-beta.8
       ethers: ^5.0.8
       hardhat: ^2.0.4
       hardhat-deploy: ^0.7.0-beta.38
@@ -5228,6 +5230,10 @@ packages:
     dev: true
     resolution:
       integrity: sha512-w8/4x1SGGzc+tO97TASLja6SLd3fRIK2tLVcV2Gx4IB21hE19atll5Cq9o3d0ZmAYC/8aw0ipieTSiekAea4SQ==
+  /ethereum-transfer-gateway/0.1.0-beta.8:
+    dev: true
+    resolution:
+      integrity: sha512-6ffvWUBEQ8T2XPUaqez8BrfFRp7rvbrpJn11WwL/SHJ0qAzDVguzhc5e+4S/I4eI5+qbYNt9oO+Px/Kwx31O8g==
   /ethereumjs-abi/0.6.5:
     dependencies:
       bn.js: 4.11.9
