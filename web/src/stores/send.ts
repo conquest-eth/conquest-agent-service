@@ -159,6 +159,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       launchTime: now(),
       owner: wallet.address,
       sendTx: {hash: tx.hash, nonce},
+      updatedAt: now(),
     });
 
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});

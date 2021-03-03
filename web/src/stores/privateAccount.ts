@@ -17,6 +17,7 @@ import {VERSION, params} from '../init';
 
 import contractsInfo from '../contracts.json';
 import {BaseStoreWithData} from '../lib/utils/stores';
+import {now} from './time';
 
 type Capture = {
   txHash: string;
@@ -283,31 +284,13 @@ class PrivateAccountStore extends BaseStoreWithData<
           ) {
             console.error('fleet with different destination but same id');
           }
-          if (localFleet.resolveTx) {
-            if (remoteFleet.resolveTx) {
-              // if (localFleet.resolveTx.hash != remoteFleet.resolveTx.hash) {
-              // }
-            } else {
-              newDataOnLocal = true;
-            }
-          } else {
-            if (remoteFleet.resolveTx) {
-              newDataOnRemote = true;
-              localFleet.resolveTx = remoteFleet.resolveTx;
-            }
-          }
-          if (localFleet.sendTx) {
-            if (remoteFleet.sendTx) {
-              // if (localFleet.sendTxHash != remoteFleet.sendTxHash) {
-              // }
-            } else {
-              newDataOnLocal = true;
-            }
-          } else {
-            if (remoteFleet.sendTx) {
-              newDataOnRemote = true;
-              localFleet.sendTx = remoteFleet.sendTx;
-            }
+
+          if (remoteFleet.updatedAt > localFleet.updatedAt) {
+            newDataOnRemote = true;
+            localFleet.resolveTx = remoteFleet.resolveTx;
+            localFleet.sendTx = remoteFleet.sendTx;
+          } else if (remoteFleet.updatedAt < localFleet.updatedAt) {
+            newDataOnLocal = true;
           }
         }
       }
@@ -346,9 +329,6 @@ class PrivateAccountStore extends BaseStoreWithData<
   }
 
   encrypt(data: string): string {
-    if (!this.$store || !this.$store.aesKey) {
-      throw new Error('no aes key set');
-    }
     const textBytes = compressToUint8Array(data); // const textBytes = aes.utils.utf8.toBytes(data);
     const ctr = new aes.ModeOfOperation.ctr(this.$store.aesKey);
     const encryptedBytes = ctr.encrypt(textBytes);
@@ -1089,6 +1069,7 @@ class PrivateAccountStore extends BaseStoreWithData<
     if (fleet) {
       if (wallet.address && wallet.chain.chainId && this.$store.data) {
         fleet.resolveTx = undefined; // TODO ensure merge do not bring it back : use time,nonce ?
+        fleet.updatedAt = now();
         this.setPartial({
           data: this.$store.data,
         });
@@ -1304,6 +1285,7 @@ class PrivateAccountStore extends BaseStoreWithData<
     const fleet = fleets[fleetId];
     if (fleet) {
       fleet.resolveTx = {hash: txHash, nonce};
+      fleet.updatedAt = now();
       this.setPartial({
         data: this.$store.data,
       });

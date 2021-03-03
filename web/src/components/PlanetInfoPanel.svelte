@@ -88,8 +88,16 @@
         </p>
         <p class="p-0 mb-1">{$planet.stats.natives}</p>
       {:else}
-        <p class="p-0 mb-1">Spaceships:</p>
-        <p class="p-0 mb-1">{$planet.state.numSpaceships}</p>
+        <p class="p-0 mb-1 {textColor}">
+          Spaceships
+          <Help class="inline w-4 h-4">
+            The number of spaceships present on the planet. These spaceships can
+            be used for attacks or left on the planet for defense. When a planet
+            is active, that it is, a stake has been deposited, it continuosly
+            produce new spaceships.
+          </Help>:
+        </p>
+        <p class="p-0 mb-1 {textColor}">{$planet.state.numSpaceships}</p>
       {/if}
     </div>
 

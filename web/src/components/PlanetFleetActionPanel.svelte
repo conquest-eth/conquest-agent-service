@@ -5,6 +5,7 @@
   import {wallet} from '../stores/wallet';
   import privateAccount from '../stores/privateAccount';
   import {planetAt} from '../stores/planets';
+  import Help from './Help.svelte';
 
   import PanelButton from './PanelButton.svelte';
   import {locationToXY, xyToLocation} from '../common/src';
@@ -73,6 +74,7 @@
         <p>Please wait....</p>
       {:else if $planet.state.capturing.status === 'Failure'}
         <p>The Transaction Failed.</p>
+        <!-- TODO blockchain explorer link via tx Hash-->
         <PanelButton
           label="Ok"
           class="m-2"
@@ -93,7 +95,13 @@
           color="text-red-500"
           borderColor="border-red-500"
           on:click={sendTo}>
-          <div class="w-20">Attack!</div>
+          <div class="w-20">
+            Attack!
+            <Help class="inline w-4 h-4">
+              You can attack other planets by sending spaceships to them. Once
+              it reaches destination, you ll have to resolve the attack.
+            </Help>
+          </div>
         </PanelButton>
       {:else if walletIsOwner && !$planet.state.active}
         <!-- SEND MORE -->
@@ -123,7 +131,13 @@
           color="text-red-500"
           borderColor="border-red-500"
           on:click={sendTo}>
-          <div class="w-20">Attack!</div>
+          <div class="w-20">
+            Attack!
+            <Help class="inline w-4 h-4">
+              You can attack other planets by sending spaceships to them. Once
+              it reaches destination, you ll have to resolve the attack.
+            </Help>
+          </div>
         </PanelButton>
       {/if}
       <PanelButton label="Cancel" class="m-2" on:click={cancelSend}>
@@ -145,7 +159,13 @@
             color="text-red-500"
             borderColor="border-red-500"
             on:click={sendFrom}>
-            <div class="w-20">Attack From Here</div>
+            <div class="w-20">
+              Attack from here
+              <Help class="inline w-4 h-4">
+                You can attack other planets by sending spaceships to them. Once
+                it reaches destination, you ll have to resolve the attack.
+              </Help>
+            </div>
           </PanelButton>
         {:else}
           <PanelButton
@@ -166,7 +186,13 @@
             color="text-red-500"
             borderColor="border-red-500"
             on:click={sendFrom}>
-            <div class="w-20">Attack From Here</div>
+            <div class="w-20">
+              Attack From Here
+              <Help class="inline w-4 h-4">
+                You can attack other planets by sending spaceships to them. Once
+                it reaches destination, you ll have to resolve the attack.
+              </Help>
+            </div>
           </PanelButton>
         {:else}
           <PanelButton
@@ -194,7 +220,13 @@
         <div class="w-20">
           Capture
           <span class="text-sm">
-            {!$planet.state.inReach ? ' (unreachable)' : ''}</span>
+            {!$planet.state.inReach ? ' (unreachable)' : ''}
+            <Help class="inline w-4 h-4">
+              The Reachable Universe expands as more planets get captured. Note
+              though that you can still send attack unreachable planets. But
+              these planets cannot produce spaceships until they get in range
+              and you stake on it.
+            </Help></span>
         </div>
       </PanelButton>
       {#if $planet.state.natives}
@@ -204,7 +236,13 @@
           color="text-red-500"
           borderColor="border-red-500"
           on:click={sendTo}>
-          <div class="w-20">Attack</div>
+          <div class="w-20">
+            Attack
+            <Help class="inline w-4 h-4">
+              You can attack other planets by sending spaceships to them. Once
+              it reaches destination, you ll have to resolve the attack.
+            </Help>
+          </div>
         </PanelButton>
       {:else}
         <!-- unreachable ? -->
@@ -225,7 +263,13 @@
         <div class="w-20">
           Capture
           <span class="text-sm">
-            {!$planet.state.inReach ? ' (unreachable)' : ''}</span>
+            {!$planet.state.inReach ? ' (unreachable)' : ''}
+            <Help class="inline w-4 h-4">
+              The Reachable Universe expands as more planets get captured. Note
+              though that you can still send attack unreachable planets. But
+              these planets cannot produce spaceships until they get in range
+              and you stake on it.
+            </Help></span>
         </div>
       </PanelButton>
       <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
@@ -256,7 +300,13 @@
         color="text-red-500"
         borderColor="border-red-500"
         on:click={sendTo}>
-        <div class="w-20">Attack</div>
+        <div class="w-20">
+          Attack
+          <Help class="inline w-4 h-4">
+            You can attack other planets by sending spaceships to them. Once it
+            reaches destination, you ll have to resolve the attack.
+          </Help>
+        </div>
       </PanelButton>
     {/if}
   {:else}

@@ -43,7 +43,7 @@
   <Modal>
     {#if $exitFlow.step === 'SUCCESS'}
       <div class="text-center">
-        <p>
+        <p class="pb-4">
           You'll be able to claim back the stake
           {timeToText(spaceInfo.exitDuration, {verbose: true})}
           after the tx is mined
