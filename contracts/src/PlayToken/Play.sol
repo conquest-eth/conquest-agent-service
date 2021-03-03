@@ -95,6 +95,23 @@ contract Play is Base, WithPermitAndFixedDomain, CompoundAdapter {
         _takeBack(amount, sender);
     }
 
+    function burnTo(uint256 amount, address to) external {
+        address sender = msg.sender;
+        _burnFrom(sender, amount);
+        _takeBack(amount, to);
+    }
+
+    function burnToAndCall(
+        uint256 amount,
+        address target,
+        bytes calldata data
+    ) external {
+        address sender = msg.sender;
+        _burnFrom(sender, amount);
+        _takeBack(amount, target);
+        IBurnReceiver(target).onTokenBurn(sender, amount, data);
+    }
+
     function withdraw(uint256 upToAmount, address to) external returns (uint256) {
         require(msg.sender == _owner, "NOT_AUTHORIZED");
         return _withdrawInterest(upToAmount, to);

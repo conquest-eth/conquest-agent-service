@@ -6,6 +6,14 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./BaseInternal.sol";
 import "../Libraries/Constants.sol";
 
+interface IBurnReceiver {
+    function onTokenBurn(
+        address,
+        uint256,
+        bytes calldata
+    ) external returns (bool);
+}
+
 interface ITransferReceiver {
     function onTokenTransfer(
         address,
