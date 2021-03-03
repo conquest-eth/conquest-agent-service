@@ -62,7 +62,7 @@
 {:else if $sendFlow.step === 'CONNECTING'}
   <Modal>Connecting...</Modal>
 {:else if $sendFlow.step === 'CREATING_TX'}
-  <Modal>...</Modal>
+  <Modal>Preparing The Transaction...</Modal>
 {:else if $sendFlow.step === 'WAITING_TX'}
   <Modal>Please Accept the Transaction...</Modal>
 {:else}

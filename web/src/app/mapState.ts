@@ -44,43 +44,57 @@ export const space = new PrivateSpace(
   privateAccount
 );
 
-export async function fetchFleetEvent(
-  fleetId: string
-): Promise<{
+type FleetPromise = Promise<{
   fleetLoss: number;
   planetLoss: number;
   won: boolean;
   attack: boolean;
   newNumspaceships: number;
-}> {
+}>;
+
+const fleetPromises: {[fleetId: string]: FleetPromise} = {};
+
+export function fetchFleetEvent(fleetId: string): FleetPromise {
   const contracts = chain.contracts || fallback.contracts;
   if (contracts) {
-    // TODO fix web3w to get access to queryFilter
-    const OuterSpace =
-      contracts.OuterSpace?._proxiedContract || contracts.OuterSpace;
-    // TODO use blockHash of tx
-    const events = await OuterSpace.queryFilter(
-      contracts.OuterSpace.filters.FleetArrived(null, fleetId)
-    );
-    const event = events[0];
-    if (!event) {
-      throw new Error('cannot get corresponding event');
-    } else {
-      const args = event.args as {
-        fleetLoss: number;
-        toLoss: number;
-        won: boolean;
-        newNumspaceships: number;
-      };
-      return {
-        fleetLoss: args.fleetLoss,
-        attack: args.fleetLoss > 0 || args.toLoss > 0,
-        planetLoss: args.toLoss,
-        won: args.won,
-        newNumspaceships: args.newNumspaceships,
-      };
+    const currentPromise = fleetPromises[fleetId];
+    if (currentPromise) {
+      return currentPromise;
     }
-  } else if (fallback.state === 'Ready') {
+
+    return (fleetPromises[fleetId] = new Promise((resolve, reject) => {
+      (async () => {
+        // TODO fix web3w to get access to queryFilter
+        const OuterSpace =
+          contracts.OuterSpace?._proxiedContract || contracts.OuterSpace;
+        // TODO use blockHash of tx
+        const events = await OuterSpace.queryFilter(
+          contracts.OuterSpace.filters.FleetArrived(null, fleetId)
+        );
+        const event = events[0];
+        if (!event) {
+          throw new Error('cannot get corresponding event');
+        } else {
+          const args = event.args as {
+            fleetLoss: number;
+            toLoss: number;
+            won: boolean;
+            newNumspaceships: number;
+          };
+          return {
+            fleetLoss: args.fleetLoss,
+            attack: args.fleetLoss > 0 || args.toLoss > 0,
+            planetLoss: args.toLoss,
+            won: args.won,
+            newNumspaceships: args.newNumspaceships,
+          };
+        }
+      })()
+        .then(resolve)
+        .catch(reject);
+    }));
+  }
+  if (fallback.state === 'Ready') {
     throw new Error('no contracts to fetch with');
   } else {
     throw new Error('not connected');

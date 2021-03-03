@@ -16,7 +16,6 @@
       privateAccount.deleteFleet(fleet.id);
     }
   }
-  let promise = fetchFleetEvent(fleet.id);
 </script>
 
 {#if fleet.status === 'Error'}
@@ -47,7 +46,7 @@
     </PanelButton>
   </p>
 {:else}
-  {#await promise}
+  {#await fetchFleetEvent(fleet.id)}
     <p class="p-2">Loading Event...</p>
   {:then event}
     {#if event.attack}

@@ -133,12 +133,22 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     const {toHash, fleetId} = await privateAccount.hashFleet(from, to, nonce);
 
     this.setPartial({step: 'WAITING_TX'});
-    const tx = await wallet.contracts?.OuterSpace.send(
-      xyToLocation(from.x, from.y),
-      fleetAmount,
-      toHash,
-      {nonce}
-    );
+
+    // TODO type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let tx: any;
+    try {
+      tx = await wallet.contracts?.OuterSpace.send(
+        xyToLocation(from.x, from.y),
+        fleetAmount,
+        toHash,
+        {nonce}
+      );
+    } catch (e) {
+      // TODO why is the catch necessary, failure should be caught higher
+      this.cancel();
+      return;
+    }
 
     const gToX = toPlanetInfo.location.globalX;
     const gToY = toPlanetInfo.location.globalY;
