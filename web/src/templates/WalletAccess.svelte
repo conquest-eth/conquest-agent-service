@@ -1,5 +1,6 @@
 <script lang="ts">
   export let title: string = '';
+  import {chainName} from '../config';
   import NavButton from '../components/navigation/NavButton.svelte';
   import Button from '../components/PanelButton.svelte';
   import Modal from '../components/Modal.svelte';
@@ -15,24 +16,6 @@
   } from '../stores/wallet';
 
   import privateAccount from '../stores/privateAccount';
-
-  const chainNames: {[chainId: string]: string} = {
-    '1': 'mainnet',
-    '3': 'ropsten',
-    '4': 'rinkeby',
-    '5': 'goerli',
-    '42': 'kovan',
-    '1337': 'localhost chain',
-    '31337': 'localhost chain',
-  };
-  const chainId: string = import.meta.env.SNOWPACK_PUBLIC_CHAIN_ID;
-  const chainName = (() => {
-    const name = chainNames[chainId];
-    if (name) {
-      return name;
-    }
-    return `chain with id ${chainId}`;
-  })();
 
   const base: string = window.basepath || '/';
 
@@ -83,7 +66,7 @@
 
 {#if $chain.state === 'Idle' && !$chain.connecting && $fallback.state === 'Idle' && !$fallback.connecting}
   <div
-    class="w-full flex items-center justify-center fixed"
+    class="w-full flex items-center justify-center fixed top-0 pointer-events-none"
     style="z-index: 5;">
     <p
       class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
@@ -92,7 +75,7 @@
   </div>
 {:else if $chain.state === 'Idle' && !$chain.connecting && $fallback.error}
   <div
-    class="w-full flex items-center justify-center fixed"
+    class="w-full flex items-center justify-center fixed top-0 pointer-events-none"
     style="z-index: 5;">
     <p
       class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
@@ -101,7 +84,7 @@
   </div>
 {:else if $chain.notSupported}
   <div
-    class="w-full flex items-center justify-center fixed"
+    class="w-full flex items-center justify-center fixed top-0 pointer-events-none"
     style="z-index: 5;">
     <p
       class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
@@ -244,6 +227,6 @@
           Retry
         </Button>
       </div>
-    {:else}Error: let us know{/if}
+    {:else}Error: let us know {$privateAccount.step}{/if}
   </Modal>
 {/if}

@@ -24,7 +24,14 @@
         })
         .filter((fleet) => {
           if (fleet.resolveTxHash) {
-            return false; // TOOO query it
+            const txStatus = privateAccount.txStatus(fleet.resolveTxHash);
+            if (
+              !txStatus ||
+              txStatus === 'Loading' ||
+              txStatus.status !== 'Failure'
+            ) {
+              return false;
+            }
           }
 
           const resolveWindow = spaceInfo.resolveWindow;

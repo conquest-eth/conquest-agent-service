@@ -5,7 +5,7 @@ import {keccak256} from '@ethersproject/solidity';
 import {xyToLocation} from '../common/src';
 import type {OwnFleet, TxStatus} from '../common/src/types';
 import {BigNumber} from '@ethersproject/bignumber';
-import {finality} from '../config';
+import {finality, blockTime} from '../config';
 import aes from 'aes-js';
 import {
   base64,
@@ -83,7 +83,6 @@ class PrivateAccountStore extends BaseStoreWithData<
   SecretData
 > {
   private monitorProcess: NodeJS.Timeout | undefined = undefined;
-  private _txPerformed: Record<string, boolean> = {};
   private _lastId = 0;
   private walletData: Record<string, {wallet: Wallet; aesKey: Uint8Array}> = {};
 
@@ -147,7 +146,7 @@ class PrivateAccountStore extends BaseStoreWithData<
         console.error(e);
       }
     }
-    this.setPartial({data});
+    this.setPartial({data, txStatuses: {}});
     this._syncDown().then((result) => {
       if (result && result.newDataOnLocal) {
         // TODO flag to ensure syncing up when first checks
@@ -718,6 +717,24 @@ class PrivateAccountStore extends BaseStoreWithData<
     }
   }
 
+  // TODO use it:
+  async fetchThen<T>(
+    address: string,
+    chainId: string,
+    fetch: () => Promise<T>,
+    doNext: (data: T) => Promise<void>
+  ) {
+    const data = await fetch();
+    if (
+      !this.$store.walletAddress ||
+      this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+      this.$store.chainId !== chainId
+    ) {
+      return;
+    }
+    await doNext(data);
+  }
+
   async listenForFleets(address: string, chainId: string): Promise<void> {
     if (!this.$store.data) {
       return;
@@ -737,90 +754,166 @@ class PrivateAccountStore extends BaseStoreWithData<
     const fleetIds = Object.keys(this.$store.data.fleets);
     for (const fleetId of fleetIds) {
       const fleet = this.$store.data.fleets[fleetId];
-      let fleetData;
-      try {
-        fleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
-          // TODO batch getFleets
-          fleetId,
-          {blockTag: Math.max(0, latestBlockNumber - finality)}
-        );
-      } catch (e) {
-        //
-      }
-      let currentFleetData;
-      try {
-        currentFleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
-          // TODO batch getFleets
-          fleetId
-        );
-      } catch (e) {
-        //
-      }
-      if (
-        !this.$store.walletAddress ||
-        this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
-        this.$store.chainId !== chainId
-      ) {
-        return;
-      }
 
-      if (fleet.actualLaunchTime !== currentFleetData.launchTime) {
-        fleet.actualLaunchTime = currentFleetData.launchTime;
-        this.recordFleet(fleetId, fleet);
-      }
-
+      // if sendTxHash has not been confirmed yet, check it (if resolveTxHash is set assume sendTxHash has been confirmed too and thus skip this)
       if (
-        fleet.resolveTxHash &&
-        currentFleetData &&
-        currentFleetData.launchTime > 0
+        !fleet.resolveTxHash &&
+        !fleet.actualLaunchTime &&
+        !(
+          this.$store.txStatuses[fleet.sendTxHash] &&
+          this.$store.txStatuses[fleet.sendTxHash].finalized
+        )
       ) {
-        if (currentFleetData.quantity == 0) {
-          this._txPerformed[fleet.resolveTxHash] = true;
-        } else {
-          this._txPerformed[fleet.resolveTxHash] = false;
-          const launchTime = currentFleetData.launchTime;
-          const resolveWindow =
-            contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
-          // console.log({
-          //   duration: fleet.duration,
-          //   launchTime: launchTime,
-          //   resolveWindow,
-          // });
-          const expiryTime = launchTime + fleet.duration + resolveWindow;
-          if (latestFinalityBlock.timestamp > expiryTime) {
-            console.log({fleetExpired: fleetId});
-            this.deleteFleet(fleetId);
-            continue;
+        console.log(`checking fleet sending ${fleetId}...`);
+        // fetch receipt for sendTx
+        const receipt = await wallet.provider.getTransactionReceipt(
+          fleet.sendTxHash
+        );
+        if (
+          !this.$store.walletAddress ||
+          this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+          this.$store.chainId !== chainId
+        ) {
+          return;
+        }
+        if (receipt) {
+          // if receipt then anaylyse it only if confirmed ?
+          const finalized = receipt.confirmations >= finality;
+          if (receipt.status !== undefined && receipt.status === 0) {
+            // failure
+            this.$store.txStatuses[fleet.sendTxHash] = {
+              finalized,
+              status: 'Failure',
+            };
+            this.set(this.$store);
+            continue; // no point checking further, deleting will happen through acknowledgement
+          } else {
+            this.$store.txStatuses[fleet.sendTxHash] = {
+              finalized,
+              status: 'Success',
+            };
+            this.set(this.$store);
           }
+        } else {
+          // TODO check for cancelation ?
+
+          this.$store.txStatuses[fleet.sendTxHash] = {
+            finalized: false,
+            status: 'Pending',
+          };
+          this.set(this.$store);
+          // TODO keep waiting for ever ? or add mechanism to delete it?
         }
       }
 
-      if (fleetData && fleetData.launchTime > 0) {
-        const launchTime = fleetData.launchTime;
-        if (fleetData.quantity === 0) {
-          // TODO use resolveTxHash instead ? // this would allow resolve to clear storage in OuterSpace.sol
-          this.deleteFleet(fleetId);
-          continue;
-        } else {
-          const resolveWindow =
-            contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
-          // console.log({
-          //   duration: fleet.duration,
-          //   launchTime: launchTime,
-          //   resolveWindow,
-          // });
-          const expiryTime = launchTime + fleet.duration + resolveWindow;
-          if (latestFinalityBlock.timestamp > expiryTime) {
-            console.log({fleetExpired: fleetId});
-            this.deleteFleet(fleetId);
-          }
-          continue;
+      // if the fleet has not been given a final actualLaunchTime, fetch it, this will be considered as confirmaation for the sendTx too
+      if (!fleet.actualLaunchTime) {
+        // could use receipt above (if finalized, else wait next tick) instead of fleetData from contract and use timestamp for getting actualLaunchTime
+        let fleetData;
+        try {
+          fleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
+            // TODO batch getFleets ?
+            fleetId,
+            {blockTag: Math.max(0, latestBlockNumber - finality)}
+          );
+        } catch (e) {
+          //
+        }
+        if (
+          !this.$store.walletAddress ||
+          this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+          this.$store.chainId !== chainId
+        ) {
+          return;
+        }
+        // use only finalised data
+        if (
+          fleetData.launchTime > 0 &&
+          fleet.actualLaunchTime !== fleetData.launchTime
+        ) {
+          fleet.actualLaunchTime = fleetData.launchTime;
+          this.recordFleet(fleetId, fleet);
         }
       } else {
+        const launchTime = fleet.actualLaunchTime;
+        const resolveWindow =
+          contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
+        const expiryTime = launchTime + fleet.duration + resolveWindow;
+
+        // else (if the fleet has been confirmed to be flying) we can check the resolution
+        // but let only do the check if it has a tx hash
+        // else we can delete if too late
         if (fleet.resolveTxHash) {
-          // TODO should not happen
+          // skip if resolveTxHash is already finalized and recorded as such
+          if (
+            this.$store.txStatuses[fleet.resolveTxHash] &&
+            this.$store.txStatuses[fleet.resolveTxHash].finalized
+          ) {
+            continue;
+          }
+
+          const receipt = await wallet.provider.getTransactionReceipt(
+            fleet.resolveTxHash
+          );
+          if (
+            !this.$store.walletAddress ||
+            this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+            this.$store.chainId !== chainId
+          ) {
+            return;
+          }
+
+          if (receipt) {
+            const finalized = receipt.confirmations >= finality;
+            if (receipt.status !== undefined && receipt.status === 0) {
+              this.$store.txStatuses[fleet.resolveTxHash] = {
+                finalized,
+                status: 'Failure',
+              };
+              this.set(this.$store);
+              if (finalized) {
+                console.log(`fleet ${fleetId} failed to arrive!`);
+              }
+              continue; // no point checking further, deleting will happen through acknowledgement
+            } else {
+              this.$store.txStatuses[fleet.resolveTxHash] = {
+                finalized,
+                status: 'Success',
+              };
+              if (finalized) {
+                console.log(`fleet ${fleetId} arrived!`);
+              }
+
+              this.set(this.$store);
+              // TODO delete fleet // or record for success
+            }
+          } else {
+            if (
+              latestFinalityBlock.timestamp >
+              expiryTime + finality * blockTime
+            ) {
+              // we predict the failure here
+              this.$store.txStatuses[fleet.resolveTxHash] = {
+                finalized: true,
+                status: 'Failure',
+              };
+              this.set(this.$store);
+              console.log(`fleet ${fleetId} expired!`);
+            } else {
+              // check for cancelation ?
+              this.$store.txStatuses[fleet.resolveTxHash] = {
+                finalized: false,
+                status: 'Pending',
+              };
+              this.set(this.$store);
+              // TODO keep waiting for ever ? or add mechanism to delete it?
+            }
+          }
         } else {
-          // TODO check for replaced tx
+          if (latestFinalityBlock.timestamp > expiryTime) {
+            console.log({fleetExpired: fleetId});
+            // consider it expired elsewhere (expired for sure = no resolveTxHash + expired time )
+          }
         }
       }
     }
@@ -988,6 +1081,21 @@ class PrivateAccountStore extends BaseStoreWithData<
     const capture = this.$store.data?.captures[id];
     if (capture) {
       this.deleteCapture(id);
+    }
+  }
+
+  acknowledgeResolveFailure(fleetId: string) {
+    const fleet = this.$store.data?.fleets[fleetId];
+    if (fleet) {
+      if (wallet.address && wallet.chain.chainId && this.$store.data) {
+        fleet.resolveTxHash = undefined; // TODO ensure merge do not bring it back : use time,nonce ?
+        this.setPartial({
+          data: this.$store.data,
+        });
+        this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
+      }
+    } else {
+      throw new Error(`wallet not ready`);
     }
   }
 
@@ -1199,13 +1307,6 @@ class PrivateAccountStore extends BaseStoreWithData<
     }
   }
 
-  isTxPerformed(txHash?: string): boolean {
-    if (!txHash) {
-      return false;
-    }
-    return this._txPerformed[txHash];
-  }
-
   capturingStatus(location: string): TxStatus | null | 'Loading' {
     if (!this.$store.data) {
       return null;
@@ -1224,6 +1325,14 @@ class PrivateAccountStore extends BaseStoreWithData<
       return txStatus;
     }
     return null;
+  }
+
+  txStatus(txHash: string): TxStatus | null | 'Loading' {
+    const txStatus = this.$store.txStatuses[txHash];
+    if (!txStatus) {
+      return 'Loading';
+    }
+    return txStatus;
   }
 
   getFleet(fleetId: string): OwnFleet | null {

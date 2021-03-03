@@ -17,21 +17,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const playToken = await hre.deployments.get('PlayToken');
 
-  const genesisHash =
+  let genesisHash =
     '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
-  const resolveWindow = hours(2);
-  const timePerDistance = hours(2);
-  const exitDuration = hours(3*24);
-  const acquireNumSpaceships = 100000;
+  let resolveWindow = hours(2);
+  let timePerDistance = hours(2);
+  let exitDuration = hours(3 * 24);
+  let acquireNumSpaceships = 100000;
 
   // use a command to increase time in 1337
-  // if (chainId === '1337') {
-  //   genesisHash =
-  //     '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69';
-  //   resolveWindow = hours(2);
-  //   timePerDistance = 20;
-  //   exitDuration = minutes(24);
-  // }
+  if (chainId === '1337') {
+    genesisHash =
+      '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69';
+    resolveWindow = hours(2);
+    timePerDistance = 20;
+    exitDuration = minutes(24);
+    acquireNumSpaceships = 100000;
+  }
 
   await deploy('OuterSpace', {
     from: deployer,
@@ -42,7 +43,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       resolveWindow,
       timePerDistance,
       exitDuration,
-      acquireNumSpaceships
+      acquireNumSpaceships,
     ],
     proxy: hre.network.name !== 'mainnet' ? 'postUpgrade' : undefined,
     log: true,

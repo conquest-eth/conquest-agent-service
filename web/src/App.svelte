@@ -29,7 +29,9 @@
 <!-- disable prompt -->
 <NoInstallPrompt />
 <NewVersionNotification />
-<Router {routes} globalQueryStrings={['subgraph', 'debug', 'log', 'trace', 'sync']}>
+<Router
+  {routes}
+  globalQueryStrings={['subgraph', 'debug', 'log', 'trace', 'sync', '_d_eruda']}>
   <Notifications />
   <!-- <Navbar links={['Home', 'Wallet']} /> -->
   <CurrentPage>

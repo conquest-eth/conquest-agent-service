@@ -8,7 +8,7 @@ import {trackInstances} from '../lib/utils/tools';
 import type {Controller} from './controller';
 import {timeToText} from '../lib/utils';
 import {locationToXY} from '../common/src';
-import type {Planet} from '../common/src/types';
+import type {Planet, TxStatus} from '../common/src/types';
 import {now} from '../stores/time';
 
 // pre-render
@@ -761,12 +761,34 @@ export class Renderer {
       }
     }
 
+    const bleeps: {[location: string]: 'Error' | 'Success'} = {};
+
     ctx.setLineDash([]);
     const fleets = this.renderState.space.getOwnFleets();
     for (const fleet of fleets) {
-      if (this.renderState.space.isTxPerformed(fleet.resolveTxHash)) {
-        continue;
+      if (fleet.resolveTxHash) {
+        const status = this.renderState.space.txStatus(fleet.resolveTxHash);
+        if (status && status !== 'Loading') {
+          if (status.status === 'Success' || status.status === 'Mined') {
+            if (!bleeps[`${fleet.to.x},${fleet.to.y}`]) {
+              bleeps[`${fleet.to.x},${fleet.to.y}`] = 'Success';
+            }
+          } else if (status.status === 'Failure') {
+            bleeps[`${fleet.to.x},${fleet.to.y}`] = 'Error';
+          }
+        }
+      } else if (fleet.sendTxHash) {
+        const status = this.renderState.space.txStatus(fleet.sendTxHash);
+        if (status && status !== 'Loading') {
+          if (status.status === 'Success' || status.status === 'Mined') {
+            // do nothing
+          } else if (status.status === 'Failure') {
+            bleeps[`${fleet.from.x},${fleet.from.y}`] = 'Error';
+            continue;
+          }
+        }
       }
+
       const fromX = fleet.from.x;
       const fromY = fleet.from.y;
       const fromPlanet = this.renderState.space.ensurePlanetAt(fromX, fromY);
@@ -822,7 +844,7 @@ export class Renderer {
       let fy;
       let facingAngle;
       if (timePassed > fullTime) {
-        const angle = (timePassed - fullTime) / 2;
+        const angle = (timePassed - fullTime) / 10;
         const orbit = 48 * 2;
         fx = destX + Math.cos(angle) * orbit;
         fy = destY + Math.sin(angle) * orbit;
@@ -867,6 +889,35 @@ export class Renderer {
       ctx.lineTo(fx, fy);
       ctx.closePath();
       ctx.fill();
+    }
+
+    for (const xy of Object.keys(bleeps)) {
+      const [x, y] = xy.split(',').map((s) => parseInt(s));
+
+      const planet = this.renderState.space.planetAt(x, y);
+      if (planet) {
+        let color = 'green';
+        if (bleeps[xy] === 'Error') {
+          color = 'red';
+        }
+        ctx.beginPath();
+        ctx.lineWidth = 1 / render.scale;
+        ctx.strokeStyle = color;
+        const planetX = planet.location.globalX * 2 * 48;
+        const planetY = planet.location.globalY * 2 * 48;
+        ctx.ellipse(
+          Math.round(planetX),
+          Math.round(planetY),
+          72 + ((currentTime * 10) % 72),
+          72 + ((currentTime * 10) % 72),
+          0,
+          0,
+          2 * Math.PI
+        );
+        ctx.stroke();
+      } else {
+        console.error(`no planet at ${x}, ${y}`);
+      }
     }
 
     // ctx.beginPath();
