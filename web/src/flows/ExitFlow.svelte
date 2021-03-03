@@ -1,10 +1,19 @@
 <script lang="ts">
   import {timeToText} from '../lib/utils';
 
+  import PlayCoin from '../components/PlayCoin.svelte';
   import Modal from '../components/Modal.svelte';
   import PanelButton from '../components/PanelButton.svelte';
   import exitFlow from '../stores/exit';
   import {spaceInfo} from '../app/mapState';
+  import {planetAt} from '../stores/planets';
+  import {xyToLocation} from '../common/src';
+
+  $: planet = $exitFlow.data?.location
+    ? planetAt(
+        xyToLocation($exitFlow.data?.location.x, $exitFlow.data?.location.y)
+      )
+    : undefined;
 </script>
 
 {#if $exitFlow.step === 'WAITING_CONFIRMATION'}
@@ -12,11 +21,14 @@
     on:close={() => exitFlow.cancel()}
     on:confirm={() => exitFlow.confirm()}>
     <p class="text-center">
-      Exiting a planet will allow you to claim the stake back. But be careful,
-      while you are exiting (this take {timeToText(spaceInfo.exitDuration, {verbose: true})}), you cannot operate with the spaceships and someone
-      else might be able to capture the planet before exit complete. Note
-      however that the planet will continue producting spaceships for its
-      defense. Upon exit, the number of spaceships will then be zero.
+      Exiting a planet will allow you to claim the stake back ({$planet.stats.stake}
+      <PlayCoin class="inline w-4" />). But be careful, while you are exiting
+      (this take
+      {timeToText(spaceInfo.exitDuration, {verbose: true})}), you cannot operate
+      with the spaceships and someone else might be able to capture the planet
+      before exit complete. Note however that the planet will continue
+      producting spaceships for its defense. Upon exit, the number of spaceships
+      will then be zero.
     </p>
     <p class="text-center">
       <PanelButton

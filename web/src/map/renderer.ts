@@ -766,8 +766,8 @@ export class Renderer {
     ctx.setLineDash([]);
     const fleets = this.renderState.space.getOwnFleets();
     for (const fleet of fleets) {
-      if (fleet.resolveTxHash) {
-        const status = this.renderState.space.txStatus(fleet.resolveTxHash);
+      if (fleet.resolveTx) {
+        const status = this.renderState.space.txStatus(fleet.resolveTx.hash);
         if (status && status !== 'Loading') {
           if (status.status === 'Success' || status.status === 'Mined') {
             if (!bleeps[`${fleet.to.x},${fleet.to.y}`]) {
@@ -777,8 +777,8 @@ export class Renderer {
             bleeps[`${fleet.to.x},${fleet.to.y}`] = 'Error';
           }
         }
-      } else if (fleet.sendTxHash) {
-        const status = this.renderState.space.txStatus(fleet.sendTxHash);
+      } else if (fleet.sendTx) {
+        const status = this.renderState.space.txStatus(fleet.sendTx.hash);
         if (status && status !== 'Loading') {
           if (status.status === 'Success' || status.status === 'Mined') {
             // do nothing

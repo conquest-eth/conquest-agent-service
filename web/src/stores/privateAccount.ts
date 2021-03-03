@@ -283,30 +283,30 @@ class PrivateAccountStore extends BaseStoreWithData<
           ) {
             console.error('fleet with different destination but same id');
           }
-          if (localFleet.resolveTxHash) {
-            if (remoteFleet.resolveTxHash) {
-              // if (localFleet.resolveTxHash != remoteFleet.resolveTxHash) {
+          if (localFleet.resolveTx) {
+            if (remoteFleet.resolveTx) {
+              // if (localFleet.resolveTx.hash != remoteFleet.resolveTx.hash) {
               // }
             } else {
               newDataOnLocal = true;
             }
           } else {
-            if (remoteFleet.resolveTxHash) {
+            if (remoteFleet.resolveTx) {
               newDataOnRemote = true;
-              localFleet.resolveTxHash = remoteFleet.resolveTxHash;
+              localFleet.resolveTx = remoteFleet.resolveTx;
             }
           }
-          if (localFleet.sendTxHash) {
-            if (remoteFleet.sendTxHash) {
+          if (localFleet.sendTx) {
+            if (remoteFleet.sendTx) {
               // if (localFleet.sendTxHash != remoteFleet.sendTxHash) {
               // }
             } else {
               newDataOnLocal = true;
             }
           } else {
-            if (remoteFleet.sendTxHash) {
+            if (remoteFleet.sendTx) {
               newDataOnRemote = true;
-              localFleet.sendTxHash = remoteFleet.sendTxHash;
+              localFleet.sendTx = remoteFleet.sendTx;
             }
           }
         }
@@ -755,19 +755,19 @@ class PrivateAccountStore extends BaseStoreWithData<
     for (const fleetId of fleetIds) {
       const fleet = this.$store.data.fleets[fleetId];
 
-      // if sendTxHash has not been confirmed yet, check it (if resolveTxHash is set assume sendTxHash has been confirmed too and thus skip this)
+      // if sendTxHash has not been confirmed yet, check it (if resolveTx.hash is set assume sendTxHash has been confirmed too and thus skip this)
       if (
-        !fleet.resolveTxHash &&
+        !fleet.resolveTx &&
         !fleet.actualLaunchTime &&
         !(
-          this.$store.txStatuses[fleet.sendTxHash] &&
-          this.$store.txStatuses[fleet.sendTxHash].finalized
+          this.$store.txStatuses[fleet.sendTx.hash] &&
+          this.$store.txStatuses[fleet.sendTx.hash].finalized
         )
       ) {
         console.log(`checking fleet sending ${fleetId}...`);
         // fetch receipt for sendTx
         const receipt = await wallet.provider.getTransactionReceipt(
-          fleet.sendTxHash
+          fleet.sendTx.hash
         );
         if (
           !this.$store.walletAddress ||
@@ -781,14 +781,14 @@ class PrivateAccountStore extends BaseStoreWithData<
           const finalized = receipt.confirmations >= finality;
           if (receipt.status !== undefined && receipt.status === 0) {
             // failure
-            this.$store.txStatuses[fleet.sendTxHash] = {
+            this.$store.txStatuses[fleet.sendTx.hash] = {
               finalized,
               status: 'Failure',
             };
             this.set(this.$store);
             continue; // no point checking further, deleting will happen through acknowledgement
           } else {
-            this.$store.txStatuses[fleet.sendTxHash] = {
+            this.$store.txStatuses[fleet.sendTx.hash] = {
               finalized,
               status: 'Success',
             };
@@ -797,7 +797,7 @@ class PrivateAccountStore extends BaseStoreWithData<
         } else {
           // TODO check for cancelation ?
 
-          this.$store.txStatuses[fleet.sendTxHash] = {
+          this.$store.txStatuses[fleet.sendTx.hash] = {
             finalized: false,
             status: 'Pending',
           };
@@ -843,17 +843,17 @@ class PrivateAccountStore extends BaseStoreWithData<
         // else (if the fleet has been confirmed to be flying) we can check the resolution
         // but let only do the check if it has a tx hash
         // else we can delete if too late
-        if (fleet.resolveTxHash) {
-          // skip if resolveTxHash is already finalized and recorded as such
+        if (fleet.resolveTx) {
+          // skip if resolveTx.hash is already finalized and recorded as such
           if (
-            this.$store.txStatuses[fleet.resolveTxHash] &&
-            this.$store.txStatuses[fleet.resolveTxHash].finalized
+            this.$store.txStatuses[fleet.resolveTx.hash] &&
+            this.$store.txStatuses[fleet.resolveTx.hash].finalized
           ) {
             continue;
           }
 
           const receipt = await wallet.provider.getTransactionReceipt(
-            fleet.resolveTxHash
+            fleet.resolveTx.hash
           );
           if (
             !this.$store.walletAddress ||
@@ -866,7 +866,7 @@ class PrivateAccountStore extends BaseStoreWithData<
           if (receipt) {
             const finalized = receipt.confirmations >= finality;
             if (receipt.status !== undefined && receipt.status === 0) {
-              this.$store.txStatuses[fleet.resolveTxHash] = {
+              this.$store.txStatuses[fleet.resolveTx.hash] = {
                 finalized,
                 status: 'Failure',
               };
@@ -876,7 +876,7 @@ class PrivateAccountStore extends BaseStoreWithData<
               }
               continue; // no point checking further, deleting will happen through acknowledgement
             } else {
-              this.$store.txStatuses[fleet.resolveTxHash] = {
+              this.$store.txStatuses[fleet.resolveTx.hash] = {
                 finalized,
                 status: 'Success',
               };
@@ -893,7 +893,7 @@ class PrivateAccountStore extends BaseStoreWithData<
               expiryTime + finality * blockTime
             ) {
               // we predict the failure here
-              this.$store.txStatuses[fleet.resolveTxHash] = {
+              this.$store.txStatuses[fleet.resolveTx.hash] = {
                 finalized: true,
                 status: 'Failure',
               };
@@ -901,7 +901,7 @@ class PrivateAccountStore extends BaseStoreWithData<
               console.log(`fleet ${fleetId} expired!`);
             } else {
               // check for cancelation ?
-              this.$store.txStatuses[fleet.resolveTxHash] = {
+              this.$store.txStatuses[fleet.resolveTx.hash] = {
                 finalized: false,
                 status: 'Pending',
               };
@@ -912,7 +912,7 @@ class PrivateAccountStore extends BaseStoreWithData<
         } else {
           if (latestFinalityBlock.timestamp > expiryTime) {
             console.log({fleetExpired: fleetId});
-            // consider it expired elsewhere (expired for sure = no resolveTxHash + expired time )
+            // consider it expired elsewhere (expired for sure = no resolveTx + expired time )
           }
         }
       }
@@ -1088,7 +1088,7 @@ class PrivateAccountStore extends BaseStoreWithData<
     const fleet = this.$store.data?.fleets[fleetId];
     if (fleet) {
       if (wallet.address && wallet.chain.chainId && this.$store.data) {
-        fleet.resolveTxHash = undefined; // TODO ensure merge do not bring it back : use time,nonce ?
+        fleet.resolveTx = undefined; // TODO ensure merge do not bring it back : use time,nonce ?
         this.setPartial({
           data: this.$store.data,
         });
@@ -1250,35 +1250,47 @@ class PrivateAccountStore extends BaseStoreWithData<
 
   async hashFleet(
     from: {x: number; y: number},
-    to: {x: number; y: number}
-  ): Promise<{toHash: string; fleetId: string; secret: string}> {
+    to: {x: number; y: number},
+    nonce: number
+  ): Promise<{toHash: string; fleetId: string; secretHash: string}> {
     // TODO use timestamp to allow user to retrieve a lost secret by knowing `to` and approximate time of launch
-    const randomNonce =
-      '0x' +
-      Array.from(crypto.getRandomValues(new Uint8Array(32)))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
+    // const randomNonce =
+    //   '0x' +
+    //   Array.from(crypto.getRandomValues(new Uint8Array(32)))
+    //     .map((b) => b.toString(16).padStart(2, '0'))
+    //     .join('');
     const toString = xyToLocation(to.x, to.y);
     const fromString = xyToLocation(from.x, from.y);
     // console.log({randomNonce, toString, fromString});
     const secretHash = keccak256(
-      ['bytes32', 'bytes32'],
-      [this._hashString(), randomNonce]
+      ['bytes32', 'uint256', 'uint256'],
+      [this._hashString(), fromString, nonce]
     );
     // console.log({secretHash});
     const toHash = keccak256(['bytes32', 'uint256'], [secretHash, toString]);
     const fleetId = keccak256(['bytes32', 'uint256'], [toHash, fromString]);
-    return {toHash, fleetId, secret: secretHash};
+    return {toHash, fleetId, secretHash};
   }
 
   fleetSecret(fleetId: string): string {
     if (!this.$store.data) {
       throw new Error(`no this.$store.data`);
     }
-    return this.$store.data.fleets[fleetId].secret;
+    const fleet = this.$store.data.fleets[fleetId];
+    const fromString = xyToLocation(fleet.from.x, fleet.from.y);
+    // console.log({randomNonce, toString, fromString});
+    const secretHash = keccak256(
+      ['bytes32', 'uint256', 'uint256'],
+      [this._hashString(), fromString, fleet.sendTx.nonce]
+    );
+    return secretHash;
   }
 
-  recordFleetResolvingTxhash(fleetId: string, txHash: string): void {
+  recordFleetResolvingTxhash(
+    fleetId: string,
+    txHash: string,
+    nonce: number
+  ): void {
     if (!wallet.address) {
       throw new Error(`no wallet.address`);
     }
@@ -1291,7 +1303,7 @@ class PrivateAccountStore extends BaseStoreWithData<
     const fleets = this.$store.data.fleets;
     const fleet = fleets[fleetId];
     if (fleet) {
-      fleet.resolveTxHash = txHash;
+      fleet.resolveTx = {hash: txHash, nonce};
       this.setPartial({
         data: this.$store.data,
       });

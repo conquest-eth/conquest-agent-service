@@ -5,7 +5,7 @@
   export let fleet: {id: string; status: 'Error' | 'Success'} & OwnFleet;
 
   function deleteFleet() {
-    if (fleet.resolveTxHash) {
+    if (fleet.resolveTx && fleet.status === 'Error') {
       privateAccount.acknowledgeResolveFailure(fleet.id);
     } else {
       privateAccount.deleteFleet(fleet.id);

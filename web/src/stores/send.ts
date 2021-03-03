@@ -107,10 +107,9 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     if (!flow.data) {
       throw new Error(`no data for send flow`);
     }
+
     const from = flow.data.from;
     const to = flow.data.to;
-    const {toHash, fleetId, secret} = await privateAccount.hashFleet(from, to);
-
     const fromPlanetInfo = spaceInfo.getPlanetInfo(from.x, from.y);
     const toPlanetInfo = spaceInfo.getPlanetInfo(to.x, to.y);
     if (!fromPlanetInfo || !toPlanetInfo) {
@@ -129,11 +128,16 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       correctTime(latestBlock.timestamp);
     }
 
+    const nonce = await wallet.provider.getTransactionCount(wallet.address);
+
+    const {toHash, fleetId} = await privateAccount.hashFleet(from, to, nonce);
+
     this.setPartial({step: 'WAITING_TX'});
     const tx = await wallet.contracts?.OuterSpace.send(
       xyToLocation(from.x, from.y),
       fleetAmount,
-      toHash
+      toHash,
+      {nonce}
     );
 
     const gToX = toPlanetInfo.location.globalX;
@@ -154,8 +158,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       duration: fleetDuration, // TODO stricly speaking not necessary but allow us to not need to refetch the stats from spaceInfo
       launchTime: now(),
       owner: wallet.address,
-      sendTxHash: tx.hash,
-      secret: secret,
+      sendTx: {hash: tx.hash, nonce},
     });
 
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});

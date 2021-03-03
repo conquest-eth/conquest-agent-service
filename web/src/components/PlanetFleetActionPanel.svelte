@@ -133,6 +133,9 @@
       {#if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
         <!-- SEND TO CONQUERE -->
         <p class="m-3">Pick a Planet you own.</p>
+      {:else if walletIsOwner && $planet.state.exiting}
+        <!-- SEND TO CONQUERE -->
+        <p class="m-3">This Planet is exiting, pick another one</p>
       {:else if walletIsOwner && !$planet.state.active}
         <!-- SEND MORE -->
         {#if attacking}
@@ -209,6 +212,10 @@
           <div class="w-20">Send Here</div>
         </PanelButton>
       {/if}
+    {:else if walletIsOwner && $planet.state.exiting}
+      <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+        <div class="w-20">Send Here</div>
+      </PanelButton>
     {:else if walletIsOwner && !$planet.state.active}
       <PanelButton
         label="Capture"

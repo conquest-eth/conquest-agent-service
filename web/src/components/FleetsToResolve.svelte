@@ -23,8 +23,8 @@
           return {id: fleetId, ...$privateAccount.data.fleets[fleetId]};
         })
         .filter((fleet) => {
-          if (fleet.resolveTxHash) {
-            const txStatus = privateAccount.txStatus(fleet.resolveTxHash);
+          if (fleet.resolveTx) {
+            const txStatus = privateAccount.txStatus(fleet.resolveTx.hash);
             if (
               !txStatus ||
               txStatus === 'Loading' ||

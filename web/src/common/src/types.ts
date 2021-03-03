@@ -73,41 +73,6 @@ export type Fleet = {
 // object representing a fleet with private info to resolve its attack/sending
 export type OwnFleet = Fleet & {
   to: Position;
-  resolveTxHash?: string;
-  sendTxHash: string;
-  secret: string; // needed
+  resolveTx?: {hash: string; nonce: number}; // TODO time ?
+  sendTx: {hash: string; nonce: number}; // TODO time ?
 };
-
-// export type OwnedFleetStored = {
-//   to: Position;
-//   secret: string;
-//   sendTxHash: string;
-//   sendTime: number;
-
-//   resolveTxHash?: string;
-
-//   from: Position;
-//   launchTime?: number;
-// };
-
-// export type PFllet = OwnedFleetStored & {
-//   timeLeft: number; // updated
-// };
-
-// to consider:
-// export type Fleet = {
-//   from: Position;
-//   fleetAmount: number;
-//   launchTime?: number;
-//   duration: number;
-//   owner: string;
-// };
-
-// export type OwnFleet = Fleet & {
-//   to: Position;
-//   resolveTxHash?: string;
-//   sendTxHash: string;
-//   sendTime: number;
-//   secret: string; // needed
-//   timeLeft: number;
-// };

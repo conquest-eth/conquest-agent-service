@@ -25,8 +25,8 @@
       for (const fleetId of fleetIds) {
         const fleet = $privateAccount.data.fleets[fleetId];
         let status: 'Success' | 'Error' | undefined;
-        if (fleet.resolveTxHash) {
-          const txStatus = privateAccount.txStatus(fleet.resolveTxHash);
+        if (fleet.resolveTx) {
+          const txStatus = privateAccount.txStatus(fleet.resolveTx.hash);
           if (
             txStatus &&
             txStatus !== 'Loading' &&
@@ -38,8 +38,8 @@
               status = txStatus.status === 'Failure' ? 'Error' : 'Success';
             }
           }
-        } else if (fleet.sendTxHash) {
-          const txStatus = privateAccount.txStatus(fleet.sendTxHash);
+        } else if (fleet.sendTx.hash) {
+          const txStatus = privateAccount.txStatus(fleet.sendTx.hash);
           if (
             txStatus &&
             txStatus !== 'Loading' &&

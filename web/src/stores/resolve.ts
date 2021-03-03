@@ -45,7 +45,7 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
         distance,
         secretHash
       );
-      privateAccount.recordFleetResolvingTxhash(fleetId, tx.hash);
+      privateAccount.recordFleetResolvingTxhash(fleetId, tx.hash, tx.nonce);
       this.setPartial({step: 'SUCCESS'}); // TODO IDLE ?
     } catch (e) {
       this.cancel();
