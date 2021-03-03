@@ -40,4 +40,17 @@
   <Navigating component={Loading} />
 </Router>
 
+<!-- <div class="z-50 fixed bottom-0 right-0 w-3/5 h-3/5"> -->
+<!-- <iframe
+    src="https://discord.com/widget?id=807666878427299880&theme=dark"
+    width="350"
+    height="500"
+    allowtransparency="true"
+    frameborder="0"
+    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" /> -->
+<!-- <iframe
+    class="w-full h-full"
+    src="https://titanembeds.com/embed/807666878427299880?defaultchannel=810560458888839238"
+    frameborder="0" /> -->
+<!-- </div> -->
 <!-- <LogWidget /> -->

@@ -69,12 +69,6 @@ contract OuterSpace is Proxied {
         address indexed sender,
         uint256 indexed fleet,
         uint256 indexed location,
-        uint32 newNumspaceships
-    );
-    event Attack(
-        address indexed sender,
-        uint256 indexed fleet,
-        uint256 indexed location,
         uint32 fleetLoss,
         uint32 toLoss,
         bool won,
@@ -708,13 +702,13 @@ contract OuterSpace is Proxied {
                 _planets[to].numSpaceships = _setActiveNumSpaceships(false, numSpaceships);
                 _planets[to].lastUpdated = uint32(block.timestamp);
                 _planets[to].owner = attacker;
-                emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);
+                emit FleetArrived(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);
             } else {
-                emit Attack(attacker, fleetId, to, attackerLoss, 0, false, 0);
+                emit FleetArrived(attacker, fleetId, to, attackerLoss, 0, false, 0);
             }
         } else if (_hasJustExited(toPlanet.exitTime)) {
             _setPlanetAfterExit(to, toPlanet.owner, _planets[to], attacker, numAttack);
-            emit FleetArrived(attacker, fleetId, to, numAttack);
+            emit FleetArrived(attacker, fleetId, to, 0, 0, false, numAttack);
         } else {
             uint16 attack = _attack(_planetData(from));
             uint16 defense = _defense(toData);
@@ -744,14 +738,14 @@ contract OuterSpace is Proxied {
             uint32 numSpaceships = numDefense - defenderLoss;
             _planets[to].numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
             _planets[to].lastUpdated = uint32(block.timestamp);
-            emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, false, numSpaceships);
+            emit FleetArrived(attacker, fleetId, to, attackerLoss, defenderLoss, false, numSpaceships);
         } else if (defenderLoss == numDefense) {
             uint32 numSpaceships = numAttack - attackerLoss;
             _planets[to].owner = attacker;
             _planets[to].exitTime = 0;
             _planets[to].numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
             _planets[to].lastUpdated = uint32(block.timestamp);
-            emit Attack(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);
+            emit FleetArrived(attacker, fleetId, to, attackerLoss, defenderLoss, true, numSpaceships);
         } else {
             revert("nobody won"); // should not happen
         }
@@ -767,7 +761,7 @@ contract OuterSpace is Proxied {
     ) internal {
         if (_hasJustExited(toPlanet.exitTime)) {
             _setPlanetAfterExit(to, toPlanet.owner, _planets[to], sender, quantity);
-            emit FleetArrived(sender, fleetId, to, quantity);
+            emit FleetArrived(sender, fleetId, to, 0, 0, false, quantity);
         } else {
             (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
                 toPlanet.numSpaceships,
@@ -779,7 +773,7 @@ contract OuterSpace is Proxied {
                 newNumSpaceships = ACTIVE_MASK - 1;
             }
             _planets[to].numSpaceships = _setActiveNumSpaceships(active, uint32(newNumSpaceships));
-            emit FleetArrived(sender, fleetId, to, uint32(newNumSpaceships));
+            emit FleetArrived(sender, fleetId, to, 0, 0, false, uint32(newNumSpaceships));
         }
     }
 }

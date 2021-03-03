@@ -777,13 +777,21 @@ export class Renderer {
             bleeps[`${fleet.to.x},${fleet.to.y}`] = 'Error';
           }
         }
-      } else if (fleet.sendTx) {
+      } else {
         const status = this.renderState.space.txStatus(fleet.sendTx.hash);
         if (status && status !== 'Loading') {
           if (status.status === 'Success' || status.status === 'Mined') {
             // do nothing
           } else if (status.status === 'Failure') {
             bleeps[`${fleet.from.x},${fleet.from.y}`] = 'Error';
+            continue;
+          }
+          const launchTime = fleet.actualLaunchTime || fleet.launchTime;
+          const resolveWindow = this.renderState.space.spaceInfo.resolveWindow;
+          const expiryTime = launchTime + fleet.duration + resolveWindow;
+
+          if (expiryTime < currentTime) {
+            bleeps[`${fleet.to.x},${fleet.to.y}`] = 'Error';
             continue;
           }
         }

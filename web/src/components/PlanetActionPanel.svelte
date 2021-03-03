@@ -5,13 +5,17 @@
   import {time} from '../stores/time';
   import type {OwnFleet} from '../common/src/types';
   import {locationToXY} from '../common/src';
+  import contractsInfo from '../contracts.json';
 
   export let location: string;
   export let close: () => void;
 
   let planetX: number;
   let planetY: number;
-  let fleets: ({id: string; status: 'Error' | 'Success'} & OwnFleet)[];
+  let fleets: ({
+    id: string;
+    status: 'Error' | 'Success' | 'Expired';
+  } & OwnFleet)[];
   $: {
     const xy = locationToXY(location);
     planetX = xy.x;
@@ -24,7 +28,7 @@
       const fleetIds = Object.keys($privateAccount.data.fleets);
       for (const fleetId of fleetIds) {
         const fleet = $privateAccount.data.fleets[fleetId];
-        let status: 'Success' | 'Error' | undefined;
+        let status: 'Success' | 'Error' | 'Expired' | undefined;
         if (fleet.resolveTx) {
           const txStatus = privateAccount.txStatus(fleet.resolveTx.hash);
           if (
@@ -38,7 +42,7 @@
               status = txStatus.status === 'Failure' ? 'Error' : 'Success';
             }
           }
-        } else if (fleet.sendTx.hash) {
+        } else {
           const txStatus = privateAccount.txStatus(fleet.sendTx.hash);
           if (
             txStatus &&
@@ -48,6 +52,15 @@
             // TODO Cancelled ?
             if (fleet.from.x === planetX && fleet.from.y === planetY) {
               status = txStatus.status === 'Failure' ? 'Error' : 'Success';
+            }
+          } else if (fleet.to.x === planetX && fleet.to.y === planetY) {
+            const launchTime = fleet.actualLaunchTime || fleet.launchTime;
+            const resolveWindow =
+              contractsInfo.contracts.OuterSpace.linkedData.resolveWindow;
+            const expiryTime = launchTime + fleet.duration + resolveWindow;
+
+            if (expiryTime < $time) {
+              status = 'Expired';
             }
           }
         }

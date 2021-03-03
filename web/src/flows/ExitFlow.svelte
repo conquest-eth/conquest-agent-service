@@ -22,8 +22,8 @@
     on:confirm={() => exitFlow.confirm()}>
     <p class="text-center">
       Exiting a planet will allow you to claim the stake back ({$planet.stats.stake}
-      <PlayCoin class="inline w-4" />). But be careful, while you are exiting
-      (this take
+      <PlayCoin class="inline w-4" />
+      for this planet). But be careful, while you are exiting (this take
       {timeToText(spaceInfo.exitDuration, {verbose: true})}), you cannot operate
       with the spaceships and someone else might be able to capture the planet
       before exit complete. Note however that the planet will continue

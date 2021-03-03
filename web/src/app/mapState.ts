@@ -43,3 +43,46 @@ export const space = new PrivateSpace(
   timeKeeper,
   privateAccount
 );
+
+export async function fetchFleetEvent(
+  fleetId: string
+): Promise<{
+  fleetLoss: number;
+  planetLoss: number;
+  won: boolean;
+  attack: boolean;
+  newNumspaceships: number;
+}> {
+  const contracts = chain.contracts || fallback.contracts;
+  if (contracts) {
+    // TODO fix web3w to get access to queryFilter
+    const OuterSpace =
+      contracts.OuterSpace?._proxiedContract || contracts.OuterSpace;
+    // TODO use blockHash of tx
+    const events = await OuterSpace.queryFilter(
+      contracts.OuterSpace.filters.FleetArrived(null, fleetId)
+    );
+    const event = events[0];
+    if (!event) {
+      throw new Error('cannot get corresponding event');
+    } else {
+      const args = event.args as {
+        fleetLoss: number;
+        toLoss: number;
+        won: boolean;
+        newNumspaceships: number;
+      };
+      return {
+        fleetLoss: args.fleetLoss,
+        attack: args.fleetLoss > 0 || args.toLoss > 0,
+        planetLoss: args.toLoss,
+        won: args.won,
+        newNumspaceships: args.newNumspaceships,
+      };
+    }
+  } else if (fallback.state === 'Ready') {
+    throw new Error('no contracts to fetch with');
+  } else {
+    throw new Error('not connected');
+  }
+}

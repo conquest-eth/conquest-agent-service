@@ -758,7 +758,7 @@ class PrivateAccountStore extends BaseStoreWithData<
       // if sendTxHash has not been confirmed yet, check it (if resolveTx.hash is set assume sendTxHash has been confirmed too and thus skip this)
       if (
         !fleet.resolveTx &&
-        !fleet.actualLaunchTime &&
+        // !fleet.actualLaunchTime && // commenting it out  allows the sendTx to still be checked when the expiry time kicked in, TODO check
         !(
           this.$store.txStatuses[fleet.sendTx.hash] &&
           this.$store.txStatuses[fleet.sendTx.hash].finalized
