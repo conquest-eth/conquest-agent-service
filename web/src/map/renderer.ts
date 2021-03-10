@@ -513,6 +513,8 @@ export class Renderer {
       }
     }
 
+    const bleeps: {[location: string]: 'Error' | 'Success'} = {};
+
     const gridX = Math.floor(gridStart.x / 48 / 4 / 2);
     const gridY = Math.floor(gridStart.y / 48 / 4 / 2);
     const gridEndX = Math.floor(
@@ -536,6 +538,18 @@ export class Renderer {
           if (!frameType) {
             throw new Error(`no frame type for ${planet.type}`);
           }
+
+          const exiting = this.renderState.space.getExit(planet.location.id);
+          if (exiting) {
+            const status = this.renderState.space.txStatus(exiting.txHash);
+            if (status && status !== 'Loading') {
+              const bleepId = `${planet.location.x},${planet.location.y}`;
+              if (status.status === 'Failure') {
+                bleeps[bleepId] = 'Error';
+              }
+            }
+          }
+
           // if (planet.state && !planet.state.inReach) {
           //   frameType = frameType.slice(0, frameType.length - 4) + '_cloud.png';
           // }
@@ -760,8 +774,6 @@ export class Renderer {
         }
       }
     }
-
-    const bleeps: {[location: string]: 'Error' | 'Success'} = {};
 
     ctx.setLineDash([]);
     const fleets = this.renderState.space.getOwnFleets();

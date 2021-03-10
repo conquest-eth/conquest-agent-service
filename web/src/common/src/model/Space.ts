@@ -474,8 +474,14 @@ export class Space {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected capturingStatus(planetId: string): TxStatus | null | 'Loading' {
+  protected capturingStatus(
+    planetId: string
+  ): (TxStatus & {txHash: string}) | null | 'Loading' {
     return null;
+  }
+
+  getExit(location: string): {txHash: string} | undefined {
+    return undefined;
   }
 
   private _updatePlanetRecord(planetId: string, time: number): void {
@@ -494,7 +500,7 @@ export class Space {
       planetRecord.planet.location.x <= this.discovered.x2 &&
       planetRecord.planet.location.y >= this.discovered.y1 &&
       planetRecord.planet.location.y <= this.discovered.y2;
-    let capturing: TxStatus | null | 'Loading' = null;
+    let capturing: (TxStatus & {txHash: string}) | null | 'Loading' = null;
     let owner = contractState.owner;
     let active = contractState.active;
     let numSpaceships = contractState.numSpaceships;

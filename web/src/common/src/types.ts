@@ -47,7 +47,7 @@ export type PlanetState = {
   exiting: boolean;
   exitTimeLeft: number;
   natives: boolean;
-  capturing: TxStatus | null | 'Loading';
+  capturing: (TxStatus & {txHash: string}) | null | 'Loading';
   inReach: boolean;
 };
 

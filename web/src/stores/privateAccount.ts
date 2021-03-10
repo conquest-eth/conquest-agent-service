@@ -25,6 +25,12 @@ type Capture = {
   time: number;
 };
 
+type Exit = {
+  txHash: string;
+  nonce: number;
+  finalized: boolean; // rename finalized success ?
+};
+
 type Withdrawal = {
   txHash: string;
   nonce: number;
@@ -37,7 +43,7 @@ type LocalData = {
 
 type SecretData = {
   fleets: Record<string, OwnFleet>;
-  exits: Record<string, number>;
+  exits: Record<string, Exit>;
   captures: Record<string, Capture>;
   lastWithdrawal?: Withdrawal;
   welcomingStep?: number;
@@ -175,7 +181,8 @@ class PrivateAccountStore extends BaseStoreWithData<
   async _syncDown(
     fleetsToDelete: string[] = [],
     exitsToDelete: string[] = [],
-    capturesToDelete: string[] = []
+    capturesToDelete: string[] = [],
+    deleteWithdrawalTx?: boolean
   ): Promise<
     | {newDataOnLocal: boolean; newDataOnRemote: boolean; counter: BigNumber}
     | undefined
@@ -226,6 +233,10 @@ class PrivateAccountStore extends BaseStoreWithData<
     }
     for (const captureToDelete of capturesToDelete) {
       delete data.captures[captureToDelete];
+    }
+
+    if (deleteWithdrawalTx) {
+      delete data.lastWithdrawal; // TODO should only delete if set later
     }
 
     const {newDataOnLocal, newDataOnRemote} = this._merge(data);
@@ -324,11 +335,48 @@ class PrivateAccountStore extends BaseStoreWithData<
       }
     }
 
+    const localExits = this.$store.data.exits;
+    const remoteExits = data.exits;
+    if (remoteExits) {
+      for (const key of Object.keys(remoteExits)) {
+        if (!localExits[key]) {
+          newDataOnRemote = true;
+          localExits[key] = remoteExits[key]; // new
+        } else {
+          const localExit = localExits[key];
+          const remoteExit = remoteExits[key];
+          if (localExit.txHash != remoteExit.txHash) {
+            if (remoteExit.nonce > localExit.nonce) {
+              newDataOnRemote = true;
+              localExits[key] = remoteExit;
+            } else {
+              newDataOnLocal = true;
+            }
+          } else {
+            if (remoteExit.finalized && !localExit.finalized) {
+              localExit.finalized = true;
+              newDataOnRemote = true;
+            } else if (!remoteExit.finalized && localExit.finalized) {
+              newDataOnLocal = true;
+            }
+          }
+        }
+      }
+    }
+    for (const key of Object.keys(localExits)) {
+      if (!remoteExits[key]) {
+        newDataOnLocal = true;
+      }
+    }
+
     this.set(this.$store);
     return {newDataOnLocal, newDataOnRemote};
   }
 
   encrypt(data: string): string {
+    if (!this.$store || !this.$store.aesKey) {
+      throw new Error('no aes key set');
+    }
     const textBytes = compressToUint8Array(data); // const textBytes = aes.utils.utf8.toBytes(data);
     const ctr = new aes.ModeOfOperation.ctr(this.$store.aesKey);
     const encryptedBytes = ctr.encrypt(textBytes);
@@ -348,7 +396,8 @@ class PrivateAccountStore extends BaseStoreWithData<
   async _sync(
     fleetsToDelete: string[] = [],
     exitsToDelete: string[] = [],
-    capturesToDelete: string[] = []
+    capturesToDelete: string[] = [],
+    deleteWithdrawalTx?: boolean
   ) {
     if (!this.$store.syncEnabled) {
       return;
@@ -357,7 +406,8 @@ class PrivateAccountStore extends BaseStoreWithData<
     const syncDownResult = await this._syncDown(
       fleetsToDelete,
       exitsToDelete,
-      capturesToDelete
+      capturesToDelete,
+      deleteWithdrawalTx
     );
 
     if (
@@ -434,11 +484,17 @@ class PrivateAccountStore extends BaseStoreWithData<
     data: SecretData,
     fleetIdsToDelete: string[] = [],
     exitsToDelete: string[] = [],
-    capturesToDelete: string[] = []
+    capturesToDelete: string[] = [],
+    deleteWithdrawalTx?: boolean
   ) {
     // console.log('_setData', data);
     this._saveToLocalStorage(address, chainId, data);
-    this._sync(fleetIdsToDelete, exitsToDelete, capturesToDelete); // TODO fetch before set local storage to avoid aother encryption roundtrip
+    this._sync(
+      fleetIdsToDelete,
+      exitsToDelete,
+      capturesToDelete,
+      deleteWithdrawalTx
+    ); // TODO fetch before set local storage to avoid aother encryption roundtrip
   }
 
   async clearData(): Promise<void> {
@@ -586,25 +642,48 @@ class PrivateAccountStore extends BaseStoreWithData<
     if (!this.$store.data) {
       return;
     }
-    const exitIds = Object.keys(this.$store.data.exits);
-    for (const exitId of exitIds) {
-      const split = exitId.split('_');
-      const location = split[0];
-      const timestamp = parseInt(split[1]);
-
+    const locations = Object.keys(this.$store.data.exits);
+    for (const location of locations) {
+      const exit = this.$store.data.exits[location];
+      if (exit.finalized) {
+        continue;
+      }
+      const receipt = await wallet.provider.getTransactionReceipt(exit.txHash);
       if (
-        latestBlock.timestamp >
-        timestamp + contractsInfo.contracts.OuterSpace.linkedData.exitDuration
+        !this.$store.walletAddress ||
+        this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+        this.$store.chainId !== chainId
       ) {
-        let planetData;
-        try {
-          planetData = await wallet.contracts?.OuterSpace.callStatic.getPlanetStates(
-            [location],
-            {blockTag: Math.max(0, latestBlockNumber - finality)}
-          );
-        } catch (e) {
-          console.error(e);
+        return;
+      }
+      if (receipt) {
+        const finalized = receipt.confirmations >= finality;
+        if (receipt.status !== undefined && receipt.status === 0) {
+          this.$store.txStatuses[exit.txHash] = {
+            finalized,
+            status: 'Failure',
+          };
+          this.set(this.$store);
+          continue; // no point checking further, deleting will happen through acknowledgement
+        } else {
+          // TODO !receipt.status ?
+          this.$store.txStatuses[exit.txHash] = {
+            finalized,
+            status: 'Success',
+          };
+          if (finalized) {
+            this.$store.data.exits[location].finalized = true;
+          }
+          this.set(this.$store);
         }
+      } else {
+        if (!wallet.address) {
+          throw new Error(`no wallet.address`);
+        }
+        const finalNonce = await wallet.provider.getTransactionCount(
+          wallet.address,
+          latestBlockNumber - finality
+        );
         if (
           !this.$store.walletAddress ||
           this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
@@ -612,12 +691,15 @@ class PrivateAccountStore extends BaseStoreWithData<
         ) {
           return;
         }
-
-        if (
-          planetData &&
-          (planetData[0].exitTime === 0 || planetData[0].owner !== address)
-        ) {
-          this.deleteExit(exitId);
+        if (finalNonce > exit.nonce) {
+          // TODO check for failure ? or success through contract call ?
+          this.deleteExit(location);
+        } else {
+          this.$store.txStatuses[exit.txHash] = {
+            finalized: false,
+            status: 'Pending',
+          };
+          this.set(this.$store);
         }
       }
     }
@@ -772,6 +854,7 @@ class PrivateAccountStore extends BaseStoreWithData<
               finalized,
               status: 'Success',
             };
+            // TODO flag the fleet sendTx as done : remove the need to check it every time (see TODO for check above: !fleet.actualLaunchTime )
             this.set(this.$store);
           }
         } else {
@@ -1012,7 +1095,24 @@ class PrivateAccountStore extends BaseStoreWithData<
     );
   }
 
-  recordExit(location: string, timestamp: number) {
+  recordWithdrawal(hash: string, nonce: number) {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      this.$store.data = {fleets: {}, exits: {}, captures: {}}; // TODO everywhere
+    }
+    this.$store.data.lastWithdrawal = {txHash: hash, nonce};
+    this.setPartial({
+      data: this.$store.data,
+    });
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
+  }
+
+  recordExit(location: string, hash: string, nonce: number) {
     if (!wallet.address) {
       throw new Error(`no wallet.address`);
     }
@@ -1023,7 +1123,7 @@ class PrivateAccountStore extends BaseStoreWithData<
       this.$store.data = {fleets: {}, exits: {}, captures: {}}; // TODO everywhere
     }
     const exits = this.$store.data.exits;
-    exits[location + '_' + timestamp] = timestamp;
+    exits[location] = {txHash: hash, nonce, finalized: false};
     this.setPartial({
       data: this.$store.data,
     });
@@ -1123,7 +1223,73 @@ class PrivateAccountStore extends BaseStoreWithData<
       return;
     }
     const exits = this.$store.data.exits;
+    const exit = exits[id];
+    if (exit) {
+      const txHash = exit.txHash;
+      delete this.$store.txStatuses[txHash];
+    }
     delete exits[id];
+    this.setPartial({
+      data: this.$store.data,
+      txStatuses: this.$store.txStatuses,
+    });
+    this._setData(
+      wallet.address,
+      wallet.chain.chainId,
+      this.$store.data,
+      [],
+      [id]
+    );
+  }
+
+  deleteExits(ids: string[]) {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      return;
+    }
+    const exits = this.$store.data.exits;
+    for (const id of ids) {
+      const exit = exits[id];
+      if (exit) {
+        const txHash = exit.txHash;
+        delete this.$store.txStatuses[txHash];
+      }
+      delete exits[id];
+    }
+
+    this.setPartial({
+      data: this.$store.data,
+      txStatuses: this.$store.txStatuses,
+    });
+    this._setData(
+      wallet.address,
+      wallet.chain.chainId,
+      this.$store.data,
+      [],
+      ids
+    );
+  }
+
+  getWithdrawalTx(): {txHash: string; nonce: number} | undefined {
+    return this.$store.data?.lastWithdrawal;
+  }
+
+  deleteWithdrawalTx(): void {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      return;
+    }
+    this.$store.data.lastWithdrawal = undefined;
     this.setPartial({
       data: this.$store.data,
     });
@@ -1132,7 +1298,9 @@ class PrivateAccountStore extends BaseStoreWithData<
       wallet.chain.chainId,
       this.$store.data,
       [],
-      [id]
+      [],
+      [],
+      true
     );
   }
 
@@ -1207,6 +1375,7 @@ class PrivateAccountStore extends BaseStoreWithData<
     }
     const fleets = this.$store.data.fleets;
     delete fleets[fleetId];
+    // TODO delete txStatuses
     this.setPartial({
       data: this.$store.data,
     });
@@ -1293,6 +1462,30 @@ class PrivateAccountStore extends BaseStoreWithData<
     }
   }
 
+  getExit(location: string): {txHash: string} | undefined {
+    if (this.$store.data) {
+      return this.$store.data.exits[location];
+    } else {
+      return undefined;
+    }
+  }
+
+  getSuccessfulExits(): string[] {
+    if (this.$store.data) {
+      const result = [];
+      const locations = Object.keys(this.$store.data.exits);
+      for (const location of locations) {
+        const exit = this.$store.data.exits[location];
+        if (exit.finalized) {
+          result.push(location);
+        }
+      }
+      return result;
+    } else {
+      return [];
+    }
+  }
+
   getFleets(): OwnFleet[] {
     if (this.$store.data) {
       return Object.values(this.$store.data.fleets);
@@ -1301,7 +1494,9 @@ class PrivateAccountStore extends BaseStoreWithData<
     }
   }
 
-  capturingStatus(location: string): TxStatus | null | 'Loading' {
+  capturingStatus(
+    location: string
+  ): (TxStatus & {txHash: string}) | null | 'Loading' {
     if (!this.$store.data) {
       return null;
     }
@@ -1310,13 +1505,12 @@ class PrivateAccountStore extends BaseStoreWithData<
       this.$store.data.captures[location] &&
       this.$store.data.captures[location].txHash !== null
     ) {
-      const txStatus = this.$store.txStatuses[
-        this.$store.data.captures[location].txHash
-      ];
+      const txHash = this.$store.data.captures[location].txHash;
+      const txStatus = this.$store.txStatuses[txHash];
       if (!txStatus) {
         return 'Loading';
       }
-      return txStatus;
+      return {...txStatus, txHash};
     }
     return null;
   }

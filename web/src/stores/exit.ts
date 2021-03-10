@@ -40,11 +40,11 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
     }
     const location = flow.data.location;
     const locationId = xyToLocation(location.x, location.y);
-    const latestBlock = await wallet.provider?.getBlock('latest');
-    if (!latestBlock) {
-      throw new Error(`can't fetch latest block`);
-    }
-    let tx: {hash: string};
+    // const latestBlock = await wallet.provider?.getBlock('latest');
+    // if (!latestBlock) {
+    //   throw new Error(`can't fetch latest block`);
+    // }
+    let tx: {hash: string; nonce: number};
     try {
       tx = await wallet.contracts?.OuterSpace.exitFor(
         wallet.address,
@@ -58,7 +58,7 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
       return;
     }
 
-    privateAccount.recordExit(locationId, latestBlock.timestamp);
+    privateAccount.recordExit(locationId, tx.hash, tx.nonce);
 
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
   }

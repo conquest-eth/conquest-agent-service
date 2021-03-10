@@ -82,8 +82,14 @@
       {#if $planet.state.capturing === 'Loading'}
         <p>Please wait....</p>
       {:else if $planet.state.capturing.status === 'Failure'}
-        <p>The Transaction Failed.</p>
-        <!-- TODO blockchain explorer link via tx Hash-->
+        <p>The Capture Transaction Failed.</p>
+        <p class="p-2">
+          See
+          <a
+            target="_blank"
+            class="underline text-cyan-100"
+            href={`${import.meta.env.SNOWPACK_PUBLIC_BLOCK_EXPLORER}/${$planet.state.capturing.txHash}`}>here</a>
+        </p>
         <PanelButton
           label="Ok"
           class="m-2"
@@ -261,8 +267,8 @@
         </PanelButton>
       {:else}
         <!-- unreachable ? -->
-        <PanelButton label="Request Reinforcment" class="m-2" on:click={sendTo}>
-          <div class="w-20">Request Reinforcment</div>
+        <PanelButton label="Send Spaceships Here" class="m-2" on:click={sendTo}>
+          <div class="w-20">Send Spaceships Here</div>
         </PanelButton>
       {/if}
     {:else if walletIsOwner && $planet.state.exiting}

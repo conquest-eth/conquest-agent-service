@@ -19,7 +19,8 @@
 </script>
 
 {#if fleet.status === 'Error'}
-  <p class="p-2">The Transaction Failed</p>
+  <p class="p-2">The Fleet Transaction Failed</p>
+  <!-- TODO discern between resolution and sending-->
   <p class="p-2">
     See
     <a

@@ -41,7 +41,7 @@
     <p class="mb-3">
       Note though that once confirmed, this is only the first part of the action
       you need to perform in order for the fleet to perform its duties. You'll
-      need to make sure the fleet actions is resolved once it reaches the
+      need to make sure the fleet action is resolved once it reaches the
       destination. This 2-step process is to ensure your action remains secret
       to all other players.
     </p>

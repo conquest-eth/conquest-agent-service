@@ -169,6 +169,10 @@ contract OuterSpace is Proxied {
         withdrawFor(owner);
     }
 
+    function balanceToWithdraw(address owner) external view returns (uint256) {
+        return _stakeReadyToBeWithdrawn[owner];
+    }
+
     function withdrawFor(address owner) public {
         uint256 amount = _stakeReadyToBeWithdrawn[owner];
         _stakeReadyToBeWithdrawn[owner] = 0;

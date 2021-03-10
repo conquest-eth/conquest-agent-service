@@ -1,6 +1,7 @@
 <script lang="ts">
   import PlanetFleetActionPanel from './PlanetFleetActionPanel.svelte';
   import PlanetFleetResultPanel from './PlanetFleetResultPanel.svelte';
+  import PlanetExitResultPanel from './PlanetExitResultPanel.svelte';
   import privateAccount from '../stores/privateAccount';
   import {time} from '../stores/time';
   import type {OwnFleet} from '../common/src/types';
@@ -70,10 +71,28 @@
       }
     }
   }
+
+  let exitFailure: {txHash: string; location: string} | undefined;
+  $: {
+    exitFailure = undefined;
+    if ($privateAccount.data) {
+      const exit = $privateAccount.data.exits[location];
+      if (exit) {
+        const txStatus = privateAccount.txStatus(exit.txHash);
+        if (txStatus && txStatus !== 'Loading') {
+          if (txStatus.status === 'Failure') {
+            exitFailure = {txHash: exit.txHash, location};
+          }
+        }
+      }
+    }
+  }
 </script>
 
 <div class="flex flex-col text-center">
-  {#if fleets.length > 0}
+  {#if exitFailure}
+    <PlanetExitResultPanel exit={exitFailure} />
+  {:else if fleets.length > 0}
     <PlanetFleetResultPanel fleet={fleets[0]} />
   {:else}
     <PlanetFleetActionPanel {close} {location} />
