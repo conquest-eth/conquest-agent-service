@@ -187,23 +187,23 @@ contract OuterSpace is Proxied {
         uint256 distance,
         bytes32 secret
     ) external {
-        _resolveFleetFor(_msgSender(), fleetId, from, to, distance, secret);
+        _resolveFleet(fleetId, from, to, distance, secret);
     }
 
-    function resolveFleetFor(
-        address attacker,
-        uint256 fleetId,
-        uint256 from,
-        uint256 to,
-        uint256 distance,
-        bytes32 secret
-    ) external {
-        address sender = _msgSender();
-        if (sender != attacker) {
-            require(_operators[attacker][sender], "NOT_AUTHORIZED");
-        }
-        _resolveFleetFor(attacker, fleetId, from, to, distance, secret);
-    }
+    // function resolveFleetFor(
+    //     address attacker,
+    //     uint256 fleetId,
+    //     uint256 from,
+    //     uint256 to,
+    //     uint256 distance,
+    //     bytes32 secret
+    // ) external {
+    //     address sender = _msgSender();
+    //     // if (sender != attacker) {
+    //     //     require(_operators[attacker][sender], "NOT_AUTHORIZED");
+    //     // }
+    //     _resolveFleetFor(attacker, fleetId, from, to, distance, secret);
+    // }
 
     function send(
         uint256 from,
@@ -509,8 +509,8 @@ contract OuterSpace is Proxied {
         emit FleetSent(owner, from, fleetId, quantity, numSpaceships);
     }
 
-    function _resolveFleetFor(
-        address attacker,
+    function _resolveFleet(
+        // address attacker,
         uint256 fleetId,
         uint256 from,
         uint256 to,
@@ -518,7 +518,7 @@ contract OuterSpace is Proxied {
         bytes32 secret
     ) internal {
         Fleet memory fleet = _fleets[fleetId];
-        require(attacker == fleet.owner, "not owner of fleet");
+        // require(attacker == fleet.owner, "not owner of fleet");
 
         require(
             uint256(keccak256(abi.encodePacked(keccak256(abi.encodePacked(secret, to)), from))) == fleetId,
@@ -534,10 +534,10 @@ contract OuterSpace is Proxied {
         _checkDistance(distance, from, to);
         _checkTime(distance, from, fleet.launchTime);
 
-        if (toPlanet.owner == attacker) {
-            _performReinforcement(attacker, toPlanet, to, production, fleetId, fleet.quantity);
+        if (toPlanet.owner == fleet.owner) {
+            _performReinforcement(fleet.owner, toPlanet, to, production, fleetId, fleet.quantity);
         } else {
-            _performAttack(attacker, from, toPlanet, to, production, fleetId, fleet.quantity);
+            _performAttack(fleet.owner, from, toPlanet, to, production, fleetId, fleet.quantity);
         }
         _fleets[fleetId].quantity = 0; // TODO reset all to get gas refund?
     }
@@ -712,7 +712,7 @@ contract OuterSpace is Proxied {
             }
         } else if (_hasJustExited(toPlanet.exitTime)) {
             _setPlanetAfterExit(to, toPlanet.owner, _planets[to], attacker, numAttack);
-            emit FleetArrived(attacker, fleetId, to, 0, 0, false, numAttack);
+            emit FleetArrived(attacker, fleetId, to, 0, 0, false, numAttack); // TODO won : true ?
         } else {
             uint16 attack = _attack(_planetData(from));
             uint16 defense = _defense(toData);
@@ -735,6 +735,15 @@ contract OuterSpace is Proxied {
             toPlanet.lastUpdated,
             production
         );
+
+        if (numDefense == 0) {
+            _planets[to].owner = attacker;
+            _planets[to].exitTime = 0;
+            _planets[to].numSpaceships = _setActiveNumSpaceships(active, numAttack);
+            _planets[to].lastUpdated = uint32(block.timestamp);
+            emit FleetArrived(attacker, fleetId, to, 0, 0, true, numAttack);
+            return;
+        }
 
         (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, numDefense, attack, defense);
 

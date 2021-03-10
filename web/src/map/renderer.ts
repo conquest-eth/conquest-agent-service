@@ -778,6 +778,9 @@ export class Renderer {
     ctx.setLineDash([]);
     const fleets = this.renderState.space.getOwnFleets();
     for (const fleet of fleets) {
+      if (fleet.toDelete) {
+        continue;
+      }
       if (fleet.resolveTx) {
         const status = this.renderState.space.txStatus(fleet.resolveTx.hash);
         if (status && status !== 'Loading') {

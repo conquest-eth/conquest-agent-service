@@ -46,10 +46,12 @@ type SecretData = {
   exits: Record<string, Exit>;
   captures: Record<string, Capture>;
   lastWithdrawal?: Withdrawal;
+  agentHeartBeat?: {update: number; keepAlive: number};
   welcomingStep?: number;
 };
 
 type PrivateAccountData = {
+  id: number;
   wallet?: Wallet;
   aesKey?: Uint8Array;
   step:
@@ -72,7 +74,7 @@ type Contracts = {
   [name: string]: Contract;
 };
 
-const SYNC_URI = params.sync || import.meta.env.SNOWPACK_PUBLIC_SYNC_URI;
+const SYNC_URI = params.sync || import.meta.env.SNOWPACK_PUBLIC_SYNC_URI; //  'http://invalid.io'; // to emulate connection loss :)
 const DB_NAME = 'conquest-v' + VERSION;
 
 const LOCAL_ONLY_STORAGE = '_local_only_';
@@ -90,6 +92,7 @@ class PrivateAccountStore extends BaseStoreWithData<
   SecretData
 > {
   private monitorProcess: NodeJS.Timeout | undefined = undefined;
+  private syncProcess: NodeJS.Timeout | undefined = undefined;
   private _lastId = 0;
   private walletData: Record<string, {wallet: Wallet; aesKey: Uint8Array}> = {};
 
@@ -101,6 +104,7 @@ class PrivateAccountStore extends BaseStoreWithData<
 
   constructor() {
     super({
+      id: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
       wallet: undefined,
       aesKey: undefined,
       step: 'IDLE',
@@ -144,7 +148,12 @@ class PrivateAccountStore extends BaseStoreWithData<
   async _loadData(address: string, chainId: string) {
     // TODO load from signature based DB
     const fromStorage = localCache.getItem(LOCAL_STORAGE_KEY(address, chainId));
-    let data = {fleets: {}, exits: {}, captures: {}};
+    let data = {
+      fleets: {},
+      exits: {},
+      captures: {},
+      id: this.$store.id,
+    };
     if (fromStorage) {
       try {
         const decrypted = this.decrypt(fromStorage);
@@ -175,6 +184,20 @@ class PrivateAccountStore extends BaseStoreWithData<
       headers: {
         'Content-type': 'application/json; charset=UTF-8',
       },
+    });
+  }
+
+  async _syncFromLocalStorage() {
+    if (!this.$store.walletAddress) {
+      throw new Error(`no this.$store.walletAddress`);
+    }
+    if (!this.$store.chainId) {
+      throw new Error(`no this.$store.chainId`);
+    }
+    this._mergeInLocalStorage(this.$store.walletAddress, this.$store.chainId, {
+      fleets: {},
+      exits: {},
+      captures: {},
     });
   }
 
@@ -253,10 +276,19 @@ class PrivateAccountStore extends BaseStoreWithData<
       throw new Error(`no this.$store.data`);
     }
     this.setPartial({data: this.$store.data});
-    this._saveToLocalStorage(
+    // this._saveToLocalStorage(
+    //   this.$store.walletAddress,
+    //   this.$store.chainId,
+    //   this.$store.data
+    // );
+    this._mergeInLocalStorage(
       this.$store.walletAddress,
       this.$store.chainId,
-      this.$store.data
+      this.$store.data,
+      fleetsToDelete,
+      exitsToDelete,
+      capturesToDelete,
+      deleteWithdrawalTx
     );
 
     if (!newDataOnLocal) {
@@ -300,6 +332,8 @@ class PrivateAccountStore extends BaseStoreWithData<
             newDataOnRemote = true;
             localFleet.resolveTx = remoteFleet.resolveTx;
             localFleet.sendTx = remoteFleet.sendTx;
+            localFleet.updatedAt = remoteFleet.updatedAt;
+            localFleet.toDelete = remoteFleet.toDelete;
           } else if (remoteFleet.updatedAt < localFleet.updatedAt) {
             newDataOnLocal = true;
           }
@@ -369,8 +403,26 @@ class PrivateAccountStore extends BaseStoreWithData<
       }
     }
 
+    if (data.agentHeartBeat) {
+      if (
+        !this.$store.data.agentHeartBeat ||
+        data.agentHeartBeat.update > this.$store.data.agentHeartBeat.update
+      ) {
+        this.$store.data.agentHeartBeat = data.agentHeartBeat;
+        newDataOnRemote = true;
+      }
+    }
+
     this.set(this.$store);
     return {newDataOnLocal, newDataOnRemote};
+  }
+
+  async getAgentWallet(): Promise<Wallet> {
+    if (!this.$store.wallet) {
+      throw new Error(`no $store.wallet`);
+    }
+    const signature = await this.$store.wallet.signMessage('Agent');
+    return new Wallet(signature.slice(0, 130), wallet.provider);
   }
 
   encrypt(data: string): string {
@@ -473,9 +525,55 @@ class PrivateAccountStore extends BaseStoreWithData<
     if (!data) {
       return; // TODO ?
     }
-    const toStorage = JSON.stringify(data);
+    const toStorage = JSON.stringify({...data, counter: this.$store.id});
     const encrypted = this.encrypt(toStorage);
     localCache.setItem(LOCAL_STORAGE_KEY(address, chainId), encrypted);
+  }
+
+  _mergeInLocalStorage(
+    address: string,
+    chainId: string,
+    data: SecretData,
+    fleetsToDelete: string[] = [],
+    exitsToDelete: string[] = [],
+    capturesToDelete: string[] = [],
+    deleteWithdrawalTx?: boolean
+  ) {
+    const fromStorage = localCache.getItem(LOCAL_STORAGE_KEY(address, chainId));
+    let dataFromLocalStorage = {
+      fleets: {},
+      exits: {},
+      captures: {},
+      id: 0,
+    } as SecretData;
+    if (fromStorage) {
+      try {
+        const decrypted = this.decrypt(fromStorage);
+        dataFromLocalStorage = JSON.parse(decrypted);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    for (const fleetToDelete of fleetsToDelete) {
+      delete dataFromLocalStorage.fleets[fleetToDelete];
+    }
+    for (const exitToDelete of exitsToDelete) {
+      delete dataFromLocalStorage.exits[exitToDelete];
+    }
+    for (const captureToDelete of capturesToDelete) {
+      delete dataFromLocalStorage.captures[captureToDelete];
+    }
+
+    if (deleteWithdrawalTx) {
+      delete dataFromLocalStorage.lastWithdrawal; // TODO should only delete if set later
+    }
+
+    if ((dataFromLocalStorage as any).id !== this.$store.id) {
+      this._merge(dataFromLocalStorage);
+    }
+
+    this._saveToLocalStorage(address, chainId, data);
   }
 
   async _setData(
@@ -488,7 +586,16 @@ class PrivateAccountStore extends BaseStoreWithData<
     deleteWithdrawalTx?: boolean
   ) {
     // console.log('_setData', data);
-    this._saveToLocalStorage(address, chainId, data);
+    // this._saveToLocalStorage(address, chainId, this.$store.data);
+    this._mergeInLocalStorage(
+      address,
+      chainId,
+      data,
+      fleetIdsToDelete,
+      exitsToDelete,
+      capturesToDelete,
+      deleteWithdrawalTx
+    );
     this._sync(
       fleetIdsToDelete,
       exitsToDelete,
@@ -612,6 +719,10 @@ class PrivateAccountStore extends BaseStoreWithData<
       clearInterval(this.monitorProcess);
       this.monitorProcess = undefined;
     }
+    if (this.syncProcess !== undefined) {
+      clearInterval(this.syncProcess);
+      this.syncProcess = undefined;
+    }
   }
 
   startMonitoring(address: string, chainId: string) {
@@ -621,6 +732,13 @@ class PrivateAccountStore extends BaseStoreWithData<
       () => this.checking(address, chainId),
       5000
     ); // TODO time config
+    const n = now();
+    this.syncProcess = setInterval(() => {
+      if (now() - n > 10) {
+        // TODO delay first sync
+        this._sync();
+      }
+    }, 10 * 1000); // TODO time config
   }
 
   async checking(address: string, chainId: string) {
@@ -816,6 +934,11 @@ class PrivateAccountStore extends BaseStoreWithData<
     const fleetIds = Object.keys(this.$store.data.fleets);
     for (const fleetId of fleetIds) {
       const fleet = this.$store.data.fleets[fleetId];
+
+      if (fleet.toDelete) {
+        if (now() - fleet.updatedAt > 24 * 3600) this.deleteFleet(fleetId);
+        continue;
+      }
 
       // if sendTxHash has not been confirmed yet, check it (if resolveTx.hash is set assume sendTxHash has been confirmed too and thus skip this)
       if (
@@ -1384,6 +1507,22 @@ class PrivateAccountStore extends BaseStoreWithData<
     ]);
   }
 
+  requestFleetDeletion(fleetId: string) {
+    const fleet = this.$store.data?.fleets[fleetId];
+    if (fleet) {
+      if (wallet.address && wallet.chain.chainId && this.$store.data) {
+        fleet.toDelete = true;
+        fleet.updatedAt = now();
+        this.setPartial({
+          data: this.$store.data,
+        });
+        this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
+      }
+    } else {
+      throw new Error(`wallet not ready`);
+    }
+  }
+
   _hashString() {
     if (!this.$store.wallet) {
       throw new Error(`no this.$store.wallet`);
@@ -1439,7 +1578,8 @@ class PrivateAccountStore extends BaseStoreWithData<
   recordFleetResolvingTxhash(
     fleetId: string,
     txHash: string,
-    nonce: number
+    nonce: number,
+    agent: boolean
   ): void {
     if (!wallet.address) {
       throw new Error(`no wallet.address`);
@@ -1453,6 +1593,9 @@ class PrivateAccountStore extends BaseStoreWithData<
     const fleets = this.$store.data.fleets;
     const fleet = fleets[fleetId];
     if (fleet) {
+      if (agent) {
+        this.$store.data.agentHeartBeat = {update: now(), keepAlive: now()};
+      }
       fleet.resolveTx = {hash: txHash, nonce};
       fleet.updatedAt = now();
       this.setPartial({
@@ -1460,6 +1603,26 @@ class PrivateAccountStore extends BaseStoreWithData<
       });
       this._setData(wallet.address, wallet.chain.chainId, this.$store.data); // TODO chainId / wallet address (when wallet account changes) // TODO test
     }
+  }
+
+  agentIsAlive(alive = true) {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      this.$store.data = {fleets: {}, exits: {}, captures: {}};
+    }
+    this.$store.data.agentHeartBeat = {
+      update: now(),
+      keepAlive: alive ? now() : 0,
+    };
+    this.setPartial({
+      data: this.$store.data,
+    });
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
   }
 
   getExit(location: string): {txHash: string} | undefined {
@@ -1489,6 +1652,18 @@ class PrivateAccountStore extends BaseStoreWithData<
   getFleets(): OwnFleet[] {
     if (this.$store.data) {
       return Object.values(this.$store.data.fleets);
+    } else {
+      return [];
+    }
+  }
+
+  getFleetsWithId(): (OwnFleet & {id: string})[] {
+    if (this.$store.data) {
+      const result = [];
+      for (const fleetId of Object.keys(this.$store.data.fleets)) {
+        result.push({...this.$store.data.fleets[fleetId], id: fleetId});
+      }
+      return result;
     } else {
       return [];
     }

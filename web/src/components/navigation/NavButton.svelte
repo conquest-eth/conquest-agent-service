@@ -57,7 +57,7 @@
         href={url}
         rel={blank === true ? 'noopener noreferrer' : ''}
         target={blank === true ? '_blank' : ''}
-        on:click={handlePageLink}>
+        on:click={!blank ? handlePageLink : undefined}>
         <InnerButton>
           <slot />
         </InnerButton>

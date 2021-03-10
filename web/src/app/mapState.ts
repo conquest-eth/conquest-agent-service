@@ -83,7 +83,7 @@ export function fetchFleetEvent(fleetId: string): FleetPromise {
           };
           return {
             fleetLoss: args.fleetLoss,
-            attack: args.fleetLoss > 0 || args.toLoss > 0,
+            attack: args.fleetLoss > 0 || args.toLoss > 0 || args.won,
             planetLoss: args.toLoss,
             won: args.won,
             newNumspaceships: args.newNumspaceships,

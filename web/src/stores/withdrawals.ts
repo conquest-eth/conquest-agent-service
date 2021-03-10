@@ -117,6 +117,7 @@ class WithdrawalsStore extends BaseStore<Withdrawals> {
   stop() {
     if (this.timeout) {
       clearInterval(this.timeout);
+      this.timeout = undefined;
     }
   }
 }

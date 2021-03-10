@@ -55,7 +55,12 @@
 
 <!-- TODO fliter on to-->
 
-{#if fleets.length > 0}
+{#if $privateAccount.data?.agentHeartBeat && $privateAccount.data?.agentHeartBeat.keepAlive > $time - 5 * 60}
+  <div
+    class="border-2 border-green-600 mt-3 mr-1 flex flex-col text-center text-cyan-300">
+    <h2 class="p-1">Agent Active</h2>
+  </div>
+{:else if fleets.length > 0}
   <div
     class="border-2 border-red-600 mt-3 mr-1 flex flex-col text-center text-cyan-300">
     <h2 class="p-1">Fleets to Resolve</h2>

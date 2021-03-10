@@ -138,6 +138,13 @@ export class Space {
     );
     const numAttack = BigNumber.from(fleetAmount);
 
+    if (numDefense.eq(0)) {
+      return {
+        captured: true,
+        numSpaceshipsLeft: numAttack.toNumber(),
+      };
+    }
+
     // TODO extract combat rule
     const attackPower = numAttack.mul(planetFrom.stats.attack);
     const defensePower = numDefense.mul(planetTo.stats.defense);

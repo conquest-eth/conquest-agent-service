@@ -2,8 +2,10 @@ const chainId = import.meta.env.SNOWPACK_PUBLIC_CHAIN_ID;
 let nodeUrl: string | undefined;
 let finality = 12;
 let blockTime = 15;
+let nativeTokenSymbol = 'ETH';
 if (chainId !== '1') {
   finality = 5; // TODO
+  nativeTokenSymbol = 'ETH'; // TODO
 }
 
 if (chainId === '1337' || chainId === '31337') {
@@ -42,4 +44,4 @@ if (!nodeUrl) {
   }
 }
 
-export {finality, nodeUrl, chainId, blockTime, chainName};
+export {finality, nodeUrl, chainId, blockTime, chainName, nativeTokenSymbol};

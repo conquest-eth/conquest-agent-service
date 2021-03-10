@@ -74,6 +74,7 @@ export type Fleet = {
 export type OwnFleet = Fleet & {
   to: Position;
   resolveTx?: {hash: string; nonce: number}; // TODO time ?
+  toDelete?: boolean;
   sendTx: {hash: string; nonce: number}; // TODO time ?
   updatedAt: number;
 };

@@ -5,8 +5,15 @@
   import {wallet, builtin, flow} from '../stores/wallet';
   import privateAccount from '../stores/privateAccount';
   import {withdrawals} from '../stores/withdrawals';
+  import {onDestroy, onMount} from 'svelte';
 
-  withdrawals.loadWithrawableBalance();
+  onMount(() => {
+    withdrawals.loadWithrawableBalance();
+  });
+
+  onDestroy(() => {
+    withdrawals.stop();
+  });
 </script>
 
 <div class="w-screen h-screen bg-black">

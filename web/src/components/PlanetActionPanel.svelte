@@ -29,6 +29,9 @@
       const fleetIds = Object.keys($privateAccount.data.fleets);
       for (const fleetId of fleetIds) {
         const fleet = $privateAccount.data.fleets[fleetId];
+        if (fleet.toDelete) {
+          continue;
+        }
         let status: 'Success' | 'Error' | 'Expired' | undefined;
         if (fleet.resolveTx) {
           const txStatus = privateAccount.txStatus(fleet.resolveTx.hash);

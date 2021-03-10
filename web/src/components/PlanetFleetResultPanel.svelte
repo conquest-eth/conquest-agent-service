@@ -9,11 +9,11 @@
 
   import {fetchFleetEvent} from '../app/mapState';
 
-  function deleteFleet(force: boolean = false) {
+  function acknowledge(force: boolean = false) {
     if (!force && fleet.resolveTx && fleet.status === 'Error') {
       privateAccount.acknowledgeResolveFailure(fleet.id);
     } else {
-      privateAccount.deleteFleet(fleet.id);
+      privateAccount.requestFleetDeletion(fleet.id);
     }
   }
 </script>
@@ -31,7 +31,7 @@
   <PanelButton
     label="Connect your wallet"
     class="m-2"
-    on:click={() => deleteFleet()}>
+    on:click={() => acknowledge()}>
     <div class="w-20">OK</div>
   </PanelButton>
 {:else if fleet.status === 'Expired'}
@@ -42,7 +42,7 @@
     <PanelButton
       label="Connect your wallet"
       class="m-2"
-      on:click={() => deleteFleet(true)}>
+      on:click={() => acknowledge(true)}>
       <div class="w-20">OK</div>
     </PanelButton>
   </p>
@@ -73,7 +73,7 @@
   <PanelButton
     label="Connect your wallet"
     class="m-2"
-    on:click={() => deleteFleet()}>
+    on:click={() => acknowledge()}>
     <div class="w-20">OK</div>
   </PanelButton>
 {/if}

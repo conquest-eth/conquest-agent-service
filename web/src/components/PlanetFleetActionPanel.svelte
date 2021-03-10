@@ -123,22 +123,22 @@
       {:else if walletIsOwner && !$planet.state.active}
         <!-- SEND MORE -->
         <PanelButton
-          label="Send Hre"
+          label="Send Reinforcment"
           class="m-2"
           color="text-green-500"
           borderColor="border-green-500"
           on:click={sendTo}>
-          <div class="w-20">Request Reinforcment</div>
+          <div class="w-20">Send Reinforcment</div>
         </PanelButton>
       {:else if walletIsOwner}
         <!-- SEND PROTECTION -->
         <PanelButton
-          label="Send To"
+          label="Send Reinforcment"
           class="m-2"
           color="text-green-500"
           borderColor="border-green-500"
           on:click={sendTo}>
-          <div class="w-20">Request Reinforcment</div>
+          <div class="w-20">Send Reinforcment</div>
         </PanelButton>
       {:else}
         <!-- ATTACK -->
