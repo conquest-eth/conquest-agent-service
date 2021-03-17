@@ -279,6 +279,8 @@
       <PanelButton
         label="Capture"
         class="m-2"
+        color="text-yellow-400"
+        borderColor="border-yellow-400"
         disabled={!$planet.state.inReach}
         on:click={capture}>
         <div class="w-20">
