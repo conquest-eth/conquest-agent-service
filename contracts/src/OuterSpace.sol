@@ -17,9 +17,17 @@ import "hardhat/console.sol";
 contract OuterSpace is Proxied {
     using Extraction for bytes32;
 
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // CONSTANTS
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     uint256 internal constant DECIMALS_18 = 1e18;
     uint32 internal constant ACTIVE_MASK = 2**31;
     int256 internal constant UINT32_MAX = 2**32 - 1;
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // CONFIGURATION / IMMUTABLE
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     bytes32 internal immutable _genesis;
     IERC20 internal immutable _stakingToken;
@@ -28,12 +36,23 @@ contract OuterSpace is Proxied {
     uint256 internal immutable _exitDuration;
     uint32 internal immutable _acquireNumSpaceships;
 
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // STORAGE
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     mapping(uint256 => Planet) internal _planets;
     mapping(uint256 => Fleet) internal _fleets;
 
     mapping(address => uint256) internal _stakeReadyToBeWithdrawn;
 
     mapping(address => mapping(address => bool)) internal _operators;
+
+    // TODO : front running protection : 15min slot
+    struct InFlight {
+        uint64 flying;
+        uint64 destroyed;
+    }
+    mapping(uint256 => InFlight) internal _inFlight;
 
     struct Discovered {
         uint32 minX;
@@ -57,20 +76,27 @@ contract OuterSpace is Proxied {
         uint32 quantity;
     }
 
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // EVENTS
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     event PlanetStake(address indexed acquirer, uint256 indexed location, uint32 numSpaceships);
     event FleetSent(
-        address indexed sender,
+        address indexed fleetOwner,
         uint256 indexed from,
         uint256 fleet,
         uint32 quantity,
         uint32 newNumSpaceships
     );
     event FleetArrived(
-        address indexed sender,
+        address indexed fleetOwner,
+        // address indexed destinationOwner, // TODO how ?
         uint256 indexed fleet,
-        uint256 indexed location,
+        uint256 indexed destination,
         uint32 fleetLoss,
-        uint32 toLoss,
+        // uint32 inFlightFleetLoss,
+        // uint32 inFlighPlanetLoss,
+        uint32 toLoss, //TODO : rename :uint32 planetLoss, ?
         bool won,
         uint32 newNumspaceships
     );
@@ -80,6 +106,10 @@ contract OuterSpace is Proxied {
     event StakeToWithdraw(address indexed owner, uint256 newStake);
 
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // CONSTRUCTOR / INITIALIZATION
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     constructor(
         IERC20 stakingToken,
@@ -115,6 +145,10 @@ contract OuterSpace is Proxied {
         }
     }
 
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // STAKING / PRODUCTION CAPTURE
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     function onTokenTransfer(
         address from,
         uint256 amount,
@@ -149,6 +183,10 @@ contract OuterSpace is Proxied {
     //     _stakingToken.transfer(sender, amounts[1] - stakeAmount); // TODO send to Player Account (via PaymentGateway)
     // }
 
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // EXIT / WITHDRAWALS
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     function exitFor(address owner, uint256 location) external {
         Planet storage planet = _getPlanet(location);
         require(owner == planet.owner, "NOT_OWNER");
@@ -180,6 +218,10 @@ contract OuterSpace is Proxied {
         emit StakeToWithdraw(owner, 0);
     }
 
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // FLEET RESOLUTION, ATTACK / REINFORCEMENT
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     function resolveFleet(
         uint256 fleetId,
         uint256 from,
@@ -190,20 +232,9 @@ contract OuterSpace is Proxied {
         _resolveFleet(fleetId, from, to, distance, secret);
     }
 
-    // function resolveFleetFor(
-    //     address attacker,
-    //     uint256 fleetId,
-    //     uint256 from,
-    //     uint256 to,
-    //     uint256 distance,
-    //     bytes32 secret
-    // ) external {
-    //     address sender = _msgSender();
-    //     // if (sender != attacker) {
-    //     //     require(_operators[attacker][sender], "NOT_AUTHORIZED");
-    //     // }
-    //     _resolveFleetFor(attacker, fleetId, from, to, distance, secret);
-    // }
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // FLEET SENDING
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     function send(
         uint256 from,
@@ -225,6 +256,10 @@ contract OuterSpace is Proxied {
         }
         _sendFor(_msgSender(), from, quantity, toHash);
     }
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // GETTERS
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     function getFleet(uint256 fleetId)
         external
@@ -300,9 +335,9 @@ contract OuterSpace is Proxied {
         return _discovered;
     }
 
-    // ////////////// EIP721 /////////////////// // TODO ?
-
-    // function transfer() // TODO EIP-721 ?
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // ERC721 : // TODO
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     function setApprovalForAll(address operator, bool approved) external {
         address sender = _msgSender();
@@ -310,7 +345,9 @@ contract OuterSpace is Proxied {
         emit ApprovalForAll(sender, operator, approved);
     }
 
-    // ///////////////// INTERNALS ////////////////////
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // INTERNALS
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     // function _actualiseExit(uint256 location) internal {
     //     Planet storage planet = _getPlanet(location);
@@ -324,6 +361,10 @@ contract OuterSpace is Proxied {
     //         _stakeReadyToBeWithdrawn[owner] += stake * DECIMALS_18;
     //     }
     // }
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // STAKING / PRODUCTION CAPTURE
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     function _acquire(
         address sender,
@@ -446,6 +487,10 @@ contract OuterSpace is Proxied {
         }
     }
 
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // EXITS / WITHDRAWALS
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     function _hasJustExited(uint32 exitTime) internal view returns (bool) {
         return exitTime > 0 && block.timestamp > exitTime + _exitDuration;
     }
@@ -468,14 +513,9 @@ contract OuterSpace is Proxied {
         emit StakeToWithdraw(owner, newStake);
     }
 
-    function _activeNumSpaceships(uint32 numSpaceshipsData) internal pure returns (bool active, uint32 numSpaceships) {
-        active = (numSpaceshipsData & ACTIVE_MASK) == ACTIVE_MASK;
-        numSpaceships = numSpaceshipsData % (ACTIVE_MASK);
-    }
-
-    function _setActiveNumSpaceships(bool active, uint32 numSpaceships) internal pure returns (uint32) {
-        return uint32((active ? ACTIVE_MASK : 0) + numSpaceships);
-    }
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // FLEET SENDING
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     function _sendFor(
         address owner,
@@ -509,6 +549,10 @@ contract OuterSpace is Proxied {
         emit FleetSent(owner, from, fleetId, quantity, numSpaceships);
     }
 
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // FLEET RESOLUTION, ATTACK / REINFORCEMENT
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     function _resolveFleet(
         // address attacker,
         uint256 fleetId,
@@ -540,148 +584,6 @@ contract OuterSpace is Proxied {
             _performAttack(fleet.owner, from, toPlanet, to, production, fleetId, fleet.quantity);
         }
         _fleets[fleetId].quantity = 0; // TODO reset all to get gas refund?
-    }
-
-    function _checkDistance(
-        uint256 distance,
-        uint256 from,
-        uint256 to
-    ) internal view {
-        (int8 fromSubX, int8 fromSubY) = _subLocation(_planetData(from));
-        (int8 toSubX, int8 toSubY) = _subLocation(_planetData(to));
-        // check input instead of compute sqrt
-        uint256 distanceSquared = uint256( // check input instead of compute sqrt
-            ((int128(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) * 4 + toSubX) -
-                (int128(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) * 4 + fromSubX)) **
-                2 +
-                ((int128(to >> 128) * 4 + toSubY) - (int128(from >> 128) * 4 + fromSubY))**2
-        );
-        require(distance**2 <= distanceSquared && distanceSquared < (distance + 1)**2, "wrong distance");
-    }
-
-    function _checkTime(
-        uint256 distance,
-        uint256 from,
-        uint32 launchTime
-    ) internal view {
-        uint256 reachTime = launchTime + (distance * (_timePerDistance * 10000)) / _speed(_planetData(from));
-        require(block.timestamp >= reachTime, "too early");
-        require(block.timestamp < reachTime + _resolveWindow, "too late, your spaceships are lost in space");
-    }
-
-    function _getPlanet(uint256 location) internal view returns (Planet storage) {
-        return _planets[location];
-    }
-
-    // ------------------------- PLANET STATS -------------------------------
-    function _planetData(uint256 location) internal view returns (bytes32) {
-        return keccak256(abi.encodePacked(_genesis, location));
-    }
-
-    function _subLocation(bytes32 data) internal pure returns (int8 subX, int8 subY) {
-        subX = int8(1 - data.value8Mod(0, 3));
-        subY = int8(1 - data.value8Mod(2, 3));
-    }
-
-    function _stake(bytes32 data) internal pure returns (uint16) {
-        // 4,5,5,10,10,15,15, 20, 20, 30,30,40,40,80,80,100
-        return data.normal16(4, 0x000400050005000A000A000F000F00140014001E001E00280028005000500064);
-    }
-
-    function _production(bytes32 data) internal pure returns (uint16) {
-        // TODO TRY : 1800,2100,2400,2700,3000,3300,3600, 3600, 3600, 3600,4000,4400,4800,5400,6200,7200 ?
-
-        // 1800,2100,2400,2700,3000,3300,3600, 3600, 3600, 3600,4200,5400,6600,7800,9000,12000
-        // 0x0708083409600a8c0bb80ce40e100e100e100e101068151819c81e7823282ee0
-        return data.normal16(12, 0x0708083409600a8c0bb80ce40e100e100e100e101068151819c81e7823282ee0); // per hour
-    }
-
-    function _attack(bytes32 data) internal pure returns (uint16) {
-        return 4000 + data.normal8(20) * 400; // 4,000 - 7,000 - 10,000
-    }
-
-    function _defense(bytes32 data) internal pure returns (uint16) {
-        return 4000 + data.normal8(28) * 400; // 4,000 - 7,000 - 10,000
-    }
-
-    function _speed(bytes32 data) internal pure returns (uint16) {
-        return 5005 + data.normal8(36) * 333; // 5,005 - 7,502.5 - 10,000
-    }
-
-    function _natives(bytes32 data) internal pure returns (uint16) {
-        return 15000 + data.normal8(44) * 3000; // 15,000 - 37,500 - 60,000
-    }
-
-    function _exists(bytes32 data) internal pure returns (bool) {
-        return data.value8Mod(52, 16) == 1; // 16 => 36 so : 1 planet per 6 (=24 min unit) square
-        // also:
-        // 20000 average starting numSpaceships (or max?)
-        // speed of min unit = 30 min ( 1 hour per square)
-        // production : 20000 per 6 hours
-        // exit : 3 days ? => 72 distance
-    }
-
-    // ---------------------------------------------------------------------
-
-    function _getPlanetStats(uint256 location) internal view returns (PlanetStats memory) {
-        bytes32 data = _planetData(location);
-        require(_exists(data), "no planet in this location");
-
-        (int8 subX, int8 subY) = _subLocation(data);
-        return
-            PlanetStats({
-                subX: subX,
-                subY: subY,
-                stake: _stake(data),
-                production: _production(data),
-                attack: _attack(data),
-                defense: _defense(data),
-                speed: _speed(data),
-                natives: _natives(data)
-            });
-    }
-
-    function _msgSender() internal view returns (address) {
-        return msg.sender; // TODO metatx
-    }
-
-    function _getCurrentNumSpaceships(
-        uint32 numSpaceshipsData,
-        uint256 lastUpdated,
-        uint16 production
-    ) internal view returns (bool active, uint32 currentNumSpaceships) {
-        (active, currentNumSpaceships) = _activeNumSpaceships(numSpaceshipsData);
-        if (active) {
-            uint256 timePassed = block.timestamp - lastUpdated;
-            uint256 newSpaceships = uint256(currentNumSpaceships) + (timePassed * uint256(production)) / 1 hours;
-            if (newSpaceships >= ACTIVE_MASK) {
-                newSpaceships = ACTIVE_MASK - 1;
-            }
-            currentNumSpaceships = uint32(newSpaceships);
-        }
-    }
-
-    function _computeFight(
-        uint256 numAttack,
-        uint256 numDefense,
-        uint256 attack,
-        uint256 defense
-    ) internal pure returns (uint32 attackerLoss, uint32 defenderLoss) {
-        uint256 attackPower = (numAttack * attack);
-        uint256 defensePower = (numDefense * defense);
-
-        uint256 numAttackRound = (numDefense * 100000000) / attackPower;
-        if (numAttackRound * attackPower < (numDefense * 100000000)) {
-            numAttackRound++;
-        }
-        uint256 numDefenseRound = (numAttack * 100000000) / defensePower;
-        if (numDefenseRound * defensePower < (numAttack * 100000000)) {
-            numDefenseRound++;
-        }
-
-        uint256 numRound = Math.min(numAttackRound, numDefenseRound);
-        attackerLoss = uint32(Math.min((numRound * defensePower) / 100000000, numAttack));
-        defenderLoss = uint32(Math.min((numRound * attackPower) / 100000000, numDefense));
     }
 
     function _performAttack(
@@ -789,41 +691,164 @@ contract OuterSpace is Proxied {
             emit FleetArrived(sender, fleetId, to, 0, 0, false, uint32(newNumSpaceships));
         }
     }
+
+    function _computeFight(
+        uint256 numAttack,
+        uint256 numDefense,
+        uint256 attack,
+        uint256 defense
+    ) internal pure returns (uint32 attackerLoss, uint32 defenderLoss) {
+        uint256 attackPower = (numAttack * attack);
+        uint256 defensePower = (numDefense * defense);
+
+        uint256 numAttackRound = (numDefense * 100000000) / attackPower;
+        if (numAttackRound * attackPower < (numDefense * 100000000)) {
+            numAttackRound++;
+        }
+        uint256 numDefenseRound = (numAttack * 100000000) / defensePower;
+        if (numDefenseRound * defensePower < (numAttack * 100000000)) {
+            numDefenseRound++;
+        }
+
+        uint256 numRound = Math.min(numAttackRound, numDefenseRound);
+        attackerLoss = uint32(Math.min((numRound * defensePower) / 100000000, numAttack));
+        defenderLoss = uint32(Math.min((numRound * attackPower) / 100000000, numDefense));
+    }
+
+    function _checkDistance(
+        uint256 distance,
+        uint256 from,
+        uint256 to
+    ) internal view {
+        (int8 fromSubX, int8 fromSubY) = _subLocation(_planetData(from));
+        (int8 toSubX, int8 toSubY) = _subLocation(_planetData(to));
+        // check input instead of compute sqrt
+        uint256 distanceSquared = uint256( // check input instead of compute sqrt
+            ((int128(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) * 4 + toSubX) -
+                (int128(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) * 4 + fromSubX)) **
+                2 +
+                ((int128(to >> 128) * 4 + toSubY) - (int128(from >> 128) * 4 + fromSubY))**2
+        );
+        require(distance**2 <= distanceSquared && distanceSquared < (distance + 1)**2, "wrong distance");
+    }
+
+    function _checkTime(
+        uint256 distance,
+        uint256 from,
+        uint32 launchTime
+    ) internal view {
+        uint256 reachTime = launchTime + (distance * (_timePerDistance * 10000)) / _speed(_planetData(from));
+        require(block.timestamp >= reachTime, "too early");
+        require(block.timestamp < reachTime + _resolveWindow, "too late, your spaceships are lost in space");
+    }
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // PLANET STATS
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    function _planetData(uint256 location) internal view returns (bytes32) {
+        return keccak256(abi.encodePacked(_genesis, location));
+    }
+
+    function _subLocation(bytes32 data) internal pure returns (int8 subX, int8 subY) {
+        subX = int8(1 - data.value8Mod(0, 3));
+        subY = int8(1 - data.value8Mod(2, 3));
+    }
+
+    function _stake(bytes32 data) internal pure returns (uint16) {
+        // 4,5,5,10,10,15,15, 20, 20, 30,30,40,40,80,80,100
+        return data.normal16(4, 0x000400050005000A000A000F000F00140014001E001E00280028005000500064);
+    }
+
+    function _production(bytes32 data) internal pure returns (uint16) {
+        // TODO TRY : 1800,2100,2400,2700,3000,3300,3600, 3600, 3600, 3600,4000,4400,4800,5400,6200,7200 ?
+
+        // 1800,2100,2400,2700,3000,3300,3600, 3600, 3600, 3600,4200,5400,6600,7800,9000,12000
+        // 0x0708083409600a8c0bb80ce40e100e100e100e101068151819c81e7823282ee0
+        return data.normal16(12, 0x0708083409600a8c0bb80ce40e100e100e100e101068151819c81e7823282ee0); // per hour
+    }
+
+    function _attack(bytes32 data) internal pure returns (uint16) {
+        return 4000 + data.normal8(20) * 400; // 4,000 - 7,000 - 10,000
+    }
+
+    function _defense(bytes32 data) internal pure returns (uint16) {
+        return 4000 + data.normal8(28) * 400; // 4,000 - 7,000 - 10,000
+    }
+
+    function _speed(bytes32 data) internal pure returns (uint16) {
+        return 5005 + data.normal8(36) * 333; // 5,005 - 7,502.5 - 10,000
+    }
+
+    function _natives(bytes32 data) internal pure returns (uint16) {
+        return 15000 + data.normal8(44) * 3000; // 15,000 - 37,500 - 60,000
+    }
+
+    function _exists(bytes32 data) internal pure returns (bool) {
+        return data.value8Mod(52, 16) == 1; // 16 => 36 so : 1 planet per 6 (=24 min unit) square
+        // also:
+        // 20000 average starting numSpaceships (or max?)
+        // speed of min unit = 30 min ( 1 hour per square)
+        // production : 20000 per 6 hours
+        // exit : 3 days ? => 72 distance
+    }
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // GETTERS
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    function _getPlanet(uint256 location) internal view returns (Planet storage) {
+        return _planets[location];
+    }
+
+    function _getPlanetStats(uint256 location) internal view returns (PlanetStats memory) {
+        bytes32 data = _planetData(location);
+        require(_exists(data), "no planet in this location");
+
+        (int8 subX, int8 subY) = _subLocation(data);
+        return
+            PlanetStats({
+                subX: subX,
+                subY: subY,
+                stake: _stake(data),
+                production: _production(data),
+                attack: _attack(data),
+                defense: _defense(data),
+                speed: _speed(data),
+                natives: _natives(data)
+            });
+    }
+
+    function _getCurrentNumSpaceships(
+        uint32 numSpaceshipsData,
+        uint256 lastUpdated,
+        uint16 production
+    ) internal view returns (bool active, uint32 currentNumSpaceships) {
+        (active, currentNumSpaceships) = _activeNumSpaceships(numSpaceshipsData);
+        if (active) {
+            uint256 timePassed = block.timestamp - lastUpdated;
+            uint256 newSpaceships = uint256(currentNumSpaceships) + (timePassed * uint256(production)) / 1 hours;
+            if (newSpaceships >= ACTIVE_MASK) {
+                newSpaceships = ACTIVE_MASK - 1;
+            }
+            currentNumSpaceships = uint32(newSpaceships);
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // UTILS
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    function _activeNumSpaceships(uint32 numSpaceshipsData) internal pure returns (bool active, uint32 numSpaceships) {
+        active = (numSpaceshipsData & ACTIVE_MASK) == ACTIVE_MASK;
+        numSpaceships = numSpaceshipsData % (ACTIVE_MASK);
+    }
+
+    function _setActiveNumSpaceships(bool active, uint32 numSpaceships) internal pure returns (uint32) {
+        return uint32((active ? ACTIVE_MASK : 0) + numSpaceships);
+    }
+
+    function _msgSender() internal view returns (address) {
+        return msg.sender; // TODO metatx
+    }
 }
-
-// Bounties will be external
-// event Bounty(
-//     address from,
-//     address token,
-//     uint256 amount,
-//     uint256 location,
-//     uint256 deadline,
-//     address target,
-//     uint256 perLoss,
-//     address hunter,
-// );
-
-// Bounty will be an external contract using the capability of _operators
-// function attachBounty(
-//     uint256 location,
-//     address token,
-//     // uint256 tokenType, // TODO : ERC20 / ERC777 / ERC1155 / ERC721
-//     uint256 maxSpaceships,
-//     uint256 amountPerSpaceships,
-//     uint256 deadline,
-//     address target, // can be zero for getting reward no matter who is owning the planet.
-//     address hunter // can be zero for anybody
-// ) external {
-//     address sender = _msgSender();
-//     // require(target != sender, "please do not target yourself"); // TODO add this check ?
-//     emit Bounty(sender, token, amountPerSpaceships * maxSpaceships, location, deadline, target, amountPerSpaceships, hunter);
-// }
-
-// function withdrawBounty(
-
-// ) external {
-//     // TODO
-//     // check bounty deadline is over
-//     // if bounty has been taken, allow winner to withdraw
-//     // if bounty has not be taken, allow bounty offerer to withdraw
-// }

@@ -18,6 +18,7 @@
 
   $: duration = space.timeToArrive($planetFrom, $planetTo);
   $: arrival = duration + now();
+  const base: string = window.basepath || '/';
 </script>
 
 <Modal>
@@ -31,6 +32,11 @@
   </p>
   <p>
     Once the first transaction is submitted, we will help you create a reminder.
+  </p>
+  <p class="my-2">
+    You can also setup an agent that will run on its own and resolve your fleets
+    automatically. You just need to leave the agent running. See
+    <a href={`agent/`} target="_blank" class="underline">here</a>
   </p>
   <div class="text-center">
     <PanelButton
