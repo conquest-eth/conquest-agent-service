@@ -2,6 +2,7 @@ import 'dotenv/config';
 import {HardhatUserConfig} from 'hardhat/types';
 import 'hardhat-deploy';
 import 'hardhat-deploy-ethers';
+import 'hardhat-contract-sizer';
 import {node_url, accounts} from './utils/network';
 
 const config: HardhatUserConfig = {

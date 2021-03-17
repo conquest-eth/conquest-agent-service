@@ -73,6 +73,7 @@ importers:
       ethereum-transfer-gateway: 0.1.0-beta.8
       ethers: 5.0.26
       hardhat: 2.0.8
+      hardhat-contract-sizer: 2.0.3_hardhat@2.0.8
       hardhat-deploy: 0.7.0-beta.44_hardhat@2.0.8
       hardhat-deploy-ethers: 0.3.0-beta.7_ethers@5.0.26+hardhat@2.0.8
       mocha: 8.2.1
@@ -101,6 +102,7 @@ importers:
       ethereum-transfer-gateway: ^0.1.0-beta.8
       ethers: ^5.0.8
       hardhat: ^2.0.4
+      hardhat-contract-sizer: ^2.0.3
       hardhat-deploy: ^0.7.0-beta.38
       hardhat-deploy-ethers: ^0.3.0-beta.7
       mocha: ^8.1.1
@@ -3841,6 +3843,17 @@ packages:
       colors: 1.4.0
     resolution:
       integrity: sha512-7Qg2Jrep1S/+Q3EceiZtQcDPWxhAvBw+ERf1162v4sikJrvojMHFqXt8QIVha8UlH9rgU0BeWPytZ9/TzYqlUw==
+  /cli-table3/0.6.0:
+    dependencies:
+      object-assign: 4.1.1
+      string-width: 4.2.2
+    dev: true
+    engines:
+      node: 10.* || >= 12.*
+    optionalDependencies:
+      colors: 1.4.0
+    resolution:
+      integrity: sha512-gnB85c3MGC7Nm9I/FkiasNBOKjOiO1RNuXXarQms37q4QMpWdlbBgD/VnOStA2faG1dpXMv31RFApjX1/QdgWQ==
   /cli-width/2.2.1:
     dev: true
     resolution:
@@ -6227,6 +6240,16 @@ packages:
       node: '>=6'
     resolution:
       integrity: sha512-VIZB+ibDhx7ObhAe7OVtoEbuP4h/MuOTHJ+J8h/eBXotJYl0fBgR72xDFCKgIh22OJZIOVNxBMWuhAr10r8HdA==
+  /hardhat-contract-sizer/2.0.3_hardhat@2.0.8:
+    dependencies:
+      cli-table3: 0.6.0
+      colors: 1.4.0
+      hardhat: 2.0.8
+    dev: true
+    peerDependencies:
+      hardhat: ^2.0.0
+    resolution:
+      integrity: sha512-iaixOzWxwOSIIE76cl2uk4m9VXI1hKU3bFt+gl7jDhyb2/JB2xOp5wECkfWqAoc4V5lD4JtjldZlpSTbzX+nPQ==
   /hardhat-deploy-ethers/0.3.0-beta.7_ethers@5.0.26+hardhat@2.0.8:
     dependencies:
       ethers: 5.0.26
@@ -11521,6 +11544,16 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-zUz5JD+tgqtuDjMhwIg5uFVV3dtqZ9yQJlZVfq4I01/K5Paj5UHj7VyrQOJvzawSVlKpObApbfD0Ed6yJc+1eg==
+  /string-width/4.2.2:
+    dependencies:
+      emoji-regex: 8.0.0
+      is-fullwidth-code-point: 3.0.0
+      strip-ansi: 6.0.0
+    dev: true
+    engines:
+      node: '>=8'
+    resolution:
+      integrity: sha512-XBJbT3N4JhVumXE0eoLU9DCjcaF92KLNqTmFCnG1pf8duUxFGwtP6AD6nkjw9a3IdiRtL3E2w3JDiE/xi3vOeA==
   /string.prototype.padend/3.1.1:
     dependencies:
       call-bind: 1.0.2
