@@ -92,13 +92,13 @@ contract OuterSpace is Proxied {
     );
     event FleetArrived(
         address indexed fleetOwner,
-        // address indexed destinationOwner, // TODO how ?
+        // address indexed destinationOwner, // TODO how ? remove fleet from indexed params (not that useful as you can query)
         uint256 indexed fleet,
         uint256 indexed destination,
         uint32 fleetLoss,
-        // uint32 inFlightFleetLoss,
-        // uint32 inFlighPlanetLoss,
-        uint32 toLoss, //TODO : rename :uint32 planetLoss, ?
+        uint32 planetLoss,
+        uint32 inFlightFleetLoss,
+        uint32 inFlightPlanetLoss,
         bool won,
         uint32 newNumspaceships
     );
@@ -566,6 +566,7 @@ contract OuterSpace is Proxied {
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     struct FleetResult {
+        uint32 inFlightPlanetLoss;
         uint32 attackerLoss;
         uint32 defenderLoss;
         bool won;
@@ -646,15 +647,12 @@ contract OuterSpace is Proxied {
             to,
             result.attackerLoss,
             result.defenderLoss,
+            inFlightFleetLoss,
+            result.inFlightPlanetLoss,
             result.won,
             result.numSpaceships
         );
     }
-
-    // function _fleet_flying_at_destination(uint32 quantity, uint256 to) internal view {
-    //     uint256 timeSlot = block.timestamp / (FRONT_RUNNING_DELAY / 2);
-    //     uint64 flying = _inFlight[to][timeSlot].flying + _inFlight[to][timeSlot - 1].flying;
-    // }
 
     function _fleet_flying_at_origin(
         uint32 quantity,
@@ -662,18 +660,10 @@ contract OuterSpace is Proxied {
         uint32 launchTime
     ) internal returns (uint32) {
         uint256 timeSlot = launchTime / (FRONT_RUNNING_DELAY / 2);
-        uint64 destroyed = _inFlight[from][timeSlot - 1].destroyed;
+        uint64 destroyed = _inFlight[from][timeSlot].destroyed;
         if (destroyed < quantity) {
             quantity -= uint32(destroyed);
-            _inFlight[from][timeSlot - 1].destroyed = 0;
-            destroyed = _inFlight[from][timeSlot].destroyed;
-            if (destroyed < quantity) {
-                quantity -= uint32(destroyed);
-                _inFlight[from][timeSlot].destroyed = 0;
-            } else {
-                quantity = 0;
-                _inFlight[from][timeSlot].destroyed = destroyed - quantity;
-            }
+            _inFlight[from][timeSlot].destroyed = 0;
         } else {
             quantity = 0;
             _inFlight[from][timeSlot].destroyed = destroyed - quantity;
@@ -746,36 +736,131 @@ contract OuterSpace is Proxied {
         uint16 production,
         uint32 numAttack
     ) internal returns (FleetResult memory result) {
-        (bool active, uint32 numDefense) = _getCurrentNumSpaceships(
-            toPlanet.numSpaceships,
-            toPlanet.lastUpdated,
-            production
-        );
+        PreCombatState memory state = _getPlanetPreCombatState(toPlanet, to, production);
 
-        if (numDefense == 0) {
+        if (state.numDefense == 0) {
             _planets[to].owner = attacker;
             _planets[to].exitTime = 0;
-            _planets[to].numSpaceships = _setActiveNumSpaceships(active, numAttack);
+            _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, numAttack);
             _planets[to].lastUpdated = uint32(block.timestamp);
             result.won = true;
             result.numSpaceships = numAttack;
             return result;
         }
 
-        (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, numDefense, attack, defense);
+        return _completeCombatResult(state, attacker, to, numAttack, attack, defense);
+    }
+
+    struct PreCombatState {
+        bool active;
+        uint32 currentNumSpaceships;
+        uint32 numDefense;
+        uint64 flying1;
+        uint64 destroyed1;
+        uint64 flying2;
+        uint64 destroyed2;
+    }
+
+    function _getPlanetPreCombatState(
+        Planet memory toPlanet,
+        uint256 to,
+        uint16 production
+    ) internal view returns (PreCombatState memory state) {
+        (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
+            toPlanet.numSpaceships,
+            toPlanet.lastUpdated,
+            production
+        );
+
+        (
+            uint32 numDefense,
+            uint64 flying1,
+            uint64 destroyed1,
+            uint64 flying2,
+            uint64 destroyed2
+        ) = computeDefenseWithInFlightFleets(currentNumSpaceships, to);
+        state.active = active;
+        state.currentNumSpaceships = currentNumSpaceships;
+        state.numDefense = numDefense;
+        state.flying1 = flying1;
+        state.destroyed1 = destroyed1;
+        state.flying2 = flying2;
+        state.destroyed2 = destroyed2;
+    }
+
+    function computeDefenseWithInFlightFleets(uint32 numSpaceships, uint256 to)
+        internal
+        view
+        returns (
+            uint32 numDefense,
+            uint64 flying1,
+            uint64 destroyed1,
+            uint64 flying2,
+            uint64 destroyed2
+        )
+    {
+        numDefense = numSpaceships;
+        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        // consider fleets that just departed from the planet (used to prevent front-running, see fleet sending)
+        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        uint256 timeSlot = block.timestamp / (FRONT_RUNNING_DELAY / 2);
+        flying1 = _inFlight[to][timeSlot - 1].flying;
+        destroyed1 = _inFlight[to][timeSlot - 1].flying;
+        flying2 = _inFlight[to][timeSlot].flying;
+        destroyed2 = _inFlight[to][timeSlot].destroyed;
+        numDefense = uint32(Math.min(flying1 + flying2 + numDefense, 2**32 - 1));
+        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+    }
+
+    function _completeCombatResult(
+        PreCombatState memory state,
+        address attacker,
+        uint256 to,
+        uint32 numAttack,
+        uint16 attack,
+        uint16 defense
+    ) internal returns (FleetResult memory result) {
+        (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, state.numDefense, attack, defense);
         result.attackerLoss = attackerLoss;
         result.defenderLoss = defenderLoss;
 
-        if (attackerLoss == numAttack) {
-            result.numSpaceships = numDefense - defenderLoss;
-            _planets[to].numSpaceships = _setActiveNumSpaceships(active, result.numSpaceships);
-            _planets[to].lastUpdated = uint32(block.timestamp);
-        } else if (defenderLoss == numDefense) {
+        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        // consider fleets that just departed from the planet (used to prevent front-running, see fleet sending)
+        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        if (result.defenderLoss > state.currentNumSpaceships) {
+            result.inFlightPlanetLoss = defenderLoss - state.currentNumSpaceships;
+            result.defenderLoss = state.currentNumSpaceships;
+            if (state.flying1 >= result.inFlightPlanetLoss) {
+                state.flying1 -= result.inFlightPlanetLoss;
+                state.destroyed1 += result.inFlightPlanetLoss;
+            } else {
+                state.destroyed1 += state.flying1;
+                uint64 extra = (result.inFlightPlanetLoss - state.flying1);
+                if (state.flying2 >= extra) {
+                    state.flying2 -= extra;
+                    state.destroyed2 += extra;
+                } else {
+                    state.destroyed2 += state.flying2;
+                    state.flying2 = 0; // should never reach minus but let simply set it to zero
+                }
+                state.flying1 = 0;
+            }
+            _inFlight[to][block.timestamp / (FRONT_RUNNING_DELAY / 2) - 1].flying = state.flying1;
+            _inFlight[to][block.timestamp / (FRONT_RUNNING_DELAY / 2) - 1].destroyed = state.destroyed1;
+            _inFlight[to][block.timestamp / (FRONT_RUNNING_DELAY / 2)].flying = state.flying2;
+            _inFlight[to][block.timestamp / (FRONT_RUNNING_DELAY / 2)].destroyed = state.destroyed2;
+        }
+        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        if (result.defenderLoss == state.currentNumSpaceships) {
             result.numSpaceships = numAttack - attackerLoss;
             result.won = true;
             _planets[to].owner = attacker;
             _planets[to].exitTime = 0;
-            _planets[to].numSpaceships = _setActiveNumSpaceships(active, result.numSpaceships);
+            _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, result.numSpaceships);
+            _planets[to].lastUpdated = uint32(block.timestamp);
+        } else if (result.attackerLoss == numAttack) {
+            result.numSpaceships = state.currentNumSpaceships - defenderLoss;
+            _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, result.numSpaceships);
             _planets[to].lastUpdated = uint32(block.timestamp);
         } else {
             assert(false); // should not happen

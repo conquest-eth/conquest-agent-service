@@ -52,11 +52,15 @@
   {:then event}
     {#if event.attack}
       {#if event.won}
-        <p class="p-2">
-          Fleet captured the planet and survived with
-          {event.newNumspaceships}
-          spaceships
-        </p>
+        {#if event.newNumspaceships > 0}
+          <p class="p-2">
+            Fleet captured the planet and survived with
+            {event.newNumspaceships}
+            spaceships
+          </p>
+        {:else}
+          <p class="p-2">Fleet just captured the planet!</p>
+        {/if}
       {:else}
         <p class="p-2">
           Fleet attack failed but reduced planet defense by
@@ -64,8 +68,32 @@
           spaceships
         </p>
       {/if}
+      {#if event.inFlightFleetLoss > 0}
+        <p class="p-2">
+          Note Fleet was partially dammaged ({event.inFlightFleetLoss}
+          spaceships lost) when launched. This reduced its attak power.
+        </p>
+      {/if}
+      {#if event.inFlightPlanetLoss > 0}
+        <p class="p-2">
+          The Fleet damaged escaping fleets by
+          {event.inFlightPlanetLoss}
+          spaceships.
+        </p>
+      {/if}
     {:else}
-      <p class="p-2">Fleet arrived with {fleet.fleetAmount} spaceships</p>
+      <p class="p-2">
+        Fleet arrived with
+        {fleet.fleetAmount - event.inFlightFleetLoss}
+        spaceships
+      </p>
+      {#if event.inFlightFleetLoss > 0}
+        <p class="p-2">
+          Note Fleet was partially dammaged ({event.inFlightFleetLoss}
+          spaceships lost) when launched. This reduced the number of spaceship
+          sent.
+        </p>
+      {/if}
     {/if}
   {:catch error}
     <p class="p-2">{error}</p>

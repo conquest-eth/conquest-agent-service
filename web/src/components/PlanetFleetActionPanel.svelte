@@ -170,31 +170,36 @@
         <!-- SEND TO CONQUERE -->
         <p class="m-3">This Planet is exiting, pick another one</p>
       {:else if walletIsOwner && !$planet.state.active}
-        <!-- SEND MORE -->
-        {#if attacking}
-          <PanelButton
-            label="Attack!"
-            class="m-2"
-            color="text-red-500"
-            borderColor="border-red-500"
-            on:click={sendFrom}>
-            <div class="w-20">
-              Attack!
-              <Help class="inline w-4 h-4">
-                You can attack other planets by sending spaceships to them. Once
-                it reaches destination, you ll have to resolve the attack.
-              </Help>
-            </div>
-          </PanelButton>
+        {#if $planet.state.numSpaceships == 0}
+          <p class="m-3">Pick a Planet with spaceships.</p>
         {:else}
-          <PanelButton
-            label="Send Reinforcment"
-            class="m-2"
-            color="text-green-500"
-            borderColor="border-green-500"
-            on:click={sendFrom}>
-            <div class="w-20">Send Reinforcment</div>
-          </PanelButton>
+          <!-- SEND MORE -->
+          {#if attacking}
+            <PanelButton
+              label="Attack!"
+              class="m-2"
+              color="text-red-500"
+              borderColor="border-red-500"
+              on:click={sendFrom}>
+              <div class="w-20">
+                Attack!
+                <Help class="inline w-4 h-4">
+                  You can attack other planets by sending spaceships to them.
+                  Once it reaches destination, you ll have to resolve the
+                  attack.
+                </Help>
+              </div>
+            </PanelButton>
+          {:else}
+            <PanelButton
+              label="Send Reinforcment"
+              class="m-2"
+              color="text-green-500"
+              borderColor="border-green-500"
+              on:click={sendFrom}>
+              <div class="w-20">Send Reinforcment</div>
+            </PanelButton>
+          {/if}
         {/if}
       {:else if walletIsOwner}
         <!-- SEND PROTECTION -->
@@ -298,9 +303,11 @@
       <PanelButton label="Request Reinforcment" class="m-2" on:click={sendTo}>
         <div class="w-20">Request Reinforcment</div>
       </PanelButton>
-      <PanelButton label="Send Fleet" class="m-2" on:click={sendFrom}>
-        <div class="w-20">Send Fleet</div>
-      </PanelButton>
+      {#if $planet.state.numSpaceships > 0}
+        <PanelButton label="Send Fleet" class="m-2" on:click={sendFrom}>
+          <div class="w-20">Send Fleet</div>
+        </PanelButton>
+      {/if}
     {:else if walletIsOwner}
       <PanelButton label="Request Reinforcment" class="m-2" on:click={sendTo}>
         <div class="w-20">Request Reinforcment</div>

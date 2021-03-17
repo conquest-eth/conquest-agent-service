@@ -413,6 +413,19 @@ class PrivateAccountStore extends BaseStoreWithData<
       }
     }
 
+    if (data.welcomingStep) {
+      if (data.welcomingStep != this.$store.data.welcomingStep) {
+        newDataOnLocal = true;
+        newDataOnRemote = true;
+        this.$store.data.welcomingStep =
+          data.welcomingStep | (this.$store.data.welcomingStep || 0);
+      }
+    } else {
+      if (this.$store.data.welcomingStep) {
+        newDataOnLocal = true;
+      }
+    }
+
     this.set(this.$store);
     return {newDataOnLocal, newDataOnRemote};
   }

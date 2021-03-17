@@ -50,6 +50,8 @@ type FleetPromise = Promise<{
   won: boolean;
   attack: boolean;
   newNumspaceships: number;
+  inFlightFleetLoss: number;
+  inFlightPlanetLoss: number;
 }>;
 
 const fleetPromises: {[fleetId: string]: FleetPromise} = {};
@@ -77,16 +79,20 @@ export function fetchFleetEvent(fleetId: string): FleetPromise {
         } else {
           const args = event.args as {
             fleetLoss: number;
-            toLoss: number;
+            planetLoss: number;
             won: boolean;
             newNumspaceships: number;
+            inFlightFleetLoss: number;
+            inFlightPlanetLoss: number;
           };
           return {
             fleetLoss: args.fleetLoss,
-            attack: args.fleetLoss > 0 || args.toLoss > 0 || args.won,
-            planetLoss: args.toLoss,
+            attack: args.fleetLoss > 0 || args.planetLoss > 0 || args.won,
+            planetLoss: args.planetLoss,
             won: args.won,
             newNumspaceships: args.newNumspaceships,
+            inFlightFleetLoss: args.inFlightFleetLoss,
+            inFlightPlanetLoss: args.inFlightPlanetLoss,
           };
         }
       })()
