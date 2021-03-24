@@ -4,6 +4,7 @@ import {BaseStoreWithData} from '../lib/utils/stores';
 import {spaceInfo} from '../app/mapState';
 import {locationToXY} from '../common/src';
 import {BigNumber} from '@ethersproject/bignumber';
+import {defaultAbiCoder} from '@ethersproject/abi';
 
 type Data = {txHash?: string; location: string};
 export type ClaimFlow = {
@@ -60,7 +61,7 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
     const tx = await wallet.contracts?.PlayToken.transferAndCall(
       wallet.contracts?.OuterSpace.address,
       BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'),
-      location
+      defaultAbiCoder.encode(['address', 'uint256'], [wallet.address, location])
     );
 
     privateAccount.recordCapture(

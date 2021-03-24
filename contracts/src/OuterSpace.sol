@@ -8,12 +8,6 @@ import "./Libraries/Extraction.sol";
 import "./Libraries/Math.sol";
 import "hardhat-deploy/solc_0.7/proxy/Proxied.sol";
 
-import "hardhat/console.sol";
-
-// TODO transfer Planet ?
-// cons:
-// - allow a player to easily have multiple address hiding its true potential
-
 contract OuterSpace is Proxied {
     using Extraction for bytes32;
 
@@ -24,7 +18,7 @@ contract OuterSpace is Proxied {
     uint256 internal constant DECIMALS_18 = 1e18;
     uint32 internal constant ACTIVE_MASK = 2**31;
     int256 internal constant UINT32_MAX = 2**32 - 1;
-    uint256 internal constant FRONT_RUNNING_DELAY = 30 * 60; // 30 min
+    uint256 internal constant FRONT_RUNNING_DELAY = 30 * 60; // 30 min // TODO make it configurable in the constructor
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // CONFIGURATION / IMMUTABLE
@@ -48,7 +42,7 @@ contract OuterSpace is Proxied {
 
     mapping(address => mapping(address => bool)) internal _operators;
 
-    // TODO : front running protection : 15min slot
+    // front running protection : FRONT_RUNNING_DELAY / 2 slots
     struct InFlight {
         uint64 flying;
         uint64 destroyed;
@@ -92,9 +86,9 @@ contract OuterSpace is Proxied {
     );
     event FleetArrived(
         address indexed fleetOwner,
-        // address indexed destinationOwner, // TODO how ? remove fleet from indexed params (not that useful as you can query)
-        uint256 indexed fleet,
+        address indexed destinationOwner,
         uint256 indexed destination,
+        uint256 fleet,
         uint32 fleetLoss,
         uint32 planetLoss,
         uint32 inFlightFleetLoss,
@@ -122,7 +116,7 @@ contract OuterSpace is Proxied {
         uint32 acquireNumSpaceships
     ) {
         uint32 t = timePerDistance / 4; // the coordinates space is 4 times bigger
-        require(t * 4 == timePerDistance, "TIMEPDIST_NOT_DIVISIBLE_4");
+        require(t * 4 == timePerDistance, "TIME_PER_ DIST_NOT_DIVISIBLE_4");
 
         _stakingToken = stakingToken;
         _genesis = genesis;
@@ -152,13 +146,13 @@ contract OuterSpace is Proxied {
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     function onTokenTransfer(
-        address from,
+        address,
         uint256 amount,
         bytes calldata data
     ) public returns (bool) {
         require(msg.sender == address(_stakingToken), "INVALID_ERC20");
-        uint256 location = abi.decode(data, (uint256)); // TODO allow to pass the address that will acquire the token, potentially different than the payer
-        _acquire(from, amount, location);
+        (address acquirer, uint256 location) = abi.decode(data, (address, uint256));
+        _acquire(acquirer, amount, location); // we do not care of who the payer is
         return true;
     }
 
@@ -168,7 +162,10 @@ contract OuterSpace is Proxied {
         uint256 amount,
         bytes calldata data
     ) external returns (bool) {
-        return onTokenTransfer(forAddress, amount, data); // we do not care who the payer is
+        require(msg.sender == address(_stakingToken), "INVALID_ERC20");
+        uint256 location = abi.decode(data, (uint256));
+        _acquire(forAddress, amount, location); // we do not care of who the payer is
+        return true;
     }
 
     function acquireViaTransferFrom(uint256 location, uint256 amount) public {
@@ -176,14 +173,6 @@ contract OuterSpace is Proxied {
         _acquire(sender, amount, location);
         _stakingToken.transferFrom(sender, address(this), amount);
     }
-
-    // function acquir
-    // if (msg.value > 0) {
-    // TODO in playerVault ?
-    // uint256[] memory amounts = _uniswapV2Router01.swapExactETHForTokens{value:msg.value}(stakeAmount, [_weth, _stakingToken], _vault, 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
-    // if (amounts[1] > stakeAmount) {
-    //     _stakingToken.transfer(sender, amounts[1] - stakeAmount); // TODO send to Player Account (via PaymentGateway)
-    // }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // EXIT / WITHDRAWALS
@@ -197,27 +186,31 @@ contract OuterSpace is Proxied {
         emit PlanetExit(owner, location);
     }
 
-    // TODO optimize with minmal touch of _stakeReadyToBeWithdrawn (so it can happen in memory only, _stakeReadyToBeWithdrawn could be zero and remaim zero)
     function fetchAndWithdrawFor(address owner, uint256[] calldata locations) external {
+        uint256 addedStake = 0;
         for (uint256 i = 0; i < locations.length; i++) {
             Planet storage planet = _getPlanet(locations[i]);
             if (_hasJustExited(planet.exitTime)) {
                 require(owner == planet.owner, "NOT_OWNER");
-                _setPlanetAfterExit(locations[i], owner, planet, address(0), 0); // no need of event as exitTime passed basically mean owner zero and spaceships zero
+                addedStake += _setPlanetAfterExitWithoutUpdatingStake(locations[i], owner, planet, address(0), 0); // no need of event as exitTime passed basically mean owner zero and spaceships zero
             }
         }
-        withdrawFor(owner);
+        uint256 newStake = _stakeReadyToBeWithdrawn[owner] + addedStake;
+        _withdrawAll(owner, newStake);
     }
 
     function balanceToWithdraw(address owner) external view returns (uint256) {
         return _stakeReadyToBeWithdrawn[owner];
     }
 
-    function withdrawFor(address owner) public {
+    function withdrawFor(address owner) external {
         uint256 amount = _stakeReadyToBeWithdrawn[owner];
-        _stakeReadyToBeWithdrawn[owner] = 0;
+        _withdrawAll(owner, amount);
+    }
+
+    function _withdrawAll(address owner, uint256 amount) internal {
+        _updateStake(owner, 0);
         require(_stakingToken.transfer(owner, amount), "FAILED_TRANSFER"); // TODO FundManager
-        emit StakeToWithdraw(owner, 0);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -504,16 +497,36 @@ contract OuterSpace is Proxied {
         address newOwner,
         uint32 spaceshipsData
     ) internal {
+        uint256 addedStake = _setPlanetAfterExitWithoutUpdatingStake(location, owner, planet, newOwner, spaceshipsData);
+        _updateStake(owner, _stakeReadyToBeWithdrawn[owner] + addedStake);
+    }
+
+    function _updateStake(address owner, uint256 newStake) internal {
+        _stakeReadyToBeWithdrawn[owner] = newStake;
+        emit StakeToWithdraw(owner, newStake);
+    }
+
+    function _setPlanetAfterExitWithoutUpdatingStake(
+        uint256 location,
+        address owner,
+        Planet storage planet,
+        address newOwner,
+        uint32 spaceshipsData
+    ) internal returns (uint256) {
         bytes32 data = _planetData(location);
         uint16 stake = _stake(data);
         planet.exitTime = 0;
         planet.owner = newOwner; // This is fine as long as _actualiseExit is called on every move
         planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move
         planet.numSpaceships = spaceshipsData;
-        uint256 newStake = _stakeReadyToBeWithdrawn[owner] + stake * DECIMALS_18;
-        _stakeReadyToBeWithdrawn[owner] = newStake;
-        emit StakeToWithdraw(owner, newStake);
+        return stake * DECIMALS_18;
     }
+
+    /*
+    uint256 newStake = _stakeReadyToBeWithdrawn[owner] + stake * DECIMALS_18;
+    _stakeReadyToBeWithdrawn[owner] = newStake;
+    emit StakeToWithdraw(owner, newStake);
+    */
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // FLEET SENDING
@@ -589,17 +602,25 @@ contract OuterSpace is Proxied {
             distance,
             secret
         );
-        emit_fleet_arrived(fleet.owner, fleetId, to, _performResolution(fleet, from, to, quantity), inFlightFleetLoss);
+        Planet memory toPlanet = _getPlanet(to);
+        emit_fleet_arrived(
+            fleet.owner,
+            fleetId,
+            toPlanet.owner,
+            to,
+            _performResolution(fleet, from, toPlanet, to, quantity),
+            inFlightFleetLoss
+        );
         _fleets[fleetId].quantity = 0; // TODO reset all to get gas refund? // TODO ensure frontend can still easily check fleet status
     }
 
     function _performResolution(
         Fleet memory fleet,
         uint256 from,
+        Planet memory toPlanet,
         uint256 to,
         uint32 quantity
     ) internal returns (FleetResult memory result) {
-        Planet memory toPlanet = _getPlanet(to);
         if (toPlanet.owner == fleet.owner) {
             return _performReinforcement(fleet.owner, toPlanet, to, quantity);
         } else {
@@ -637,14 +658,16 @@ contract OuterSpace is Proxied {
     function emit_fleet_arrived(
         address fleetOwner,
         uint256 fleetID,
+        address toOwner,
         uint256 to,
         FleetResult memory result,
         uint32 inFlightFleetLoss
     ) internal {
         emit FleetArrived(
             fleetOwner,
-            fleetID,
+            toOwner,
             to,
+            fleetID,
             result.attackerLoss,
             result.defenderLoss,
             inFlightFleetLoss,
@@ -955,9 +978,22 @@ contract OuterSpace is Proxied {
         subY = int8(1 - data.value8Mod(2, 3));
     }
 
+    // 4,5,5,10,10,15,15, 20, 20, 30,30,40,40,80,80,100
+    bytes32 constant stakeRange = 0x000400050005000A000A000F000F00140014001E001E00280028005000500064;
+
     function _stake(bytes32 data) internal pure returns (uint16) {
-        // 4,5,5,10,10,15,15, 20, 20, 30,30,40,40,80,80,100
-        return data.normal16(4, 0x000400050005000A000A000F000F00140014001E001E00280028005000500064);
+        // return data.normal16(4, 0x000400050005000A000A000F000F00140014001E001E00280028005000500064);
+        uint8 productionIndex = data.normal8(12); // production affect the stake value
+        uint16 offset = data.normal16(4, 0x0000000100010002000200030003000400040005000500060006000700070008);
+        uint16 stakeIndex = productionIndex + offset;
+        if (stakeIndex < 4) {
+            stakeIndex = 0;
+        } else if (stakeIndex > 19) {
+            stakeIndex = 15;
+        } else {
+            stakeIndex -= 4;
+        }
+        return uint16(uint8(stakeRange[stakeIndex * 2 + 1])); // skip stakeIndex * 2 + 0 as it is always zero in stakeRange
     }
 
     function _production(bytes32 data) internal pure returns (uint16) {

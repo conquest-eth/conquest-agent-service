@@ -6,7 +6,7 @@
   import privateAccount from '../stores/privateAccount';
   import {planetAt} from '../stores/planets';
   import Help from './Help.svelte';
-
+  import PlayCoin from './PlayCoin.svelte';
   import PanelButton from './PanelButton.svelte';
   import {locationToXY, xyToLocation} from '../common/src';
 
@@ -246,13 +246,24 @@
         <div class="w-20">
           Capture
           <span class="text-sm">
-            {!$planet.state.inReach ? ' (unreachable)' : ''}
-            <Help class="inline w-4 h-4">
-              The Reachable Universe expands as more planets get captured. Note
-              though that you can still send attack unreachable planets. But
-              these planets cannot produce spaceships until they get in range
-              and you stake on it.
-            </Help></span>
+            {#if !$planet.state.inReach}
+              (unreachable)
+              <Help class="inline w-4 h-4">
+                The Reachable Universe expands as more planets get captured.
+                Note though that you can still send attack unreachable planets.
+                But these planets cannot produce spaceships until they get in
+                range and you stake on it.
+              </Help>
+            {:else}
+              <Help class="inline w-4 h-4">
+                To capture a planet and make it produce spaceships for you, you
+                have to deposit a certain number of
+                <PlayCoin class="w-4 inline" />
+                (Play token) on it. If you lose your planet, you lose the
+                ability to withdraw them.
+              </Help>
+            {/if}
+          </span>
         </div>
       </PanelButton>
       {#if $planet.state.natives}

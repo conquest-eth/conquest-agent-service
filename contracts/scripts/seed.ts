@@ -1,5 +1,6 @@
 import {BigNumber} from '@ethersproject/bignumber';
 import {parseEther} from '@ethersproject/units';
+import {defaultAbiCoder} from '@ethersproject/abi';
 import {
   getUnnamedAccounts,
   ethers,
@@ -44,8 +45,13 @@ async function main() {
     await waitFor(
       playTokenContract.transferAndCall(
         outerSpaceContract.address,
-        BigNumber.from(planetPointer.data.stats.stake).mul("1000000000000000000"),
-        planetPointer.data.location.id
+        BigNumber.from(planetPointer.data.stats.stake).mul(
+          '1000000000000000000'
+        ),
+        defaultAbiCoder.encode(
+          ['address', 'uint256'],
+          [players[i], planetPointer.data.location.id]
+        )
       )
     );
     console.log(

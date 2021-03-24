@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "private": true,
   "devDependencies": {
+    "@ethersproject/abi": "^5.0.13",
     "@ethersproject/bignumber": "^5.0.5",
     "@ethersproject/bytes": "^5.0.3",
     "@ethersproject/constants": "^5.0.7",

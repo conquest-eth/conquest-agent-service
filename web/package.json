@@ -5,7 +5,6 @@
     "@curi/interactions": "^2.0.2",
     "@curi/router": "^2.1.1",
     "@curi/svelte": "^2.0.0-beta.6",
-    "@ethersproject/abi": "^5.0.9",
     "@ethersproject/bignumber": "^5.0.12",
     "@ethersproject/bytes": "^5.0.8",
     "@ethersproject/contracts": "^5.0.8",
@@ -33,6 +32,7 @@
   },
   "devDependencies": {
     "@curi/types": "^2.0.2",
+    "@ethersproject/abi": "^5.0.13",
     "@snowpack/plugin-dotenv": "^2.0.5",
     "@snowpack/plugin-postcss": "^1.1.0",
     "@snowpack/plugin-svelte": "^3.5.0",
