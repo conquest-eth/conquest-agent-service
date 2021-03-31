@@ -10,7 +10,8 @@ const l1_pre_deploy_missing_contracts =
 const l1_deploy = 'deploy_l1/01_deploy';
 const l1_dev_seed = 'deploy_l1/02_post_deploy_seed_dev';
 
-const l2_deploy = 'deploy_l2';
+const l2_deploy = 'deploy_l2/01_deploy';
+const l2_dev_seed = 'deploy_l2/02_post_deploy_seed_dev';
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -56,6 +57,7 @@ const config: HardhatUserConfig = {
         l1_deploy,
         l1_dev_seed,
         l2_deploy,
+        l2_dev_seed,
       ],
     },
     localhost: {
@@ -66,6 +68,7 @@ const config: HardhatUserConfig = {
         l1_deploy,
         l1_dev_seed,
         l2_deploy,
+        l2_dev_seed,
       ],
     },
     mainnet: {
