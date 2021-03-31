@@ -22,7 +22,7 @@ async function main() {
     const account = players[i];
     const amount = distribution[i];
     await deployments.execute(
-      'PlayToken',
+      'PlayToken_L2',
       {from: stableTokenBeneficiary, log: true, autoMine: true},
       'transfer',
       account,
@@ -39,11 +39,14 @@ async function main() {
       'OuterSpace',
       players[i]
     );
-    const playTokenContract = await ethers.getContract('PlayToken', players[i]);
+    const playToken_L2_Contract = await ethers.getContract(
+      'PlayToken_L2',
+      players[i]
+    );
     planetPointer = spaceInfo.findNextPlanet(planetPointer);
 
     await waitFor(
-      playTokenContract.transferAndCall(
+      playToken_L2_Contract.transferAndCall(
         outerSpaceContract.address,
         BigNumber.from(planetPointer.data.stats.stake).mul(
           '1000000000000000000'

@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */ // TODO remove
 import {increaseTime, waitFor, objMap} from '../test-utils';
-import {ethers, getUnnamedAccounts, deployments, getNamedAccounts} from 'hardhat';
+import {
+  ethers,
+  getUnnamedAccounts,
+  deployments,
+  getNamedAccounts,
+} from 'hardhat';
 import {BigNumber} from '@ethersproject/bignumber';
 import {Wallet} from '@ethersproject/wallet';
 import {keccak256} from '@ethersproject/solidity';
@@ -41,7 +46,7 @@ export async function setupOuterSpace(): Promise<{
     const account = players[i];
     const amount = distribution[i];
     await deployments.execute(
-      'PlayToken',
+      'PlayToken_L2',
       {from: stableTokenBeneficiary, log: true, autoMine: true},
       'transfer',
       account,
@@ -53,7 +58,7 @@ export async function setupOuterSpace(): Promise<{
   for (const player of players) {
     const playerObj = await createPlayerAsContracts(player, [
       'OuterSpace',
-      'PlayToken',
+      'PlayToken_L2',
     ]);
     playersAsContracts.push(playerObj);
   }

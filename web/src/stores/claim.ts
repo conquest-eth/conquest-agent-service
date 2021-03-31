@@ -58,7 +58,7 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
     if (!planetInfo) {
       throw new Error(`no planet at ${location}`);
     }
-    const tx = await wallet.contracts?.PlayToken.transferAndCall(
+    const tx = await wallet.contracts?.PlayToken_L2.transferAndCall(
       wallet.contracts?.OuterSpace.address,
       BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'),
       defaultAbiCoder.encode(['address', 'uint256'], [wallet.address, location])

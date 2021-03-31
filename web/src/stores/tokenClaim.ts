@@ -59,8 +59,8 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       throw new Error(`no wallet.chain.contracts`);
     }
     const claimWallet = this.getClaimtWallet();
-    const playToken = wallet.chain.contracts.PlayToken;
-    const balance = await playToken.balanceOf(claimWallet.address);
+    const playToken_l2 = wallet.chain.contracts.PlayToken_L2;
+    const balance = await playToken_l2.balanceOf(claimWallet.address);
     if (balance.eq(0)) {
       this.setPartial({state: 'AlreadyClaimed'});
     } else {
@@ -76,9 +76,11 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       throw new Error(`no wallet.chain.contracts`);
     }
     const claimWallet = this.getClaimtWallet().connect(wallet.provider);
-    const playToken = wallet.chain.contracts.PlayToken.connect(claimWallet);
+    const playToken_l2 = wallet.chain.contracts.PlayToken_L2.connect(
+      claimWallet
+    );
     const ethBalance = await wallet.provider.getBalance(claimWallet.address);
-    const tokenBalance = await playToken.balanceOf(claimWallet.address);
+    const tokenBalance = await playToken_l2.balanceOf(claimWallet.address);
     if (tokenBalance.eq(0)) {
       // TODO
     }
@@ -88,7 +90,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       'latest'
     );
 
-    const estimate = await playToken.estimateGas.transferAlongWithETH(
+    const estimate = await playToken_l2.estimateGas.transferAlongWithETH(
       wallet.address,
       tokenBalance,
       {value: 1, nonce}
@@ -96,7 +98,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
     const gasPrice = await wallet.provider.getGasPrice();
 
     const ethLeft = ethBalance.sub(estimate.mul(gasPrice));
-    const tx = await playToken.transferAlongWithETH(
+    const tx = await playToken_l2.transferAlongWithETH(
       wallet.address,
       tokenBalance,
       {
@@ -131,7 +133,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
   //     });
   //     try {
   //       await this.fetchFor(this.$store.account, (address) =>
-  //         this.wallet.contracts.PlayToken.balanceOf(address).then((b) => ({
+  //         this.wallet.contracts.PlayToken_L2.balanceOf(address).then((b) => ({
   //           balance: b,
   //         }))
   //       );
@@ -142,7 +144,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
   //     }
   //     try {
   //       await this.fetchFor(this.$store.account, (address) =>
-  //         this.wallet.contracts.PlayToken.allowance(
+  //         this.wallet.contracts.PlayToken_L2.allowance(
   //           address,
   //           this.wallet.contracts.OuterSpace.address
   //         ).then((v) => ({allowanceForOuterSpace: v}))

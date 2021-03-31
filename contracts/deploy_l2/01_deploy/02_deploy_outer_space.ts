@@ -15,7 +15,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const chainId = await hre.getChainId();
 
-  const playToken = await hre.deployments.get('PlayToken');
+  const playToken_l2 = await hre.deployments.get('PlayToken_L2');
 
   let genesisHash =
     '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
@@ -38,7 +38,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     linkedData: {genesisHash, resolveWindow, timePerDistance, exitDuration},
     args: [
-      playToken.address,
+      playToken_l2.address,
       genesisHash,
       resolveWindow,
       timePerDistance,

@@ -54,7 +54,7 @@ class PlayTokenAccount extends BaseStore<TokenAccount> {
       try {
         if (this.$store.account) {
           await this.fetchFor(this.$store.account, (address) =>
-            this.wallet.contracts?.PlayToken.balanceOf(address).then(
+            this.wallet.contracts?.PlayToken_L2.balanceOf(address).then(
               (b: BigNumber) => ({
                 balance: b,
               })
@@ -69,7 +69,7 @@ class PlayTokenAccount extends BaseStore<TokenAccount> {
       try {
         if (this.$store.account) {
           await this.fetchFor(this.$store.account, (address) =>
-            this.wallet.contracts?.PlayToken.allowance(
+            this.wallet.contracts?.PlayToken_L2.allowance(
               address,
               this.wallet.contracts.OuterSpace.address
             ).then((v: BigNumber) => ({allowanceForOuterSpace: v}))
