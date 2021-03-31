@@ -40,15 +40,17 @@ abstract contract AaveAdapter is BaseInternal {
         aToken.approve(address(aaveLendingPool), Constants.UINT256_MAX);
     }
 
-    function _use(uint256 amount, address from) internal {
+    function _use(uint256 amount, address from) internal returns (uint256) {
         if (from != address(this)) {
             _underlyingToken.safeTransferFrom(from, address(this), amount);
         }
         _aaveLendingPool.deposit(address(_underlyingToken), amount, address(this), 0);
+        return amount; // TODO check
     }
 
-    function _takeBack(uint256 amount, address to) internal {
+    function _takeBack(uint256 amount, address to) internal returns (uint256) {
         _aaveLendingPool.withdraw(address(_underlyingToken), amount, to);
+        return amount; // TODO check
     }
 
     function _withdrawInterest(uint256 upToUnderlyingAmount, address to) internal returns (uint256) {

@@ -50,7 +50,7 @@ contract Play is Base, WithPermitAndFixedDomain, CompoundAdapter {
     // }
 
     function mintAndApprovedCall(
-        uint256 amount,
+        uint256 maxAmount,
         address target,
         bytes calldata data
     ) external {
@@ -58,62 +58,75 @@ contract Play is Base, WithPermitAndFixedDomain, CompoundAdapter {
         // TODO support permit or transfer gateways
         // support ERC20 permit as appended calldata
         address sender = msg.sender;
-        _use(amount, sender);
-        _mint(address(this), amount);
+        uint256 actualAmount = _use(maxAmount, sender);
+        _mint(sender, actualAmount);
         target.functionCall(data); // target can only assume the sender is the contract and will thus refund it if any
         _transferAllIfAny(address(this), sender);
     }
 
     function mintAndCall(
-        uint256 amount,
+        uint256 maxAmount,
         address target,
+        bool requireFullAmount,
         bytes calldata data
-    ) external {
+    ) external returns (uint256) {
         // TODO support metatx ?
         // TODO support permit or transfer gateways
         // support ERC20 permit as appended calldata
         address sender = msg.sender;
-        _use(amount, sender);
-        _mint(target, amount);
-        ITransferReceiver(target).onTokenTransfer(sender, amount, data);
+        uint256 actualAmount = _use(maxAmount, sender);
+        if (requireFullAmount) {
+            require(actualAmount == maxAmount, "COULD_NOT_MINT_REQUESTED_AMOUNT");
+        }
+        _mint(sender, actualAmount);
+        ITransferReceiver(target).onTokenTransfer(sender, actualAmount, data);
         // in this case the target will know the original sender and so refund will go to sender, no need to transfer any bacl afterward
         // but in case :
         _transferAllIfAny(address(this), sender);
+        return actualAmount;
     }
 
-    function mint(uint256 amount) external {
+    function mint(uint256 maxAmount) external returns (uint256) {
         // TODO support permit or transfer gateways
         // support ERC20 permit as appended calldata
         address sender = msg.sender;
-        _use(amount, sender);
-        _mint(sender, amount);
+        uint256 actualAmount = _use(maxAmount, sender);
+        _mint(sender, actualAmount);
+        return actualAmount;
     }
 
-    function burn(uint256 amount) external override {
+    function burn(uint256 maxAmount) external returns (uint256) {
         address sender = msg.sender;
-        _burnFrom(sender, amount);
-        _takeBack(amount, sender);
+        uint256 amountBurnt = _takeBack(maxAmount, sender);
+        _burnFrom(sender, amountBurnt);
+        return amountBurnt;
     }
 
-    function burnTo(uint256 amount, address to) external {
+    function burnTo(uint256 maxAmount, address to) external returns (uint256) {
         address sender = msg.sender;
-        _burnFrom(sender, amount);
-        _takeBack(amount, to);
+        uint256 amountBurnt = _takeBack(maxAmount, to);
+        _burnFrom(sender, amountBurnt);
+        return amountBurnt;
     }
 
     function burnToAndCall(
-        uint256 amount,
+        uint256 maxAmount,
         address target,
+        bool requireFullAmount,
         bytes calldata data
-    ) external {
+    ) external returns (uint256) {
         address sender = msg.sender;
-        _burnFrom(sender, amount);
-        _takeBack(amount, target);
-        IBurnReceiver(target).onTokenBurn(sender, amount, data);
+        uint256 amountBurnt = _takeBack(maxAmount, target);
+        if (requireFullAmount) {
+            require(amountBurnt == maxAmount, "COULD_NOT_BURN_REQUESTED_AMOUNT");
+        }
+        _burnFrom(sender, amountBurnt);
+        IBurnReceiver(target).onTokenBurn(sender, amountBurnt, data);
+        return amountBurnt;
     }
 
-    function withdraw(uint256 upToAmount, address to) external returns (uint256) {
+    function withdraw(uint256 maxAmount, address to) external returns (uint256) {
         require(msg.sender == _owner, "NOT_AUTHORIZED");
-        return _withdrawInterest(upToAmount, to);
+        return _withdrawInterest(maxAmount, to);
     }
 }

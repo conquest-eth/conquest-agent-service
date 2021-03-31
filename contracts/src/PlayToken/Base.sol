@@ -46,11 +46,6 @@ abstract contract Base is IERC20, BaseInternal {
     mapping(address => uint256) internal _balances;
     mapping(address => mapping(address => uint256)) internal _allowances;
 
-    function burn(uint256 amount) external virtual {
-        address sender = msg.sender;
-        _burnFrom(sender, amount);
-    }
-
     function _internal_totalSupply() internal view override returns (uint256) {
         return _totalSupply;
     }

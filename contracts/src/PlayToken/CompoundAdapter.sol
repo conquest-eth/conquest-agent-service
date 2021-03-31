@@ -19,16 +19,18 @@ abstract contract CompoundAdapter is BaseInternal {
         underlyingToken.approve(address(cToken), Constants.UINT256_MAX);
     }
 
-    function _use(uint256 amount, address from) internal {
+    function _use(uint256 amount, address from) internal returns (uint256) {
         if (from != address(this)) {
             _underlyingToken.safeTransferFrom(from, address(this), amount);
         }
         require(_cToken.mint(amount) == 0, "ERROR_MINT");
+        return amount; //TODO check ?
     }
 
-    function _takeBack(uint256 amount, address to) internal {
+    function _takeBack(uint256 amount, address to) internal returns (uint256) {
         require(_cToken.redeemUnderlying(amount) == 0, "ERROR_REDEEM_UNDERLYING");
         _underlyingToken.safeTransfer(to, amount);
+        return amount;
     }
 
     function _withdrawInterest(uint256 upToUnderlyingAmount, address to) internal returns (uint256) {
