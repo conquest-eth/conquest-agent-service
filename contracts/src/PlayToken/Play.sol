@@ -129,4 +129,11 @@ contract Play is Base, WithPermitAndFixedDomain, CompoundAdapter {
         require(msg.sender == _owner, "NOT_AUTHORIZED");
         return _withdrawInterest(maxAmount, to);
     }
+
+    // can be used to render user full in case of lack of underlying token
+    // this does not create token in return
+    function depositWithoutReturn(uint256 maxAmount) external returns (uint256) {
+        address sender = msg.sender;
+        return _use(maxAmount, sender);
+    }
 }

@@ -19,30 +19,34 @@ abstract contract CompoundAdapter is BaseInternal {
         underlyingToken.approve(address(cToken), Constants.UINT256_MAX);
     }
 
-    function _use(uint256 amount, address from) internal returns (uint256) {
+    function _use(uint256 maxAmount, address from) internal returns (uint256) {
         if (from != address(this)) {
-            _underlyingToken.safeTransferFrom(from, address(this), amount);
+            _underlyingToken.safeTransferFrom(from, address(this), maxAmount);
         }
-        require(_cToken.mint(amount) == 0, "ERROR_MINT");
-        return amount; //TODO check ?
+        require(_cToken.mint(maxAmount) == 0, "ERROR_MINT");
+        return maxAmount; //TODO check ?
     }
 
-    function _takeBack(uint256 amount, address to) internal returns (uint256) {
-        require(_cToken.redeemUnderlying(amount) == 0, "ERROR_REDEEM_UNDERLYING");
-        _underlyingToken.safeTransfer(to, amount);
-        return amount;
+    function _takeBack(uint256 maxAmount, address to) internal returns (uint256) {
+        require(_cToken.redeemUnderlying(maxAmount) == 0, "ERROR_REDEEM_UNDERLYING");
+        _underlyingToken.safeTransfer(to, maxAmount);
+        return maxAmount;
     }
 
-    function _withdrawInterest(uint256 upToUnderlyingAmount, address to) internal returns (uint256) {
+    function _withdrawInterest(uint256 maxAmount, address to) internal returns (uint256) {
+        uint256 totalUnderlying = _underlyingTokenAvailable();
+        uint256 availableToWithdraw = totalUnderlying - _internal_totalSupply();
+        if (maxAmount > availableToWithdraw) {
+            maxAmount = availableToWithdraw;
+        }
+        require(_cToken.redeemUnderlying(maxAmount) == 0, "ERROR_REDEEM_UNDERLYING");
+        _underlyingToken.safeTransfer(to, maxAmount);
+        return maxAmount;
+    }
+
+    function _underlyingTokenAvailable() internal view returns (uint256) {
         uint256 compoundBalance = _cToken.balanceOf(address(this));
         uint256 exchangeRateMantissa = _cToken.exchangeRateCurrent();
-        uint256 totalUnderlying = (compoundBalance * exchangeRateMantissa) / Constants.DECIMALS_18;
-        uint256 availableToWithdraw = totalUnderlying - _internal_totalSupply();
-        if (upToUnderlyingAmount > availableToWithdraw) {
-            upToUnderlyingAmount = availableToWithdraw;
-        }
-        require(_cToken.redeemUnderlying(upToUnderlyingAmount) == 0, "ERROR_REDEEM_UNDERLYING");
-        _underlyingToken.safeTransfer(to, upToUnderlyingAmount);
-        return upToUnderlyingAmount;
+        return (compoundBalance * exchangeRateMantissa) / Constants.DECIMALS_18;
     }
 }

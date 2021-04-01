@@ -10,6 +10,10 @@ interface YearnVaultV2 is IERC20 {
     function deposit(uint256 amount) external returns (uint256);
 
     function withdraw(uint256 amount, address to) external returns (uint256);
+
+    function totalAssets() external view returns (uint256);
+
+    function pricePerShare() external view returns (uint256);
 }
 
 abstract contract YearnVaultV2Adapter is BaseInternal {
@@ -24,31 +28,45 @@ abstract contract YearnVaultV2Adapter is BaseInternal {
         underlyingToken.approve(address(yvToken), Constants.UINT256_MAX);
     }
 
-    function _use(uint256 amount, address from) internal returns (uint256) {
+    function _use(uint256 maxAmount, address from) internal returns (uint256) {
         if (from != address(this)) {
-            _underlyingToken.safeTransferFrom(from, address(this), amount);
+            _underlyingToken.safeTransferFrom(from, address(this), maxAmount);
         }
-        _yvToken.deposit(amount);
-        return amount;
+        _yvToken.deposit(maxAmount);
+        return maxAmount;
     }
 
-    function _takeBack(uint256 amount, address to) internal returns (uint256) {
-        uint256 yvShares = _yvToken.balanceOf(address(this));
-
-        uint256 shareToWithdrawToGetAmount = yvShares + amount; // TODO
-
-        return _yvToken.withdraw(shareToWithdrawToGetAmount, to); // TODO check it cannot return higher than amount, else should we bring it back ?
+    function _takeBack(uint256 maxAmount, address to) internal returns (uint256) {
+        uint256 sharesToWithdraw = _shareForUnderlyingAmount(maxAmount); // TODO
+        return _yvToken.withdraw(sharesToWithdraw, to);
     }
 
-    function _withdrawInterest(uint256 upToUnderlyingAmount, address to) internal returns (uint256) {
-        uint256 yvShares = _yvToken.balanceOf(address(this));
-        uint256 underlyingTokenAmount = yvShares; // TODO
-
-        uint256 availableToWithdraw = underlyingTokenAmount - _internal_totalSupply();
-        if (upToUnderlyingAmount > availableToWithdraw) {
-            upToUnderlyingAmount = availableToWithdraw;
+    function _withdrawInterest(uint256 maxAmount, address to) internal returns (uint256) {
+        uint256 totalUnderlying = _underlyingTokenAvailable();
+        uint256 availableToWithdraw = totalUnderlying - _internal_totalSupply();
+        if (maxAmount > availableToWithdraw) {
+            maxAmount = availableToWithdraw;
         }
-        uint256 sharesToWithdraw = yvShares; // TODO
-        return _yvToken.withdraw(sharesToWithdraw, to); // TODO check it cannot return higher than amount, else should we bring it back ?
+        uint256 sharesToWithdraw = _shareForUnderlyingAmount(maxAmount); // TODO
+        return _yvToken.withdraw(sharesToWithdraw, to);
+    }
+
+    function _shareForUnderlyingAmount(uint256 underlyingAmount) internal view returns (uint256) {
+        // uint256 totalAssets = _yvToken.totalAssets();
+        // if (totalAssets > 0) {
+        //     return (underlyingAmount * _yvToken.totalSupply()) / totalAssets;
+        // } else {
+        //     return 0;
+        // }
+
+        uint256 valuePerShare = _yvToken.pricePerShare();
+        if (valuePerShare > 0) {
+            return (underlyingAmount * 1000000000000000000) / valuePerShare;
+        }
+        return 0;
+    }
+
+    function _underlyingTokenAvailable() internal view returns (uint256) {
+        return _yvToken.totalAssets();
     }
 }

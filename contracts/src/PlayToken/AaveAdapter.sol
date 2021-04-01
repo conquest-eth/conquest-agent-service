@@ -40,26 +40,30 @@ abstract contract AaveAdapter is BaseInternal {
         aToken.approve(address(aaveLendingPool), Constants.UINT256_MAX);
     }
 
-    function _use(uint256 amount, address from) internal returns (uint256) {
+    function _use(uint256 maxAmount, address from) internal returns (uint256) {
         if (from != address(this)) {
-            _underlyingToken.safeTransferFrom(from, address(this), amount);
+            _underlyingToken.safeTransferFrom(from, address(this), maxAmount);
         }
-        _aaveLendingPool.deposit(address(_underlyingToken), amount, address(this), 0);
-        return amount; // TODO check
+        _aaveLendingPool.deposit(address(_underlyingToken), maxAmount, address(this), 0);
+        return maxAmount; // TODO check
     }
 
-    function _takeBack(uint256 amount, address to) internal returns (uint256) {
-        _aaveLendingPool.withdraw(address(_underlyingToken), amount, to);
-        return amount; // TODO check
+    function _takeBack(uint256 maxAmount, address to) internal returns (uint256) {
+        _aaveLendingPool.withdraw(address(_underlyingToken), maxAmount, to);
+        return maxAmount; // TODO check
     }
 
-    function _withdrawInterest(uint256 upToUnderlyingAmount, address to) internal returns (uint256) {
-        uint256 aTokenBalance = _aToken.balanceOf(address(this));
-        uint256 availableToWithdraw = aTokenBalance - _internal_totalSupply();
-        if (upToUnderlyingAmount > availableToWithdraw) {
-            upToUnderlyingAmount = availableToWithdraw;
+    function _withdrawInterest(uint256 maxAmount, address to) internal returns (uint256) {
+        uint256 totalUnderlying = _underlyingTokenAvailable();
+        uint256 availableToWithdraw = totalUnderlying - _internal_totalSupply();
+        if (maxAmount > availableToWithdraw) {
+            maxAmount = availableToWithdraw;
         }
-        _aaveLendingPool.withdraw(address(_underlyingToken), upToUnderlyingAmount, to);
-        return upToUnderlyingAmount;
+        _aaveLendingPool.withdraw(address(_underlyingToken), maxAmount, to);
+        return maxAmount; // TODO check ?
+    }
+
+    function _underlyingTokenAvailable() internal view returns (uint256) {
+        return _aToken.balanceOf(address(this));
     }
 }

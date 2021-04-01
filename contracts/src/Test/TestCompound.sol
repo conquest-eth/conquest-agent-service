@@ -16,11 +16,11 @@ contract TestCompound is Base, ICompoundERC20 {
         return 0; // TODO
     }
 
-    function exchangeRateCurrent() external override returns (uint256) {
+    function exchangeRateCurrent() external view override returns (uint256) {
         return Constants.DECIMALS_18;
     }
 
-    function supplyRatePerBlock() external override returns (uint256) {
+    function supplyRatePerBlock() external view override returns (uint256) {
         return 0; // TODO
     }
 
