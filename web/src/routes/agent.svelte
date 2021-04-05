@@ -46,7 +46,7 @@
               Connect
             </Button>
           {/if}
-        {:else if $agent.state === 'Loading'}
+        {:else if $agent.state === 'Loading' || !$agent.balance}
           <p>Loading...</p>
         {:else}
           <p>Agent Address: {$agent.wallet?.address}</p>
