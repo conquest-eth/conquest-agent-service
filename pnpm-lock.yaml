@@ -75,7 +75,7 @@ importers:
       ethers: 5.0.26
       hardhat: 2.0.8
       hardhat-contract-sizer: 2.0.3_hardhat@2.0.8
-      hardhat-deploy: 0.7.0-beta.56_hardhat@2.0.8
+      hardhat-deploy: 0.8.0-next.1_hardhat@2.0.8
       hardhat-deploy-ethers: 0.3.0-beta.7_ethers@5.0.26+hardhat@2.0.8
       mocha: 8.2.1
       planet-wars-common: 'link:../common-lib'
@@ -105,7 +105,7 @@ importers:
       ethers: ^5.0.8
       hardhat: ^2.0.4
       hardhat-contract-sizer: ^2.0.3
-      hardhat-deploy: ^0.7.0-beta.56
+      hardhat-deploy: ^0.8.0-next.1
       hardhat-deploy-ethers: ^0.3.0-beta.7
       mocha: ^8.1.1
       planet-wars-common: 'workspace:*'
@@ -159,7 +159,7 @@ importers:
       pretty-ms: 7.0.1
       svelte: 3.31.2
       sveltejs-tippy: 3.0.0
-      web3w: 0.2.42_100c6a0658b3992a82cef4740af82ab3
+      web3w: 0.2.43_100c6a0658b3992a82cef4740af82ab3
       web3w-portis-loader: 0.2.0
       web3w-torus-loader: 0.2.4
       web3w-walletconnect-loader: 0.2.0
@@ -268,12 +268,12 @@ importers:
       tailwindcss: ^2.0.2
       tailwindcss-question-mark: ^0.1.0
       typescript: ^4.0.0
-      web3w: ^0.2.42
+      web3w: ^0.2.43
       web3w-portis-loader: ^0.2.0
       web3w-torus-loader: ^0.2.4
       web3w-walletconnect-loader: ^0.2.0
       wonka: ^4.0.14
-lockfileVersion: 5.2
+lockfileVersion: 5.1
 packages:
   /@babel/code-frame/7.12.11:
     dependencies:
@@ -6456,7 +6456,7 @@ packages:
     dependencies:
       asynckit: 0.4.0
       combined-stream: 1.0.8
-      mime-types: 2.1.29
+      mime-types: 2.1.30
     dev: true
     engines:
       node: '>= 6'
@@ -6931,7 +6931,7 @@ packages:
       hardhat: ^2.0.0
     resolution:
       integrity: sha512-JKMNte6vudu9LSNqgmBtNxc1gfxp3NUcPKVAf/FANHfl9pa/mBGg6hpQO7tD8CLkAbe6f4K5BjyYIPWX3p7MKw==
-  /hardhat-deploy/0.7.0-beta.56_hardhat@2.0.8:
+  /hardhat-deploy/0.8.0-next.1_hardhat@2.0.8:
     dependencies:
       '@ethersproject/abi': 5.1.0
       '@ethersproject/abstract-signer': 5.1.0
@@ -6959,7 +6959,7 @@ packages:
     peerDependencies:
       hardhat: ^2.0.0
     resolution:
-      integrity: sha512-cohMcj6YiFWjmqbSPpxomfmXzipTM+cTmuD2JDU+LO+nO/TTYXdYbwjmT88eSmYr8oLTbFtvB5DMFTlhwuHPtg==
+      integrity: sha512-twf2aQ8/JVCVW08rnhaXa7CWfdOc2WhksaTYcn4iMolpFEoFuf+6dhbwrNAkvH/bsCMBIBWn//wbq+FXLodivA==
   /hardhat/2.0.8:
     dependencies:
       '@nomiclabs/ethereumjs-vm': 4.2.1
@@ -9426,12 +9426,12 @@ packages:
       node: '>= 0.6'
     resolution:
       integrity: sha512-CkqLUxUk15hofLoLyljJSrukZi8mAtgd+yE5uO4tqRZsdsAJKv0O+rFMhVDRJgozy+yG6md5KwuXhD4ocIoP+w==
-  /mime-db/1.46.0:
+  /mime-db/1.47.0:
     dev: true
     engines:
       node: '>= 0.6'
     resolution:
-      integrity: sha512-svXaP8UQRZ5K7or+ZmfNhg2xX3yKDMUzqadsSqi4NCH/KomcH75MAMYAGVlvXn4+b/xOPhS3I2uHKRUzvjY7BQ==
+      integrity: sha512-QBmA/G2y+IfeS4oktet3qRZ+P5kPhCKRXxXnQEudYqUaEioAU1/Lq2us3D/t1Jfo4hE9REQPrbB7K5sOczJVIw==
   /mime-types/2.1.28:
     dependencies:
       mime-db: 1.45.0
@@ -9440,14 +9440,14 @@ packages:
       node: '>= 0.6'
     resolution:
       integrity: sha512-0TO2yJ5YHYr7M2zzT7gDU1tbwHxEUWBCLt0lscSNpcdAfFyJOVEpRYNS7EXVcTLNj/25QO8gulHC5JtTzSE2UQ==
-  /mime-types/2.1.29:
+  /mime-types/2.1.30:
     dependencies:
-      mime-db: 1.46.0
+      mime-db: 1.47.0
     dev: true
     engines:
       node: '>= 0.6'
     resolution:
-      integrity: sha512-Y/jMt/S5sR9OaqteJtslsFZKWOIIqMACsJSiHghlCAyhf7jfVYjKBmLiX8OgpWeW+fjJ2b+Az69aPFPkUOY6xQ==
+      integrity: sha512-crmjA4bLtR8m9qLpHvgxSChT+XoSlZi8J4n/aIdn3z92e/U47Z0V/yl+Wh9W046GgFVAmoNR/fmdbZYcSSIUeg==
   /mime/1.6.0:
     dev: true
     engines:
@@ -9999,7 +9999,7 @@ packages:
     dependencies:
       bindings: 1.5.0
       node-addon-api: 3.1.0
-      prebuild-install: 6.0.1
+      prebuild-install: 6.1.1
     dev: true
     engines:
       node: '>=10'
@@ -10866,7 +10866,7 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-s8Aai8++QQGi4sSbs/M1Qku62PFK49Jm1CbgXklGz4nmHveDq0wzJkg7Na5QbnO1uNH8K7iqx2EQ/mV0MZEmOg==
-  /prebuild-install/6.0.1:
+  /prebuild-install/6.1.1:
     dependencies:
       detect-libc: 1.0.3
       expand-template: 2.0.3
@@ -10882,14 +10882,13 @@ packages:
       simple-get: 3.1.0
       tar-fs: 2.1.1
       tunnel-agent: 0.6.0
-      which-pm-runs: 1.0.0
     dev: true
     engines:
       node: '>=6'
     hasBin: true
     optional: true
     resolution:
-      integrity: sha512-7GOJrLuow8yeiyv75rmvZyeMGzl8mdEX5gY69d6a6bHWmiPevwqFw+tQavhK0EYMaSg3/KD24cWqeQv1EWsqDQ==
+      integrity: sha512-M+cKwofFlHa5VpTWub7GLg5RLcunYIcLqtY5pKcls/u7xaAb8FrXZ520qY8rkpYy5xw90tYCyMO0MP5ggzR3Sw==
   /prelude-ls/1.1.2:
     dev: true
     engines:
@@ -13363,7 +13362,7 @@ packages:
     dev: false
     resolution:
       integrity: sha512-tF2mdo910sA14WuvumoekFCyfO5gsvbkzuvaRtW7QUCT3E4YAzGVr6PWTrUdA+Y6pCIfYkKUMLZcYTPFSyacCg==
-  /web3w/0.2.42_100c6a0658b3992a82cef4740af82ab3:
+  /web3w/0.2.43_100c6a0658b3992a82cef4740af82ab3:
     dependencies:
       '@ethersproject/abi': 5.0.13
       '@ethersproject/bignumber': 5.0.13
@@ -13377,7 +13376,7 @@ packages:
       '@ethersproject/contracts': ^5.0.0
       '@ethersproject/providers': ^5.0.0
     resolution:
-      integrity: sha512-teyyETbwlpmOjT1ymHeUbzdL/lsiB6Zmd3MlBinyuxh79Y2GkgzOPMDT0S7/ityO1LTvcViZsuImiuSQKAdu0w==
+      integrity: sha512-LboJHF41RRsvIFf5ZDtIXaGp7Ng1XVrVFQNPrz68sLOyohZVkAmVSlGBl/57iq6eutC0tAn0L0zvYDO+l7f7EQ==
   /webidl-conversions/6.1.0:
     dev: true
     engines:
@@ -13818,6 +13817,7 @@ packages:
     dev: true
     name: neat-frame
     resolution:
+      registry: 'https://registry.npmjs.org/'
       tarball: 'https://codeload.github.com/agentofuser/neat-frame/tar.gz/b244ca11078bd35f63b2d7cb22d5e4b5c12ae2aa'
     version: 1.0.2
   github.com/hugomrdias/concat-stream/057bc7b5d6d8df26c8cf00a3f151b6721a0a8034:

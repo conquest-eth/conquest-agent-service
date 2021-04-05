@@ -10,7 +10,15 @@ import "../WithPermitAndFixedDomain.sol";
 contract PlayL2 is Base, WithPermitAndFixedDomain {
     using Address for address;
 
-    constructor() WithPermitAndFixedDomain("1") {}
+    address internal _l2Messenger; // TODO proper birdging
+
+    constructor(address l2Messenger) WithPermitAndFixedDomain("1") {
+        postUpgrade(l2Messenger);
+    }
+
+    function postUpgrade(address l2Messenger) public {
+        _l2Messenger = l2Messenger;
+    }
 
     string public constant symbol = "ETHERPLAY"; // TODO rename for l2?
 
@@ -18,9 +26,14 @@ contract PlayL2 is Base, WithPermitAndFixedDomain {
         return "Etherplay"; // TODO rename for l2?
     }
 
-    function mint(uint256 amount) external {
-        // TODO remove
-        address sender = msg.sender;
-        _mint(sender, amount);
+    function fromL1(address to, uint256 amount) external {
+        require(msg.sender == _l2Messenger);
+        _mint(to, amount);
     }
+
+    // function mint(uint256 amount) external {
+    //     // TODO remove
+    //     address sender = msg.sender;
+    //     _mint(sender, amount);
+    // }
 }

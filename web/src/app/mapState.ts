@@ -71,7 +71,7 @@ export function fetchFleetEvent(fleetId: string): FleetPromise {
           contracts.OuterSpace?._proxiedContract || contracts.OuterSpace;
         // TODO use blockHash of tx
         const events = await OuterSpace.queryFilter(
-          contracts.OuterSpace.filters.FleetArrived(null, fleetId)
+          contracts.OuterSpace.filters.FleetArrived(fleetId)
         );
         const event = events[0];
         if (!event) {

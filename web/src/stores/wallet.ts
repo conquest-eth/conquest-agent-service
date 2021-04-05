@@ -3,7 +3,7 @@ import {WalletConnectModuleLoader} from 'web3w-walletconnect-loader';
 import {PortisModuleLoader} from 'web3w-portis-loader';
 import contractsInfo from '../contracts.json';
 import {notifications} from './notifications';
-import {finality, nodeUrl, chainId} from '../config';
+import {finality, fallbackProviderOrUrl, chainId} from '../config';
 import {isCorrected, correctTime} from './time';
 
 const walletStores = WalletStores({
@@ -23,16 +23,22 @@ const walletStores = WalletStores({
   options: [
     'builtin',
     new WalletConnectModuleLoader({
-      nodeUrl,
+      nodeUrl:
+        typeof fallbackProviderOrUrl === 'string'
+          ? fallbackProviderOrUrl
+          : undefined, // TODO ?
       chainId,
       infuraId: 'bc0bdd4eaac640278cdebc3aa91fabe4',
     }),
     new PortisModuleLoader('7bc13179-0c86-4e5f-b8d4-ef91cd3e0882', {
       chainId,
-      nodeUrl,
+      nodeUrl:
+        typeof fallbackProviderOrUrl === 'string'
+          ? fallbackProviderOrUrl
+          : undefined, // TODO ?
     }),
   ],
-  fallbackNode: nodeUrl, // TODO use query string to specify it // TODO settings
+  fallbackNode: fallbackProviderOrUrl,
 });
 
 export const {

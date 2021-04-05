@@ -14,7 +14,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     contract: 'Play',
     args: [stableToken.address, CDai.address, owner],
-    proxy: hre.network.name !== 'mainnet',
+    proxy: hre.network.name !== 'mainnet' ? 'postUpgrade' : undefined,
     log: true,
     autoMine: true,
   });

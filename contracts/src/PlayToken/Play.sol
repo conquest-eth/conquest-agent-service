@@ -7,8 +7,9 @@ import "../Interfaces/ITokenManager.sol";
 import "./Base.sol";
 import "./WithPermitAndFixedDomain.sol";
 import "./CompoundAdapter.sol";
+import "hardhat-deploy/solc_0.7/proxy/Proxied.sol";
 
-contract Play is Base, WithPermitAndFixedDomain, CompoundAdapter {
+contract Play is Base, WithPermitAndFixedDomain, CompoundAdapter, Proxied {
     using Address for address;
 
     address internal _owner; // TODO ownership as extension
@@ -18,6 +19,15 @@ contract Play is Base, WithPermitAndFixedDomain, CompoundAdapter {
         ICompoundERC20 cToken,
         address owner
     ) WithPermitAndFixedDomain("1") CompoundAdapter(underlyingToken, cToken) {
+        postUpgrade(underlyingToken, cToken, owner);
+    }
+
+    function postUpgrade(
+        IERC20,
+        ICompoundERC20,
+        address owner
+    ) public {
+        // 2 first arguments used as immutable in CompoundAdapter
         _owner = owner;
     }
 

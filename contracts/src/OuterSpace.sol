@@ -85,10 +85,10 @@ contract OuterSpace is Proxied {
         uint32 newNumSpaceships
     );
     event FleetArrived(
+        uint256 indexed fleet,
         address indexed fleetOwner,
         address indexed destinationOwner,
-        uint256 indexed destination,
-        uint256 fleet,
+        uint256 destination,
         uint32 fleetLoss,
         uint32 planetLoss,
         uint32 inFlightFleetLoss,
@@ -664,10 +664,10 @@ contract OuterSpace is Proxied {
         uint32 inFlightFleetLoss
     ) internal {
         emit FleetArrived(
+            fleetID,
             fleetOwner,
             toOwner,
             to,
-            fleetID,
             result.attackerLoss,
             result.defenderLoss,
             inFlightFleetLoss,
