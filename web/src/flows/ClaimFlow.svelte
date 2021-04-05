@@ -16,7 +16,22 @@
   $: cost = planet ? BigNumber.from($planet.stats.stake) : undefined; // TODO multiplier from config/contract
 </script>
 
-{#if $claimFlow.step === 'CONNECTING'}
+{#if $claimFlow.error}
+  <Modal on:close={() => claimFlow.acknownledgeError()}>
+    <div class="text-center">
+      <h2>An error happenned</h2>
+      <p class="text-gray-300 mt-2 text-sm">
+        {$claimFlow.error.message || $claimFlow.error}
+      </p>
+      <Button
+        class="mt-5"
+        label="Stake"
+        on:click={() => claimFlow.acknownledgeError()}>
+        Ok
+      </Button>
+    </div>
+  </Modal>
+{:else if $claimFlow.step === 'CONNECTING'}
   <!---->
 {:else if $claimFlow.step === 'CHOOSE_STAKE'}
   <Modal on:close={() => claimFlow.cancel()}>

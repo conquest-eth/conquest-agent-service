@@ -1,5 +1,6 @@
 <script lang="ts">
   import SendingSpaceships from '../components/SendingSpaceships.svelte';
+  import Button from '../components/PanelButton.svelte';
   import Banner from '../components/Banner.svelte';
   import sendFlow from '../stores/send';
   import Modal from '../components/Modal.svelte';
@@ -15,7 +16,22 @@
       : undefined;
 </script>
 
-{#if pickNeeded}
+{#if $sendFlow.error}
+  <Modal on:close={() => sendFlow.acknownledgeError()}>
+    <div class="text-center">
+      <h2>An error happenned</h2>
+      <p class="text-gray-300 mt-2 text-sm">
+        {$sendFlow.error.message || $sendFlow.error}
+      </p>
+      <Button
+        class="mt-5"
+        label="Stake"
+        on:click={() => sendFlow.acknownledgeError()}>
+        Ok
+      </Button>
+    </div>
+  </Modal>
+{:else if pickNeeded}
   <Banner on:close={() => sendFlow.cancel()}>
     <p class="font-medium">
       <span class="inline" />

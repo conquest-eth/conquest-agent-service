@@ -51,6 +51,14 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
         locationId
       );
     } catch (e) {
+      console.error(e);
+      if (e.message && e.message.indexOf('User denied') >= 0) {
+        this.setPartial({
+          step: 'IDLE',
+          error: undefined,
+        });
+        return;
+      }
       this.setPartial({
         step: 'WAITING_CONFIRMATION',
         error: e,
@@ -69,6 +77,10 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
 
   async acknownledgeSuccess(): Promise<void> {
     this._reset();
+  }
+
+  async acknownledgeError(): Promise<void> {
+    this.setPartial({error: undefined});
   }
 
   private _reset() {

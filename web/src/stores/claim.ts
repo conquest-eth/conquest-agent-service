@@ -17,6 +17,7 @@ export type ClaimFlow = {
     | 'WAITING_TX'
     | 'SUCCESS';
   data?: Data;
+  error?: unknown;
 };
 
 class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
@@ -34,6 +35,10 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
   async acknownledgeSuccess(): Promise<void> {
     // TODO automatic ?
     this._reset();
+  }
+
+  async acknownledgeError(): Promise<void> {
+    this.setPartial({error: undefined});
   }
 
   async claim(location: string): Promise<void> {
@@ -58,11 +63,28 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
     if (!planetInfo) {
       throw new Error(`no planet at ${location}`);
     }
-    const tx = await wallet.contracts?.PlayToken_L2.transferAndCall(
-      wallet.contracts?.OuterSpace.address,
-      BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'),
-      defaultAbiCoder.encode(['address', 'uint256'], [wallet.address, location])
-    );
+    let tx;
+    try {
+      tx = await wallet.contracts?.PlayToken_L2.transferAndCall(
+        wallet.contracts?.OuterSpace.address,
+        BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'),
+        defaultAbiCoder.encode(
+          ['address', 'uint256'],
+          [wallet.address, location]
+        )
+      );
+    } catch (e) {
+      console.error(e);
+      if (e.message && e.message.indexOf('User denied') >= 0) {
+        this.setPartial({
+          step: 'IDLE',
+          error: undefined,
+        });
+        return;
+      }
+      this.setPartial({error: e, step: 'CHOOSE_STAKE'});
+      return;
+    }
 
     privateAccount.recordCapture(
       flow.data.location,

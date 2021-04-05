@@ -1,6 +1,6 @@
 <script lang="ts">
   import {timeToText} from '../lib/utils';
-
+  import Button from '../components/PanelButton.svelte';
   import PlayCoin from '../components/PlayCoin.svelte';
   import Modal from '../components/Modal.svelte';
   import PanelButton from '../components/PanelButton.svelte';
@@ -16,7 +16,22 @@
     : undefined;
 </script>
 
-{#if $exitFlow.step === 'WAITING_CONFIRMATION'}
+{#if $exitFlow.error}
+  <Modal on:close={() => exitFlow.acknownledgeError()}>
+    <div class="text-center">
+      <h2>An error happenned</h2>
+      <p class="text-gray-300 mt-2 text-sm">
+        {$exitFlow.error.message || $exitFlow.error}
+      </p>
+      <Button
+        class="mt-5"
+        label="Stake"
+        on:click={() => exitFlow.acknownledgeError()}>
+        Ok
+      </Button>
+    </div>
+  </Modal>
+{:else if $exitFlow.step === 'WAITING_CONFIRMATION'}
   <Modal
     on:close={() => exitFlow.cancel()}
     on:confirm={() => exitFlow.confirm()}>

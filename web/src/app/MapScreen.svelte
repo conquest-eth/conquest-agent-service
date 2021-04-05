@@ -19,18 +19,18 @@
   <FleetsToResolve />
 </div>
 
-{#if $claimFlow.step !== 'IDLE'}
+{#if $claimFlow.error || $claimFlow.step !== 'IDLE'}
   <ClaimFlow />
 {/if}
 
-{#if $sendFlow.step !== 'IDLE'}
+{#if $sendFlow.error || $sendFlow.step !== 'IDLE'}
   <SendFlow />
 {/if}
 
-{#if $resolveFlow.step !== 'IDLE'}
+{#if $resolveFlow.error || $resolveFlow.step !== 'IDLE'}
   <ResolveFlow />
 {/if}
 
-{#if $exitFlow.step !== 'IDLE'}
+{#if $exitFlow.error || $exitFlow.step !== 'IDLE'}
   <ExitFlow />
 {/if}

@@ -10,6 +10,7 @@ type Data = {
   to: {x: number; y: number};
   from: {x: number; y: number};
   fleetAmount: number;
+  error?: unknown;
 };
 
 export type SendFlow = {
@@ -26,6 +27,7 @@ export type SendFlow = {
     | 'WAITING_TX'
     | 'SUCCESS';
   data?: Data;
+  error?: unknown;
 };
 
 class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
@@ -145,8 +147,15 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         {nonce}
       );
     } catch (e) {
-      // TODO why is the catch necessary, failure should be caught higher
-      this.cancel();
+      console.error(e);
+      if (e.message && e.message.indexOf('User denied') >= 0) {
+        this.setPartial({
+          step: 'IDLE',
+          error: undefined,
+        });
+        return;
+      }
+      this.setPartial({error: e, step: 'CHOOSE_FLEET_AMOUNT'});
       return;
     }
 
@@ -195,6 +204,10 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
   async acknownledgeSuccess(): Promise<void> {
     this._reset();
+  }
+
+  async acknownledgeError(): Promise<void> {
+    this.setPartial({error: undefined});
   }
 
   private _reset() {

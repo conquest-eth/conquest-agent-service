@@ -7,6 +7,7 @@ import {BaseStore} from '../lib/utils/stores';
 export type ResolveFlow = {
   type: 'RESOLVE';
   step: 'IDLE' | 'CONNECTING' | 'CREATING_TX' | 'WAITING_TX' | 'SUCCESS';
+  error?: unknown;
 };
 
 class ResolveFlowStore extends BaseStore<ResolveFlow> {
@@ -53,7 +54,16 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
       );
       this.setPartial({step: 'SUCCESS'}); // TODO IDLE ?
     } catch (e) {
-      this.cancel();
+      console.error(e);
+      if (e.message && e.message.indexOf('User denied') >= 0) {
+        this.setPartial({
+          step: 'IDLE',
+          error: undefined,
+        });
+        return;
+      }
+      this.setPartial({error: e, step: 'IDLE'});
+      return;
     }
   }
 
@@ -63,6 +73,10 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
 
   async acknownledgeSuccess(): Promise<void> {
     this._reset();
+  }
+
+  async acknownledgeError(): Promise<void> {
+    this.setPartial({error: undefined});
   }
 
   private _reset() {
