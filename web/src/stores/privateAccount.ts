@@ -75,7 +75,7 @@ type Contracts = {
 };
 
 const SYNC_URI = params.sync || import.meta.env.SNOWPACK_PUBLIC_SYNC_URI; //  'http://invalid.io'; // to emulate connection loss :)
-const DB_NAME = 'conquest-v' + VERSION;
+const DB_NAME = 'conquest-' + contractsInfo.contracts.OuterSpace.address;
 
 const LOCAL_ONLY_STORAGE = '_local_only_';
 function LOCAL_ONLY_STORAGE_KEY(address: string, chainId: string) {
