@@ -1,9 +1,6 @@
 .env*
 !*.default
 
-.snowpack
-snowpack.crt
-snowpack.key
 build/
 
 node_modules/
@@ -20,3 +17,12 @@ public/robots.txt
 .yalc/
 yalc.lock
 
+.svelte/
+functions/
+src/lib/contracts.json
+.env
+static/pwa/
+.vscode/*
+!.vscode/*.default
+src/app.html
+static/robots.txt

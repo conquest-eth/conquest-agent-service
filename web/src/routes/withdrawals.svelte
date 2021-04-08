@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Button from '../components/PanelButton.svelte';
-  import NavButton from '../components/navigation/NavButton.svelte';
-  import WalletAccess from '../templates/WalletAccess.svelte';
-  import {wallet, builtin, flow} from '../stores/wallet';
-  import privateAccount from '../stores/privateAccount';
-  import {withdrawals} from '../stores/withdrawals';
+  import Button from '$lib/components/PanelButton.svelte';
+  import NavButton from '$lib/components/navigation/NavButton.svelte';
+  import WalletAccess from '$lib/WalletAccess.svelte';
+  import {wallet, builtin, flow} from '$lib/stores/wallet';
+  import privateAccount from '$lib/stores/privateAccount';
+  import {withdrawals} from '$lib/stores/withdrawals';
   import {onDestroy, onMount} from 'svelte';
 
   onMount(() => {
@@ -36,9 +36,7 @@
         {#if $withdrawals.state === 'Loading'}
           <p>Please wait...</p>
         {:else}
-          <p>
-            {$withdrawals.balance.div('10000000000000000').toNumber() / 100}
-          </p>
+          <p>{$withdrawals.balance.div('10000000000000000').toNumber() / 100}</p>
         {/if}
         <Button
           class="w-max-content m-4"

@@ -3,8 +3,7 @@ import * as lz from 'lz-string';
 import prettyMs from 'pretty-ms';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const {compressToUint8Array, decompressFromUint8Array} = (lz as any)
-  .default as lz.LZStringStatic;
+export const {compressToUint8Array, decompressFromUint8Array} = (lz as any) as lz.LZStringStatic;
 
 export function wait<T>(numSeconds: number, v: T): Promise<T> {
   return new Promise(function (resolve) {

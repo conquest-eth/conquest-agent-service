@@ -1,18 +1,14 @@
-import {VERSION} from '../../init';
-import contractsInfo from '../../contracts.json';
+import {base} from '$app/paths';
+import contractsInfo from '$lib/contracts.json';
 
 class LocalCache {
   private _prefix: string;
   constructor(version?: string) {
-    this._prefix =
-      window.basepath &&
-      (window.basepath.startsWith('/ipfs/') ||
-        window.basepath.startsWith('/ipns/'))
-        ? window.basepath.slice(6)
-        : ''; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
+    this._prefix = base.startsWith('/ipfs/') || base.startsWith('/ipns/') ? base.slice(6) : ''; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
 
     const lastVersion = this.getItem('_version');
     if (lastVersion !== version) {
+      console.log('new version, clear old storage...', {lastVersion, version});
       this.clear();
       if (version) {
         this.setItem('_version', version);
@@ -41,7 +37,14 @@ class LocalCache {
 
   clear(): void {
     try {
-      localStorage.clear();
+      const l = localStorage.length;
+      for (let i = 0; i < l; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith(this._prefix)) {
+          console.log(`removing ${key}...`);
+          this.removeItem(key);
+        }
+      }
     } catch (e) {}
   }
 }

@@ -24,6 +24,11 @@
     "wait-on": "^5.1.0",
     "wighawag_newsh": "0.0.6"
   },
+  "pnpm": {
+    "overrides": {
+      "aes-js": "https://github.com/wighawag/aes-js#7098e582e7591725c269d1398f61559e160c1e6e"
+    }
+  },
   "scripts": {
     "preinstall": "npx only-allow pnpm",
     "prepare": "node ./.setup.js",
@@ -48,21 +53,21 @@
 
     "// contracts : deploy smart contracts on local ethereum node": "",
     "contracts:test": "npm --prefix contracts test",
-    "contracts:clean": "rimraf contracts/deployments/localhost && rimraf web/src/contracts.json",
-    "contracts": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:dev -- --export ../web/src/contracts.json",
+    "contracts:clean": "rimraf contracts/deployments/localhost && rimraf web/src/lib/contracts.json",
+    "contracts": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:dev -- --export ../web/src/lib/contracts.json",
     "shell:contracts": "newsh \"npm run contracts\"",
-    "contracts:deploy": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:deploy -- --export ../web/src/contracts.json",
+    "contracts:deploy": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:deploy -- --export ../web/src/lib/contracts.json",
     "contracts:local:run": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:run",
-    "contracts:export": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:export -- --export ../web/src/contracts.json",
+    "contracts:export": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:export -- --export ../web/src/lib/contracts.json",
     "contracts:fundingFromGethCoinbase": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:run scripts/fundingFromGethCoinbase.ts",
-    "seed": "wait-on web/src/contracts.json && dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:seed",
+    "seed": "wait-on web/src/lib/contracts.json && dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:seed",
     "seed:build": "run-s common:build seed",
 
     "// subgraphs : generate and deploy local subgraph": "",
-    "subgraph": "wait-on web/src/contracts.json && dotenv -- npm --prefix subgraph run dev ../contracts/deployments/localhost",
+    "subgraph": "wait-on web/src/lib/contracts.json && dotenv -- npm --prefix subgraph run dev ../contracts/deployments/localhost",
     "shell:subgraph": "newsh \"npm run subgraph\"",
     "subgraph:setup": "dotenv -- npm --prefix subgraph run local:setup",
-    "subgraph:deploy": "wait-on web/src/contracts.json && dotenv -- npm --prefix subgraph run local:deploy ../contracts/deployments/localhost",
+    "subgraph:deploy": "wait-on web/src/lib/contracts.json && dotenv -- npm --prefix subgraph run local:deploy ../contracts/deployments/localhost",
 
     "// web : build and serve the web app": "",
     "web": "dotenv -- npm --prefix web run dev",
@@ -81,8 +86,8 @@
     "staging:web:rebuild": "dotenv -e .env.staging -e .env -- npm --prefix web run build",
     "staging:web:deploy": "dotenv -e .env.staging -e .env -- npm --prefix web run deploy",
     "staging:seed": "dotenv -e .env.staging -e .env -- npm --prefix contracts run staging:seed",
-    "staging:contracts:export": "dotenv -e .env.staging -e .env -- npm --prefix contracts run staging:export -- --export ../web/src/contracts.json",
-    "staging:contracts:deploy": "dotenv -e .env.staging -e .env -- npm --prefix contracts run staging:deploy -- --export ../web/src/contracts.json",
+    "staging:contracts:export": "dotenv -e .env.staging -e .env -- npm --prefix contracts run staging:export -- --export ../web/src/lib/contracts.json",
+    "staging:contracts:deploy": "dotenv -e .env.staging -e .env -- npm --prefix contracts run staging:deploy -- --export ../web/src/lib/contracts.json",
     "staging:contracts": "dotenv -e .env.staging -e .env -- npm --prefix contracts run",
     "staging:subgraph": "dotenv -e .env.staging -e .env -- npm --prefix subgraph run staging:deploy ../contracts/deployments/staging",
     "staging:web": "run-s staging:web:build staging:web:deploy",
@@ -94,8 +99,8 @@
     "production:web:build:serve": "run-s production:web:build web:serve",
     "production:web:rebuild": "dotenv -e .env.production -e .env -- npm --prefix web run build",
     "production:web:deploy": "dotenv -e .env.production -e .env -- npm --prefix web run deploy",
-    "production:contracts:export": "dotenv -e .env.production -e .env -- npm --prefix contracts run mainnet:export -- --export ../web/src/contracts.json",
-    "production:contracts": "dotenv -e .env.production -e .env -- npm --prefix contracts run mainnet:deploy -- --export ../web/src/contracts.json",
+    "production:contracts:export": "dotenv -e .env.production -e .env -- npm --prefix contracts run mainnet:export -- --export ../web/src/lib/contracts.json",
+    "production:contracts": "dotenv -e .env.production -e .env -- npm --prefix contracts run mainnet:deploy -- --export ../web/src/lib/contracts.json",
     "production:subgraph": "dotenv -e .env.production -e .env -- npm --prefix subgraph run mainnet:deploy ../contracts/deployments/mainnet",
     "production:web": "run-s production:web:build production:web:deploy",
     "production": "run-s production:contracts production:subgraph web:prepare common:build production:web:rebuild production:web:deploy",
@@ -111,7 +116,7 @@
     "shell:reconnect": "npm-run-all -l --parallel shell:common shell:web --sequential common:build subgraph:setup shell:contracts shell:subgraph",
 
     "// No Subgraph": "",
-    "contracts:dev": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run dev -- --export ../web/src/contracts.json",
+    "contracts:dev": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run dev -- --export ../web/src/lib/contracts.json",
     "shell:contracts:dev": "newsh \"npm run contracts:dev\"",
     "local": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all --parallel common:dev web contracts:dev seed:build",
     "shell:local": "cross-env ETH_NODE_URI_LOCALHOST=http://127.0.0.1:8545 npm-run-all --parallel shell:common shell:web shell:contracts:dev seed:build",

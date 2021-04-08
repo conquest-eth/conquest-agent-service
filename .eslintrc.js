@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
   parserOptions: {
-    ecmaVersion: 2020, // Allows for the parsing of modern ECMAScript features
+    ecmaVersion: 2018, // Allows for the parsing of modern ECMAScript features
     sourceType: 'module', // Allows for the use of imports
   },
   env: {
@@ -20,13 +20,15 @@ module.exports = {
     {
       files: ['**/*.ts', '**/*.svelte'],
       parser: '@typescript-eslint/parser',
-      extends: [
-        'plugin:@typescript-eslint/recommended',
-        'prettier/@typescript-eslint',
-      ],
+      extends: ['plugin:@typescript-eslint/recommended', 'prettier/@typescript-eslint'],
     },
   ],
+  settings: {
+    'svelte3/typescript': require('typescript'),
+  },
   rules: {
     'no-empty': 'off',
+    'no-empty-function': 'off',
+    '@typescript-eslint/no-empty-function': 'off',
   },
 };
