@@ -15,7 +15,7 @@
         aria-label={label}
         title={label}
         {href}
-        rel={blank === true ? 'noopener noreferrer' : ''}
+        rel={blank === true ? 'noopener' : ''}
         target={blank === true ? '_blank' : ''}>
         <InnerButton>
           <slot />

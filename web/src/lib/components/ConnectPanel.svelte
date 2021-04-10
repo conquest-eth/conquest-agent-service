@@ -7,6 +7,7 @@
   import Blockie from './Blockie.svelte';
   import Help from './Help.svelte';
   import PlayCoin from './PlayCoin.svelte';
+  import {base} from '$app/paths';
 
   function connect() {
     privateAccount.login();
@@ -82,9 +83,8 @@
     <!-- </div>
       </div> -->
     <div
-      on:click={(e) => e.stopPropagation()}
       class="absolute z-10 right-0 top-14 border-cyan-500 border-2 p-5 bg-opacity-80 bg-black flex mr-2 flex-col items-center">
-      <NavButton class="m-1" label="withdrawals" href="withdrawals">
+      <NavButton class="m-1" label="withdrawals" href={`${base}/withdrawals/`}>
         Withdrawals
         <Help class="w-4 h-4">
           Here you'll be able to withdraw the
@@ -92,7 +92,7 @@
           you earned after exiting your planets.
         </Help>
       </NavButton>
-      <NavButton class="m-1" label="agent" href="agent" blank={true}>
+      <NavButton class="m-1" label="agent" href={`${base}/agent/`} blank={true}>
         Agent
         <Help class="w-4 h-4">The agent can help you ensure you resolve your fleets in time.</Help>
       </NavButton>
