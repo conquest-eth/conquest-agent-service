@@ -71,7 +71,7 @@
           <a
             target="_blank"
             class="underline text-cyan-100"
-            href={`${import.meta.env.SNOWPACK_PUBLIC_BLOCK_EXPLORER}/${$planet.state.capturing.txHash}`}>here</a>
+            href={`${import.meta.env.VITE_BLOCK_EXPLORER}/${$planet.state.capturing.txHash}`}>here</a>
         </p>
         <PanelButton
           label="Ok"

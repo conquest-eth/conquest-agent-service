@@ -1,9 +1,8 @@
-node_modules/
-.newsh.json
-conquest-eth.code-workspace
 .env*
-.vscode/*
-!*.default
+!.env*.default
+.newsh.json
+node_modules
+conquest-eth.code-workspace
 .claimKeys.mnemonics
 .*claimKeys*
 .yalc

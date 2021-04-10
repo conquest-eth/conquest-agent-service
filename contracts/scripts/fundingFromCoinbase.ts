@@ -1,7 +1,8 @@
 // script used to fund account from a geth coinbase account (geth --dev)
-import {ethers, config} from 'hardhat';
-import {BigNumber} from '@ethersproject/bignumber';
-import {JsonRpcProvider} from '@ethersproject/providers';
+import {ethers, network} from 'hardhat';
+import {BigNumber, providers} from 'ethers';
+
+const {JsonRpcProvider} = providers;
 
 function wait(numSec: number): Promise<void> {
   return new Promise<void>((resolve) => {
@@ -14,18 +15,25 @@ async function main() {
   let found;
   while (!found) {
     try {
-      const chainId = await ethers.provider.send('eth_chainId', []);
-      console.log({chainId});
+      await ethers.provider.send('eth_chainId', []);
       found = true;
     } catch (e) {} // TODO timeout ?
     if (!found) {
+      console.log(`retrying...`);
       await wait(1);
     }
   }
 
-  const rawProvider = new JsonRpcProvider(config.networks.localhost.url);
+  if (!('url' in network.config)) {
+    console.log('cannot run on in memory hardhat network.');
+    return;
+  }
 
   const coinbase = await ethers.provider.send('eth_coinbase', []);
+  if (!coinbase) {
+    console.log('no coinbase');
+    return;
+  }
   const accounts = await ethers.provider.listAccounts();
   let accountsToFund = accounts;
   if (coinbase === accounts[0]) {
@@ -41,6 +49,7 @@ async function main() {
   }
 
   if (coinbaseBalance.gt(0)) {
+    const rawProvider = new JsonRpcProvider(network.config.url);
     const coinbaseSigner = rawProvider.getSigner(coinbase);
     for (let i = 0; i < accountsToFund.length; i++) {
       const tx = await coinbaseSigner.sendTransaction({
@@ -50,6 +59,8 @@ async function main() {
       });
       console.log(tx.hash);
     }
+  } else {
+    console.log('coinbase has zero balance');
   }
 }
 

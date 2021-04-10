@@ -72,4 +72,9 @@ const createStore = () => {
 
 export const notifications = createStore();
 
-// console.log({notifications});
+// USEFUL FOR DEBUGGING:
+if (typeof window !== 'undefined') {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  (window as any).notifications = notifications;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+}

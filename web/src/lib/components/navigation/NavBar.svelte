@@ -15,7 +15,8 @@
   {#each links as link}
     <NavLink
       href={link.href}
-      active={link.href.replace(base, '').replace(/^\/+|\/+$/g, '') === $page.path.replace(/^\/+|\/+$/g, '')}>
+      active={link.href.replace(base, '').replace(/^\/+|\/+$/g, '') === $page.path.replace(/^\/+|\/+$/g, '')}
+    >
       {link.title}
       <!-- ({link.href}) -->
     </NavLink>

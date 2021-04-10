@@ -28,7 +28,22 @@ module.exports = {
       },
       optimizeDeps: {
         // Note: 'bn.js', 'bech32', 'hash.js', '@popperjs/core', 'js-sha3' where needed to be added as dev dependency for vite to find them (pnpm is stricter and make sub dependency  not visible on the node_modules folder)
-        include: ['bn.js', 'bech32', 'hash.js', 'graphql', '@popperjs/core', 'js-sha3'],
+        // Note: we also ensure @ethersproject lib are pre-bundled as this cause some transient issues otherwise
+        include: [
+          'bn.js',
+          'bech32',
+          'hash.js',
+          'graphql',
+          '@popperjs/core',
+          'js-sha3',
+          "@ethersproject/abi",
+          "@ethersproject/bignumber",
+          "@ethersproject/bytes",
+          "@ethersproject/contracts",
+          "@ethersproject/providers",
+          "@ethersproject/solidity",
+          "@ethersproject/wallet",
+        ],
       },
     },
   },

@@ -8,7 +8,7 @@ module.exports = {
   recursive: true,
   reporter: 'spec',
   require: ['ts-node/register', 'hardhat/register'],
-  slow: 75,
+  slow: 300,
   spec: 'test/**/*.test.ts',
   timeout: 20000,
   ui: 'bdd',

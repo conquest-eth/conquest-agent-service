@@ -6,7 +6,7 @@
         <key>texturePackerVersion</key>
         <string>4.4.0</string>
         <key>fileName</key>
-        <string>C:/dev/wighawag/planet-wars-snowpack/rawAssets/planets.tps</string>
+        <string>C:/dev/wighawag/conquest-eth/rawAssets/planets.tps</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">

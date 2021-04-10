@@ -1,0 +1,4 @@
+- [ ] error report tool
+- [ ] global GET query => jolly-roger too
+- [ ] jolly-roger : erc721 and lite with svelte-kit
+- [ ] auto mine

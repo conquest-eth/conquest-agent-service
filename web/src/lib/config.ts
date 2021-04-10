@@ -51,10 +51,10 @@ if (typeof fallbackProviderOrUrl === 'string') {
     // if no http nor ws protocol, assume fallbackProviderOrUrl is the network name
     // use ethers fallback provider
     fallbackProviderOrUrl = getDefaultProvider(fallbackProviderOrUrl, {
-      alchemy: import.meta.env.SNOWPACK_PUBLIC_ALCHEMY_API_KEY || undefined,
-      etherscan: import.meta.env.SNOWPACK_PUBLIC_ETHERSCAN_API_KEY || undefined,
-      infura: import.meta.env.SNOWPACK_PUBLIC_INFURA_PROJECT_ID || undefined,
-      pocket: import.meta.env.SNOWPACK_PUBLIC_POCKET_APP_ID || undefined,
+      alchemy: import.meta.env.VITE_ALCHEMY_API_KEY || undefined,
+      etherscan: import.meta.env.VITE_ETHERSCAN_API_KEY || undefined,
+      infura: import.meta.env.VITE_INFURA_PROJECT_ID || undefined,
+      pocket: import.meta.env.VITE_POCKET_APP_ID || undefined,
       quorum: 2,
     });
   } else {

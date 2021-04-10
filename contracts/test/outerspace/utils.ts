@@ -1,16 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */ // TODO remove
 import {increaseTime, waitFor, objMap} from '../test-utils';
-import {
-  ethers,
-  getUnnamedAccounts,
-  deployments,
-  getNamedAccounts,
-} from 'hardhat';
+import {ethers, getUnnamedAccounts, deployments, getNamedAccounts} from 'hardhat';
 import {BigNumber} from '@ethersproject/bignumber';
 import {Wallet} from '@ethersproject/wallet';
 import {keccak256} from '@ethersproject/solidity';
-import {SpaceInfo} from 'planet-wars-common';
-import type {PlanetInfo} from 'planet-wars-common';
+import {SpaceInfo} from 'conquest-eth-common';
+import type {PlanetInfo} from 'conquest-eth-common';
 import {ContractReceipt} from '@ethersproject/contracts';
 import {Provider} from '@ethersproject/providers';
 import {parseEther} from '@ethersproject/units';
@@ -18,10 +13,7 @@ import {parseEther} from '@ethersproject/units';
 type AnyContract = any; // TODO ?
 type User = {address: string; [contractName: string]: AnyContract};
 
-async function createPlayerAsContracts(
-  player: string,
-  contractNames: string[]
-): Promise<User> {
+async function createPlayerAsContracts(player: string, contractNames: string[]): Promise<User> {
   const obj: User = {address: player};
   for (const contractName of contractNames) {
     obj[contractName] = await ethers.getContract(contractName, player);
@@ -56,10 +48,7 @@ export async function setupOuterSpace(): Promise<{
 
   const playersAsContracts = [];
   for (const player of players) {
-    const playerObj = await createPlayerAsContracts(player, [
-      'OuterSpace',
-      'PlayToken_L2',
-    ]);
+    const playerObj = await createPlayerAsContracts(player, ['OuterSpace', 'PlayToken_L2']);
     playersAsContracts.push(playerObj);
   }
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
@@ -99,8 +88,7 @@ export async function sendInSecret(
     player.OuterSpace.send(from.location.id, quantity, toHash) // TODO subId
   );
   const distanceSquared =
-    Math.pow(to.location.globalX - from.location.globalX, 2) +
-    Math.pow(to.location.globalY - from.location.globalY, 2);
+    Math.pow(to.location.globalX - from.location.globalX, 2) + Math.pow(to.location.globalY - from.location.globalY, 2);
   const distance = Math.floor(Math.sqrt(distanceSquared));
   const timeRequired = BigNumber.from(distance)
     .mul(1 * spaceInfo.timePerDistance * 10000)
@@ -118,9 +106,7 @@ export async function sendInSecret(
 }
 
 // TODO get benefit from typescript
-export function convertPlanetCallData(
-  o: string | number | BigNumber
-): string | number {
+export function convertPlanetCallData(o: string | number | BigNumber): string | number {
   if (typeof o === 'number') {
     return o;
   }
@@ -138,21 +124,14 @@ type PlanetState = PlanetInfo & {
   getNumSpaceships: (time: number) => number;
 };
 
-export async function fetchPlanetState(
-  contract: AnyContract,
-  planet: PlanetInfo
-): Promise<PlanetState> {
+export async function fetchPlanetState(contract: AnyContract, planet: PlanetInfo): Promise<PlanetState> {
   const planetData = await contract.callStatic.getPlanet(planet.location.id);
   const statsFromContract = objMap(planet.stats, convertPlanetCallData);
   // check as validty assetion:
   for (const key of Object.keys(statsFromContract)) {
     const value = statsFromContract[key];
     if (value !== (planet as any).stats[key]) {
-      throw new Error(
-        `${key}: ${
-          (planet as any).stats[key]
-        } not equal to contract stats : ${value} `
-      );
+      throw new Error(`${key}: ${(planet as any).stats[key]} not equal to contract stats : ${value} `);
     }
   }
   const state = objMap(planetData.state, convertPlanetCallData);
@@ -169,9 +148,7 @@ export async function fetchPlanetState(
           numSpaceships: state.numSpaceships,
           production: planet.stats.production,
         });
-        newSpaceships = Math.floor(
-          ((time - state.lastUpdated) * planet.stats.production) / 3600
-        );
+        newSpaceships = Math.floor(((time - state.lastUpdated) * planet.stats.production) / 3600);
       }
       return state.numSpaceships + newSpaceships;
     },
