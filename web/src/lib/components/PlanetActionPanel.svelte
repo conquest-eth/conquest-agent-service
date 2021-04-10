@@ -6,7 +6,7 @@
   import {time} from '$lib/stores/time';
   import type {OwnFleet} from '$lib/common/src/types';
   import {locationToXY} from '$lib/common/src';
-  import contractsInfo from '$lib/contracts.json';
+  import {contracts as contractsInfo} from '$lib/app/contractInfos';
 
   export let location: string;
   export let close: () => void;

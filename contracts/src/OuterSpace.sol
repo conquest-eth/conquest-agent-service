@@ -116,7 +116,7 @@ contract OuterSpace is Proxied {
         uint32 acquireNumSpaceships
     ) {
         uint32 t = timePerDistance / 4; // the coordinates space is 4 times bigger
-        require(t * 4 == timePerDistance, "TIME_PER_ DIST_NOT_DIVISIBLE_4");
+        require(t * 4 == timePerDistance, "TIME_PER_DIST_NOT_DIVISIBLE_4");
 
         _stakingToken = stakingToken;
         _genesis = genesis;

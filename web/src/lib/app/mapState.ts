@@ -1,5 +1,5 @@
 import {PrivateSpace, SpaceInfo, PlanetData} from '$lib/common/src';
-import contractsInfo from '$lib/contracts.json';
+import {contracts as contractsInfo} from '$lib/app/contractInfos';
 import privateAccount from '$lib/stores/privateAccount';
 import {fallback, chain} from '$lib/stores/wallet';
 import {now} from '$lib/stores/time';

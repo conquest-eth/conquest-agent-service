@@ -1,7 +1,7 @@
 import WalletStores from 'web3w';
 import {WalletConnectModuleLoader} from 'web3w-walletconnect-loader';
 import {PortisModuleLoader} from 'web3w-portis-loader';
-import contractsInfo from '$lib/contracts.json';
+import {contracts as contractsInfo} from '$lib/app/contractInfos';
 import {notifications} from './notifications';
 import {finality, fallbackProviderOrUrl, chainId} from '$lib/config';
 import {isCorrected, correctTime} from './time';
@@ -91,3 +91,9 @@ fallback.subscribe(async (v) => {
     }
   }
 });
+
+// TODO remove
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).walletStores = walletStores;
+}

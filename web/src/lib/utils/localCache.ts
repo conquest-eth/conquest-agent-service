@@ -1,5 +1,5 @@
 import {base} from '$app/paths';
-import contractsInfo from '$lib/contracts.json';
+import {contracts as contractsInfo} from '$lib/app/contractInfos';
 
 class LocalCache {
   private _prefix: string;

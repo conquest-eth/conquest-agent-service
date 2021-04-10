@@ -11,7 +11,7 @@ import {base64, compressToUint8Array, decompressFromUint8Array} from '$lib/utils
 import localCache from '$lib/utils/localCache';
 import {VERSION, params} from '$lib/init';
 
-import contractsInfo from '$lib/contracts.json';
+import {contracts as contractsInfo} from '$lib/app/contractInfos';
 import {BaseStoreWithData} from '$lib/utils/stores';
 import {now} from './time';
 
