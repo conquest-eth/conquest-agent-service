@@ -46,6 +46,8 @@
       title="conquest.eth: Come Back To Resolve Fleet in Time!"
       description="Come back to conquest.eth and resolve your fleet."
       timestamp={arrival}
+      url={window.location.toString()}
+      location={window.location.toString()}
       duration={105} />
     <!-- 1h45min event duration -->
 

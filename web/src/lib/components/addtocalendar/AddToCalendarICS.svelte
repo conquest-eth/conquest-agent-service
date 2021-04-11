@@ -7,6 +7,7 @@
   export let location: string | undefined;
 
   import {toISOURL} from './dateutils';
+  import {saveAs} from '$lib/utils/FileSaver';
 
   const startDateTime = toISOURL(timestamp);
   const endDateTime = toISOURL(timestamp + duration);
@@ -21,20 +22,24 @@ BEGIN:VEVENT
 DTSTART:${startDateTime}
 DTEND:${endDateTime}
 SUMMARY:${title}
-URL:${url}
-DESCRIPTION:${encodedDescription}
-LOCATION:${location}
+URL:${url || ''}
+DESCRIPTION:${encodedDescription || ''}
+LOCATION:${location || ''}
 BEGIN:VALARM
 ACTION:DISPLAY
-DESCRIPTION:${encodedDescription}
+DESCRIPTION:${encodedDescription || ''}
 TRIGGER:-PT0M
 END:VALARM
 END:VEVENT
 END:VCALENDAR
 `;
+
+  const blob = new Blob([ics], {type: 'text/plain;charset=utf-8'});
 </script>
 
-<a class="block border border-green-400 p-2" target="_blank" href={``}>
+<button
+  class="block border border-green-400 p-2"
+  on:click={() => saveAs(blob, `conquest-eth_${startDateTime}.ics`, undefined, undefined)}>
   <span class="flex flex-row">
     <svg class="w-6 h-6 mx-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
@@ -45,4 +50,4 @@ END:VCALENDAR
     </svg>
     ICS
   </span>
-</a>
+</button>
