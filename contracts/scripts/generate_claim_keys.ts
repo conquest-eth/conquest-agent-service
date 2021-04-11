@@ -24,11 +24,10 @@ if (!mainURL.endsWith('/')) {
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {claimKeyDistributor} = await hre.getNamedAccounts();
-  const {network, getChainId} = hre;
-  const {execute} = hre.deployments;
+  const {network, getChainId, ethers} = hre;
+  const {execute, read} = hre.deployments;
 
-  let mnemonic =
-    'curious erupt response napkin sick ketchup hard estate comic club female sudden';
+  let mnemonic = 'curious erupt response napkin sick ketchup hard estate comic club female sudden';
   if (network.live) {
     mnemonic = Wallet.createRandom().mnemonic.phrase;
     const pastMnemonicsPath = `.${network.name}.claimKeys.mnemonics`;
@@ -56,8 +55,19 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     totalTokenAmount = totalTokenAmount.add(claimKeyTokenAmount);
   }
 
+  const claimKeyDistributorETHBalance = await ethers.provider.getBalance(claimKeyDistributor);
+  const claimKeyDistributorTokenBalance = await read('PlayToken_L2', 'balanceOf', claimKeyDistributor);
+
+  console.log({
+    claimKeyDistributor,
+    claimKeyDistributorETHBalance: claimKeyDistributorETHBalance.toString(),
+    claimKeyDistributorTokenBalance: claimKeyDistributorTokenBalance.toString(),
+    totalETHAmount: totalETHAmount.toString(),
+    addresses,
+    totalTokenAmount: totalTokenAmount.toString(),
+  });
   await execute(
-    'PlayToken',
+    'PlayToken_L2',
     {from: claimKeyDistributor, value: totalETHAmount.toString(), log: true},
     'distributeAlongWithETH',
     addresses,
@@ -85,7 +95,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   for (const claimKey of claimKeys) {
     const url = `${mainURL}#tokenClaim=${claimKey}`;
     const qrURL = await qrcode.toDataURL(url);
-    const address = (new Wallet(claimKey)).address;
+    const address = new Wallet(claimKey).address;
     csv += `false,${explorerLink}${address},${claimKey},${url},"${qrURL}"\n`;
   }
   fs.writeFileSync(`.${network.name}.claimKeys.csv`, csv);

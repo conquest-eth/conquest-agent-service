@@ -11,12 +11,13 @@ if (chainId !== '1') {
 }
 
 if (chainId === '1337' || chainId === '31337') {
-  const localEthNode = import.meta.env.VITE_ETH_NODE_URI_LOCALHOST as string;
-  if (localEthNode && localEthNode !== '') {
-    fallbackProviderOrUrl = localEthNode;
-  } else {
-    fallbackProviderOrUrl = 'http://localhost:8545';
-  }
+  fallbackProviderOrUrl = import.meta.env.VITE_ETH_NODE_URI_LOCALHOST as string;
+  // const localEthNode = import.meta.env.VITE_ETH_NODE_URI_LOCALHOST as string;
+  // if (localEthNode && localEthNode !== '') {
+  //   fallbackProviderOrUrl = localEthNode;
+  // } else {
+  //   fallbackProviderOrUrl = 'http://localhost:8545';
+  // }
   finality = 2;
   blockTime = 5;
 }
@@ -46,7 +47,7 @@ if (!fallbackProviderOrUrl) {
   }
 }
 
-if (typeof fallbackProviderOrUrl === 'string') {
+if (fallbackProviderOrUrl && typeof fallbackProviderOrUrl === 'string') {
   if (!fallbackProviderOrUrl.startsWith('http') && !fallbackProviderOrUrl.startsWith('ws')) {
     // if no http nor ws protocol, assume fallbackProviderOrUrl is the network name
     // use ethers fallback provider
