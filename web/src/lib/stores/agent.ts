@@ -20,6 +20,7 @@ type Agent = {
 class AgentStore extends BaseStore<Agent> {
   private timeout: NodeJS.Timeout | undefined;
   private lastTxTime = 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private oldBeforeUnload: any;
   constructor() {
     super({state: 'Idle', balance: BigNumber.from(0)});
@@ -77,7 +78,7 @@ class AgentStore extends BaseStore<Agent> {
   }
 
   async check() {
-    if (wallet.provider && wallet.address && wallet.contracts) {
+    if (privateAccount.ready && wallet.provider && wallet.address && wallet.contracts) {
       if (this.$store.ownerAddress && wallet.address !== this.$store.ownerAddress) {
         stop();
         this.setPartial({

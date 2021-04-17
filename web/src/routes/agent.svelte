@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from '$lib/components/PanelButton.svelte';
+  import NavButton from '$lib/components/navigation/NavButton.svelte';
   import WalletAccess from '$lib/WalletAccess.svelte';
   import {wallet, builtin, flow, balance} from '$lib/stores/wallet';
   import privateAccount from '$lib/stores/privateAccount';
@@ -9,6 +10,7 @@
   import {nativeTokenSymbol} from '$lib/config';
   import {timeToText} from '$lib/utils';
   import {now} from '$lib/stores/time';
+  import {base} from '$app/paths';
 
   onMount(() => {
     agent.start();
@@ -19,10 +21,11 @@
   });
 </script>
 
-<div class="w-screen h-screen bg-black">
+<div class="w-full h-full bg-black">
+  <NavButton class="absolute" label="Back To Game" href={`${base}/`} blank={true}>Go To Game</NavButton>
   <WalletAccess>
     <div class="flex justify-center flex-wrap text-cyan-300">
-      <h1 class="text-4xl m-4">
+      <h1 class="text-4xl m-4 mt-10">
         conquest.eth agent
         <Help class="w-4 h-4">
           The agent page can be left open to ensure your fleet are resolved when they reach their destination. The only
@@ -31,7 +34,15 @@
           to perform the transactions
         </Help>
       </h1>
-
+    </div>
+    {#if $privateAccount.step === 'READY'}
+      <div class="flex flex-col text-center justify-center text-red-500 mb-8">
+        <p>Keep this tab open to ensure your fleet get resolved in time.</p>
+        <p>Please also ensure you remain on the same account and network. Changing them will stop the agent.</p>
+        <p>Also note that some wallet like Metamask timeout after some time and you might need to reconnect.</p>
+      </div>
+    {/if}
+    <div class="flex justify-center flex-wrap text-cyan-300">
       <div class="w-full justify-center text-center">
         {#if $privateAccount.step !== 'READY'}
           {#if $privateAccount.step === 'CONNECTING' || $privateAccount.step === 'LOADING'}
@@ -50,7 +61,9 @@
         {:else}
           <p>Agent Address: {$agent.wallet?.address}</p>
           <p>
-            Agent Balance:{$agent.balance.div('10000000000000000').toNumber() / 100}
+            Agent Balance:
+            {$agent.balance.div('100000000000000').toNumber() / 10000}
+            ${nativeTokenSymbol}
             (arround
             {$agent.balance.div($agent?.cost || 0)}
             fleet)

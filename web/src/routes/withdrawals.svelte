@@ -6,6 +6,7 @@
   import privateAccount from '$lib/stores/privateAccount';
   import {withdrawals} from '$lib/stores/withdrawals';
   import {onDestroy, onMount} from 'svelte';
+  import {base} from '$app/paths';
 
   onMount(() => {
     withdrawals.loadWithrawableBalance();
@@ -16,8 +17,8 @@
   });
 </script>
 
-<div class="w-screen h-screen bg-black">
-  <NavButton label="Back To Game" href="/">Back To Game</NavButton>
+<div class="w-full h-full bg-black">
+  <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
 
   <br />
   <WalletAccess>

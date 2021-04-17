@@ -70,7 +70,7 @@ const isMacOSWebView =
   !/Safari/.test(navigator.userAgent);
 
 const chosenSaveAs =
-  'download' in HTMLAnchorElement.prototype && !isMacOSWebView
+  typeof HTMLAnchorElement !== 'undefined' && 'download' in HTMLAnchorElement.prototype && !isMacOSWebView
     ? function saveAs(blob, name, opts) {
         const URL = window.URL || window.webkitURL;
         const a = document.createElement('a');
@@ -102,7 +102,7 @@ const chosenSaveAs =
         }
       }
     : // Use msSaveOrOpenBlob as a second approach
-    'msSaveOrOpenBlob' in navigator
+    typeof navigator !== 'undefined' && 'msSaveOrOpenBlob' in navigator
     ? function saveAs(blob, name, opts) {
         name = name || blob.name || 'download';
 

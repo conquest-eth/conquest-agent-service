@@ -9,7 +9,7 @@ import {finality, blockTime} from '$lib/config';
 import aes from 'aes-js';
 import {base64, compressToUint8Array, decompressFromUint8Array} from '$lib/utils';
 import localCache from '$lib/utils/localCache';
-import {VERSION, params} from '$lib/init';
+import {params} from '$lib/init';
 
 import {contracts as contractsInfo} from '$lib/app/contractInfos';
 import {BaseStoreWithData} from '$lib/utils/stores';
@@ -64,7 +64,7 @@ type Contracts = {
   [name: string]: Contract;
 };
 
-const SYNC_URI = params.sync || import.meta.env.VITE_SYNC_URI; //  'http://invalid.io'; // to emulate connection loss :)
+const SYNC_URI = params.sync || (import.meta.env.VITE_SYNC_URI as string); //  'http://invalid.io'; // to emulate connection loss :)
 const DB_NAME = 'conquest-' + contractsInfo.contracts.OuterSpace.address;
 console.log({DB_NAME});
 
@@ -1583,6 +1583,10 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
 
   get walletAddress() {
     return this.$store.walletAddress;
+  }
+
+  get ready() {
+    return this.$store.step === 'READY';
   }
 }
 
