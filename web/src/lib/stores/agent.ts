@@ -49,7 +49,14 @@ class AgentStore extends BaseStore<Agent> {
         return {...fleet, arrivalTime};
       })
       .filter((fleet) => {
-        return fleet.resolveTx ? false : true;
+        if (fleet.resolveTx) {
+          return false;
+        }
+        if (fleet.arrivalTime <= now()) {
+          // too late
+          return false;
+        }
+        return true;
       })
       .sort((a, b) => a.arrivalTime - b.arrivalTime);
 

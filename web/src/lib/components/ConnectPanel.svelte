@@ -103,7 +103,7 @@
   <div class="absolute right-0 bg-gray-900 bg-opacity-80 z-10">
     <PanelButton class="m-1" label="Connect" on:click={connect}>
       Connect
-      <!-- <Help inverted={true} class="w-4 h-4">
+      <!--  TODO ?<Help inverted={true} class="w-4 h-4">
       Hello d
       <span class="text-red-500">s dsads ad</span>sdas dWorld!
     </Help> -->

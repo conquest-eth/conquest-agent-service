@@ -57,16 +57,6 @@
       e.stopPropagation();
     }}
     class="z-50 fixed inset-0 flex items-end justify-center px-4 py-6 pointer-events-none sm:p-6 sm:items-start sm:justify-end">
-    <!--
-    Notification panel, show/hide based on alert state.
-
-    Entering: "transform ease-out duration-300 transition"
-      From: "translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
-      To: "translate-y-0 opacity-100 sm:translate-x-0"
-    Leaving: "transition ease-in duration-100"
-      From: "opacity-100"
-      To: "opacity-0"
-  -->
     <div
       class="max-w-sm w-full bg-gray-800 shadow-lg rounded-lg pointer-events-auto ring-1 ring-gray-100 ring-opacity-5">
       <div class="p-4">
@@ -75,9 +65,7 @@
             <img class="h-10 w-10 rounded-full" src={`${base}/maskable_icon_512x512.png`} alt="conquest.eth" />
           </div>
           <div class="ml-3 w-0 flex-1">
-            <p class="text-sm font-medium text-gray-100">
-              Do you want to install conquest.eth on your home screen?
-            </p>
+            <p class="text-sm font-medium text-gray-100">Do you want to install conquest.eth on your home screen?</p>
             <!-- <p class="mt-1 text-sm text-gray-500">
             Install it for later
           </p> -->
@@ -85,15 +73,13 @@
               <button
                 on:click={install}
                 type="button"
-                class="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-              >
+                class="inline-flex items-center px-3 py-2 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                 Install
               </button>
               <button
                 on:click={decline}
                 type="button"
-                class="ml-3 inline-flex items-center px-3 py-2 border border-red-800 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-200 bg-red-500 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-300"
-              >
+                class="ml-3 inline-flex items-center px-3 py-2 border border-red-800 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-200 bg-red-500 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-300">
                 Decline
               </button>
             </div>
@@ -109,13 +95,11 @@
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
-                aria-hidden="true"
-              >
+                aria-hidden="true">
                 <path
                   fill-rule="evenodd"
                   d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clip-rule="evenodd"
-                />
+                  clip-rule="evenodd" />
               </svg>
             </button>
           </div>
