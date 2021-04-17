@@ -1,6 +1,6 @@
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
-import {xyToLocation} from '$lib/common/src';
+import {xyToLocation} from 'conquest-eth-common';
 import {BaseStoreWithData} from '$lib/utils/stores';
 
 type Data = {

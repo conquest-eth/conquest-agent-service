@@ -1,7 +1,7 @@
 <script lang="ts">
   import PanelButton from './PanelButton.svelte';
   import privateAccount from '$lib/stores/privateAccount';
-  import type {OwnFleet} from '$lib/common/src/types';
+  import type {OwnFleet} from 'conquest-eth-common/types';
   export let fleet: {
     id: string;
     status: 'Error' | 'Success' | 'Expired';

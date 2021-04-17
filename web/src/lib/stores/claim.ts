@@ -2,7 +2,7 @@ import {wallet} from './wallet';
 import privateAccount from './privateAccount';
 import {BaseStoreWithData} from '$lib/utils/stores';
 import {spaceInfo} from '$lib/app/mapState';
-import {locationToXY} from '$lib/common/src';
+import {locationToXY} from 'conquest-eth-common';
 import {BigNumber} from '@ethersproject/bignumber';
 import {defaultAbiCoder} from '@ethersproject/abi';
 

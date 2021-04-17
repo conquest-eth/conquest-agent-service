@@ -5,7 +5,7 @@ import {BigNumber} from '@ethersproject/bignumber';
 import {Wallet} from '@ethersproject/wallet';
 import {keccak256} from '@ethersproject/solidity';
 import {SpaceInfo} from 'conquest-eth-common';
-import type {PlanetInfo} from 'conquest-eth-common';
+import type {PlanetInfo} from 'conquest-eth-common/';
 import {ContractReceipt} from '@ethersproject/contracts';
 import {Provider} from '@ethersproject/providers';
 import {parseEther} from '@ethersproject/units';

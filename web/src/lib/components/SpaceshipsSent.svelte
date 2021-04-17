@@ -4,7 +4,7 @@
   import Modal from '$lib/components/Modal.svelte';
   import AddToCalendar from '$lib/components/addtocalendar/AddToCalendar.svelte';
   import {planetAt} from '$lib/stores/planets';
-  import {xyToLocation} from '$lib/common/src';
+  import {xyToLocation} from 'conquest-eth-common';
   import {space} from '$lib/app/mapState';
   import {timeToText} from '$lib/utils';
   import {now} from '$lib/stores/time';

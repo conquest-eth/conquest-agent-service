@@ -1,4 +1,4 @@
-import type {OwnFleet, Planet} from '$lib/common/src/types';
+import type {OwnFleet, Planet} from 'conquest-eth-common';
 import PlanetInfoPanel from '$lib/components/PlanetInfoPanel.svelte';
 
 export class Controller {

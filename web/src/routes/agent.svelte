@@ -74,7 +74,7 @@
           </p>
 
           {#if $agent.lowETH}
-            <p>The agent need to be topped up to perform the fleet resolution</p>
+            <p class="text-red-500">The agent need to be topped up to perform the fleet resolution</p>
             <!-- <Button
               class="w-max-content m-4"
               label="Top Up"

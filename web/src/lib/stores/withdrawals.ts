@@ -1,5 +1,5 @@
 import {BigNumber} from '@ethersproject/bignumber';
-import {locationToXY} from '$lib/common/src';
+import {locationToXY} from 'conquest-eth-common';
 import {spaceInfo} from '$lib/app/mapState';
 import {BaseStore} from '$lib/utils/stores';
 import privateAccount from './privateAccount';

@@ -5,7 +5,7 @@
   import PanelButton from './PanelButton.svelte';
   import {spaceInfo, space} from '$lib/app/mapState';
   import {time} from '$lib/stores/time';
-  import type {OwnFleet} from '$lib/common/src/types';
+  import type {OwnFleet} from 'conquest-eth-common/types';
   import {timeToText} from '$lib/utils';
 
   function resolve(fleetId: string) {

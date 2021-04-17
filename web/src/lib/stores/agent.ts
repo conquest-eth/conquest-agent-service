@@ -4,7 +4,7 @@ import privateAccount from './privateAccount';
 import {wallet} from './wallet';
 import type {Wallet} from '@ethersproject/wallet';
 import {space, spaceInfo} from '$lib/app/mapState';
-import {xyToLocation} from '$lib/common/src';
+import {xyToLocation} from 'conquest-eth-common';
 import {now} from './time';
 
 type Agent = {
@@ -53,7 +53,7 @@ class AgentStore extends BaseStore<Agent> {
         if (fleet.resolveTx) {
           return false;
         }
-        if (fleet.arrivalTime <= now()) {
+        if (fleet.arrivalTime + spaceInfo.resolveWindow <= now()) {
           // too late
           return false;
         }

@@ -4,8 +4,8 @@
   import PlanetExitResultPanel from './PlanetExitResultPanel.svelte';
   import privateAccount from '$lib/stores/privateAccount';
   import {time} from '$lib/stores/time';
-  import type {OwnFleet} from '$lib/common/src/types';
-  import {locationToXY} from '$lib/common/src';
+  import type {OwnFleet} from 'conquest-eth-common/types';
+  import {locationToXY} from 'conquest-eth-common';
   import {contracts as contractsInfo} from '$lib/app/contractInfos';
 
   export let location: string;

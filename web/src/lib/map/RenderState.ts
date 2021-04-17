@@ -1,4 +1,4 @@
-import type {PrivateSpace} from '$lib/common/src';
+import type {PrivateSpace} from 'conquest-eth-common';
 
 export class RenderState {
   constructor(public space: PrivateSpace) {}

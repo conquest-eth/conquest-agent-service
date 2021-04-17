@@ -12,6 +12,7 @@
   import {onMount} from 'svelte';
   import {timeToText} from '$lib/utils';
   import {spaceInfo} from '$lib/app/mapState';
+  import {browser} from '$app/env';
 
   onMount(() => {
     logo.start();
@@ -69,7 +70,7 @@
   </div>
 {/if}
 
-{#if $logo.stage === 0}
+{#if $logo.stage === 0 && browser}
   <div class="fixed z-50 inset-0 overflow-y-auto bg-black h-full" out:fade on:click={() => logo.nextStage()}>
     <div class="justify-center text-center h-full flex items-center">
       <img

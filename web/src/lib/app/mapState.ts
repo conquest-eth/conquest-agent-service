@@ -1,4 +1,4 @@
-import {PrivateSpace, SpaceInfo, PlanetData} from '$lib/common/src';
+import {PrivateSpace, SpaceInfo, PlanetData} from 'conquest-eth-common';
 import {contracts as contractsInfo} from '$lib/app/contractInfos';
 import privateAccount from '$lib/stores/privateAccount';
 import {fallback, chain} from '$lib/stores/wallet';

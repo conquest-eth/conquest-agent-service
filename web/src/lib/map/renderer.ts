@@ -7,8 +7,8 @@ import type {RenderState} from './RenderState';
 import {trackInstances} from '$lib/utils/tools';
 import type {Controller} from './controller';
 import {timeToText} from '$lib/utils';
-import {locationToXY} from '$lib/common/src';
-import type {Planet, TxStatus} from '$lib/common/src/types';
+import {locationToXY} from 'conquest-eth-common';
+import type {Planet, TxStatus} from 'conquest-eth-common/types';
 import {now} from '$lib/stores/time';
 import {base} from '$app/paths';
 

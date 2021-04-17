@@ -8,7 +8,7 @@
   import Help from './Help.svelte';
   import PlayCoin from './PlayCoin.svelte';
   import PanelButton from './PanelButton.svelte';
-  import {locationToXY, xyToLocation} from '$lib/common/src';
+  import {locationToXY, xyToLocation} from 'conquest-eth-common';
 
   export let location: string;
   export let close: () => void;

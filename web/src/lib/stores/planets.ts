@@ -1,5 +1,5 @@
-import {locationToXY} from '$lib/common/src';
-import type {Planet} from '$lib/common/src/types';
+import {locationToXY} from 'conquest-eth-common';
+import type {Planet} from 'conquest-eth-common/types';
 import {Readable, Writable, writable} from 'svelte/store';
 import {space} from '$lib/app/mapState';
 

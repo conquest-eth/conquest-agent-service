@@ -1,6 +1,6 @@
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
-import {xyToLocation} from '$lib/common/src';
+import {xyToLocation} from 'conquest-eth-common';
 import {spaceInfo} from '$lib/app/mapState';
 import {BaseStore} from '$lib/utils/stores';
 

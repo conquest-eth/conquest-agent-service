@@ -3,7 +3,7 @@
   import PanelButton from '$lib/components/PanelButton.svelte';
   import Modal from '$lib/components/Modal.svelte';
   import {planetAt} from '$lib/stores/planets';
-  import {xyToLocation} from '$lib/common/src';
+  import {xyToLocation} from 'conquest-eth-common';
   import {space, spaceInfo} from '$lib/app/mapState';
   import {timeToText} from '$lib/utils';
   import {now} from '$lib/stores/time';

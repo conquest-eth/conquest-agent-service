@@ -7,7 +7,7 @@
   import exitFlow from '$lib/stores/exit';
   import {spaceInfo} from '$lib/app/mapState';
   import {planetAt} from '$lib/stores/planets';
-  import {xyToLocation} from '$lib/common/src';
+  import {xyToLocation} from 'conquest-eth-common';
 
   $: planet = $exitFlow.data?.location
     ? planetAt(xyToLocation($exitFlow.data?.location.x, $exitFlow.data?.location.y))
