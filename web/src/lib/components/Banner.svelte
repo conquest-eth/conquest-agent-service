@@ -1,6 +1,10 @@
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
+  import {createEventDispatcher, onMount} from 'svelte';
   const dispatch = createEventDispatcher();
+
+  onMount(() => {
+    dispatch('mounted');
+  });
 </script>
 
 <div class="relative bg-gray-900 border-2 border-cyan-300 top-1 mx-1 z-20">
@@ -8,8 +12,7 @@
     <div class="pr-16 sm:text-center sm:px-16 text-cyan-300">
       <slot />
     </div>
-    <div
-      class="absolute inset-y-0 right-0 pt-1 pr-1 flex items-start sm:pt-1 sm:pr-2 sm:items-start">
+    <div class="absolute inset-y-0 right-0 pt-1 pr-1 flex items-start sm:pt-1 sm:pr-2 sm:items-start">
       <button
         on:click={() => dispatch('close')}
         type="button"
@@ -22,11 +25,7 @@
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M6 18L18 6M6 6l12 12" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
     </div>

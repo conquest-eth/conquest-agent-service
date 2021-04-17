@@ -4,7 +4,7 @@
   import {Camera} from '$lib/map/camera';
   import {Renderer} from '$lib/map/renderer';
   import {RenderState} from '$lib/map/RenderState';
-  import {space} from './mapState';
+  import {space, ui} from './mapState';
 
   let canvas: HTMLCanvasElement;
   onMount(() => {
@@ -12,7 +12,8 @@
     const renderer = new Renderer(renderState);
     const camera = new Camera(renderState);
     const map = new Map(renderer, camera);
-    map.setup(canvas);
+    ui.setCanvas(canvas);
+    map.setup(ui, canvas);
     return map.startRendering();
   });
 </script>

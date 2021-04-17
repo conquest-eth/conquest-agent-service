@@ -1,14 +1,17 @@
 import type {OwnFleet, Planet} from 'conquest-eth-common';
 import PlanetInfoPanel from '$lib/components/PlanetInfoPanel.svelte';
+import type {UI} from '$lib/app/UI';
 
 export class Controller {
-  private parent: Element;
   private planetInfoComponent: PlanetInfoPanel | undefined;
   public selectedPlanet: string | undefined;
-  constructor(canvas: HTMLCanvasElement) {
-    this.parent = canvas.parentNode as Element;
+  constructor(private ui: UI) {
+    this.ui.onBeforeAllDeleted(() => {
+      this.hidePlanetInfo();
+    });
     this.planetInfoComponent = undefined;
   }
+
   onPlanetSelected(planet?: Planet): void {
     if (planet) {
       this.selectedPlanet = planet.location.id;
@@ -24,13 +27,17 @@ export class Controller {
   }
 
   showPlanetInfo(planet: Planet): void {
+    if (!this.ui.elem) {
+      console.error(`no ui elem`);
+      return;
+    }
     // console.log('show');
     if (this.planetInfoComponent) {
       this.hidePlanetInfo();
     }
     // console.log('create');
     this.planetInfoComponent = new PlanetInfoPanel({
-      target: this.parent,
+      target: this.ui.elem,
       props: {
         location: planet.location.id,
         close: () => this.hidePlanetInfo(),

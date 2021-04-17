@@ -11,7 +11,7 @@
 
   import {onMount} from 'svelte';
   import {timeToText} from '$lib/utils';
-  import {spaceInfo} from '$lib/app/mapState';
+  import {ui, spaceInfo} from '$lib/app/mapState';
   import {browser} from '$app/env';
 
   onMount(() => {
@@ -23,7 +23,7 @@
   <ClaimTokenScreen />
   <MapScreen />
   {#if $privateAccount.step === 'READY' && !privateAccount.ckeckCompletion($privateAccount.data?.welcomingStep, 0)}
-    <Banner on:close={() => privateAccount.recordWelcomingStep(0)}>
+    <Banner on:mounted={() => ui.hideAll()} on:close={() => privateAccount.recordWelcomingStep(0)}>
       <p>
         Welcome to
         <span class="text-cyan-600">conquest.eth</span>
@@ -70,18 +70,20 @@
   </div>
 {/if}
 
-{#if $logo.stage === 0 && browser}
+{#if $logo.stage === 0}
   <div class="fixed z-50 inset-0 overflow-y-auto bg-black h-full" out:fade on:click={() => logo.nextStage()}>
     <div class="justify-center text-center h-full flex items-center">
-      <img
-        class="mb-8 mx-auto max-w-xs"
-        src="./logo_with_text_on_black.png"
-        alt="etherplay.eth"
-        style="width:80%; heigh: 40%;"
-        on:load={() => logo.etherplayLogoReady()} />
-      <!-- <p class="m-6 text-gray-400 dark:text-gray-500 text-4xl font-black">
+      {#if browser}
+        <img
+          class="mb-8 mx-auto max-w-xs"
+          src="./logo_with_text_on_black.png"
+          alt="etherplay.eth"
+          style="width:80%; heigh: 40%;"
+          on:load={() => logo.etherplayLogoReady()} />
+        <!-- <p class="m-6 text-gray-400 dark:text-gray-500 text-4xl font-black">
       presents
     </p> -->
+      {/if}
     </div>
   </div>
 {/if}
