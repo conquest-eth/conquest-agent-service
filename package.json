@@ -6,6 +6,7 @@
   "devDependencies": {
     "change-name": "^0.2.6",
     "cross-env": "^7.0.2",
+    "cross-var": "^1.1.0",
     "dotenv-cli": "^3.1.0",
     "npm-run-all": "^4.1.5",
     "rimraf": "^3.0.2",
@@ -113,6 +114,7 @@
     "reconnect:no-graph": "npm-run-all -l --parallel shell:common shell:web --sequential common:build shell:contracts",
     "reconnect": "npm-run-all -l --parallel shell:common shell:web --sequential common:build subgraph:setup shell:contracts shell:subgraph",
     "start:no-graph": "npm-run-all -l --parallel shell:common shell:web --sequential common:build contracts:clean shell:contracts seed",
-    "------------------------------------------------------": ""
+    "------------------------------------------------------": "",
+    "auto:web:build": "cross-var npm run $NETWORK_NAME:web:build"
   }
 }

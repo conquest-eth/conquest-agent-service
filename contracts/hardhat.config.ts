@@ -44,11 +44,13 @@ const config: HardhatUserConfig = {
       hardhat: 9,
       1337: 9,
       4: 1,
+      5: 1,
     },
     claimKeyDistributor: {
       hardhat: 0,
       1337: 0,
       4: 2,
+      5: 2,
     },
   },
   networks: {

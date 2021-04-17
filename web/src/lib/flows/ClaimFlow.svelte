@@ -39,7 +39,8 @@
         You do not have any
         <PlayCoin class="inline w-4" />. You need
         {cost.toString()}
-        <PlayCoin class="inline w-4" />.
+        <PlayCoin class="inline w-4" />. If you have never got any token, please register on
+        <a href="https://conquest.eth.link" class="underline" target="_blank" rel="noopener">conquest.eth website</a>.
       {:else if $playTokenAccount.balance.lt(cost.mul('1000000000000000000'))}
         Not enough
         <PlayCoin class="inline w-4" />. You need
