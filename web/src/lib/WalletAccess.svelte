@@ -85,7 +85,7 @@
             <img
               class="cursor-pointer p-2 m-2 border-2 h-12 w-12 object-contain border-cyan-300"
               alt={`Login with ${option.name}`}
-              src={`${base}${option.img}`}
+              src={`${base}/${option.img}`}
               on:click={() => wallet.connect(option.id)} />
           {/each}
         </div>
