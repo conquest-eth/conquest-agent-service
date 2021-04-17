@@ -1,5 +1,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
+import {network} from 'hardhat';
 
 function minutes(num: number): number {
   return num * 60;
@@ -17,26 +18,31 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const playToken_l2 = await hre.deployments.get('PlayToken_L2');
 
-  let genesisHash =
-    '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
-  let resolveWindow = hours(2);
+  let genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
+  const resolveWindow = hours(2);
   let timePerDistance = hours(2);
   let exitDuration = hours(3 * 24);
-  let acquireNumSpaceships = 100000;
+  const acquireNumSpaceships = 100000;
+  let productionSpeedUp = 1;
 
   // use a command to increase time in 1337
   if (chainId === '1337') {
-    genesisHash =
-      '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69';
-    resolveWindow = hours(2);
-    timePerDistance = 20;
-    exitDuration = minutes(24);
-    acquireNumSpaceships = 100000;
+    genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69';
+    timePerDistance /= 180;
+    exitDuration /= 180;
+    productionSpeedUp = 1; // give more time to attack
+  }
+
+  if (network.name === 'quick') {
+    genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
+    timePerDistance /= 40;
+    exitDuration /= 40;
+    productionSpeedUp = 40;
   }
 
   await deploy('OuterSpace', {
     from: deployer,
-    linkedData: {genesisHash, resolveWindow, timePerDistance, exitDuration},
+    linkedData: {genesisHash, resolveWindow, timePerDistance, exitDuration, acquireNumSpaceships, productionSpeedUp},
     args: [
       playToken_l2.address,
       genesisHash,
@@ -44,6 +50,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       timePerDistance,
       exitDuration,
       acquireNumSpaceships,
+      productionSpeedUp,
     ],
     proxy: hre.network.name !== 'mainnet' ? 'postUpgrade' : undefined,
     log: true,

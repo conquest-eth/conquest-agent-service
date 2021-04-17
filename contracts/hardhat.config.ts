@@ -8,8 +8,7 @@ import 'solidity-coverage';
 import 'hardhat-contract-sizer';
 import {node_url, accounts} from './utils/network';
 
-const l1_pre_deploy_missing_contracts =
-  'deploy_l1/00_pre_deploy_missing_contracts';
+const l1_pre_deploy_missing_contracts = 'deploy_l1/00_pre_deploy_missing_contracts';
 const l1_deploy = 'deploy_l1/01_deploy';
 const l1_dev_seed = 'deploy_l1/02_post_deploy_seed_dev';
 
@@ -60,34 +59,25 @@ const config: HardhatUserConfig = {
       forking: process.env.HARDHAT_FORK
         ? {
             url: node_url(process.env.HARDHAT_FORK),
-            blockNumber: process.env.HARDHAT_FORK_NUMBER
-              ? parseInt(process.env.HARDHAT_FORK_NUMBER)
-              : undefined,
+            blockNumber: process.env.HARDHAT_FORK_NUMBER ? parseInt(process.env.HARDHAT_FORK_NUMBER) : undefined,
           }
         : undefined,
-        deploy: [
-          l1_pre_deploy_missing_contracts,
-          l1_deploy,
-          l1_dev_seed,
-          l2_deploy,
-          l2_dev_seed,
-        ],
+      deploy: [l1_pre_deploy_missing_contracts, l1_deploy, l1_dev_seed, l2_deploy, l2_dev_seed],
     },
     localhost: {
       url: node_url('localhost'),
       accounts: accounts(),
-      deploy: [
-        l1_pre_deploy_missing_contracts,
-        l1_deploy,
-        l1_dev_seed,
-        l2_deploy,
-        l2_dev_seed,
-      ],
+      deploy: [l1_pre_deploy_missing_contracts, l1_deploy, l1_dev_seed, l2_deploy, l2_dev_seed],
     },
     staging: {
       url: node_url('rinkeby'),
       accounts: accounts('rinkeby'),
       deploy: [l1_pre_deploy_missing_contracts, l1_deploy, l2_deploy], // staging inclues both
+    },
+    quick: {
+      url: node_url('goerli'),
+      accounts: accounts('goerli'),
+      deploy: [l1_pre_deploy_missing_contracts, l1_deploy, l2_deploy], // quick inclues both
     },
     production: {
       url: node_url('mainnet'),
@@ -135,12 +125,13 @@ const config: HardhatUserConfig = {
   },
   external: {
     deployments: process.env.HARDHAT_FORK
-    ? {
-      // process.env.HARDHAT_FORK will specify the network that the fork is made from.
-      // these lines allow it to fetch the deployments from the network being forked from both for node and deploy task
-      hardhat: ['deployments/' + process.env.HARDHAT_FORK],
-      localhost: ['deployments/' + process.env.HARDHAT_FORK],
-    }: undefined,
+      ? {
+          // process.env.HARDHAT_FORK will specify the network that the fork is made from.
+          // these lines allow it to fetch the deployments from the network being forked from both for node and deploy task
+          hardhat: ['deployments/' + process.env.HARDHAT_FORK],
+          localhost: ['deployments/' + process.env.HARDHAT_FORK],
+        }
+      : undefined,
     contracts: [
       {
         artifacts: 'node_modules/ethereum-transfer-gateway/export/artifacts',

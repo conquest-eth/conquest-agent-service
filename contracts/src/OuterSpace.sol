@@ -30,6 +30,7 @@ contract OuterSpace is Proxied {
     uint256 internal immutable _timePerDistance;
     uint256 internal immutable _exitDuration;
     uint32 internal immutable _acquireNumSpaceships;
+    uint32 internal immutable _productionSpeedUp;
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // STORAGE
@@ -113,7 +114,8 @@ contract OuterSpace is Proxied {
         uint32 resolveWindow,
         uint32 timePerDistance,
         uint32 exitDuration,
-        uint32 acquireNumSpaceships
+        uint32 acquireNumSpaceships,
+        uint32 productionSpeedUp
     ) {
         uint32 t = timePerDistance / 4; // the coordinates space is 4 times bigger
         require(t * 4 == timePerDistance, "TIME_PER_DIST_NOT_DIVISIBLE_4");
@@ -124,13 +126,23 @@ contract OuterSpace is Proxied {
         _timePerDistance = t;
         _exitDuration = exitDuration;
         _acquireNumSpaceships = acquireNumSpaceships;
+        _productionSpeedUp = productionSpeedUp;
 
-        postUpgrade(stakingToken, genesis, resolveWindow, timePerDistance, exitDuration, acquireNumSpaceships);
+        postUpgrade(
+            stakingToken,
+            genesis,
+            resolveWindow,
+            timePerDistance,
+            exitDuration,
+            acquireNumSpaceships,
+            productionSpeedUp
+        );
     }
 
     function postUpgrade(
         IERC20,
         bytes32,
+        uint32,
         uint32,
         uint32,
         uint32,
@@ -1063,7 +1075,9 @@ contract OuterSpace is Proxied {
         (active, currentNumSpaceships) = _activeNumSpaceships(numSpaceshipsData);
         if (active) {
             uint256 timePassed = block.timestamp - lastUpdated;
-            uint256 newSpaceships = uint256(currentNumSpaceships) + (timePassed * uint256(production)) / 1 hours;
+            uint256 newSpaceships = uint256(currentNumSpaceships) +
+                (timePassed * uint256(production) * _productionSpeedUp) /
+                1 hours;
             if (newSpaceships >= ACTIVE_MASK) {
                 newSpaceships = ACTIVE_MASK - 1;
             }
