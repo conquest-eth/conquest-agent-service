@@ -2,6 +2,7 @@
   import claimFlow from '$lib/stores/claim';
   import sendFlow from '$lib/stores/send';
   import exitFlow from '$lib/stores/exit';
+  import messageFlow from '$lib/stores/message';
   import {wallet} from '$lib/stores/wallet';
   import privateAccount from '$lib/stores/privateAccount';
   import {planetAt} from '$lib/stores/planets';
@@ -36,6 +37,10 @@
   function exitFrom() {
     exitFlow.exitFrom(locationToXY(location));
     close();
+  }
+
+  function messageOwner() {
+    messageFlow.show($planet.state.owner);
   }
 
   function connect() {
@@ -301,6 +306,14 @@
             resolve the attack.
           </Help>
         </div>
+      </PanelButton>
+      <PanelButton
+        label="Message"
+        color="text-yellow-400"
+        borderColor="border-yellow-400"
+        class="m-2"
+        on:click={messageOwner}>
+        <div class="w-20">Message Onwer</div>
       </PanelButton>
     {/if}
   {:else}

@@ -13,6 +13,7 @@
   import {timeToText} from '$lib/utils';
   import {ui, spaceInfo} from '$lib/app/mapState';
   import {browser} from '$app/env';
+  import {TutorialSteps} from '$lib/stores/constants';
 
   onMount(() => {
     logo.start();
@@ -22,8 +23,8 @@
 <WalletAccess>
   <ClaimTokenScreen />
   <MapScreen />
-  {#if $privateAccount.step === 'READY' && !privateAccount.ckeckCompletion($privateAccount.data?.welcomingStep, 0)}
-    <Banner on:mounted={() => ui.hideAll()} on:close={() => privateAccount.recordWelcomingStep(0)}>
+  {#if $privateAccount.step === 'READY' && !privateAccount.ckeckCompletion($privateAccount.data?.welcomingStep, TutorialSteps.WELCOME)}
+    <Banner on:mounted={() => ui.hideAll()} on:close={() => privateAccount.recordWelcomingStep(TutorialSteps.WELCOME)}>
       <p>
         Welcome to
         <span class="text-cyan-600">conquest.eth</span>

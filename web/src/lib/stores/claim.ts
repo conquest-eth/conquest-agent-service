@@ -5,13 +5,14 @@ import {spaceInfo} from '$lib/app/mapState';
 import {locationToXY} from 'conquest-eth-common';
 import {BigNumber} from '@ethersproject/bignumber';
 import {defaultAbiCoder} from '@ethersproject/abi';
+import {TutorialSteps} from './constants';
 
 type Data = {txHash?: string; location: string};
 export type ClaimFlow = {
   type: 'CLAIM';
-  step: 'IDLE' | 'CONNECTING' | 'CHOOSE_STAKE' | 'CREATING_TX' | 'WAITING_TX' | 'SUCCESS';
+  step: 'IDLE' | 'CONNECTING' | 'CHOOSE_STAKE' | 'CREATING_TX' | 'WAITING_TX' | 'PROFILE_INFO' | 'SUCCESS';
   data?: Data;
-  error?: unknown;
+  error?: {message?: string}; // TODO other places: add message as optional field
 };
 
 class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
@@ -78,7 +79,17 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
     }
 
     privateAccount.recordCapture(flow.data.location, tx.hash, latestBlock.timestamp, tx.nonce); // TODO check
-    this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
+
+    if (!privateAccount.isWelcomingStepCompleted(TutorialSteps.SUGGESTION_PROFILE)) {
+      this.setData({txHash: tx.hash}, {step: 'PROFILE_INFO'});
+    } else {
+      this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
+    }
+  }
+
+  async acknowledgeProfileSuggestion() {
+    privateAccount.recordWelcomingStep(TutorialSteps.SUGGESTION_PROFILE);
+    this.setPartial({step: 'SUCCESS'});
   }
 
   private _reset() {

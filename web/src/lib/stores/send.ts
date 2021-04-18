@@ -4,6 +4,7 @@ import {xyToLocation} from 'conquest-eth-common';
 import {spaceInfo} from '$lib/app/mapState';
 import {BaseStoreWithData} from '$lib/utils/stores';
 import {now, correctTime, isCorrected} from './time';
+import {TutorialSteps} from './constants';
 
 type Data = {
   txHash?: string;
@@ -75,7 +76,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
   }
 
   _chooseFleetAmount() {
-    if (!privateAccount.isWelcomingStepCompleted(1)) {
+    if (!privateAccount.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_AMOUNT)) {
       this.setPartial({step: 'TUTORIAL_PRE_FLEET_AMOUNT'});
     } else {
       this.setPartial({step: 'CHOOSE_FLEET_AMOUNT'});
@@ -83,13 +84,13 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
   }
 
   async acknowledgeWelcomingStep1() {
-    privateAccount.recordWelcomingStep(1);
+    privateAccount.recordWelcomingStep(TutorialSteps.TUTORIAL_FLEET_AMOUNT);
     this._chooseFleetAmount();
   }
 
   confirm(fleetAmount: number) {
     this.setData({fleetAmount});
-    if (!privateAccount.isWelcomingStepCompleted(2)) {
+    if (!privateAccount.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION)) {
       this.setPartial({step: 'TUTORIAL_PRE_TRANSACTION'});
     } else {
       this._confirm(fleetAmount);
@@ -100,7 +101,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     if (!this.$store.data?.fleetAmount) {
       throw new Error(`not fleetAmount recorded`);
     }
-    privateAccount.recordWelcomingStep(2);
+    privateAccount.recordWelcomingStep(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION);
     this.confirm(this.$store.data?.fleetAmount);
   }
 

@@ -11,6 +11,8 @@
   import resolveFlow from '$lib/stores/resolve';
   import ResolveFlow from '$lib/flows/ResolveFlow.svelte';
   import FleetsToResolve from '$lib/components/FleetsToResolve.svelte';
+  import messageFlow from '$lib/stores/message';
+  import MessageFlow from '$lib/flows/MessageFlow.svelte';
 </script>
 
 <Map />
@@ -33,4 +35,8 @@
 
 {#if $exitFlow.error || $exitFlow.step !== 'IDLE'}
   <ExitFlow />
+{/if}
+
+{#if $messageFlow.error || $messageFlow.step !== 'IDLE'}
+  <MessageFlow />
 {/if}

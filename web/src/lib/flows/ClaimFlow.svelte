@@ -8,6 +8,8 @@
   import PlayCoin from '$lib/components/PlayCoin.svelte';
   import {timeToText} from '$lib/utils';
   import {spaceInfo} from '$lib/app/mapState';
+  import NavButton from '$lib/components/navigation/NavButton.svelte';
+  import {base} from '$app/paths';
 
   $: location = $claimFlow.data?.location;
   $: planet = location ? planetAt(location) : undefined;
@@ -65,5 +67,21 @@
         </div>
       {/if}
     {/if}
+  </Modal>
+{:else if $claimFlow.step === 'PROFILE_INFO'}
+  <Modal on:close={() => claimFlow.acknowledgeProfileSuggestion()}>
+    <p class="text-center">
+      Great! if all goes well (nobody attempted to capture that planet at the same time), you ll be owning your first
+      planet in
+      <span class="text-cyan-700">conquest.eth</span>
+      very soon!
+    </p>
+    <p class="text-center">
+      We suggest you add info to your profile so other player can communicate with you and make plan together to conquer
+      the universe!
+    </p>
+    <p class="text-center mt-3">
+      <NavButton href={`${base}/settings`}>Setup Profile</NavButton>
+    </p>
   </Modal>
 {/if}

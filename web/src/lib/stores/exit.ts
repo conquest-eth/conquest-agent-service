@@ -11,7 +11,7 @@ export type ExitFlow = {
   type: 'EXIT';
   step: 'IDLE' | 'CONNECTING' | 'WAITING_CONFIRMATION' | 'WAITING_TX' | 'SUCCESS';
   data?: Data;
-  error?: unknown; // TODO
+  error?: {message?: string};
 };
 
 class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
