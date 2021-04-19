@@ -5,6 +5,5 @@
 
 <div class="w-full h-full bg-black">
   <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
-
   <p class="text-center text-yellow-500">Work in Progress...</p>
 </div>

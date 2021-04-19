@@ -50,6 +50,7 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
       this.setPartial({step: 'SUCCESS'}); // TODO IDLE ?
     } catch (e) {
       console.error(e);
+      // TODO get next Fleet instead ?
       if (e.message && e.message.indexOf('User denied') >= 0) {
         this.setPartial({
           step: 'IDLE',
