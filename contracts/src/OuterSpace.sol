@@ -48,6 +48,7 @@ contract OuterSpace is Proxied {
         uint64 flying;
         uint64 destroyed;
     }
+    // TODO make it namespaces per user, currently it is possible (though unlikely) for 2 users to share a slot if one attack another and quickly send away spaceships
     mapping(uint256 => mapping(uint256 => InFlight)) internal _inFlight;
 
     struct Discovered {
@@ -268,18 +269,24 @@ contract OuterSpace is Proxied {
     // GETTERS
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    function getFleet(uint256 fleetId)
+    function getFleet(uint256 fleetId, uint256 from)
         external
         view
         returns (
             address owner,
             uint32 launchTime,
-            uint32 quantity
+            uint32 quantity,
+            uint64 flyingAtLaunch, // can be more than quantity if multiple fleet were launched around the same time from the same planet
+            uint64 destroyedAtLaunch
         )
     {
         launchTime = _fleets[fleetId].launchTime;
         quantity = _fleets[fleetId].quantity;
         owner = _fleets[fleetId].owner;
+
+        uint256 timeSlot = launchTime / (FRONT_RUNNING_DELAY / 2);
+        destroyedAtLaunch = _inFlight[from][timeSlot].destroyed;
+        flyingAtLaunch = _inFlight[from][timeSlot].flying;
     }
 
     function getGeneisHash() external view returns (bytes32) {

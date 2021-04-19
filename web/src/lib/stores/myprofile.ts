@@ -1,7 +1,8 @@
 import {BaseStoreWithData} from '$lib/utils/stores';
+import {wallet} from './wallet';
 
-export type MessageFlow = {
-  type: 'MESSAGE';
+export type ProfileFlow = {
+  type: 'MY_PROFILE';
   step: 'IDLE' | 'LOADING' | 'READY';
   owner?: string;
   profile?: {
@@ -19,15 +20,29 @@ export type MessageFlow = {
 const PROFILE_URI = import.meta.env.VITE_PROFILE_URI as string;
 const DB_NAME = 'etherplay-profile';
 
-class MessageFlowStore extends BaseStoreWithData<MessageFlow, undefined> {
+class MyProfileFlowStore extends BaseStoreWithData<ProfileFlow, undefined> {
   public constructor() {
     super({
-      type: 'MESSAGE',
+      type: 'MY_PROFILE',
       step: 'IDLE',
+    });
+
+    wallet.subscribe(($wallet) => {
+      if ($wallet.address) {
+        this.show($wallet.address);
+      } else {
+        if (this.$store.step === 'READY') {
+          this.setPartial({
+            step: 'IDLE',
+            owner: undefined,
+            profile: undefined,
+          });
+        }
+      }
     });
   }
 
-  async show(owner: string): Promise<void> {
+  private async show(owner: string): Promise<void> {
     this.setPartial({step: 'LOADING', owner});
     try {
       // TODO CACHE data
@@ -77,4 +92,4 @@ class MessageFlowStore extends BaseStoreWithData<MessageFlow, undefined> {
   }
 }
 
-export default new MessageFlowStore();
+export default new MyProfileFlowStore();

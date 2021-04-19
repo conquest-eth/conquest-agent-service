@@ -207,6 +207,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       }
       const response = await this.syncRequest('wallet_getString', [this.$store.wallet.address, DB_NAME]);
       json = await response.json();
+      // TODO check signature
       if (json.error) {
         throw new Error(json.error);
       }

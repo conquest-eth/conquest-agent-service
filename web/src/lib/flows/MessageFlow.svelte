@@ -12,14 +12,25 @@
       <PanelButton class="mt-5" label="Stake" on:click={() => messageFlow.acknownledgeError()}>Ok</PanelButton>
     </div>
   </Modal>
-{:else if $messageFlow.step === 'SHOW'}
+{:else if $messageFlow.step === 'LOADING'}
   <Modal on:close={() => messageFlow.cancel()} on:confirm={() => messageFlow.cancel()}>
-    <p class="text-center">
-      This feature is in progress. Here you'll be able to see how to reach out to other players. We might also implement
-      a basic inbox system but we would like to ensure it is decentralised.
-    </p>
-    <!-- <p class="text-center">
-      <PanelButton class="mt-5" label="Exit" on:click={() => exitFlow.confirm()}>Confirm Exit</PanelButton>
-    </p> -->
+    <p class="text-center">Please wait while we load the profile...</p>
+  </Modal>
+{:else if $messageFlow.step === 'READY'}
+  <Modal on:close={() => messageFlow.cancel()} on:confirm={() => messageFlow.cancel()}>
+    {#if !$messageFlow.profile}
+      <p class="text-center">The user did not provide any information.</p>
+      <p class="text-center">
+        Find each other on
+        <a href="https://discord.gg/Qb4gr2ekfr" target="_blank" rel="noopener" class="underline">discord</a>
+      </p>
+    {:else}
+      {#if $messageFlow.profile.name}
+        <p class="text-center">{$messageFlow.profile.name}</p>
+      {/if}
+      {#if $messageFlow.profile.contact}
+        <p class="text-center">{$messageFlow.profile.contact}</p>
+      {/if}
+    {/if}
   </Modal>
 {/if}

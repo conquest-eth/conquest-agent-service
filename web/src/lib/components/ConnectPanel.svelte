@@ -96,6 +96,10 @@
         Agent
         <Help class="w-4 h-4">The agent can help you ensure you resolve your fleets in time.</Help>
       </NavButton>
+      <NavButton class="m-1" label="agent" href={`${base}/settings/`} blank={true}>
+        Profile
+        <Help class="w-4 h-4">You can setup your profile so that other player can contact you.</Help>
+      </NavButton>
       <PanelButton class="m-1" label="Disconnect" on:click={disconnect}>Disconnect</PanelButton>
     </div>
   {/if}
