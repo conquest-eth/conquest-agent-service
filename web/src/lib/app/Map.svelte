@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
+  import {onDestroy, onMount} from 'svelte';
   import Map from '$lib/map';
   import {Camera} from '$lib/map/camera';
   import {Renderer} from '$lib/map/renderer';
@@ -15,6 +15,10 @@
     ui.setCanvas(canvas);
     map.setup(ui, canvas);
     return map.startRendering();
+  });
+
+  onDestroy(() => {
+    ui.hideAll();
   });
 </script>
 
