@@ -893,7 +893,7 @@ contract OuterSpace is Proxied {
             _inFlight[to][block.timestamp / (FRONT_RUNNING_DELAY / 2)].destroyed = state.destroyed2;
         }
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
-        if (result.defenderLoss == state.currentNumSpaceships) {
+        if (numAttack > 0 && result.defenderLoss == state.currentNumSpaceships) {
             result.numSpaceships = numAttack - attackerLoss;
             result.won = true;
             _planets[to].owner = attacker;
@@ -940,6 +940,9 @@ contract OuterSpace is Proxied {
         uint256 attack,
         uint256 defense
     ) internal pure returns (uint32 attackerLoss, uint32 defenderLoss) {
+        if (numAttack == 0 || numDefense == 0) {
+            return;
+        }
         uint256 attackPower = (numAttack * attack);
         uint256 defensePower = (numDefense * defense);
 
