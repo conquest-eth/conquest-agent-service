@@ -941,6 +941,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
           fleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
             // TODO batch getFleets ?
             fleetId,
+            xyToLocation(fleet.from.x, fleet.from.y),
             {blockTag: Math.max(0, latestBlockNumber - finality)}
           );
         } catch (e) {
