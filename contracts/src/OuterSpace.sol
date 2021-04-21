@@ -78,7 +78,7 @@ contract OuterSpace is Proxied {
     // EVENTS
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    event PlanetStake(address indexed acquirer, uint256 indexed location, uint32 numSpaceships);
+    event PlanetStake(address indexed acquirer, uint256 indexed location, uint32 numSpaceships, uint256 stake);
     event FleetSent(
         address indexed fleetOwner,
         uint256 indexed from,
@@ -100,6 +100,8 @@ contract OuterSpace is Proxied {
     );
 
     event PlanetExit(address indexed owner, uint256 indexed location);
+
+    event ExitComplete(address indexed owner, uint256 indexed location, uint256 stake);
 
     event StakeToWithdraw(address indexed owner, uint256 newStake);
 
@@ -382,45 +384,43 @@ contract OuterSpace is Proxied {
 
     function _acquire(
         address sender,
-        uint256 paidFor,
+        uint256 stake,
         uint256 location
     ) internal {
-        console.logBytes32(bytes32(location));
+        // console.logBytes32(bytes32(location));
         bytes32 data = _planetData(location);
-        require(paidFor == uint256(_stake(data)) * (DECIMALS_18), "INVALID_AMOUNT");
+        require(stake == uint256(_stake(data)) * (DECIMALS_18), "INVALID_AMOUNT");
 
-        _handleSpaceships(sender, location, data);
+        uint32 numSpaceships = _handleSpaceships(sender, location, data);
         _handleDiscovery(location);
+        emit PlanetStake(sender, location, numSpaceships, stake);
     }
 
     function _handleSpaceships(
         address sender,
         uint256 location,
         bytes32 data
-    ) internal {
+    ) internal returns (uint32) {
         Planet storage planet = _getPlanet(location);
-        address owner = planet.owner;
-        uint32 lastUpdated = planet.lastUpdated;
-        uint32 numSpaceshipsData = planet.numSpaceships;
-        uint32 exitTime = planet.exitTime;
+        Planet memory mplanet = planet;
 
         (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
-            numSpaceshipsData,
-            lastUpdated,
+            mplanet.numSpaceships,
+            mplanet.lastUpdated,
             _production(data)
         );
 
         bool justExited;
         uint32 defense;
-        if (lastUpdated == 0) {
+        if (mplanet.lastUpdated == 0) {
             defense = _natives(data);
         } else {
-            if (exitTime != 0) {
-                require(_hasJustExited(exitTime), "STILL_EXITING");
+            if (mplanet.exitTime != 0) {
+                require(_hasJustExited(mplanet.exitTime), "STILL_EXITING");
                 justExited = true;
             } else {
                 require(!active, "STILL_ACTIVE");
-                if (owner != sender) {
+                if (mplanet.owner != sender) {
                     defense = currentNumSpaceships;
                 } else {
                     defense = 0;
@@ -429,7 +429,13 @@ contract OuterSpace is Proxied {
         }
         if (justExited) {
             currentNumSpaceships = _acquireNumSpaceships;
-            _setPlanetAfterExit(location, owner, planet, sender, _setActiveNumSpaceships(true, currentNumSpaceships));
+            _setPlanetAfterExit(
+                location,
+                mplanet.owner,
+                planet,
+                sender,
+                _setActiveNumSpaceships(true, currentNumSpaceships)
+            );
         } else {
             planet.owner = sender;
             if (defense != 0) {
@@ -444,7 +450,7 @@ contract OuterSpace is Proxied {
             planet.numSpaceships = _setActiveNumSpaceships(true, currentNumSpaceships);
             planet.lastUpdated = uint32(block.timestamp);
         }
-        emit PlanetStake(sender, location, currentNumSpaceships);
+        return currentNumSpaceships;
     }
 
     // solhint-disable-next-line code-complexity
@@ -534,6 +540,7 @@ contract OuterSpace is Proxied {
     ) internal returns (uint256) {
         bytes32 data = _planetData(location);
         uint16 stake = _stake(data);
+        emit ExitComplete(planet.owner, location, stake);
         planet.exitTime = 0;
         planet.owner = newOwner; // This is fine as long as _actualiseExit is called on every move
         planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move
