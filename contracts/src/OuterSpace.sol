@@ -941,7 +941,7 @@ contract OuterSpace is Proxied {
         uint256 defense
     ) internal pure returns (uint32 attackerLoss, uint32 defenderLoss) {
         if (numAttack == 0 || numDefense == 0) {
-            return;
+            return (0, 0);
         }
         uint256 attackPower = (numAttack * attack);
         uint256 defensePower = (numDefense * defense);
