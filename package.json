@@ -73,7 +73,7 @@
     "staging:seed": "dotenv -e .env.staging -e .env -- npm --prefix contracts run execute staging scripts/seed.ts",
     "staging:contracts:export": "dotenv -e .env.staging -e .env -- npm --prefix contracts run export staging -- ../web/src/lib/contracts.json",
     "staging:contracts": "dotenv -e .env.staging -e .env -- npm --prefix contracts run deploy staging -- --export ../web/src/lib/contracts.json",
-    "staging:subgraph": "dotenv -e .env.staging -e .env -- npm --prefix subgraph run hosted:deploy ../contracts/deployments/staging rinkeby",
+    "staging:subgraph": "dotenv -e .env.staging -e .env -- npm --prefix subgraph run hosted:deploy ../contracts/deployments/staging goerli",
     "staging:web": "run-s staging:web:build staging:web:deploy",
     "staging": "run-s staging:contracts staging:subgraph web:prepare common:build staging:web:rebuild staging:web:deploy",
     "staging:reset": "rimraf contracts/deployments/staging && run-s staging:contracts staging:subgraph web:prepare common:build staging:web:rebuild staging:web:deploy",
