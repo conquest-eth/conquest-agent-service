@@ -625,7 +625,7 @@ contract OuterSpace is Proxied {
         emit_fleet_arrived(
             fleet.owner,
             fleetId,
-            toPlanet.owner,
+            _hasJustExited(toPlanet.exitTime) ? address(0) : toPlanet.owner,
             to,
             _performResolution(fleet, from, toPlanet, to, quantity),
             inFlightFleetLoss
@@ -744,7 +744,7 @@ contract OuterSpace is Proxied {
     ) internal returns (FleetResult memory result) {
         _setPlanetAfterExit(to, owner, planet, attacker, numAttack);
         result.numSpaceships = numAttack;
-        // result.won = true; // TODO ?
+        result.won = true;
     }
 
     function _nativeAttack(

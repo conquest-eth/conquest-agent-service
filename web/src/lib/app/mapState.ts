@@ -80,6 +80,8 @@ export function fetchFleetEvent(fleetId: string): FleetPromise {
           const args = event.args as {
             fleetLoss: number;
             planetLoss: number;
+            fleetOwner: string;
+            destinationOwner: string;
             won: boolean;
             newNumspaceships: number;
             inFlightFleetLoss: number;
@@ -87,7 +89,7 @@ export function fetchFleetEvent(fleetId: string): FleetPromise {
           };
           return {
             fleetLoss: args.fleetLoss,
-            attack: args.fleetLoss > 0 || args.planetLoss > 0 || args.won,
+            attack: args.fleetOwner != args.destinationOwner,
             planetLoss: args.planetLoss,
             won: args.won,
             newNumspaceships: args.newNumspaceships,
