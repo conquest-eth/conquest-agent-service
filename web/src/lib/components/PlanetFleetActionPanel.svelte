@@ -154,13 +154,13 @@
           <!-- SEND MORE -->
           {#if attacking}
             <PanelButton
-              label="Attack!"
+              label="Send Attack!"
               class="m-2"
               color="text-red-500"
               borderColor="border-red-500"
               on:click={sendFrom}>
               <div class="w-20">
-                Attack!
+                Send Attack!
                 <Help class="inline w-4 h-4">
                   You can attack other planets by sending spaceships to them. Once it reaches destination, you ll have
                   to resolve the attack.
@@ -182,13 +182,13 @@
         <!-- SEND PROTECTION -->
         {#if attacking}
           <PanelButton
-            label="Attack!"
+            label="Send Attack!"
             class="m-2"
             color="text-red-500"
             borderColor="border-red-500"
             on:click={sendFrom}>
             <div class="w-20">
-              Attack!
+              Send Attack!
               <Help class="inline w-4 h-4">
                 You can attack other planets by sending spaceships to them. Once it reaches destination, you ll have to
                 resolve the attack.

@@ -112,7 +112,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       if ($chain.state === 'Ready') {
         this.start(this.$store.walletAddress, $chain.chainId);
       } else {
-        this.setPartial({wallet: undefined, aesKey: undefined});
+        this.setPartial({wallet: undefined, aesKey: undefined, chainId: undefined});
         if (this.$store.step === 'READY') {
           this.setPartial({step: 'IDLE', chainId: undefined, data: undefined});
         }
@@ -124,7 +124,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       if ($wallet.address) {
         this.start($wallet.address, this.$store.chainId);
       } else {
-        this.setPartial({wallet: undefined, aesKey: undefined});
+        this.setPartial({wallet: undefined, walletAddress: undefined, aesKey: undefined});
         if (this.$store.step === 'READY') {
           this.setPartial({
             step: 'IDLE',
@@ -207,6 +207,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     let error;
     try {
       if (!this.$store.wallet) {
+        // console.error('no this.$store.wallet', this.$store);
         throw new Error(`no this.$store.wallet`);
       }
       const response = await this.syncRequest('wallet_getString', [this.$store.wallet.address, DB_NAME]);
@@ -681,6 +682,9 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     const chainDiff = !this.$store.chainId || chainId !== this.$store.chainId;
 
     if (chainId && walletAddress) {
+      if (this.$store.walletAddress === walletAddress && this.$store.chainId === chainId) {
+        return;
+      }
       // console.log("READY");
 
       let storage: LocalData = {
@@ -1141,6 +1145,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     }
     try {
       const walletAddress = wallet.address.toLowerCase();
+      // console.log({walletAddress});
       const signature = await wallet.provider
         .getSigner()
         .signMessage('Only sign this message on "conquest.eth" or other trusted frontend');
@@ -1152,9 +1157,16 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
         localCache.setItem(LOCAL_ONLY_STORAGE_KEY(walletAddress, wallet.chain.chainId), toStorage);
       }
 
-      this.setPartial({step: 'LOADING', syncEnabled: syncRemotely});
-
-      this.setPartial({step: 'READY', wallet: privateWallet, aesKey});
+      // console.log('DONE...');
+      this.setPartial({
+        step: 'READY',
+        syncEnabled: syncRemotely,
+        wallet: privateWallet,
+        aesKey,
+        walletAddress,
+        chainId: wallet.chain.chainId,
+        data: undefined,
+      });
 
       await this._loadData(walletAddress, wallet.chain.chainId);
 
@@ -1162,6 +1174,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
         await this._func();
       }
     } catch (e) {
+      // console.error(e);
       return this.cancel(e);
     }
     this._resolve && this._resolve();

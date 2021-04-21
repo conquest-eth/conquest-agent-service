@@ -12,6 +12,7 @@ import type {Planet, TxStatus} from 'conquest-eth-common';
 import {now} from '$lib/stores/time';
 import {base} from '$app/paths';
 import {planetLogs} from '$lib/stores/planetLogs';
+import {Blockie} from './blockie';
 
 const planetTypesToFrame = [
   'Baren.png',
@@ -596,6 +597,7 @@ export class Renderer {
 
           let exitRatio = Number.MAX_SAFE_INTEGER;
 
+          let useSquare = false;
           let circleColor = undefined;
           let circleDash: number[] = [];
           let circleRotate = false;
@@ -639,6 +641,7 @@ export class Renderer {
             } else {
               if (planet.state?.owner !== '0x0000000000000000000000000000000000000000') {
                 circleDash = [15, 5];
+                useSquare = true;
                 if (this.renderState.space.player) {
                   if (
                     // TODO enforce convention to not need `toLowerCase` overhead
@@ -665,25 +668,41 @@ export class Renderer {
           // circleColor = '#E5E7EB'; // TODO remove
 
           if (circleColor) {
-            ctx.beginPath();
-            ctx.setLineDash(circleDash);
-            if (circleColor === '#E5E7EB') {
-              ctx.lineWidth = 1 / render.scale;
-            } else {
-              ctx.lineWidth = 1 / render.scale;
-            }
+            const radius = 72 * multiplier;
+            if (useSquare) {
+              ctx.beginPath();
+              ctx.setLineDash([radius / 2, radius, radius, radius, radius, radius, radius, radius, radius]);
+              if (circleColor === '#E5E7EB') {
+                ctx.lineWidth = 1 / render.scale;
+              } else {
+                ctx.lineWidth = 1 / render.scale;
+              }
 
-            ctx.strokeStyle = circleColor;
-            ctx.ellipse(
-              Math.round(planetX),
-              Math.round(planetY),
-              72 * multiplier,
-              72 * multiplier,
-              circleRotate ? time / 500 : 0,
-              0,
-              2 * Math.PI
-            );
-            ctx.stroke();
+              ctx.strokeStyle = circleColor;
+
+              ctx.rect(Math.round(planetX) - radius, Math.round(planetY) - radius, radius * 2, radius * 2);
+              ctx.stroke();
+            } else {
+              ctx.beginPath();
+              ctx.setLineDash(circleDash);
+              if (circleColor === '#E5E7EB') {
+                ctx.lineWidth = 1 / render.scale;
+              } else {
+                ctx.lineWidth = 1 / render.scale;
+              }
+
+              ctx.strokeStyle = circleColor;
+              ctx.ellipse(
+                Math.round(planetX),
+                Math.round(planetY),
+                radius,
+                radius,
+                circleRotate ? time / 500 : 0,
+                0,
+                2 * Math.PI
+              );
+              ctx.stroke();
+            }
           }
 
           if (this.controller.selectedPlanet === planet.location.id) {
@@ -719,6 +738,19 @@ export class Renderer {
               -Math.PI / 2 + 2 * Math.PI * Math.max(exitRatio, 0.03)
             );
             ctx.stroke();
+          }
+
+          if (
+            planet.state?.owner &&
+            planet.state?.owner !== '0x0000000000000000000000000000000000000000' &&
+            planet.state?.owner.toLowerCase() !== this.renderState.space.player.toLowerCase()
+          ) {
+            Blockie.get(planet.state?.owner.toLowerCase()).draw(
+              ctx,
+              Math.round(planetX),
+              Math.round(planetY),
+              Math.max((1 / render.scale) * 2, render.scale * 2)
+            );
           }
 
           // if (planet.exitTime) // TODO
