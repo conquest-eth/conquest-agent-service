@@ -44,6 +44,10 @@ type SecretData = {
   lastWithdrawal?: Withdrawal;
   agentHeartBeat?: {update: number; keepAlive: number};
   welcomingStep?: number;
+  logs?: {
+    lastBlockNumber: number;
+    fleetAcknowledged: {[fleet: string]: number};
+  };
 };
 
 type PrivateAccountData = {
@@ -381,6 +385,45 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       }
     }
 
+    if (data.logs) {
+      if (!this.$store.data.logs) {
+        newDataOnRemote = true;
+        this.$store.data.logs = data.logs;
+      } else {
+        let numNotOnLocal = 0;
+        const fleetList = Object.keys(data.logs.fleetAcknowledged);
+        for (const item of fleetList) {
+          if (!this.$store.data.logs.fleetAcknowledged[item]) {
+            numNotOnLocal++;
+            newDataOnRemote = true;
+            this.$store.data.logs.fleetAcknowledged[item] = data.logs.fleetAcknowledged[item];
+          }
+        }
+        const localFleetList = Object.keys(this.$store.data.logs.fleetAcknowledged);
+        if (fleetList.length - numNotOnLocal < localFleetList.length) {
+          newDataOnLocal = true;
+        }
+
+        if (data.logs.lastBlockNumber > this.$store.data.logs.lastBlockNumber) {
+          this.$store.data.logs.lastBlockNumber = data.logs.lastBlockNumber;
+          newDataOnRemote = true;
+        }
+      }
+    } else if (this.$store.data.logs) {
+      newDataOnLocal = true;
+    }
+
+    if (this.$store.data.logs) {
+      const fleetList = Object.keys(this.$store.data.logs.fleetAcknowledged);
+      for (const fleetId of fleetList) {
+        // remove old
+        if (this.$store.data.logs.fleetAcknowledged[fleetId] < now() - 7 * 24 * 60 * 60) {
+          delete this.$store.data.logs.fleetAcknowledged[fleetId];
+          newDataOnLocal = true;
+        }
+      }
+    }
+
     if (data.agentHeartBeat) {
       if (!this.$store.data.agentHeartBeat || data.agentHeartBeat.update > this.$store.data.agentHeartBeat.update) {
         this.$store.data.agentHeartBeat = data.agentHeartBeat;
@@ -405,11 +448,43 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
   }
 
   async getAgentWallet(): Promise<Wallet> {
-    if (!this.$store.wallet) {
-      throw new Error(`no $store.wallet`);
-    }
     const signature = await this.$store.wallet.signMessage('Agent');
     return new Wallet(signature.slice(0, 130), wallet.provider);
+  }
+
+  getAcknowledgedAttacks(): {[fleet: string]: number} {
+    const result = {};
+    if (this.$store.data?.logs?.fleetAcknowledged) {
+      return this.$store.data?.logs.fleetAcknowledged;
+    }
+    return result;
+  }
+
+  acknowledgeAttack(fleet: string, timestamp: number, globalLastBlockNumber?: number) {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      this.$store.data = {fleets: {}, exits: {}, captures: {}}; // TODO everywhere
+    }
+    if (!this.$store.data.logs) {
+      this.$store.data.logs = {
+        fleetAcknowledged: {
+          [fleet]: timestamp,
+        },
+        lastBlockNumber: globalLastBlockNumber || 1,
+      };
+    } else {
+      this.$store.data.logs.fleetAcknowledged[fleet] = timestamp;
+      this.$store.data.logs.lastBlockNumber = globalLastBlockNumber || 1;
+    }
+    this.setPartial({
+      data: this.$store.data,
+    });
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
   }
 
   encrypt(data: string): string {

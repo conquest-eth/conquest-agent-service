@@ -2,14 +2,18 @@
   import PlanetFleetActionPanel from './PlanetFleetActionPanel.svelte';
   import PlanetFleetResultPanel from './PlanetFleetResultPanel.svelte';
   import PlanetExitResultPanel from './PlanetExitResultPanel.svelte';
+  import PlanetAttackResultPanel from './PlanetAttackResultPanel.svelte';
   import privateAccount from '$lib/stores/privateAccount';
+  import {planetLogs} from '$lib/stores/planetLogs';
   import {time} from '$lib/stores/time';
-  import type {OwnFleet} from 'conquest-eth-common/types';
+  import type {OwnFleet} from 'conquest-eth-common';
   import {locationToXY} from 'conquest-eth-common';
   import {contracts as contractsInfo} from '$lib/app/contractInfos';
 
   export let location: string;
   export let close: () => void;
+
+  $: attacks = $planetLogs.attacksReceived && $planetLogs.attacksReceived[location];
 
   let planetX: number;
   let planetY: number;
@@ -83,7 +87,9 @@
 </script>
 
 <div class="flex flex-col text-center">
-  {#if exitFailure}
+  {#if attacks && attacks.length > 0}
+    <PlanetAttackResultPanel attack={attacks[0]} />
+  {:else if exitFailure}
     <PlanetExitResultPanel exit={exitFailure} />
   {:else if fleets.length > 0}
     <PlanetFleetResultPanel fleet={fleets[0]} />

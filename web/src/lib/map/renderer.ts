@@ -8,9 +8,10 @@ import {trackInstances} from '$lib/utils/tools';
 import type {Controller} from './controller';
 import {timeToText} from '$lib/utils';
 import {locationToXY} from 'conquest-eth-common';
-import type {Planet, TxStatus} from 'conquest-eth-common/types';
+import type {Planet, TxStatus} from 'conquest-eth-common';
 import {now} from '$lib/stores/time';
 import {base} from '$app/paths';
+import {planetLogs} from '$lib/stores/planetLogs';
 
 const planetTypesToFrame = [
   'Baren.png',
@@ -514,6 +515,11 @@ export class Renderer {
                 bleeps[bleepId] = 'Error';
               }
             }
+          }
+
+          if (planetLogs.getEventsForPlanet(planet.location.id)) {
+            const bleepId = `${planet.location.x},${planet.location.y}`;
+            bleeps[bleepId] = 'Error';
           }
 
           // if (planet.state && !planet.state.inReach) {
