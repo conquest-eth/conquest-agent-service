@@ -539,13 +539,13 @@ contract OuterSpace is Proxied {
         uint32 spaceshipsData
     ) internal returns (uint256) {
         bytes32 data = _planetData(location);
-        uint16 stake = _stake(data);
+        uint256 stake = uint256(_stake(data)) * (DECIMALS_18);
         emit ExitComplete(planet.owner, location, stake);
         planet.exitTime = 0;
         planet.owner = newOwner; // This is fine as long as _actualiseExit is called on every move
         planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move
         planet.numSpaceships = spaceshipsData;
-        return stake * DECIMALS_18;
+        return stake;
     }
 
     /*
@@ -749,9 +749,9 @@ contract OuterSpace is Proxied {
         address attacker,
         uint32 numAttack
     ) internal returns (FleetResult memory result) {
-        _setPlanetAfterExit(to, owner, planet, attacker, numAttack);
+        _setPlanetAfterExit(to, owner, planet, numAttack > 0 ? attacker : address(0), numAttack);
         result.numSpaceships = numAttack;
-        result.won = true;
+        result.won = numAttack > 0;
     }
 
     function _nativeAttack(
@@ -787,7 +787,7 @@ contract OuterSpace is Proxied {
     ) internal returns (FleetResult memory result) {
         PreCombatState memory state = _getPlanetPreCombatState(toPlanet, to, production);
 
-        if (state.numDefense == 0) {
+        if (state.numDefense == 0 && numAttack > 0) {
             _planets[to].owner = attacker;
             _planets[to].exitTime = 0;
             _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, numAttack);
@@ -923,7 +923,7 @@ contract OuterSpace is Proxied {
         uint32 quantity
     ) internal returns (FleetResult memory result) {
         if (_hasJustExited(toPlanet.exitTime)) {
-            return _fleetAfterExit(to, toPlanet.owner, _planets[to], sender, quantity); // TODO for now use same as in performAttack: either regroup earlier or decide if different behavior (won vs not won for example?)
+            return _fleetAfterExit(to, toPlanet.owner, _planets[to], quantity > 0 ? sender : address(0), quantity);
         } else {
             bytes32 toPlanetData = _planetData(to);
             uint16 production = _production(toPlanetData);

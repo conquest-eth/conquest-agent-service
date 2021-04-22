@@ -182,13 +182,13 @@
         <!-- SEND PROTECTION -->
         {#if attacking}
           <PanelButton
-            label="Send Attack!"
+            label="Send Reinforcment!"
             class="m-2"
-            color="text-red-500"
-            borderColor="border-red-500"
+            color="text-green-500"
+            borderColor="border-green-500"
             on:click={sendFrom}>
             <div class="w-20">
-              Send Attack!
+              Send Reinforcment
               <Help class="inline w-4 h-4">
                 You can attack other planets by sending spaceships to them. Once it reaches destination, you ll have to
                 resolve the attack.

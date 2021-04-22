@@ -1,20 +1,76 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */ // TODO remove
-import {waitFor, objMap} from '../test-utils';
+import {increaseTime, waitFor, objMap} from '../test-utils';
+import {ethers, getUnnamedAccounts, deployments, getNamedAccounts} from 'hardhat';
 import {BigNumber} from '@ethersproject/bignumber';
 import {Wallet} from '@ethersproject/wallet';
 import {keccak256} from '@ethersproject/solidity';
 import {SpaceInfo} from 'conquest-eth-common';
 import type {PlanetInfo} from 'conquest-eth-common/';
-import {Contract, ContractReceipt} from '@ethersproject/contracts';
-import {defaultAbiCoder} from '@ethersproject/abi';
-import {User} from '../utils';
-import {OuterSpace} from '../../typechain';
+import {ContractReceipt} from '@ethersproject/contracts';
+import {Provider} from '@ethersproject/providers';
+import {parseEther} from '@ethersproject/units';
 
-export type Player = User<{PlayToken_L2: Contract; OuterSpace: Contract}>;
+type AnyContract = any; // TODO ?
+type User = {address: string; [contractName: string]: AnyContract};
+
+async function createPlayerAsContracts(player: string, contractNames: string[]): Promise<User> {
+  const obj: User = {address: player};
+  for (const contractName of contractNames) {
+    obj[contractName] = await ethers.getContract(contractName, player);
+  }
+  return obj;
+}
+
+export async function setupOuterSpace(): Promise<{
+  getTime: () => number;
+  increaseTime(t: number): Promise<void>;
+  outerSpaceContract: AnyContract;
+  spaceInfo: SpaceInfo;
+  players: User[];
+  provider: Provider;
+}> {
+  const {stableTokenBeneficiary} = await getNamedAccounts();
+  const players = await getUnnamedAccounts();
+  await deployments.fixture();
+
+  const distribution = [1000, 500, 3000, 100];
+  for (let i = 0; i < distribution.length; i++) {
+    const account = players[i];
+    const amount = distribution[i];
+    await deployments.execute(
+      'PlayToken_L2',
+      {from: stableTokenBeneficiary, log: true, autoMine: true},
+      'transfer',
+      account,
+      parseEther(amount.toString())
+    );
+  }
+
+  const playersAsContracts = [];
+  for (const player of players) {
+    const playerObj = await createPlayerAsContracts(player, ['OuterSpace', 'PlayToken_L2']);
+    playersAsContracts.push(playerObj);
+  }
+  const OuterSpaceDeployment = await deployments.get('OuterSpace');
+  let deltaTime = 0;
+  return {
+    getTime() {
+      return Math.floor(Date.now() / 1000) + deltaTime;
+    },
+    async increaseTime(t) {
+      await increaseTime(t);
+      deltaTime += t;
+    },
+    outerSpaceContract: (await ethers.getContract('OuterSpace')) as AnyContract,
+    spaceInfo: new SpaceInfo(OuterSpaceDeployment.linkedData),
+    players: playersAsContracts,
+    provider: ethers.provider,
+  };
+}
 
 export async function sendInSecret(
   spaceInfo: SpaceInfo,
-  player: Player,
+  player: User,
   {from, quantity, to}: {from: PlanetInfo; quantity: number; to: PlanetInfo}
 ): Promise<{
   receipt: ContractReceipt;
@@ -68,7 +124,7 @@ type PlanetState = PlanetInfo & {
   getNumSpaceships: (time: number) => number;
 };
 
-export async function fetchPlanetState(contract: OuterSpace, planet: PlanetInfo): Promise<PlanetState> {
+export async function fetchPlanetState(contract: AnyContract, planet: PlanetInfo): Promise<PlanetState> {
   const planetData = await contract.callStatic.getPlanet(planet.location.id);
   const statsFromContract = objMap(planet.stats, convertPlanetCallData);
   // check as validty assetion:
@@ -97,15 +153,4 @@ export async function fetchPlanetState(contract: OuterSpace, planet: PlanetInfo)
       return state.numSpaceships + newSpaceships;
     },
   };
-}
-
-export function acquire(player: Player, planet: PlanetInfo): Promise<ContractReceipt> {
-  const amount = BigNumber.from(planet.stats.stake).mul('1000000000000000000');
-  return waitFor(
-    player.PlayToken_L2.transferAndCall(
-      player.OuterSpace.address,
-      amount,
-      defaultAbiCoder.encode(['address', 'uint256'], [player.address, planet.location.id])
-    )
-  );
 }
