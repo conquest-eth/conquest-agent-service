@@ -25,6 +25,11 @@
         {:else if $tokenClaim.state === 'Claimed'}
           <p class="m-5 text-green-500">The tokens are now yours!</p>
           <Button class="mt-4" label="continue" on:click={() => tokenClaim.clearURL()}>Continue</Button>
+        {:else if $tokenClaim.state === 'AlreadyClaimedAnother'}
+          <p class="m-5 text-red-500">
+            You already claimed tokens at this address. To ensure fairness, you should not be using multiple accounts.
+          </p>
+          <Button class="mt-4" label="continue" on:click={() => tokenClaim.clearURL()}>Continue</Button>
         {:else if $tokenClaim.state === 'AlreadyClaimed'}
           <p class="m-5 text-red-500">The tokens have already been claimed. No more tokens to be given.</p>
           <Button class="mt-4" label="continue" on:click={() => tokenClaim.clearURL()}>Continue</Button>

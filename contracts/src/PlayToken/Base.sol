@@ -190,7 +190,7 @@ abstract contract Base is IERC20, BaseInternal {
         address from,
         address to,
         uint256 amount
-    ) internal {
+    ) internal virtual {
         require(to != address(0), "INVALID_ZERO_ADDRESS");
         require(to != address(this), "INVALID_THIS_ADDRESS");
         uint256 currentBalance = _balances[from];

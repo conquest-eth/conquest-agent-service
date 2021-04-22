@@ -8,7 +8,7 @@ import {hashParams} from '$lib/init';
 
 type TokenClaim = {
   inUrl: boolean;
-  state: 'Loading' | 'Available' | 'Claiming' | 'Claimed' | 'AlreadyClaimed';
+  state: 'Loading' | 'Available' | 'Claiming' | 'Claimed' | 'AlreadyClaimed' | 'AlreadyClaimedAnother';
   error?: unknown;
 };
 
@@ -61,6 +61,15 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
     const claimWallet = this.getClaimtWallet();
     const playToken_l2 = wallet.chain.contracts.PlayToken_L2;
     const balance = await playToken_l2.balanceOf(claimWallet.address);
+
+    if (wallet.address) {
+      const touched = await playToken_l2.touched(wallet.address);
+      if (touched) {
+        this.setPartial({state: 'AlreadyClaimedAnother'});
+        return;
+      }
+    }
+
     if (balance.eq(0)) {
       this.setPartial({state: 'AlreadyClaimed'});
     } else {
