@@ -35,8 +35,6 @@
         To participate you'll have to first acquire planets by depositing a stake in form of
         <PlayCoin class="inline w-4" />
         (Play tokens).
-        <!--You can also stake directly in USDC or DAI as Play Token
-        can be redeemed for the same. -->
       </p>
       <p class="mt-3">
         These planets will then produce spaceships that you can use to attack other planets. You'll also have to make
