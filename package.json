@@ -78,6 +78,7 @@
     "staging": "run-s staging:contracts staging:subgraph web:prepare common:build staging:web:rebuild staging:web:deploy",
     "staging:reset": "rimraf contracts/deployments/staging && run-s staging:contracts staging:subgraph web:prepare common:build staging:web:rebuild staging:web:deploy",
     "staging:claimKeys": "dotenv -e .env.staging -e .env -- npm --prefix contracts run execute staging scripts/generate_claim_keys.ts",
+    "staging:claimKeysURL": "dotenv -e .env.staging -e .env -- npm --prefix contracts run execute staging scripts/updateURLForClaimKeys.ts",
     "-----------------------------------": "",
     "// QUICK : deploy on quick": "",
     "quick:web:dev": "dotenv -e .env.quick -e .env -- npm --prefix web run dev",
