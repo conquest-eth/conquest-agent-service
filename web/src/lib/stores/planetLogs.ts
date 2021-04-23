@@ -68,10 +68,10 @@ class PlanetLogsStore extends BaseStoreWithData<PlanetLogs, undefined> {
     const toBlock = latestBlock.number - finality;
     const fromBlockNumber = (this.lastQueryBlockNumber || Math.max(0, toBlock - Math.floor(DAYS_7 / blockTime))) + 1;
     const OuterSpace = wallet.contracts.OuterSpace;
-    const addressUsed = this.address;
+    const addressUsed = this.address.toLowerCase();
     const filter = OuterSpace.filters.FleetArrived(null, null, this.address);
     const logs = ((await OuterSpace.queryFilter(filter, fromBlockNumber, toBlock)) as unknown) as FleetArrivedEvent[];
-    if (addressUsed !== this.address) {
+    if (addressUsed !== this.address.toLowerCase()) {
       return; // skip as we are now using a different account
     }
     this.lastQueryBlockNumber = toBlock;
