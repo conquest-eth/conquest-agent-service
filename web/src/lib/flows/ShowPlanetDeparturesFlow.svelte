@@ -22,7 +22,7 @@
 {:else if $showPlanetDepartures.step === 'READY'}
   <Modal on:close={() => showPlanetDepartures.cancel()} on:confirm={() => showPlanetDepartures.cancel()}>
     {#if !$showPlanetDepartures.departures || $showPlanetDepartures.departures.length === 0}
-      <p class="text-center">No departures from this planet since at least {timeToText(logPeriod)}</p>
+      <p class="text-center">No Enemy departures from this planet since at least {timeToText(logPeriod)}</p>
     {:else}
       {#each $showPlanetDepartures.departures as departure}
         <ul>

@@ -320,6 +320,7 @@
         on:click={messageOwner}>
         <div class="w-20">Message Onwer</div>
       </PanelButton>
+    {/if}
       <PanelButton
         label="Departures"
         color="text-gray-200"
@@ -328,7 +329,6 @@
         on:click={showDepartures}>
         <div class="w-20">Fleets</div>
       </PanelButton>
-    {/if}
   {:else}
     <PanelButton label="Connect your wallet" class="m-2" on:click={connect}>
       <div class="w-20">Connect Wallet</div>
