@@ -160,12 +160,24 @@ class AgentStore extends BaseStore<Agent> {
       try {
         const contract = wallet.contracts.OuterSpace.connect(this.$store.wallet);
         this.lastTxTime = now();
-        const tx = await contract.resolveFleet(
+        const gas = await contract.estimateGas.resolveFleet(
           fleetId,
           xyToLocation(fleet.from.x, fleet.from.y),
           xyToLocation(fleet.to.x, fleet.to.y),
           distance,
           secretHash
+        );
+        // if (gas.gt("1000000")) {
+        //   throw new Error("too much gas")
+        // }
+        const gasToUse = gas.add(40000);
+        const tx = await contract.resolveFleet(
+          fleetId,
+          xyToLocation(fleet.from.x, fleet.from.y),
+          xyToLocation(fleet.to.x, fleet.to.y),
+          distance,
+          secretHash,
+          {gasLimit: gasToUse}
         );
         privateAccount.recordFleetResolvingTxhash(fleetId, tx.hash, tx.nonce, true);
       } catch (e) {
