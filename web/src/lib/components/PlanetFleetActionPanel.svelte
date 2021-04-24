@@ -326,7 +326,7 @@
         borderColor="border-gray-200"
         class="m-2"
         on:click={showDepartures}>
-        <div class="w-20">Departures</div>
+        <div class="w-20">Fleets</div>
       </PanelButton>
     {/if}
   {:else}

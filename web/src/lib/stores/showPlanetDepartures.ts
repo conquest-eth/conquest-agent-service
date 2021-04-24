@@ -44,11 +44,23 @@ class MessageFlowStore extends BaseStoreWithData<ShowPlanetDeparturesFlow, undef
       const fromBlockNumber = Math.max(0, toBlock - Math.floor(logPeriod / blockTime)) + 1;
       const OuterSpace = wallet.contracts.OuterSpace;
       const filter = OuterSpace.filters.FleetSent(null, location);
-      const fleetSentEvents = ((await OuterSpace.queryFilter(
+      const fleetSentEvents = (((await OuterSpace.queryFilter(
         filter,
         fromBlockNumber,
         toBlock
-      )) as unknown) as FleetSentEvent[];
+      )) as unknown) as FleetSentEvent[]).filter(
+        (v) => v.args.fleetOwner.toLowerCase() !== wallet.address?.toLowerCase()
+      );
+
+      // remove resolved fleets
+      for (let i = 0; i < fleetSentEvents.length; i++) {
+        const fleetEvent = fleetSentEvents[i];
+        const fleetResolved = await  OuterSpace.callStatic.getFleet(fleetEvent.args.fleet, fleetEvent.args.from);
+        if (fleetResolved.quantity == 0) {
+          fleetSentEvents.splice(i, 1);
+          i--;
+        }
+      }
 
       let departures: Departure[] = [];
       if (fleetSentEvents.length > 0) {
@@ -56,15 +68,13 @@ class MessageFlowStore extends BaseStoreWithData<ShowPlanetDeparturesFlow, undef
         const earliestTime = earliestBlock.timestamp;
         const earliestBlockNumber = earliestBlock.number;
         const averageBlockTime = (latestBlock.timestamp - earliestTime) / (latestBlock.number - earliestBlockNumber);
-        departures = fleetSentEvents
-          .filter((v) => v.args.fleetOwner.toLowerCase() !== wallet.address?.toLowerCase())
-          .map((v) => {
-            return {
-              timestamp: (v.blockNumber - earliestBlockNumber) * averageBlockTime + earliestTime,
-              amount: v.args.quantity,
-              fleet: v.args.fleet.toHexString(),
-            };
-          });
+        departures = fleetSentEvents.map((v) => {
+          return {
+            timestamp: (v.blockNumber - earliestBlockNumber) * averageBlockTime + earliestTime,
+            amount: v.args.quantity,
+            fleet: v.args.fleet.toHexString(),
+          };
+        });
       }
 
       this.setPartial({
