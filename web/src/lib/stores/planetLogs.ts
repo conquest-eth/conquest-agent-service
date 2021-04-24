@@ -5,6 +5,7 @@ import {blockTime, finality, logPeriod} from '$lib/config';
 import type {BigNumber} from '@ethersproject/bignumber';
 import {hexZeroPad} from '@ethersproject/bytes';
 export type AttackEvent = {
+  won: boolean;
   fleet: string;
   planet: string;
   attacker: string;
@@ -76,6 +77,7 @@ class PlanetLogsStore extends BaseStoreWithData<PlanetLogs, undefined> {
     for (const log of logs) {
       if (log.args.fleetOwner.toLowerCase() !== addressUsed) {
         this.events.push({
+          won: log.args.won,
           fleet: log.args.fleet.toString(),
           planet: hexZeroPad(log.args.destination.toHexString(), 32),
           attacker: log.args.fleetOwner,

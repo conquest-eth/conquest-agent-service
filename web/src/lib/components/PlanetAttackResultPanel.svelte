@@ -14,10 +14,17 @@
 </script>
 
 <p class="p-2">
-  <Blockie class="w-6 h-6 inline-block" address={attack.attacker} />
-  attacked and made your planet lose
-  {attack.defenderLoss}
-  spaceships
+  {#if attack.won}
+    <Blockie class="w-6 h-6 inline-block" address={attack.attacker} />
+    succesfully captured your planet by destroying your
+    {attack.defenderLoss}
+    spaceships
+  {:else}
+    <Blockie class="w-6 h-6 inline-block" address={attack.attacker} />
+    attacked and made your planet lose
+    {attack.defenderLoss}
+    spaceships
+  {/if}
 </p>
 
 <PanelButton label="acknowledge" class="m-2" on:click={() => acknowledge()}>
