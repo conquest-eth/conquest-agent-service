@@ -5,6 +5,7 @@
   import {now} from '$lib/stores/time';
   import {timeToText} from '$lib/utils';
   import {logPeriod} from '$lib/config';
+  import Blockie from '$lib/components/Blockie.svelte';
 </script>
 
 {#if $showPlanetDepartures.error}
@@ -22,11 +23,18 @@
 {:else if $showPlanetDepartures.step === 'READY'}
   <Modal on:close={() => showPlanetDepartures.cancel()} on:confirm={() => showPlanetDepartures.cancel()}>
     {#if !$showPlanetDepartures.departures || $showPlanetDepartures.departures.length === 0}
-      <p class="text-center">No Enemy departures from this planet since at least {timeToText(logPeriod)}</p>
+      <p class="text-center">No Enemy fleets in transit from this planet since at least {timeToText(logPeriod)}</p>
     {:else}
       {#each $showPlanetDepartures.departures as departure}
         <ul>
-          <li>{departure.amount} sent {timeToText(now() - departure.timestamp)} ago</li>
+          <li>
+            <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={departure.owner} />
+            sent
+            {departure.amount}
+            spaceships
+            {timeToText(now() - departure.timestamp)}
+            ago
+          </li>
         </ul>
       {/each}
     {/if}

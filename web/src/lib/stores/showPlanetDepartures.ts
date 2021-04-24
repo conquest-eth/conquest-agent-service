@@ -7,6 +7,7 @@ export type Departure = {
   amount: number;
   timestamp: number;
   fleet: string;
+  owner: string;
 };
 
 export type FleetSentEvent = {
@@ -55,7 +56,7 @@ class MessageFlowStore extends BaseStoreWithData<ShowPlanetDeparturesFlow, undef
       // remove resolved fleets
       for (let i = 0; i < fleetSentEvents.length; i++) {
         const fleetEvent = fleetSentEvents[i];
-        const fleetResolved = await  OuterSpace.callStatic.getFleet(fleetEvent.args.fleet, fleetEvent.args.from);
+        const fleetResolved = await OuterSpace.callStatic.getFleet(fleetEvent.args.fleet, fleetEvent.args.from);
         if (fleetResolved.quantity == 0) {
           fleetSentEvents.splice(i, 1);
           i--;
@@ -73,6 +74,7 @@ class MessageFlowStore extends BaseStoreWithData<ShowPlanetDeparturesFlow, undef
             timestamp: (v.blockNumber - earliestBlockNumber) * averageBlockTime + earliestTime,
             amount: v.args.quantity,
             fleet: v.args.fleet.toHexString(),
+            owner: v.args.fleetOwner,
           };
         });
       }
