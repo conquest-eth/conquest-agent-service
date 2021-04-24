@@ -3,6 +3,7 @@
   import sendFlow from '$lib/stores/send';
   import exitFlow from '$lib/stores/exit';
   import messageFlow from '$lib/stores/message';
+  import showPlanetDepartures from '$lib/stores/showPlanetDepartures';
   import {wallet} from '$lib/stores/wallet';
   import privateAccount from '$lib/stores/privateAccount';
   import {planetAt} from '$lib/stores/planets';
@@ -41,6 +42,10 @@
 
   function messageOwner() {
     messageFlow.show($planet.state.owner);
+  }
+
+  function showDepartures() {
+    showPlanetDepartures.show($planet.location.id);
   }
 
   function connect() {
@@ -314,6 +319,14 @@
         class="m-2"
         on:click={messageOwner}>
         <div class="w-20">Message Onwer</div>
+      </PanelButton>
+      <PanelButton
+        label="Departures"
+        color="text-gray-200"
+        borderColor="border-gray-200"
+        class="m-2"
+        on:click={showDepartures}>
+        <div class="w-20">Departures</div>
       </PanelButton>
     {/if}
   {:else}

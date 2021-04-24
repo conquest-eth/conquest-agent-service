@@ -63,4 +63,6 @@ if (fallbackProviderOrUrl && typeof fallbackProviderOrUrl === 'string') {
   }
 }
 
-export {finality, fallbackProviderOrUrl, chainId, blockTime, chainName, nativeTokenSymbol};
+const logPeriod = 7 * 24 * 60 * 60;
+
+export {finality, fallbackProviderOrUrl, chainId, blockTime, chainName, nativeTokenSymbol, logPeriod};

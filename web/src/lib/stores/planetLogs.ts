@@ -1,7 +1,7 @@
 import {BaseStoreWithData} from '$lib/utils/stores';
 import privateAccount from './privateAccount';
 import {wallet} from './wallet';
-import {blockTime, finality} from '$lib/config';
+import {blockTime, finality, logPeriod} from '$lib/config';
 import type {BigNumber} from '@ethersproject/bignumber';
 import {hexZeroPad} from '@ethersproject/bytes';
 export type AttackEvent = {
@@ -28,8 +28,6 @@ type FleetArrivedEvent = {
   };
   blockNumber: number;
 };
-
-const DAYS_7 = 7 * 24 * 60 * 60;
 
 export type PlanetLogs = {
   step: 'IDLE' | 'LOADING' | 'READY';
@@ -66,7 +64,7 @@ class PlanetLogsStore extends BaseStoreWithData<PlanetLogs, undefined> {
   async fetch() {
     const latestBlock = await wallet.provider.getBlock('latest');
     const toBlock = latestBlock.number - finality;
-    const fromBlockNumber = (this.lastQueryBlockNumber || Math.max(0, toBlock - Math.floor(DAYS_7 / blockTime))) + 1;
+    const fromBlockNumber = (this.lastQueryBlockNumber || Math.max(0, toBlock - Math.floor(logPeriod / blockTime))) + 1;
     const OuterSpace = wallet.contracts.OuterSpace;
     const addressUsed = this.address.toLowerCase();
     const filter = OuterSpace.filters.FleetArrived(null, null, this.address);

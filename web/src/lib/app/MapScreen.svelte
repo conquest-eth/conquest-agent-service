@@ -13,6 +13,8 @@
   import FleetsToResolve from '$lib/components/FleetsToResolve.svelte';
   import messageFlow from '$lib/stores/message';
   import MessageFlow from '$lib/flows/MessageFlow.svelte';
+  import showPlanetDepartures from '$lib/stores/showPlanetDepartures';
+  import ShowPlanetDeparturesFlow from '$lib/flows/ShowPlanetDeparturesFlow.svelte';
 </script>
 
 <Map />
@@ -39,4 +41,8 @@
 
 {#if $messageFlow.error || $messageFlow.step !== 'IDLE'}
   <MessageFlow />
+{/if}
+
+{#if $showPlanetDepartures.error || $showPlanetDepartures.step !== 'IDLE'}
+  <ShowPlanetDeparturesFlow />
 {/if}
