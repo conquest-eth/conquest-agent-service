@@ -13,7 +13,7 @@
   <a
     target="_blank"
     class="underline text-cyan-100"
-    href={`${import.meta.env.VITE_BLOCK_EXPLORER}/${exit.txHash}`}>here</a>
+    href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${exit.txHash}`}>here</a>
 </p>
 <PanelButton label="Connect your wallet" class="m-2" on:click={() => deleteExit()}>
   <div class="w-20">OK</div>
