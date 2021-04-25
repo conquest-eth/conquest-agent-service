@@ -205,7 +205,7 @@ class AgentStore extends BaseStore<Agent> {
       let gas: BigNumber;
       try {
         gas = await contract.estimateGas.resolveFleet(
-          BigNumber.from(fleetId).add(1),
+          fleetId,
           xyToLocation(fleet.from.x, fleet.from.y),
           xyToLocation(fleet.to.x, fleet.to.y),
           distance,
