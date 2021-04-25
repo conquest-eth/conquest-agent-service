@@ -2,10 +2,12 @@
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
   import {wallet, builtin, flow} from '$lib/stores/wallet';
+  import privateAccount from '$lib/stores/privateAccount';
   import myprofile from '$lib/stores/myprofile';
   import {BigNumber} from '@ethersproject/bignumber';
   import WalletAccess from '$lib/WalletAccess.svelte';
   import Button from '$lib/components/PanelButton.svelte';
+  import {base64} from '$lib/utils';
 
   // TODO remove duplication, abstract away profile sync but also sync in general
   const PROFILE_URI = import.meta.env.VITE_PROFILE_URI as string;
@@ -50,6 +52,9 @@
     const {counter, currentData} = await getProfile(walletAddress);
     currentData.name = name;
     currentData.contact = contact;
+    const {publicKey} = $privateAccount.messagingKey;
+    var publicKeyString = base64.bytesToBase64(publicKey);
+    currentData.publicKey = publicKeyString;
     const data = JSON.stringify(currentData);
 
     const signature = await wallet.provider.getSigner().signMessage('put:' + DB_NAME + ':' + counter + ':' + data);
@@ -84,12 +89,13 @@
   <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
 
   <WalletAccess>
-    {#if $wallet.state !== 'Ready'}
+    {#if $privateAccount.step !== 'READY'}
       <Button
         class="w-max-content m-4"
         label="connect"
-        disabled={!$builtin.available || $wallet.connecting}
-        on:click={() => flow.connect()}>
+        disabled={$privateAccount.step !== 'IDLE'}
+        on:click={() => privateAccount.login()}>
+        <!-- TODO privateAccount so we can get access to the public key-->
         Connect
       </Button>
     {:else}

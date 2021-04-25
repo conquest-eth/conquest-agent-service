@@ -81,10 +81,10 @@
               on:click={() => agent.topup()}>
               Top Up
             </Button> -->
-          {:else if $agent.nextFleet}
-            {#if $agent.nextFleet.time - now() > 0}
+          {:else if $agent.nextFleets && $agent.nextFleets.length > 0}
+            {#if $agent.nextFleets[0].time - now() > 0}
               Next Fleet to be resolved in
-              {timeToText($agent.nextFleet.time - now())}
+              {timeToText($agent.nextFleets[0].time - now())}
             {:else}Fleet being resolved...{/if}
           {:else}
             <p>No Fleet yet</p>
