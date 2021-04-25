@@ -176,7 +176,7 @@ class AgentStore extends BaseStore<Agent> {
   }
 
   async resolveFleet(fleetToResolve: {fleetId: string; time: number}) {
-    if (now() < fleetToResolve.time) {
+    if (now() > fleetToResolve.time) {
       const fleetId = fleetToResolve.fleetId;
       const fleet = privateAccount.getFleet(fleetId);
       if (!fleet) {
