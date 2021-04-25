@@ -11,6 +11,7 @@
   import PlayCoin from './PlayCoin.svelte';
   import PanelButton from './PanelButton.svelte';
   import {locationToXY, xyToLocation} from 'conquest-eth-common';
+  import {space} from '$lib/app/mapState';
 
   export let location: string;
   export let close: () => void;
@@ -67,6 +68,10 @@
     $sendFlow.data?.from && planetAt(xyToLocation($sendFlow.data?.from.x as number, $sendFlow.data?.from.y as number));
   $: attacking =
     $sendFlow.step === 'PICK_ORIGIN' && destinationPlanet && $destinationPlanet.state?.owner !== $wallet.address;
+
+  $: captureResult = $planet?.state
+    ? space.simulateCapture($planet.state.numSpaceships, $planet.stats.defense)
+    : undefined;
 </script>
 
 {#if $planet.state}
@@ -240,6 +245,10 @@
                 To capture a planet and make it produce spaceships for you, you have to deposit a certain number of
                 <PlayCoin class="w-4 inline" />
                 (Play token) on it. If you lose your planet, you lose the ability to withdraw them.
+                <br />
+                The capture will be resolved as if it was a 10,000 attack power with 100,000
+                <!-- TODO config -->
+                spaceships. The capture will only be succesful if the attack succeed
               </Help>
             {/if}
           </span>
@@ -312,23 +321,60 @@
           </Help>
         </div>
       </PanelButton>
+      {#if !$planet.state.active}
+        <PanelButton
+          label="Capture"
+          class="m-2"
+          color="text-yellow-400"
+          borderColor="border-yellow-400"
+          disabled={!$planet.state.inReach || !captureResult.success}
+          on:click={capture}>
+          <div class="w-20">
+            Capture
+            <span class="text-sm">
+              {#if !$planet.state.inReach}
+                (unreachable)
+                <Help class="inline w-4 h-4">
+                  The Reachable Universe expands as more planets get captured. Note though that you can still send
+                  attack unreachable planets. But these planets cannot produce spaceships until they get in range and
+                  you stake on it.
+                </Help>
+              {:else if !captureResult.success}
+                <Help class="inline w-4 h-4">
+                  The planet cannot be captured at the moment as it has too strong defense
+                </Help>
+              {:else}
+                <Help class="inline w-4 h-4">
+                  To capture a planet and make it produce spaceships for you, you have to deposit a certain number of
+                  <PlayCoin class="w-4 inline" />
+                  (Play token) on it. If you lose your planet, you lose the ability to withdraw them.
+                  <br />
+                  The capture will be resolved as if it was a 10,000 attack power with 100,000
+                  <!-- TODO config -->
+                  spaceships. The capture will only be succesful if the attack succeed
+                </Help>
+              {/if}
+            </span>
+          </div>
+        </PanelButton>
+      {/if}
       <PanelButton
         label="Message"
-        color="text-yellow-400"
-        borderColor="border-yellow-400"
+        color="text-blue-400"
+        borderColor="border-blue-400"
         class="m-2"
         on:click={messageOwner}>
         <div class="w-20">Message Onwer</div>
       </PanelButton>
     {/if}
-      <PanelButton
-        label="Departures"
-        color="text-gray-200"
-        borderColor="border-gray-200"
-        class="m-2"
-        on:click={showDepartures}>
-        <div class="w-20">Fleets</div>
-      </PanelButton>
+    <PanelButton
+      label="Departures"
+      color="text-gray-200"
+      borderColor="border-gray-200"
+      class="m-2"
+      on:click={showDepartures}>
+      <div class="w-20">Fleets</div>
+    </PanelButton>
   {:else}
     <PanelButton label="Connect your wallet" class="m-2" on:click={connect}>
       <div class="w-20">Connect Wallet</div>

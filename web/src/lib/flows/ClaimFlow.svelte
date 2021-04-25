@@ -7,7 +7,7 @@
   import {BigNumber} from '@ethersproject/bignumber';
   import PlayCoin from '$lib/components/PlayCoin.svelte';
   import {timeToText} from '$lib/utils';
-  import {spaceInfo} from '$lib/app/mapState';
+  import {space, spaceInfo} from '$lib/app/mapState';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
 
@@ -16,6 +16,8 @@
   $: stats = planet ? $planet.stats : undefined;
   $: stake = stats && stats.stake;
   $: cost = planet ? BigNumber.from($planet.stats.stake) : undefined; // TODO multiplier from config/contract
+
+  $: result = $planet ? space.simulateCapture($planet.state.numSpaceships, $planet.stats.defense) : undefined;
 </script>
 
 {#if $claimFlow.error}
@@ -62,6 +64,13 @@
           <p class="text-gray-300 mt-2 text-sm">
             You'll be able to get your stake back if you manage to exit the planet safely (this takes
             {timeToText(spaceInfo.exitDuration, {verbose: true})}).
+          </p>
+          <p class="text-blue-400 mt-2 text-sm">
+            Once captured, the planet will start with
+            {result.numSpaceshipsLeft}
+            spaceships and will produce
+            {$planet.stats.production / 60}
+            spaceships per minutes.
           </p>
           <Button class="mt-5" label="Stake" on:click={() => claimFlow.confirm()}>Confirm</Button>
         </div>
