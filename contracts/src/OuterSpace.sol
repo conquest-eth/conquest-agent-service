@@ -440,7 +440,7 @@ contract OuterSpace is Proxied {
             planet.owner = sender;
             if (defense != 0) {
                 (uint32 attackerLoss, ) = _computeFight(_acquireNumSpaceships, defense, 10000, _defense(data)); // attacker alwasy win as defense (and stats.native) is restricted to 3500
-                require(attackerLoss <= _acquireNumSpaceships, "FAILED_CAPTURED");
+                require(attackerLoss < _acquireNumSpaceships, "FAILED_CAPTURED");
                 currentNumSpaceships = _acquireNumSpaceships - attackerLoss;
             } else {
                 currentNumSpaceships += _acquireNumSpaceships;
