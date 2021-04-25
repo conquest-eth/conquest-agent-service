@@ -17,7 +17,7 @@
   $: stake = stats && stats.stake;
   $: cost = planet ? BigNumber.from($planet.stats.stake) : undefined; // TODO multiplier from config/contract
 
-  $: result = $planet ? space.simulateCapture($planet.state.numSpaceships, $planet.stats.defense) : undefined;
+  $: result = $planet && $planet.state ? space.simulateCapture($planet) : undefined;
 </script>
 
 {#if $claimFlow.error}

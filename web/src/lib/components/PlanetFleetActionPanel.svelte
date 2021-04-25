@@ -69,9 +69,7 @@
   $: attacking =
     $sendFlow.step === 'PICK_ORIGIN' && destinationPlanet && $destinationPlanet.state?.owner !== $wallet.address;
 
-  $: captureResult = $planet?.state
-    ? space.simulateCapture($planet.state.numSpaceships, $planet.stats.defense)
-    : undefined;
+  $: captureResult = $planet?.state ? space.simulateCapture($planet) : undefined;
 </script>
 
 {#if $planet.state}
@@ -341,7 +339,8 @@
                 </Help>
               {:else if !captureResult.success}
                 <Help class="inline w-4 h-4">
-                  The planet cannot be captured at the moment as it has too strong defense
+                  <!-- The planet cannot be captured at the moment as it has too strong defense -->
+                  To capture a planet, it first need to be either without spaceships or controlled by you.
                 </Help>
               {:else}
                 <Help class="inline w-4 h-4">
@@ -373,7 +372,7 @@
       borderColor="border-gray-200"
       class="m-2"
       on:click={showDepartures}>
-      <div class="w-20">Fleets</div>
+      <div class="w-20">Enemy Fleets</div>
     </PanelButton>
   {:else}
     <PanelButton label="Connect your wallet" class="m-2" on:click={connect}>

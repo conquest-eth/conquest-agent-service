@@ -420,11 +420,15 @@ contract OuterSpace is Proxied {
                 justExited = true;
             } else {
                 require(!active, "STILL_ACTIVE");
-                if (mplanet.owner != sender) {
-                    defense = currentNumSpaceships;
-                } else {
-                    defense = 0;
-                }
+
+                // Do not allow staking over occupied planets
+                require(mplanet.owner == sender || currentNumSpaceships == 0, "OCCUPIED");
+                // used to be the following (but this gave too many cons to send spaceships to non-active planets):
+                // if (mplanet.owner != sender) {
+                //     defense = currentNumSpaceships;
+                // } else {
+                //     defense = 0;
+                // }
             }
         }
         if (justExited) {
