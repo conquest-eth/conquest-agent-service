@@ -6,10 +6,26 @@ import type {Wallet} from '@ethersproject/wallet';
 import {space, spaceInfo} from '$lib/app/mapState';
 import {xyToLocation} from 'conquest-eth-common';
 import {now} from './time';
+import type {Event} from '@ethersproject/contracts';
+
+type FleetArrivedEvent = Event & {
+  args: {
+    fleet: BigNumber;
+    fleetOwner: string;
+    destinationOwner: string;
+    destination: BigNumber;
+    fleetLoss: number;
+    planetLoss: number;
+    inFlightFleetLoss: number;
+    inFlightPlanetLoss: number;
+    won: boolean;
+    newNumspaceships: number;
+  };
+};
 
 type Agent = {
   state: 'Idle' | 'Loading' | 'Ready';
-  nextFleet?: {fleetId: string; time: number};
+  nextFleets?: {fleetId: string; time: number}[];
   balance: BigNumber;
   wallet?: Wallet;
   ownerAddress?: string;
@@ -40,7 +56,7 @@ class AgentStore extends BaseStore<Agent> {
     }
   }
 
-  getNextFleet(): {fleetId: string; time: number} | undefined {
+  getNextFleets(): {fleetId: string; time: number}[] | undefined {
     const fleets = privateAccount
       .getFleetsWithId()
       .map((fleet) => {
@@ -61,7 +77,9 @@ class AgentStore extends BaseStore<Agent> {
       })
       .sort((a, b) => a.arrivalTime - b.arrivalTime);
 
-    return fleets.length > 0 ? {time: fleets[0].arrivalTime, fleetId: fleets[0].id} : undefined;
+    return fleets.map((v) => {
+      return {time: v.arrivalTime, fleetId: v.id};
+    });
   }
 
   async topup() {
@@ -83,7 +101,7 @@ class AgentStore extends BaseStore<Agent> {
         stop();
         this.setPartial({
           state: 'Idle',
-          nextFleet: undefined,
+          nextFleets: undefined,
           balance: BigNumber.from(0),
           ownerAddress: undefined,
           wallet: undefined,
@@ -95,13 +113,13 @@ class AgentStore extends BaseStore<Agent> {
       const ownerAddress = wallet.address;
       const agentWallet = await privateAccount.getAgentWallet();
       const balance = await wallet.provider.getBalance(agentWallet.address);
-      const nextFleet = this.getNextFleet();
+      const nextFleets = this.getNextFleets();
 
       if (ownerAddress === wallet.address) {
         this.setPartial({
           state: 'Ready',
           balance,
-          nextFleet,
+          nextFleets,
           wallet: agentWallet,
           ownerAddress: wallet.address,
           lowETH: balance.lt(cost),
@@ -113,7 +131,7 @@ class AgentStore extends BaseStore<Agent> {
     } else {
       this.setPartial({
         state: 'Loading',
-        nextFleet: undefined,
+        nextFleets: undefined,
         balance: BigNumber.from(0),
         wallet: undefined,
       });
@@ -134,8 +152,32 @@ class AgentStore extends BaseStore<Agent> {
     if (now() - this.lastTxTime < 60) {
       return;
     }
-    if (this.$store.nextFleet && now() > this.$store.nextFleet.time) {
-      const fleetId = this.$store.nextFleet.fleetId;
+    if (this.$store.nextFleets && this.$store.nextFleets.length > 0) {
+      await this.attemptResolution(this.$store.nextFleets);
+    } else {
+      if (!this.$store.lowETH) {
+        await privateAccount.agentIsAlive();
+      }
+    }
+  }
+
+  async attemptResolution(fleetsToResolve: {fleetId: string; time: number}[], i = 0) {
+    try {
+      await this.resolveFleet(fleetsToResolve[i]);
+    } catch (e) {
+      console.error('ERROR while attempting to resolve');
+      console.error(e);
+      i++;
+      if (fleetsToResolve.length > i) {
+        console.log('checking next fleet...');
+        await this.attemptResolution(fleetsToResolve, i);
+      }
+    }
+  }
+
+  async resolveFleet(fleetToResolve: {fleetId: string; time: number}) {
+    if (now() < fleetToResolve.time) {
+      const fleetId = fleetToResolve.fleetId;
       const fleet = privateAccount.getFleet(fleetId);
       if (!fleet) {
         throw new Error(`no fleet with id ${fleetId}`);
@@ -157,36 +199,41 @@ class AgentStore extends BaseStore<Agent> {
         Math.pow(to.location.globalX - from.location.globalX, 2) +
         Math.pow(to.location.globalY - from.location.globalY, 2);
       const distance = Math.floor(Math.sqrt(distanceSquared));
+
+      const contract = wallet.contracts.OuterSpace.connect(this.$store.wallet);
+      this.lastTxTime = now();
+      let gas: BigNumber;
       try {
-        const contract = wallet.contracts.OuterSpace.connect(this.$store.wallet);
-        this.lastTxTime = now();
-        const gas = await contract.estimateGas.resolveFleet(
-          fleetId,
+        gas = await contract.estimateGas.resolveFleet(
+          BigNumber.from(fleetId).add(1),
           xyToLocation(fleet.from.x, fleet.from.y),
           xyToLocation(fleet.to.x, fleet.to.y),
           distance,
           secretHash
         );
-        // if (gas.gt("1000000")) {
-        //   throw new Error("too much gas")
-        // }
-        const gasToUse = gas.add(40000);
-        const tx = await contract.resolveFleet(
-          fleetId,
-          xyToLocation(fleet.from.x, fleet.from.y),
-          xyToLocation(fleet.to.x, fleet.to.y),
-          distance,
-          secretHash,
-          {gasLimit: gasToUse}
-        );
-        privateAccount.recordFleetResolvingTxhash(fleetId, tx.hash, tx.nonce, true);
       } catch (e) {
-        console.error(e);
+        console.error('error with the fleet, checking if it has already been resolved....');
+        const filter = contract.filters.FleetArrived(fleetId);
+        const logs = ((await contract.queryFilter(filter)) as unknown) as FleetArrivedEvent[];
+        if (logs && logs.length > 0) {
+          console.log('resolution event found...');
+          const transaction = await logs[0].getTransaction();
+          privateAccount.recordFleetResolvingTxhash(fleetId, logs[0].transactionHash, transaction.nonce, true);
+          console.log('recorded...');
+          return;
+        }
+        throw e;
       }
-    } else {
-      if (!this.$store.lowETH) {
-        await privateAccount.agentIsAlive();
-      }
+      const gasToUse = gas.add(40000);
+      const tx = await contract.resolveFleet(
+        fleetId,
+        xyToLocation(fleet.from.x, fleet.from.y),
+        xyToLocation(fleet.to.x, fleet.to.y),
+        distance,
+        secretHash,
+        {gasLimit: gasToUse}
+      );
+      privateAccount.recordFleetResolvingTxhash(fleetId, tx.hash, tx.nonce, true);
     }
   }
 }
