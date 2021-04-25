@@ -15,6 +15,12 @@ import {contracts as contractsInfo} from '$lib/app/contractInfos';
 import {BaseStoreWithData} from '$lib/utils/stores';
 import {now} from './time';
 
+// TODO tweetnacl do not work with vite
+// import {sign} from 'tweetnacl';
+const nacl = (typeof window !== 'undefined' ? (window as any).nacl : {}) as any;
+
+type MessagingKey = {secretKey: Uint8Array; publicKey: Uint8Array};
+
 type Capture = {
   txHash: string;
   nonce: number;
@@ -54,6 +60,7 @@ type PrivateAccountData = {
   id: number;
   wallet?: Wallet;
   aesKey?: Uint8Array;
+  messagingKey?: MessagingKey;
   step: 'READY' | 'CONNECTING' | 'SIGNATURE_REQUIRED' | 'SIGNATURE_REQUESTED' | 'LOADING' | 'IDLE';
   data: SecretData | undefined;
   syncEnabled: boolean;
@@ -86,7 +93,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
   private monitorProcess: NodeJS.Timeout | undefined = undefined;
   private syncProcess: NodeJS.Timeout | undefined = undefined;
   private _lastId = 0;
-  private walletData: Record<string, {wallet: Wallet; aesKey: Uint8Array}> = {};
+  private walletData: Record<string, {wallet: Wallet; aesKey: Uint8Array; messagingKey: MessagingKey}> = {};
 
   private _promise: Promise<void> | undefined;
   private _resolve: (() => void) | undefined;
@@ -99,6 +106,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       id: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
       wallet: undefined,
       aesKey: undefined,
+      messagingKey: undefined,
       step: 'IDLE',
       data: undefined,
       sync: 'IDLE',
@@ -112,7 +120,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       if ($chain.state === 'Ready') {
         this.start(this.$store.walletAddress, $chain.chainId);
       } else {
-        this.setPartial({wallet: undefined, aesKey: undefined, chainId: undefined});
+        this.setPartial({wallet: undefined, aesKey: undefined, messagingKey: undefined, chainId: undefined});
         if (this.$store.step === 'READY') {
           this.setPartial({step: 'IDLE', chainId: undefined, data: undefined});
         }
@@ -124,7 +132,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       if ($wallet.address) {
         this.start($wallet.address, this.$store.chainId);
       } else {
-        this.setPartial({wallet: undefined, walletAddress: undefined, aesKey: undefined});
+        this.setPartial({wallet: undefined, walletAddress: undefined, aesKey: undefined, messagingKey: undefined});
         if (this.$store.step === 'READY') {
           this.setPartial({
             step: 'IDLE',
@@ -700,10 +708,11 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
         if (storage) {
           const signature = storage.signature;
           if (signature) {
-            const {privateWallet, aesKey} = await this.generateKeys(signature);
+            const {privateWallet, aesKey, messagingKey} = await this.generateKeys(signature);
             this.walletData[walletAddress.toLowerCase()] = {
               wallet: privateWallet,
               aesKey,
+              messagingKey,
             };
           }
         }
@@ -715,6 +724,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
           step: 'READY', // TODO why READY ?
           wallet: existingData.wallet,
           aesKey: existingData.aesKey,
+          messagingKey: existingData.messagingKey,
           syncEnabled: storage.syncRemotely,
           walletAddress,
           chainId,
@@ -728,6 +738,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
         this.setPartial({
           wallet: undefined,
           aesKey: undefined,
+          messagingKey: undefined,
           walletAddress,
           chainId,
           data: undefined,
@@ -742,6 +753,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
           this.setPartial({
             wallet: existingData.wallet,
             aesKey: existingData.aesKey,
+            messagingKey: existingData.messagingKey,
             walletAddress,
             chainId,
             data: undefined,
@@ -1118,11 +1130,25 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     await this.execute();
   }
 
-  async generateKeys(signature: string): Promise<{privateWallet: Wallet; aesKey: Uint8Array}> {
+  async generateKeys(
+    signature: string
+  ): Promise<{
+    privateWallet: Wallet;
+    aesKey: Uint8Array;
+    messagingKey: MessagingKey;
+  }> {
     const privateWallet = new Wallet(signature.slice(0, 130));
     const aesKeySignature = await privateWallet.signMessage('AES KEY');
     const aesKey = aes.utils.hex.toBytes(aesKeySignature.slice(2, 66)); // TODO mix ?
-    return {privateWallet, aesKey};
+    const messagingKey = nacl.sign.keyPair.fromSeed(
+      new Uint8Array(
+        signature
+          .slice(2, 66)
+          .match(/.{1,2}/g)
+          .map((byte) => parseInt(byte, 16))
+      )
+    );
+    return {privateWallet, aesKey, messagingKey};
   }
 
   async confirm({
@@ -1149,8 +1175,8 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       const signature = await wallet.provider
         .getSigner()
         .signMessage('Only sign this message on "conquest.eth" or other trusted frontend');
-      const {privateWallet, aesKey} = await this.generateKeys(signature);
-      this.walletData[walletAddress] = {wallet: privateWallet, aesKey};
+      const {privateWallet, aesKey, messagingKey} = await this.generateKeys(signature);
+      this.walletData[walletAddress] = {wallet: privateWallet, aesKey, messagingKey};
 
       if (storeSignatureLocally) {
         const toStorage = JSON.stringify({signature, syncRemotely});
@@ -1163,6 +1189,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
         syncEnabled: syncRemotely,
         wallet: privateWallet,
         aesKey,
+        messagingKey,
         walletAddress,
         chainId: wallet.chain.chainId,
         data: undefined,
@@ -1187,7 +1214,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   cancel(e?: any): void {
     flow.cancel();
-    this.setPartial({step: 'IDLE', wallet: undefined, aesKey: undefined});
+    this.setPartial({step: 'IDLE', wallet: undefined, aesKey: undefined, messagingKey: undefined});
     if (e) {
       this._reject && this._reject(e);
     }
