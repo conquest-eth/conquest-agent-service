@@ -311,6 +311,12 @@ export class Camera {
     this._update();
   }
 
+  navigate(x: number, y: number): void {
+    this.world.x = x;
+    this.world.y = y;
+    this._update();
+  }
+
   onwheel(e: WheelEvent): void {
     e.preventDefault();
     const {offsetX, offsetY, deltaY} = e;

@@ -16,7 +16,7 @@
   export let location: string;
   export let close: () => void;
 
-  const planet = planetAt(location);
+  $: planet = planetAt(location);
 
   function capture() {
     claimFlow.claim(location);

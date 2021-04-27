@@ -3,7 +3,6 @@ import {contracts as contractsInfo} from '$lib/app/contractInfos';
 import privateAccount from '$lib/stores/privateAccount';
 import {fallback, chain} from '$lib/stores/wallet';
 import {now} from '$lib/stores/time';
-import {UI} from './UI';
 import {SUBGRAPH_ENDPOINT} from '$lib/graphql/graphql_endpoints';
 
 const timeKeeper = {
@@ -145,7 +144,6 @@ async function fetch(
   return {planetStates: [], discovered: {minX: 0, minY: 0, maxX: 0, maxY: 0}};
 }
 
-export const ui = new UI();
 export const spaceInfo = new SpaceInfo(contractsInfo.contracts.OuterSpace.linkedData);
 export const space = new PrivateSpace(spaceInfo, fetch, timeKeeper, privateAccount);
 

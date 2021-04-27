@@ -12,7 +12,18 @@
   export let location: string;
   export let close: () => void;
 
-  const planet = planetAt(location);
+  function _select(elem: HTMLElement) {
+    const range = document.createRange();
+    const selection = window.getSelection();
+    range.selectNodeContents(elem);
+    (selection as any).removeAllRanges();
+    (selection as any).addRange(range);
+  }
+  function select(e: MouseEvent) {
+    _select(e.currentTarget as HTMLElement);
+  }
+
+  $: planet = planetAt(location);
 
   $: walletIsOwner = $wallet.address && $wallet.address?.toLowerCase() === $planet.state?.owner.toLowerCase();
   $: textColor =
@@ -34,6 +45,15 @@
       <h2 class="flex-auto  ${textColor} text-center pt-1 font-bold">{$planet.stats.name}</h2>
     {/if}
   </div>
+  {#if $planet.state && $planet.state.owner !== '0x0000000000000000000000000000000000000000'}
+    <h2 on:click={select} class={`flex-auto text-center -m-2 font-bold text-white`}>
+      {$planet.location.x},{$planet.location.y}
+    </h2>
+  {:else}
+    <h2 on:click={select} class={`flex-auto text-center font-bold text-white`}>
+      {$planet.location.x},{$planet.location.y}
+    </h2>
+  {/if}
   <div class="w-full h-1 bg-cyan-300 my-2" />
 
   <div class="m-2">

@@ -705,20 +705,6 @@ export class Renderer {
             }
           }
 
-          if (this.controller.selectedPlanet === planet.location.id) {
-            ctx.lineWidth = lineWidth;
-            ctx.strokeStyle = '#67e8f9';
-            ctx.setLineDash([]);
-            ctx.beginPath();
-            ctx.rect(
-              Math.round(planetX) - (200 * Math.sqrt(multiplier)) / 2,
-              Math.round(planetY) - (200 * Math.sqrt(multiplier)) / 2,
-              200 * Math.sqrt(multiplier),
-              200 * Math.sqrt(multiplier)
-            );
-            ctx.stroke();
-          }
-
           // for (let star = 0; star < numStars; i++) {
 
           // }
@@ -755,6 +741,19 @@ export class Renderer {
             );
           }
 
+          if (this.controller.selectedPlanet === planet.location.id) {
+            ctx.lineWidth = lineWidth;
+            ctx.strokeStyle = '#67e8f9';
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.rect(
+              Math.round(planetX) - (200 * Math.sqrt(multiplier)) / 2,
+              Math.round(planetY) - (200 * Math.sqrt(multiplier)) / 2,
+              200 * Math.sqrt(multiplier),
+              200 * Math.sqrt(multiplier)
+            );
+            ctx.stroke();
+          }
           // if (planet.exitTime) // TODO
         }
       }

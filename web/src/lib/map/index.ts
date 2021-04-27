@@ -1,6 +1,5 @@
 import type {Renderer} from './renderer';
 import type {Camera} from './camera';
-import type {UI} from '$lib/app/UI';
 import {Controller} from './controller';
 
 export default class Map {
@@ -15,14 +14,14 @@ export default class Map {
   }
 
   // TODO use constructor ?
-  setup(ui: UI, canvas: HTMLCanvasElement): () => void {
+  setup(canvas: HTMLCanvasElement): () => void {
     this.canvas = canvas;
     const ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
     if (!ctx) {
       throw new Error(`cannot create 2d context`);
     }
     this.ctx = ctx;
-    const controller = new Controller(ui);
+    const controller = new Controller();
     this.renderer.setup(this.ctx, controller);
     this.camera.setup({
       canvas: this.canvas,

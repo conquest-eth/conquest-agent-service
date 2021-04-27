@@ -4,21 +4,17 @@
   import {Camera} from '$lib/map/camera';
   import {Renderer} from '$lib/map/renderer';
   import {RenderState} from '$lib/map/RenderState';
-  import {space, ui} from './mapState';
+  import {space} from './mapState';
 
   let canvas: HTMLCanvasElement;
   onMount(() => {
     const renderState = new RenderState(space);
     const renderer = new Renderer(renderState);
     const camera = new Camera(renderState);
+    (window as any).camera = camera; // TODO
     const map = new Map(renderer, camera);
-    ui.setCanvas(canvas);
-    map.setup(ui, canvas);
+    map.setup(canvas);
     return map.startRendering();
-  });
-
-  onDestroy(() => {
-    ui.hideAll();
   });
 </script>
 
