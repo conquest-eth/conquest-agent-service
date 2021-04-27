@@ -686,9 +686,9 @@ export class Renderer {
               ctx.beginPath();
               ctx.setLineDash(circleDash);
               if (circleColor === '#E5E7EB') {
-                ctx.lineWidth = 1 / render.scale;
+                ctx.lineWidth = 2 / render.scale;
               } else {
-                ctx.lineWidth = 1 / render.scale;
+                ctx.lineWidth = 2 / render.scale;
               }
 
               ctx.strokeStyle = circleColor;
@@ -750,7 +750,8 @@ export class Renderer {
               Math.round(planetX),
               Math.round(planetY),
               Math.max((1 / render.scale) * 2, render.scale * 2),
-              planet.state?.owner.toLowerCase() === this.renderState.space.player.toLowerCase()
+              this.renderState.space.player &&
+                planet.state?.owner.toLowerCase() === this.renderState.space.player.toLowerCase()
             );
           }
 
