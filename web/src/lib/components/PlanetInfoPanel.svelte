@@ -8,9 +8,12 @@
   import {timeToText} from '$lib/utils';
   import Help from './Help.svelte';
   import PlanetActionPanel from './PlanetActionPanel.svelte';
+  import selection from '$lib/stores/selection';
 
   export let location: string;
-  export let close: () => void;
+  function close() {
+    selection.unselect();
+  }
 
   function _select(elem: HTMLElement) {
     const range = document.createRange();
