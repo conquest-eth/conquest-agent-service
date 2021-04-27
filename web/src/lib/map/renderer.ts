@@ -611,9 +611,9 @@ export class Renderer {
                   circleColor = '#34D399';
                 } else if (planet.state?.owner !== '0x0000000000000000000000000000000000000000') {
                   circleColor = '#E5E7EB';
-                  if (selectedPlanet && selectedPlanet.state?.owner === planet.state?.owner) {
-                    circleColor = '#DC2626';
-                  }
+                  // if (selectedPlanet && selectedPlanet.state?.owner === planet.state?.owner) {
+                  //   circleColor = '#DC2626';
+                  // }
                 } else {
                   circleColor = undefined;
                 }
@@ -650,9 +650,9 @@ export class Renderer {
                     circleColor = '#10B981';
                   } else {
                     circleColor = '#E5E7EB';
-                    if (selectedPlanet && selectedPlanet.state?.owner === planet.state?.owner) {
-                      circleColor = '#DC2626';
-                    }
+                    // if (selectedPlanet && selectedPlanet.state?.owner === planet.state?.owner) {
+                    //   circleColor = '#DC2626';
+                    // }
                   }
                 } else {
                   circleColor = '#E5E7EB';
@@ -742,14 +742,15 @@ export class Renderer {
 
           if (
             planet.state?.owner &&
-            planet.state?.owner !== '0x0000000000000000000000000000000000000000' &&
-            planet.state?.owner.toLowerCase() !== this.renderState.space.player.toLowerCase()
+            planet.state?.owner !== '0x0000000000000000000000000000000000000000'
+            // && planet.state?.owner.toLowerCase() !== this.renderState.space.player.toLowerCase()
           ) {
             Blockie.get(planet.state?.owner.toLowerCase()).draw(
               ctx,
               Math.round(planetX),
               Math.round(planetY),
-              Math.max((1 / render.scale) * 2, render.scale * 2)
+              Math.max((1 / render.scale) * 2, render.scale * 2),
+              planet.state?.owner.toLowerCase() === this.renderState.space.player.toLowerCase()
             );
           }
 
