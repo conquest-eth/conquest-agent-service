@@ -4,6 +4,7 @@ import privateAccount from '$lib/stores/privateAccount';
 import {fallback, chain} from '$lib/stores/wallet';
 import {now} from '$lib/stores/time';
 import {UI} from './UI';
+import {SUBGRAPH_ENDPOINT} from '$lib/graphql/graphql_endpoints';
 
 const timeKeeper = {
   setTimeout(fn: () => void, sec: number) {
@@ -25,12 +26,113 @@ const timeKeeper = {
   },
 };
 
+type PlanetQueryData = {
+  id: string;
+  owner: {id: string};
+  numSpaceships: string;
+  lastUpdated: string;
+  exitTime: string;
+  active: boolean;
+};
+
+type QueryData = {
+  planets: PlanetQueryData[];
+  space: {
+    minX: string;
+    maxX: string;
+    minY: string;
+    maxY: string;
+  };
+};
+
 async function fetch(
   planetIds: string[]
 ): Promise<{
   planetStates: PlanetData[];
   discovered: {minX: number; minY: number; maxX: number; maxY: number};
 }> {
+  // try {
+  //   const result = await SUBGRAPH_ENDPOINT.query<
+  //     QueryData,
+  //     {
+  //       planetIds: string[];
+  //     }
+  //   >({
+  //     query: `
+  // query($planetIds: [ID!]){
+  //   planets(where: {id_in: $planetIds}) {
+  //     id
+  //     owner {id}
+  //     numSpaceships
+  //     lastUpdated
+  //     exitTime
+  //     active
+  //   }
+  //   space(id: "Space") {
+  //     minX
+  //     maxX
+  //     minY
+  //     maxY
+  //   }
+  // }
+  // `,
+  //     variables: {planetIds},
+  //     context: {
+  //       requestPolicy: 'network-only', // required as cache-first will not try to get new data
+  //     },
+  //   });
+
+  //   if (!result.data) {
+  //     throw new Error(`cannot fetch from thegraph node`);
+  //   }
+
+  //   const planetsWithState: {
+  //     [id: string]: PlanetQueryData;
+  //   } = {};
+  //   for (const planet of result.data.planets) {
+  //     planetsWithState[planet.id] = planet;
+  //   }
+
+  //   const planets: PlanetData[] = [];
+  //   for (const planetId of planetIds) {
+  //     if (!planetsWithState[planetId]) {
+  //       console.log('no state', planetId);
+  //       planets.push({
+  //         id: planetId,
+  //         owner: '0x0000000000000000000000000000000000000000',
+  //         numSpaceships: 0,
+  //         lastUpdated: 0,
+  //         active: false,
+  //         exitTime: 0,
+  //       });
+  //     } else {
+  //       const planet = planetsWithState[planetId];
+  //       planets.push({
+  //         id: planet.id,
+  //         owner: planet.owner.id,
+  //         numSpaceships: parseInt(planet.numSpaceships),
+  //         lastUpdated: parseInt(planet.lastUpdated),
+  //         active: planet.active,
+  //         exitTime: parseInt(planet.exitTime),
+  //       });
+  //     }
+  //   }
+
+  //   const space = result.data.space;
+
+  //   return {
+  //     planetStates: planets,
+  //     discovered: {
+  //       minX: parseInt(space.minX),
+  //       minY: parseInt(space.minY),
+  //       maxX: parseInt(space.maxX),
+  //       maxY: parseInt(space.maxY),
+  //     },
+  //   };
+  // } catch (e) {
+  //   console.error(e);
+  // }
+
   const contracts = chain.contracts || fallback.contracts;
   if (contracts) {
     return contracts.OuterSpace.getPlanetStates(planetIds);

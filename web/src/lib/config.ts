@@ -63,6 +63,8 @@ if (fallbackProviderOrUrl && typeof fallbackProviderOrUrl === 'string') {
   }
 }
 
+const graphNodeURL = import.meta.env.VITE_THE_GRAPH_HTTP as string;
+
 const logPeriod = 7 * 24 * 60 * 60;
 
-export {finality, fallbackProviderOrUrl, chainId, blockTime, chainName, nativeTokenSymbol, logPeriod};
+export {finality, fallbackProviderOrUrl, chainId, blockTime, chainName, nativeTokenSymbol, graphNodeURL, logPeriod};

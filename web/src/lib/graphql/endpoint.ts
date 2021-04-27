@@ -23,6 +23,7 @@ if (import.meta.env.MODE === 'development') {
 export class EndPoint {
   private client: Client;
   constructor(url: string) {
+    // TODO move that out of the constructor
     try {
       const queryParams = new URLSearchParams(location.search);
       if (queryParams.has('subgraph')) {
@@ -49,6 +50,17 @@ export class EndPoint {
   }
 
   query<
+    Data extends Record<string, unknown>,
+    Variables extends Record<string, unknown> = Record<string, unknown>
+  >(args: {
+    query: DocumentNode | string;
+    variables?: Variables;
+    context?: Partial<OperationContext>;
+  }): Promise<OperationResult<Data, Variables>> {
+    return this.client.query(args.query, args.variables, args.context).toPromise();
+  }
+
+  subscribeToQuery<
     Data extends Record<string, unknown>,
     Variables extends Record<string, unknown> = Record<string, unknown>
   >(args: {
