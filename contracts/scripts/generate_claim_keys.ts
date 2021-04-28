@@ -6,6 +6,8 @@ import {Wallet} from '@ethersproject/wallet';
 import fs from 'fs';
 import qrcode from 'qrcode';
 
+const append = true;
+
 const args = process.argv.slice(2);
 
 if (args.length === 0) {
@@ -39,18 +41,21 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     fs.writeFileSync(pastMnemonicsPath, JSON.stringify(pastMnemonics));
   }
 
-  const claimKeyETHAmount = parseEther('0.1');
+  const claimKeyETHAmount = parseEther('0.2');
   const claimKeyTokenAmount = parseEther('200');
 
-  const claimKeys = [];
+  const claimKeys: {key: string; amount: number}[] = [];
   const addresses = [];
   let totalETHAmount = BigNumber.from(0);
   let totalTokenAmount = BigNumber.from(0);
+  const amounts: BigNumber[] = [];
   for (let i = offset; i < numClaimKey + offset; i++) {
     const path = "m/44'/60'/" + i + "'/0/0";
     const wallet = Wallet.fromMnemonic(mnemonic, path);
-    claimKeys.push(wallet.privateKey);
+    // TODO claimKeyTokenAmount +-
+    claimKeys.push({key: wallet.privateKey, amount: claimKeyTokenAmount.div('1000000000000000000').toNumber()});
     addresses.push(wallet.address);
+    amounts.push(claimKeyTokenAmount);
     totalETHAmount = totalETHAmount.add(claimKeyETHAmount);
     totalTokenAmount = totalTokenAmount.add(claimKeyTokenAmount);
   }
@@ -69,9 +74,9 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   await execute(
     'PlayToken_L2',
     {from: claimKeyDistributor, value: totalETHAmount.toString(), log: true},
-    'distributeAlongWithETH',
+    'distributeVariousAmountsAlongWithETH',
     addresses,
-    totalTokenAmount
+    amounts
   );
 
   let explorerLink = '';
@@ -90,13 +95,23 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     explorerLink = `https://${etherscanNetworkPrefix}etherscan.io/address/`;
   }
 
-  fs.writeFileSync(`.${network.name}.claimKeys`, JSON.stringify(claimKeys, null, 2));
-  let csv = 'used,address,key,url,qrURL\n';
+  const filename = `.${network.name}.claimKeys`;
+  if (append) {
+    let previous: {key: string; amount: number}[] = [];
+    try {
+      previous = JSON.parse(fs.readFileSync(filename).toString());
+    } catch (e) {}
+    fs.writeFileSync(filename, JSON.stringify(previous.concat(claimKeys), null, 2));
+  } else {
+    fs.writeFileSync(filename, JSON.stringify(claimKeys, null, 2));
+  }
+
+  let csv = 'used,address,key,amount,url,qrURL\n';
   for (const claimKey of claimKeys) {
-    const url = `${mainURL}#tokenClaim=${claimKey}`;
+    const url = `${mainURL}#tokenClaim=${claimKey.key}`;
     const qrURL = await qrcode.toDataURL(url);
-    const address = new Wallet(claimKey).address;
-    csv += `false,${explorerLink}${address},${claimKey},${url},"${qrURL}"\n`;
+    const address = new Wallet(claimKey.key).address;
+    csv += `false,${explorerLink}${address},${claimKey.key},${claimKey.amount},${url},"${qrURL}"\n`;
   }
   fs.writeFileSync(`.${network.name}.claimKeys.csv`, csv);
 }

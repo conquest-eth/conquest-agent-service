@@ -81,13 +81,32 @@ abstract contract Base is IERC20, BaseInternal {
         return true;
     }
 
-    function distributeAlongWithETH(address payable[] memory tos, uint256 totalAmount) external payable returns (bool) {
+    function distributeAlongWithETH(address payable[] calldata tos, uint256 totalAmount)
+        external
+        payable
+        returns (bool)
+    {
         uint256 val = msg.value / tos.length;
         require(msg.value == val * tos.length, "INVALID_MSG_VALUE");
         uint256 amount = totalAmount / tos.length;
         require(totalAmount == amount * tos.length, "INVALID_TOTAL_AMOUNT");
         for (uint256 i = 0; i < tos.length; i++) {
             _transfer(msg.sender, tos[i], amount);
+            tos[i].transfer(val);
+        }
+        return true;
+    }
+
+    function distributeVariousAmountsAlongWithETH(address payable[] calldata tos, uint256[] calldata amounts)
+        external
+        payable
+        returns (bool)
+    {
+        uint256 val = msg.value / tos.length;
+        require(msg.value == val * tos.length, "INVALID_MSG_VALUE");
+        require(tos.length == amounts.length, "NOT_SAME_LENGTH");
+        for (uint256 i = 0; i < tos.length; i++) {
+            _transfer(msg.sender, tos[i], amounts[i]);
             tos[i].transfer(val);
         }
         return true;
