@@ -18,7 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const playToken_l2 = await hre.deployments.get('PlayToken_L2');
 
-  let genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
+  let genesisHash = '0xcce77b122615b6093c0df0c7392bec6f537eb7a0595c337a573ee6d96d1107c8';
   const resolveWindow = hours(2);
   let timePerDistance = hours(2);
   let exitDuration = hours(3 * 24);
@@ -27,17 +27,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // use a command to increase time in 1337
   if (chainId === '1337') {
-    genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a69';
     timePerDistance /= 180;
     exitDuration /= 180;
     productionSpeedUp = 1; // give more time to attack
   }
 
   if (network.name === 'quick') {
+    // TODO remove when updating quick to a new contract
     genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
     timePerDistance /= 40;
     exitDuration /= 40;
     productionSpeedUp = 40;
+  }
+
+  // TODO remove when updating staging to a new contract
+  if (network.name === 'staging') {
+    genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
   }
 
   await deploy('OuterSpace', {

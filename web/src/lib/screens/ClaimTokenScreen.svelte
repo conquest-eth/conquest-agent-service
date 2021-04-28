@@ -1,7 +1,8 @@
 <script lang="ts">
   import tokenClaim from '$lib/stores/tokenClaim';
-  import {wallet, flow} from '$lib/stores/wallet';
+  import {wallet, flow, chain} from '$lib/stores/wallet';
   import Button from '$lib/components/PanelButton.svelte';
+  import {chainName} from '$lib/config';
 </script>
 
 {#if $tokenClaim.inUrl}
@@ -14,11 +15,13 @@
     </div>
     <div class="justify-center mt-10 text-center text-white">
       {#if $wallet.state === 'Ready'}
-        {#if $tokenClaim.state === 'Loading'}
-          <p class="text-green-500">Congratulation! You have been given some tokens to claim.</p>
+        {#if $chain.notSupported}
+          <p class="m-5 text-red-500">Please switch to {chainName}.</p>
+        {:else if $tokenClaim.state === 'Loading'}
+          <p class="text-green-500">Congratulations! You have been given some tokens to claim.</p>
           <p class="mt-5">Loading claim...</p>
         {:else if $tokenClaim.state === 'Available'}
-          <p class="text-green-500">Congratulation! You have been given some tokens to claim.</p>
+          <p class="text-green-500">Congratulations! You have been given some tokens to claim.</p>
           <Button class="mt-4" label="claim" on:click={() => tokenClaim.claim()}>Claim</Button>
         {:else if $tokenClaim.state === 'Claiming'}
           <p class="mt-5">Please wait while the claim is being executed...</p>
