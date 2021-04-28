@@ -7,6 +7,7 @@ import {space, spaceInfo} from '$lib/app/mapState';
 import {xyToLocation} from 'conquest-eth-common';
 import {now} from './time';
 import type {Event} from '@ethersproject/contracts';
+import {mediumFrequencyFetch} from '$lib/config';
 
 type FleetArrivedEvent = Event & {
   args: {
@@ -44,7 +45,7 @@ class AgentStore extends BaseStore<Agent> {
 
   start(): void {
     this.setPartial({state: 'Loading'});
-    this.timeout = setInterval(this.check.bind(this), 5 * 1000);
+    this.timeout = setInterval(this.check.bind(this), mediumFrequencyFetch * 1000);
     if (typeof window !== 'undefined') {
       this.oldBeforeUnload = window.onbeforeunload;
       window.onbeforeunload = () => {

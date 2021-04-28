@@ -20,6 +20,9 @@ contract OuterSpace is Proxied {
     int256 internal constant UINT32_MAX = 2**32 - 1;
     uint256 internal constant FRONT_RUNNING_DELAY = 30 * 60; // 30 min // TODO make it configurable in the constructor
 
+    int256 internal constant EXPANSION = 8;
+    uint32 internal constant INITIAL_SPACE = 16;
+
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // CONFIGURATION / IMMUTABLE
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -152,7 +155,12 @@ contract OuterSpace is Proxied {
         uint32
     ) public proxied {
         if (_discovered.minX == 0) {
-            _discovered = Discovered({minX: 12, maxX: 12, minY: 12, maxY: 12});
+            _discovered = Discovered({
+                minX: INITIAL_SPACE,
+                maxX: INITIAL_SPACE,
+                minY: INITIAL_SPACE,
+                maxY: INITIAL_SPACE
+            });
         }
     }
 
@@ -465,7 +473,7 @@ contract OuterSpace is Proxied {
         bool changes = false;
         if (x < 0) {
             require(-x <= discovered.minX, "NOT_REACHABLE_YET_MINX");
-            x = -x + 6;
+            x = -x + EXPANSION;
             if (x > UINT32_MAX) {
                 x = UINT32_MAX;
             }
@@ -475,7 +483,7 @@ contract OuterSpace is Proxied {
             }
         } else {
             require(x <= discovered.maxX, "NOT_REACHABLE_YET_MAXX");
-            x = x + 6;
+            x = x + EXPANSION;
             if (x > UINT32_MAX) {
                 x = UINT32_MAX;
             }
@@ -487,7 +495,7 @@ contract OuterSpace is Proxied {
 
         if (y < 0) {
             require(-y <= discovered.minY, "NOT_REACHABLE_YET_MINY");
-            y = -y + 6;
+            y = -y + EXPANSION;
             if (y > UINT32_MAX) {
                 y = UINT32_MAX;
             }
@@ -497,7 +505,7 @@ contract OuterSpace is Proxied {
             }
         } else {
             require(y <= discovered.maxY, "NOT_REACHABLE_YET_MAXY");
-            y = y + 6;
+            y = y + EXPANSION;
             if (y > UINT32_MAX) {
                 y = UINT32_MAX;
             }

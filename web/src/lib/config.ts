@@ -7,6 +7,7 @@ let blockTime = 15;
 let nativeTokenSymbol = 'ETH';
 if (chainId !== '1') {
   finality = 5; // TODO
+  blockTime = 10;
   nativeTokenSymbol = 'ETH'; // TODO
 }
 
@@ -67,4 +68,20 @@ const graphNodeURL = import.meta.env.VITE_THE_GRAPH_HTTP as string;
 
 const logPeriod = 7 * 24 * 60 * 60;
 
-export {finality, fallbackProviderOrUrl, chainId, blockTime, chainName, nativeTokenSymbol, graphNodeURL, logPeriod};
+const lowFrequencyFetch = blockTime * 8;
+const mediumFrequencyFetch = blockTime * 4;
+const highFrequencyFetch = blockTime * 2;
+
+export {
+  finality,
+  fallbackProviderOrUrl,
+  chainId,
+  blockTime,
+  chainName,
+  nativeTokenSymbol,
+  graphNodeURL,
+  logPeriod,
+  lowFrequencyFetch,
+  mediumFrequencyFetch,
+  highFrequencyFetch,
+};

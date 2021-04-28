@@ -5,7 +5,7 @@ import {BaseStore} from '$lib/utils/stores';
 import privateAccount from './privateAccount';
 import {wallet} from './wallet';
 import {now} from './time';
-import {finality} from '$lib/config';
+import {finality, highFrequencyFetch} from '$lib/config';
 
 type Withdrawals = {
   state: 'Idle' | 'Loading' | 'Ready';
@@ -20,7 +20,7 @@ class WithdrawalsStore extends BaseStore<Withdrawals> {
 
   loadWithrawableBalance(): void {
     this.setPartial({state: 'Loading'});
-    this.timeout = setInterval(this.check.bind(this), 1000);
+    this.timeout = setInterval(this.check.bind(this), highFrequencyFetch * 1000);
   }
 
   getExits(): {location: string; stake: BigNumber}[] {

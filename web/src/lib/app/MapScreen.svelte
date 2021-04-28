@@ -75,7 +75,8 @@
     </p>
     <p class="mt-3">
       These planets will then produce spaceships that you can use to attack other planets. You'll also have to make sure
-      you have enough spaceships to protect your planets.
+      you have enough spaceships to protect your planets. It is a good idea to reach out to other player and plan
+      strategies together.
     </p>
     <p class="mt-3">
       At any time (whether you acquired the planet via staking or via attack), you can exit the planet. This take

@@ -2,6 +2,7 @@ import {wallet} from './wallet';
 import type {BigNumber} from '@ethersproject/bignumber';
 import type {WalletStore} from 'web3w';
 import {BaseStore} from '$lib/utils/stores';
+import {highFrequencyFetch} from '$lib/config';
 
 type TokenAccount = {
   status: 'Ready' | 'WaitingContracts' | 'Idle';
@@ -80,7 +81,7 @@ class PlayTokenAccount extends BaseStore<TokenAccount> {
         status: 'WaitingContracts',
       });
     }
-    setTimeout(this.update.bind(this), 1000); // TODO config delay;
+    setTimeout(this.update.bind(this), highFrequencyFetch * 1000);
   }
 }
 

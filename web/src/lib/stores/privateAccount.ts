@@ -5,7 +5,7 @@ import {keccak256} from '@ethersproject/solidity';
 import {xyToLocation} from 'conquest-eth-common';
 import type {OwnFleet, TxStatus} from 'conquest-eth-common';
 import {BigNumber} from '@ethersproject/bignumber';
-import {finality, blockTime} from '$lib/config';
+import {finality, blockTime, mediumFrequencyFetch, lowFrequencyFetch} from '$lib/config';
 import aes from 'aes-js';
 import {base64, compressToUint8Array, decompressFromUint8Array} from '$lib/utils';
 import localCache from '$lib/utils/localCache';
@@ -783,14 +783,14 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
   startMonitoring(address: string, chainId: string) {
     this.stopMonitoring();
     this.checking(address, chainId);
-    this.monitorProcess = setInterval(() => this.checking(address, chainId), 5000); // TODO time config
+    this.monitorProcess = setInterval(() => this.checking(address, chainId), mediumFrequencyFetch * 1000);
     const n = now();
     this.syncProcess = setInterval(() => {
       if (now() - n > 10) {
         // TODO delay first sync
         this._sync();
       }
-    }, 10 * 1000); // TODO time config
+    }, mediumFrequencyFetch * 1000);
   }
 
   async checking(address: string, chainId: string) {

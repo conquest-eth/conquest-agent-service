@@ -1,7 +1,7 @@
 import {BaseStoreWithData} from '$lib/utils/stores';
 import privateAccount from './privateAccount';
 import {wallet} from './wallet';
-import {blockTime, finality, logPeriod} from '$lib/config';
+import {blockTime, finality, logPeriod, lowFrequencyFetch} from '$lib/config';
 import type {BigNumber} from '@ethersproject/bignumber';
 import {hexZeroPad} from '@ethersproject/bytes';
 export type AttackEvent = {
@@ -88,7 +88,7 @@ class PlanetLogsStore extends BaseStoreWithData<PlanetLogs, undefined> {
       }
     }
     this.syncWithPrivateAccount();
-    this.timeout = setTimeout(this.fetch.bind(this), 5 * 1000); // TODO config
+    this.timeout = setTimeout(this.fetch.bind(this), lowFrequencyFetch * 1000);
   }
 
   syncWithPrivateAccount() {
