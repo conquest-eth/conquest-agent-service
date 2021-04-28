@@ -20,7 +20,7 @@ class WithdrawalsStore extends BaseStore<Withdrawals> {
 
   loadWithrawableBalance(): void {
     this.setPartial({state: 'Loading'});
-    this.timeout = setInterval(this.check.bind(this), highFrequencyFetch * 1000);
+    this.timeout = setTimeout(this.check.bind(this), 300);
   }
 
   getExits(): {location: string; stake: BigNumber}[] {
@@ -44,6 +44,7 @@ class WithdrawalsStore extends BaseStore<Withdrawals> {
         if (receipt) {
           if (receipt.status !== undefined && receipt.status === 0) {
             // show error
+            this.timeout = setTimeout(this.check.bind(this), highFrequencyFetch * 1000);
             return;
           } else {
             privateAccount.deleteWithdrawalTx(); // optimistic
@@ -85,6 +86,7 @@ class WithdrawalsStore extends BaseStore<Withdrawals> {
     } else {
       this.setPartial({state: 'Loading', balance: BigNumber.from(0)});
     }
+    this.timeout = setTimeout(this.check.bind(this), highFrequencyFetch * 1000);
   }
 
   async withdraw() {
@@ -99,7 +101,7 @@ class WithdrawalsStore extends BaseStore<Withdrawals> {
 
   stop() {
     if (this.timeout) {
-      clearInterval(this.timeout);
+      clearTimeout(this.timeout);
       this.timeout = undefined;
     }
   }

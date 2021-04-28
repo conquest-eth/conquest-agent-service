@@ -7,7 +7,7 @@ import {space, spaceInfo} from '$lib/app/mapState';
 import {xyToLocation} from 'conquest-eth-common';
 import {now} from './time';
 import type {Event} from '@ethersproject/contracts';
-import {mediumFrequencyFetch} from '$lib/config';
+import {highFrequencyFetch, mediumFrequencyFetch} from '$lib/config';
 
 type FleetArrivedEvent = Event & {
   args: {
@@ -45,7 +45,6 @@ class AgentStore extends BaseStore<Agent> {
 
   start(): void {
     this.setPartial({state: 'Loading'});
-    this.timeout = setInterval(this.check.bind(this), mediumFrequencyFetch * 1000);
     if (typeof window !== 'undefined') {
       this.oldBeforeUnload = window.onbeforeunload;
       window.onbeforeunload = () => {
@@ -55,6 +54,7 @@ class AgentStore extends BaseStore<Agent> {
         }
       };
     }
+    this.timeout = setTimeout(this.check.bind(this), 1000);
   }
 
   getNextFleets(): {fleetId: string; time: number}[] | undefined {
@@ -99,7 +99,6 @@ class AgentStore extends BaseStore<Agent> {
   async check() {
     if (privateAccount.ready && wallet.provider && wallet.address && wallet.contracts) {
       if (this.$store.ownerAddress && wallet.address !== this.$store.ownerAddress) {
-        stop();
         this.setPartial({
           state: 'Idle',
           nextFleets: undefined,
@@ -107,27 +106,27 @@ class AgentStore extends BaseStore<Agent> {
           ownerAddress: undefined,
           wallet: undefined,
         });
-        return;
-      }
-      const gasPrice = await wallet.provider.getGasPrice();
-      const cost = gasPrice.mul(100000); // TODO config
-      const ownerAddress = wallet.address;
-      const agentWallet = await privateAccount.getAgentWallet();
-      const balance = await wallet.provider.getBalance(agentWallet.address);
-      const nextFleets = this.getNextFleets();
+      } else {
+        const gasPrice = await wallet.provider.getGasPrice();
+        const cost = gasPrice.mul(100000); // TODO config
+        const ownerAddress = wallet.address;
+        const agentWallet = await privateAccount.getAgentWallet();
+        const balance = await wallet.provider.getBalance(agentWallet.address);
+        const nextFleets = this.getNextFleets();
 
-      if (ownerAddress === wallet.address) {
-        this.setPartial({
-          state: 'Ready',
-          balance,
-          nextFleets,
-          wallet: agentWallet,
-          ownerAddress: wallet.address,
-          lowETH: balance.lt(cost),
-          cost,
-        });
+        if (ownerAddress === wallet.address) {
+          this.setPartial({
+            state: 'Ready',
+            balance,
+            nextFleets,
+            wallet: agentWallet,
+            ownerAddress: wallet.address,
+            lowETH: balance.lt(cost),
+            cost,
+          });
 
-        this.resolveFleetsIfAny();
+          this.resolveFleetsIfAny();
+        }
       }
     } else {
       this.setPartial({
@@ -137,11 +136,12 @@ class AgentStore extends BaseStore<Agent> {
         wallet: undefined,
       });
     }
+    this.timeout = setTimeout(this.check.bind(this), mediumFrequencyFetch * 1000);
   }
 
   stop() {
     if (this.timeout) {
-      clearInterval(this.timeout);
+      clearTimeout(this.timeout);
       this.timeout = undefined;
     }
     if (typeof window !== 'undefined') {
