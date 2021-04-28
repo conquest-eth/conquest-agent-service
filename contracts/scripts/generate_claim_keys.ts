@@ -19,7 +19,7 @@ if (isNaN(numClaimKey) || numClaimKey === 0 || numClaimKey > 100) {
 }
 const offset = 0;
 
-let mainURL = 'https://conquest-rinkeby.on.fleek.co';
+let mainURL = 'https://alpha.conquest.eth.link';
 if (!mainURL.endsWith('/')) {
   mainURL = mainURL + '/';
 }
@@ -44,7 +44,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const claimKeyETHAmount = parseEther('0.15');
   const defaultClaimKeyTokenAmount = parseEther('200');
 
-  const claimKeys: {key: string; amount: number}[] = [];
+  const claimKeys: {key: string; amount: number; address: string}[] = [];
   const addresses = [];
   let totalETHAmount = BigNumber.from(0);
   let totalTokenAmount = BigNumber.from(0);
@@ -56,7 +56,11 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     if (BigNumber.from(wallet.address).mod(100).toNumber() < 10) {
       claimKeyTokenAmount = defaultClaimKeyTokenAmount.mul(2);
     }
-    claimKeys.push({key: wallet.privateKey, amount: claimKeyTokenAmount.div('1000000000000000000').toNumber()});
+    claimKeys.push({
+      key: wallet.privateKey,
+      amount: claimKeyTokenAmount.div('1000000000000000000').toNumber(),
+      address: wallet.address,
+    });
     addresses.push(wallet.address);
     amounts.push(claimKeyTokenAmount);
     totalETHAmount = totalETHAmount.add(claimKeyETHAmount);
@@ -100,7 +104,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
 
   const filename = `.${network.name}.claimKeys`;
   if (append) {
-    let previous: {key: string; amount: number}[] = [];
+    let previous: {key: string; amount: number; address: string}[] = [];
     try {
       previous = JSON.parse(fs.readFileSync(filename).toString());
     } catch (e) {}
