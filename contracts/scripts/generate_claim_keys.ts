@@ -41,7 +41,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     fs.writeFileSync(pastMnemonicsPath, JSON.stringify(pastMnemonics));
   }
 
-  const claimKeyETHAmount = parseEther('0.2');
+  const claimKeyETHAmount = parseEther('0.15');
   const defaultClaimKeyTokenAmount = parseEther('200');
 
   const claimKeys: {key: string; amount: number}[] = [];
