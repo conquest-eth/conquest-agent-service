@@ -44,6 +44,10 @@ contract OuterSpace is Proxied {
 
     mapping(address => uint256) internal _stakeReadyToBeWithdrawn;
 
+    mapping(address => uint256) internal _prevRewardIds;
+    mapping(uint256 => uint256) internal _rewards;
+    mapping(address => mapping(uint256 => bool)) internal _rewardsToWithdraw;
+
     mapping(address => mapping(address => bool)) internal _operators;
 
     // front running protection : FRONT_RUNNING_DELAY / 2 slots
@@ -105,6 +109,9 @@ contract OuterSpace is Proxied {
     event PlanetExit(address indexed owner, uint256 indexed location);
 
     event ExitComplete(address indexed owner, uint256 indexed location, uint256 stake);
+
+    event RewardSetup(uint256 indexed location, uint256 rewardId);
+    event RewardToWithdraw(address indexed owner, uint256 indexed location, uint256 indexed rewardId);
 
     event StakeToWithdraw(address indexed owner, uint256 newStake);
 
@@ -195,6 +202,27 @@ contract OuterSpace is Proxied {
         address sender = _msgSender();
         _acquire(sender, amount, location);
         _stakingToken.transferFrom(sender, address(this), amount);
+    }
+
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // REWARD SETUP
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // TODO : ERC20, ERC721, ERC1155
+    function addReward(uint256 location, address sponsor) external onlyProxyAdmin {
+        Planet memory planet = _planets[location];
+        if (_hasJustExited(planet.exitTime)) {
+            _setPlanetAfterExit(location, planet.owner, _planets[location], address(0), 0);
+        }
+
+        uint256 rewardId = _rewards[location];
+        if (rewardId == 0) {
+            rewardId = ++_prevRewardIds[sponsor];
+            _rewards[location] = (uint256(uint160(sponsor)) << 96) + rewardId;
+        }
+        // TODO should it fails if different sponsor added reward before
+
+        // TODO rewardId association with the actual rewards // probably contract address holding the reward
+        emit RewardSetup(location, rewardId);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -320,6 +348,7 @@ contract OuterSpace is Proxied {
         uint32 numSpaceships;
         uint32 lastUpdated;
         bool active;
+        uint256 reward;
     }
 
     function getPlanet(uint256 location) external view returns (ExternalPlanet memory state, PlanetStats memory stats) {
@@ -330,7 +359,8 @@ contract OuterSpace is Proxied {
             exitTime: planet.exitTime,
             numSpaceships: numSpaceships,
             lastUpdated: planet.lastUpdated,
-            active: active
+            active: active,
+            reward: _rewards[location]
         });
         stats = _getPlanetStats(location);
     }
@@ -349,7 +379,8 @@ contract OuterSpace is Proxied {
                 exitTime: planet.exitTime,
                 numSpaceships: numSpaceships,
                 lastUpdated: planet.lastUpdated,
-                active: active
+                active: active,
+                reward: _rewards[locations[i]]
             });
         }
         discovered = _discovered;
@@ -552,7 +583,19 @@ contract OuterSpace is Proxied {
     ) internal returns (uint256) {
         bytes32 data = _planetData(location);
         uint256 stake = uint256(_stake(data)) * (DECIMALS_18);
-        emit ExitComplete(planet.owner, location, stake);
+        emit ExitComplete(owner, location, stake);
+
+        // --------------------------------------------------------
+        // Extra Reward was added
+        // --------------------------------------------------------
+        uint256 rewardId = _rewards[location];
+        if (rewardId != 0) {
+            _rewardsToWithdraw[owner][rewardId] = true; // rewardId would contains the package. maybe this could be handled by an external contract
+            _rewards[location] = 0; // reset / if you had reward to a planet in he process of exiting, you are adding the reward to the player exiting unless _setPlanetAfterExit is called first
+            emit RewardToWithdraw(owner, location, rewardId);
+        }
+        // --------------------------------------------------------
+
         planet.exitTime = 0;
         planet.owner = newOwner; // This is fine as long as _actualiseExit is called on every move
         planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move

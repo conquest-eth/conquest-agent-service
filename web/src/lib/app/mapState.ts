@@ -32,6 +32,7 @@ type PlanetQueryData = {
   lastUpdated: string;
   exitTime: string;
   active: boolean;
+  // TODO reward
 };
 
 type QueryData = {

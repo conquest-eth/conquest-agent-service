@@ -13,6 +13,7 @@ import {now} from '$lib/stores/time';
 import {base} from '$app/paths';
 import {planetLogs} from '$lib/stores/planetLogs';
 import {Blockie} from './blockie';
+import {BigNumber} from '@ethersproject/bignumber';
 
 const planetTypesToFrame = [
   'Baren.png',
@@ -502,9 +503,21 @@ export class Renderer {
       for (let y = gridY; y <= gridEndY + 1; y++) {
         const planet = this.renderState.space.planetAt(x, y);
         if (planet) {
-          const frameType = planetTypesToFrame[planet.type % planetTypesToFrame.length];
+          let mul = 1;
+          let frameType: string;
+          if (planet.state && planet.state.reward !== '0') {
+            if (
+              BigNumber.from(planet.state.reward).shr(96).toHexString() === '0xdddddddddddddddddddddddddddddddddddddddd'
+            ) {
+              frameType = 'xaya.png';
+              mul = 4 / scale;
+            }
+          }
           if (!frameType) {
-            throw new Error(`no frame type for ${planet.type}`);
+            frameType = planetTypesToFrame[planet.type % planetTypesToFrame.length];
+            if (!frameType) {
+              throw new Error(`no frame type for ${planet.type}`);
+            }
           }
 
           const exiting = this.renderState.space.getExit(planet.location.id);
@@ -546,10 +559,10 @@ export class Renderer {
             lavaFrame.y,
             lavaFrame.w,
             lavaFrame.h,
-            Math.round(planetX - (48 * multiplier) / 2),
-            Math.round(planetY - (48 * multiplier) / 2),
-            48 * multiplier,
-            48 * multiplier
+            Math.round(planetX - (48 * multiplier * mul) / 2),
+            Math.round(planetY - (48 * multiplier * mul) / 2),
+            48 * multiplier * mul,
+            48 * multiplier * mul
           );
 
           // if (showStars) {

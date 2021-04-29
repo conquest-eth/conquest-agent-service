@@ -76,12 +76,13 @@ class PlayTokenAccount extends BaseStore<TokenAccount> {
           error: e,
         });
       }
+      setTimeout(this.update.bind(this), highFrequencyFetch * 1000);
     } else {
       this.setPartial({
         status: 'WaitingContracts',
       });
+      setTimeout(this.update.bind(this), 1000); // faster update until contracts are available
     }
-    setTimeout(this.update.bind(this), highFrequencyFetch * 1000);
   }
 }
 

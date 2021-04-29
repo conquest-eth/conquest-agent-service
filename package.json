@@ -49,6 +49,7 @@
     "contracts:node": "dotenv -e .env -e contracts/.env -- npm --prefix contracts run dev -- --export ../web/src/lib/contracts.json",
     "shell:contracts:node": "newsh \"npm run contracts:node\"",
     "localhost:claimKeys": "dotenv -e .env -- npm --prefix contracts run execute localhost scripts/generate_claim_keys.ts",
+    "localhost:execute": "dotenv -e .env -- npm --prefix contracts run execute localhost",
     "-------------------------------------------------": "",
     "// subgraphs : generate and deploy local subgraph": "",
     "subgraph": "wait-on web/src/lib/contracts.json && dotenv -- npm --prefix subgraph run dev ../contracts/deployments/localhost mainnet",
