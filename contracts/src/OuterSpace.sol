@@ -44,10 +44,6 @@ contract OuterSpace is Proxied {
 
     mapping(address => uint256) internal _stakeReadyToBeWithdrawn;
 
-    mapping(address => uint256) internal _prevRewardIds;
-    mapping(uint256 => uint256) internal _rewards;
-    mapping(address => mapping(uint256 => bool)) internal _rewardsToWithdraw;
-
     mapping(address => mapping(address => bool)) internal _operators;
 
     // front running protection : FRONT_RUNNING_DELAY / 2 slots
@@ -80,6 +76,11 @@ contract OuterSpace is Proxied {
         uint32 quantity;
         // TODO uint32 delay
     }
+
+    // rewards
+    mapping(address => uint256) internal _prevRewardIds;
+    mapping(uint256 => uint256) internal _rewards;
+    mapping(address => mapping(uint256 => bool)) internal _rewardsToWithdraw;
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // EVENTS
