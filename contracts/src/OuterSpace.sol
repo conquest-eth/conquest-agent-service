@@ -94,6 +94,8 @@ contract OuterSpace is Proxied {
         uint32 quantity,
         uint32 newNumSpaceships
     );
+
+    // TODO add fromPlanet to the event ?
     event FleetArrived(
         uint256 indexed fleet,
         address indexed fleetOwner,
