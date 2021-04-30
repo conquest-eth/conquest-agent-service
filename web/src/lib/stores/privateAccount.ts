@@ -1118,7 +1118,32 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
           }
         } else {
           if (latestFinalityBlock.timestamp > expiryTime) {
-            console.log({fleetExpired: fleetId});
+            let fleetData;
+            try {
+              fleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
+                // TODO batch getFleets ?
+                fleetId,
+                xyToLocation(fleet.from.x, fleet.from.y),
+                {blockTag: Math.max(0, latestBlockNumber - finality)}
+              );
+            } catch (e) {
+              //
+            }
+            if (
+              !this.$store.walletAddress ||
+              this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+              this.$store.chainId !== chainId
+            ) {
+              return;
+            }
+            if (fleetData && fleetData.quantity == 0) {
+              console.log({fleetWasResolved: fleetId});
+              // it was resolved
+              this.deleteFleet(fleetId);
+            } else {
+              console.log({fleetExpired: fleetId});
+            }
+
             // consider it expired elsewhere (expired for sure = no resolveTx + expired time )
           }
         }
