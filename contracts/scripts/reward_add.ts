@@ -16,7 +16,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     {from: deployer, log: true},
     'addReward',
     location,
-    '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
+    '0xdddddddddddddddddddddddddddddddddddddddd'
   );
 }
 if (require.main === module) {
