@@ -97,45 +97,50 @@ class AgentStore extends BaseStore<Agent> {
   }
 
   async check() {
-    if (privateAccount.ready && wallet.provider && wallet.address && wallet.contracts) {
-      if (this.$store.ownerAddress && wallet.address !== this.$store.ownerAddress) {
+    try {
+      if (privateAccount.ready && wallet.provider && wallet.address && wallet.contracts) {
+        if (this.$store.ownerAddress && wallet.address !== this.$store.ownerAddress) {
+          this.setPartial({
+            state: 'Idle',
+            nextFleets: undefined,
+            balance: BigNumber.from(0),
+            ownerAddress: undefined,
+            wallet: undefined,
+          });
+        } else {
+          const gasPrice = await wallet.provider.getGasPrice();
+          const cost = gasPrice.mul(100000); // TODO config
+          const ownerAddress = wallet.address;
+          const agentWallet = await privateAccount.getAgentWallet();
+          const balance = await wallet.provider.getBalance(agentWallet.address);
+          const nextFleets = this.getNextFleets();
+
+          if (ownerAddress === wallet.address) {
+            this.setPartial({
+              state: 'Ready',
+              balance,
+              nextFleets,
+              wallet: agentWallet,
+              ownerAddress: wallet.address,
+              lowETH: balance.lt(cost),
+              cost,
+            });
+
+            this.resolveFleetsIfAny();
+          }
+        }
+      } else {
         this.setPartial({
-          state: 'Idle',
+          state: 'Loading',
           nextFleets: undefined,
           balance: BigNumber.from(0),
-          ownerAddress: undefined,
           wallet: undefined,
         });
-      } else {
-        const gasPrice = await wallet.provider.getGasPrice();
-        const cost = gasPrice.mul(100000); // TODO config
-        const ownerAddress = wallet.address;
-        const agentWallet = await privateAccount.getAgentWallet();
-        const balance = await wallet.provider.getBalance(agentWallet.address);
-        const nextFleets = this.getNextFleets();
-
-        if (ownerAddress === wallet.address) {
-          this.setPartial({
-            state: 'Ready',
-            balance,
-            nextFleets,
-            wallet: agentWallet,
-            ownerAddress: wallet.address,
-            lowETH: balance.lt(cost),
-            cost,
-          });
-
-          this.resolveFleetsIfAny();
-        }
       }
-    } else {
-      this.setPartial({
-        state: 'Loading',
-        nextFleets: undefined,
-        balance: BigNumber.from(0),
-        wallet: undefined,
-      });
+    } catch (e) {
+      console.error(e);
     }
+
     this.timeout = setTimeout(this.check.bind(this), mediumFrequencyFetch * 1000);
   }
 
