@@ -1707,4 +1707,9 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
   }
 }
 
-export default new PrivateAccountStore();
+const store = new PrivateAccountStore();
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).privateAccount = store;
+}
+export default store;

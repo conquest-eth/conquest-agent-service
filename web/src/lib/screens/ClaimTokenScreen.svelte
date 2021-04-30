@@ -1,6 +1,7 @@
 <script lang="ts">
   import tokenClaim from '$lib/stores/tokenClaim';
-  import {wallet, flow, chain} from '$lib/stores/wallet';
+  import {wallet, chain} from '$lib/stores/wallet';
+  import privateAccount from '$lib/stores/privateAccount';
   import Button from '$lib/components/PanelButton.svelte';
   import {chainName} from '$lib/config';
 </script>
@@ -40,7 +41,7 @@
       {:else}
         <p class="text-green-500">Congratulations! You have been given some tokens to claim.</p>
         <p class="m-5">Please connect to your wallet</p>
-        <Button class="mt-4" label="connect" on:click={() => flow.connect()}>Connect</Button>
+        <Button class="mt-4" label="connect" on:click={() => privateAccount.login()}>Connect</Button>
       {/if}
     </div>
   </div>

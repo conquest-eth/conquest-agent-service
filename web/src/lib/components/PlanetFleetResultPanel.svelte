@@ -72,6 +72,12 @@
         </p>
       {/if}
     {/if}
+    <p class="p-2">
+      <a
+        target="_blank"
+        class="underline text-cyan-100"
+        href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionHash}`}>transaction details</a>
+    </p>
   {:catch error}
     <p class="p-2">{error}</p>
   {/await}

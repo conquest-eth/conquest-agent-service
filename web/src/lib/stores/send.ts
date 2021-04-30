@@ -43,9 +43,8 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     if (this.$store.step == 'PICK_ORIGIN') {
       this.pickOrigin(from);
     } else {
-      this.setData({from}, {step: 'CONNECTING'});
       await privateAccount.login();
-      this.setPartial({step: 'PICK_DESTINATION'});
+      this.setData({from}, {step: 'PICK_DESTINATION'});
     }
   }
 
@@ -53,9 +52,8 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     if (this.$store.step == 'PICK_DESTINATION') {
       this.pickDestination(to);
     } else {
-      this.setData({to}, {step: 'CONNECTING'});
       await privateAccount.login();
-      this.setPartial({step: 'PICK_ORIGIN'});
+      this.setData({to}, {step: 'PICK_ORIGIN'});
     }
   }
 

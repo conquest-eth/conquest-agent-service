@@ -39,7 +39,10 @@
       <div class="flex flex-col text-center justify-center text-red-500 mb-8">
         <p>Keep this tab open to ensure your fleet get resolved in time.</p>
         <p>Please also ensure you remain on the same account and network. Changing them will stop the agent.</p>
-        <p>Also note that some wallet like Metamask timeout after some time and you might need to reconnect.</p>
+        <p>
+          Also note that some wallet like Metamask timeout after some time and you might need to reconnect. You might
+          also want to keep the tab in focus.
+        </p>
       </div>
     {/if}
     <div class="flex justify-center flex-wrap text-cyan-300">

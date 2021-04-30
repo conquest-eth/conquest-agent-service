@@ -15,6 +15,8 @@
       }
     }
   }
+
+  function showLogs() {}
 </script>
 
 <div class="absolute inline-block w-28 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4 text-sm">
@@ -27,4 +29,8 @@
     class="relative inline-block ml-1 max-w-lg shadow-sm w-14 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md bg-gray-700"
     type="text" />
   <button class="relative inline-block border border-cyan-500 my-1 px-1 text-center" on:click={go}>GO</button>
+  <!-- <div class="w-full h-1 bg-cyan-300 mt-2" /> -->
+  <!-- <button
+    class="relative inline-block border border-cyan-500 ml-8 my-2 px-1 text-center"
+    on:click={showLogs}>LOGS</button> -->
 </div>

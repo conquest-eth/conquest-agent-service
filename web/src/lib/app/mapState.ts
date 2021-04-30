@@ -156,6 +156,7 @@ type FleetPromise = Promise<{
   newNumspaceships: number;
   inFlightFleetLoss: number;
   inFlightPlanetLoss: number;
+  transactionHash: string;
 }>;
 
 const fleetPromises: {[fleetId: string]: FleetPromise} = {};
@@ -196,6 +197,7 @@ export function fetchFleetEvent(fleetId: string): FleetPromise {
             newNumspaceships: args.newNumspaceships,
             inFlightFleetLoss: args.inFlightFleetLoss,
             inFlightPlanetLoss: args.inFlightPlanetLoss,
+            transactionHash: event.transactionHash,
           };
         }
       })()

@@ -55,7 +55,7 @@
     </div>
   </Modal>
 {:else if $sendFlow.step === 'CONNECTING'}
-  <Modal>Connecting...</Modal>
+  <Modal on:close={() => sendFlow.cancel()}>Connecting...</Modal>
 {:else if $sendFlow.step === 'CREATING_TX'}
   <Modal>Preparing The Transaction...</Modal>
 {:else if $sendFlow.step === 'WAITING_TX'}
