@@ -78,13 +78,15 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     addresses,
     totalTokenAmount: totalTokenAmount.toString(),
   });
-  await execute(
+  const receipt = await execute(
     'PlayToken_L2',
     {from: claimKeyDistributor, value: totalETHAmount.toString(), log: true},
     'distributeVariousAmountsAlongWithETH',
     addresses,
     amounts
   );
+
+  console.log({tx: receipt.transactionHash});
 
   let explorerLink = '';
   let etherscanNetworkPrefix: string | undefined;

@@ -107,7 +107,7 @@
                 href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`}
                 class="underline">(see tx)</a>
             {:else}
-              unknown event
+              <!-- unknown event -->
               <!-- <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
               <a
                 href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`}
