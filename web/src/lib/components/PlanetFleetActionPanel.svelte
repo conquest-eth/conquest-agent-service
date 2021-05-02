@@ -363,7 +363,7 @@
         borderColor="border-blue-400"
         class="m-2"
         on:click={messageOwner}>
-        <div class="w-20">Message Onwer</div>
+        <div class="w-20">Message Owner</div>
       </PanelButton>
     {/if}
     <PanelButton
