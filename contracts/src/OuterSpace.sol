@@ -994,6 +994,7 @@ contract OuterSpace is Proxied {
             if (newNumSpaceships >= ACTIVE_MASK) {
                 newNumSpaceships = ACTIVE_MASK - 1;
             }
+            _planets[to].lastUpdated = uint32(block.timestamp);
             _planets[to].numSpaceships = _setActiveNumSpaceships(active, uint32(newNumSpaceships));
             result.numSpaceships = uint32(newNumSpaceships);
         }
