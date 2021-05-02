@@ -145,6 +145,7 @@ importers:
 
   subgraph:
     specifiers:
+      '@ethersproject/bignumber': ^5.1.1
       '@graphprotocol/graph-cli': ^0.20.0
       '@graphprotocol/graph-ts': ^0.20.0
       '@urql/core': ^2.0.0
@@ -159,6 +160,7 @@ importers:
       ts-node: ^9.1.1
       wait-on: ^5.3.0
     devDependencies:
+      '@ethersproject/bignumber': 5.1.1
       '@graphprotocol/graph-cli': 0.20.0
       '@graphprotocol/graph-ts': 0.20.0
       '@urql/core': 2.0.0
@@ -412,6 +414,14 @@ packages:
       '@ethersproject/bytes': 5.1.0
       '@ethersproject/logger': 5.1.0
       bn.js: 4.12.0
+
+  /@ethersproject/bignumber/5.1.1:
+    resolution: {integrity: sha512-AVz5iqz7+70RIqoQTznsdJ6DOVBYciNlvO+AlQmPTB6ofCvoihI9bQdr6wljsX+d5W7Yc4nyvQvP4JMzg0Agig==}
+    dependencies:
+      '@ethersproject/bytes': 5.1.0
+      '@ethersproject/logger': 5.1.0
+      bn.js: 4.12.0
+    dev: true
 
   /@ethersproject/bytes/5.1.0:
     resolution: {integrity: sha512-sGTxb+LVjFxJcJeUswAIK6ncgOrh3D8c192iEJd7mLr95V6du119rRfYT/b87WPkZ5I3gRBUYIYXtdgCWACe8g==}
