@@ -16,18 +16,20 @@
 <div class="w-full h-full bg-black text-white">
   <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
   <div class="markdown text-white p-3">
-    <h1><span class="font-black">Highscores</span></h1>
-    <p>Note: ties are not resolved here</p>
-    <p>Also note that more token will be given in the coming week based on the initial distribution.</p>
-    <p>Player who received 200 tokens will receive 200 tokens more.</p>
-    <p>The score will adjust on reception of these extra tokens.</p>
-    <p>score = 1000 * (((token in control) - (token given)) / (token given))</p>
+    <h1 class="text-cyan-400"><span class="font-black">Highscores</span></h1>
+    <p class="text-gray-400">Note: ties are not resolved here</p>
+    <p class="text-gray-400">
+      Also note that more token will be given in the coming week based on the initial distribution.
+    </p>
+    <p class="text-gray-400">Player who received x tokens will receive x tokens more</p>
+    <p class="text-gray-400">The score will adjust on reception of these extra tokens.</p>
+    <p class="text-gray-400">score = 1000 * (((token in control) - (token given)) / (token given))</p>
     {#if $highscores.error}
-      {$highscores.error}
+      <span class="text-red-600">{$highscores.error}</span>
     {:else if $highscores.step === 'IDLE'}
-      Please wait...
+      <span class="text-yellow-600">Please wait...</span>
     {:else if $highscores.step === 'LOADING'}
-      Loading...
+      <span class="text-yellow-600">Loading...</span>
     {:else}
       <ul>
         {#each $highscores.data as player}
