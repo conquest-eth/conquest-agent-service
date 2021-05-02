@@ -41,18 +41,20 @@
 <div class="absolute inline-block w-48 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4 text-sm">
   <div class="flex m-1">
     {#if $planet.state && $planet.state.owner !== '0x0000000000000000000000000000000000000000'}
-      <Tooltip class={`flex-auto text-center pt-1 font-bold ${textColor} inline`}>
+      <h2 class={`flex-auto text-center pt-1 font-bold ${textColor} inline`}>{$planet.stats.name}</h2>
+      <!-- <Tooltip class={`flex-auto text-center pt-1 font-bold ${textColor} inline`}>
         <h2>{$planet.stats.name}</h2>
         <p slot="tooltip">{$planet.location.id}</p>
-      </Tooltip>
+      </Tooltip> -->
       <div>
         <Blockie class="flex-auto w-8 h-8 flot" address={$planet.state.owner} />
       </div>
     {:else}
-      <Tooltip class={`flex-auto text-center pt-1 font-bold ${textColor} inline`}>
+      <h2 class={`flex-auto text-center pt-1 font-bold ${textColor} inline`}>{$planet.stats.name}</h2>
+      <!-- <Tooltip class={`flex-auto text-center pt-1 font-bold ${textColor} inline`}>
         <h2 class="flex-auto  ${textColor} text-center pt-1 font-bold">{$planet.stats.name}</h2>
         <p slot="tooltip">{$planet.location.id}</p>
-      </Tooltip>
+      </Tooltip> -->
     {/if}
   </div>
   {#if $planet.state && $planet.state.owner !== '0x0000000000000000000000000000000000000000'}
