@@ -99,6 +99,7 @@
     "alpha:claimKeys": "dotenv -e .env.alpha -e .env -- npm --prefix contracts run execute alpha scripts/generate_claim_keys.ts",
     "alpha:claimKeysURL": "dotenv -e .env.alpha -e .env -- npm --prefix contracts run execute alpha scripts/updateURLForClaimKeys.ts",
     "alpha:execute": "dotenv -e .env.alpha -e .env -- npm --prefix contracts run execute alpha",
+    "alpha:queries": "dotenv -e .env.alpha -e .env -- npm --prefix subgraph run query",
     "-----------------------------": "",
     "// QUICK : deploy on quick": "",
     "quick:web:dev": "dotenv -e .env.quick -e .env -- npm --prefix web run dev",

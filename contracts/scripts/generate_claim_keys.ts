@@ -124,6 +124,21 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   }
   fs.writeFileSync(`.${network.name}.claimKeys.csv`, csv);
 }
+
+// function wait(time: number): Promise<void> {
+//   return new Promise<void>((resolve) => {
+//     setTimeout(resolve, time * 1000);
+//   });
+// }
+
+async function main() {
+  // for (let i = 0; i < 107; i++) {
+  //   console.log(`executing ${i} ... in 3s`);
+  // await wait(3);
+  await func(hre);
+  // }
+}
+
 if (require.main === module) {
-  func(hre);
+  main();
 }

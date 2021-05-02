@@ -3,7 +3,8 @@ import {contracts as contractsInfo} from '$lib/app/contractInfos';
 import privateAccount from '$lib/stores/privateAccount';
 import {fallback, chain} from '$lib/stores/wallet';
 import {now} from '$lib/stores/time';
-import {SUBGRAPH_ENDPOINT} from '$lib/graphql/graphql_endpoints';
+// import {SUBGRAPH_ENDPOINT} from '$lib/graphql/graphql_endpoints';
+// import {BigNumber} from '@ethersproject/bignumber';
 
 const timeKeeper = {
   setTimeout(fn: () => void, sec: number) {
@@ -32,7 +33,7 @@ type PlanetQueryData = {
   lastUpdated: string;
   exitTime: string;
   active: boolean;
-  // TODO reward
+  reward: string;
 };
 
 type QueryData = {
@@ -67,6 +68,7 @@ async function fetch(
   //     lastUpdated
   //     exitTime
   //     active
+  //     reward
   //   }
   //   space(id: "Space") {
   //     minX
@@ -96,7 +98,7 @@ async function fetch(
   //   const planets: PlanetData[] = [];
   //   for (const planetId of planetIds) {
   //     if (!planetsWithState[planetId]) {
-  //       console.log('no state', planetId);
+  //       // console.log('no state', planetId);
   //       planets.push({
   //         id: planetId,
   //         owner: '0x0000000000000000000000000000000000000000',
@@ -104,6 +106,7 @@ async function fetch(
   //         lastUpdated: 0,
   //         active: false,
   //         exitTime: 0,
+  //         reward: BigNumber.from(0),
   //       });
   //     } else {
   //       const planet = planetsWithState[planetId];
@@ -114,6 +117,7 @@ async function fetch(
   //         lastUpdated: parseInt(planet.lastUpdated),
   //         active: planet.active,
   //         exitTime: parseInt(planet.exitTime),
+  //         reward: BigNumber.from(planet.reward),
   //       });
   //     }
   //   }
