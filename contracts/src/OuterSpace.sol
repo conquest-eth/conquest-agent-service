@@ -485,7 +485,9 @@ contract OuterSpace is Proxied {
         } else {
             planet.owner = sender;
             if (defense != 0) {
-                (uint32 attackerLoss, ) = _computeFight(_acquireNumSpaceships, defense, 10000, _defense(data)); // attacker alwasy win as defense (and stats.native) is restricted to 3500
+                (uint32 attackerLoss, ) = _computeFight(_acquireNumSpaceships, defense, 10000, _defense(data));
+                // attacker alwasy win as defense (and stats.native) is restricted to 3500
+                // (attackerLoss: 0, defenderLoss: 0) would mean defense was zero
                 require(attackerLoss < _acquireNumSpaceships, "FAILED_CAPTURED");
                 currentNumSpaceships = _acquireNumSpaceships - attackerLoss;
             } else {
@@ -825,6 +827,7 @@ contract OuterSpace is Proxied {
         (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, natives, attack, defense);
         result.attackerLoss = attackerLoss;
         if (defenderLoss == natives && numAttack > attackerLoss) {
+            // (attackerLoss: 0, defenderLoss: 0) means that numAttack was zero as natives cannot be zero
             result.numSpaceships = numAttack - attackerLoss;
             _planets[to].numSpaceships = _setActiveNumSpaceships(false, result.numSpaceships);
             _planets[to].lastUpdated = uint32(block.timestamp);
@@ -958,6 +961,7 @@ contract OuterSpace is Proxied {
             _inFlight[to][block.timestamp / (FRONT_RUNNING_DELAY / 2)].destroyed = state.destroyed2;
         }
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        // (attackerLoss: 0, defenderLoss: 0) could either mean attack was zero or defense was zero :
         if (numAttack > 0 && result.defenderLoss == state.currentNumSpaceships) {
             result.numSpaceships = numAttack - attackerLoss;
             result.won = true;
@@ -966,6 +970,7 @@ contract OuterSpace is Proxied {
             _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, result.numSpaceships);
             _planets[to].lastUpdated = uint32(block.timestamp);
         } else if (result.attackerLoss == numAttack) {
+            // always true as if attack won it will be going in the "if" above
             result.numSpaceships = state.currentNumSpaceships - defenderLoss;
             _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, result.numSpaceships);
             _planets[to].lastUpdated = uint32(block.timestamp);
@@ -1007,23 +1012,24 @@ contract OuterSpace is Proxied {
         uint256 defense
     ) internal pure returns (uint32 attackerLoss, uint32 defenderLoss) {
         if (numAttack == 0 || numDefense == 0) {
-            return (0, 0);
+            return (0, 0); // this edge case need to be considered, as the result of this function cannot tell from it whos is winning here
         }
-        uint256 attackPower = (numAttack * attack);
-        uint256 defensePower = (numDefense * defense);
+        uint256 attackDamage = (numAttack * attack) / defense;
 
-        uint256 numAttackRound = (numDefense * 100000000) / attackPower;
-        if (numAttackRound * attackPower < (numDefense * 100000000)) {
-            numAttackRound++;
-        }
-        uint256 numDefenseRound = (numAttack * 100000000) / defensePower;
-        if (numDefenseRound * defensePower < (numAttack * 100000000)) {
-            numDefenseRound++;
-        }
+        if (numDefense > attackDamage) {
+            // attack fails
+            attackerLoss = uint32(numAttack); // all attack destroyed
+            defenderLoss = uint32(attackDamage); // 1 spaceship will be left at least as attackDamage < numDefense
+        } else {
+            // attack succeed
+            uint256 defenseDamage = uint32((numDefense * defense) / attack);
+            if (defenseDamage >= numAttack) {
+                defenseDamage = numAttack - 1; // ensure 1 spaceship left
+            }
 
-        uint256 numRound = Math.min(numAttackRound, numDefenseRound);
-        attackerLoss = uint32(Math.min((numRound * defensePower) / 100000000, numAttack));
-        defenderLoss = uint32(Math.min((numRound * attackPower) / 100000000, numDefense));
+            attackerLoss = uint32(defenseDamage);
+            defenderLoss = uint32(numDefense); // all defense destroyed
+        }
     }
 
     function _checkDistance(
