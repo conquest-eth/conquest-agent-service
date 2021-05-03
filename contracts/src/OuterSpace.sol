@@ -23,6 +23,8 @@ contract OuterSpace is Proxied {
     int256 internal constant EXPANSION = 8;
     uint32 internal constant INITIAL_SPACE = 16;
 
+    uint256 internal constant COMBAT_RULE_SWITCH_TIME = 1620111600; // Tuesday, 4 May 2021 07:00:00 GMT
+
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // CONFIGURATION / IMMUTABLE
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -485,7 +487,13 @@ contract OuterSpace is Proxied {
         } else {
             planet.owner = sender;
             if (defense != 0) {
-                (uint32 attackerLoss, ) = _computeFight(_acquireNumSpaceships, defense, 10000, _defense(data));
+                uint32 attackerLoss;
+                if (block.timestamp > COMBAT_RULE_SWITCH_TIME) {
+                    (attackerLoss, ) = _computeFight(_acquireNumSpaceships, defense, 10000, _defense(data));
+                } else {
+                    (attackerLoss, ) = _old_computeFight(_acquireNumSpaceships, defense, 10000, _defense(data));
+                }
+
                 // attacker alwasy win as defense (and stats.native) is restricted to 3500
                 // (attackerLoss: 0, defenderLoss: 0) would mean defense was zero
                 require(attackerLoss < _acquireNumSpaceships, "FAILED_CAPTURED");
@@ -710,7 +718,7 @@ contract OuterSpace is Proxied {
         if (toPlanet.owner == fleet.owner) {
             return _performReinforcement(fleet.owner, toPlanet, to, quantity);
         } else {
-            return _performAttack(fleet.owner, from, toPlanet, to, quantity);
+            return _performAttack(fleet.owner, fleet.launchTime, from, toPlanet, to, quantity);
         }
     }
 
@@ -782,6 +790,7 @@ contract OuterSpace is Proxied {
 
     function _performAttack(
         address attacker,
+        uint32 launchTime,
         uint256 from,
         Planet memory toPlanet,
         uint256 to,
@@ -790,7 +799,7 @@ contract OuterSpace is Proxied {
         if (toPlanet.lastUpdated == 0) {
             // Planet was never touched (previous attack could have failed to succeed attack on natives)
             bytes32 toPlanetData = _planetData(to);
-            return _nativeAttack(attacker, from, to, toPlanetData, numAttack);
+            return _nativeAttack(attacker, launchTime, from, to, toPlanetData, numAttack);
         } else if (_hasJustExited(toPlanet.exitTime)) {
             return _fleetAfterExit(to, toPlanet.owner, _planets[to], attacker, numAttack);
         } else {
@@ -798,7 +807,7 @@ contract OuterSpace is Proxied {
             uint16 attack = _attack(_planetData(from));
             uint16 defense = _defense(toPlanetData);
             uint16 production = _production(toPlanetData);
-            return _actualAttack(attacker, attack, defense, toPlanet, to, production, numAttack);
+            return _actualAttack(attacker, launchTime, attack, defense, toPlanet, to, production, numAttack);
         }
     }
 
@@ -816,6 +825,7 @@ contract OuterSpace is Proxied {
 
     function _nativeAttack(
         address attacker,
+        uint32 launchTime,
         uint256 from,
         uint256 to,
         bytes32 toData,
@@ -824,7 +834,13 @@ contract OuterSpace is Proxied {
         uint16 attack = _attack(_planetData(from));
         uint16 defense = _defense(toData);
         uint16 natives = _natives(toData);
-        (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, natives, attack, defense);
+        uint32 attackerLoss;
+        uint32 defenderLoss;
+        if (launchTime > COMBAT_RULE_SWITCH_TIME) {
+            (attackerLoss, defenderLoss) = _computeFight(numAttack, natives, attack, defense);
+        } else {
+            (attackerLoss, defenderLoss) = _old_computeFight(numAttack, natives, attack, defense);
+        }
         result.attackerLoss = attackerLoss;
         if (defenderLoss == natives && numAttack > attackerLoss) {
             // (attackerLoss: 0, defenderLoss: 0) means that numAttack was zero as natives cannot be zero
@@ -839,6 +855,7 @@ contract OuterSpace is Proxied {
 
     function _actualAttack(
         address attacker,
+        uint32 launchTime,
         uint16 attack,
         uint16 defense,
         Planet memory toPlanet,
@@ -858,7 +875,7 @@ contract OuterSpace is Proxied {
             return result;
         }
 
-        return _completeCombatResult(state, attacker, to, numAttack, attack, defense);
+        return _completeCombatResult(state, attacker, launchTime, to, numAttack, attack, defense);
     }
 
     struct PreCombatState {
@@ -925,12 +942,19 @@ contract OuterSpace is Proxied {
     function _completeCombatResult(
         PreCombatState memory state,
         address attacker,
+        uint32 launchTime,
         uint256 to,
         uint32 numAttack,
         uint16 attack,
         uint16 defense
     ) internal returns (FleetResult memory result) {
-        (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, state.numDefense, attack, defense);
+        uint32 attackerLoss;
+        uint32 defenderLoss;
+        if (launchTime > COMBAT_RULE_SWITCH_TIME) {
+            (attackerLoss, defenderLoss) = _computeFight(numAttack, state.numDefense, attack, defense);
+        } else {
+            (attackerLoss, defenderLoss) = _old_computeFight(numAttack, state.numDefense, attack, defense);
+        }
         result.attackerLoss = attackerLoss;
         result.defenderLoss = defenderLoss;
 
@@ -1030,6 +1054,32 @@ contract OuterSpace is Proxied {
             attackerLoss = uint32(defenseDamage);
             defenderLoss = uint32(numDefense); // all defense destroyed
         }
+    }
+
+    function _old_computeFight(
+        uint256 numAttack,
+        uint256 numDefense,
+        uint256 attack,
+        uint256 defense
+    ) internal pure returns (uint32 attackerLoss, uint32 defenderLoss) {
+        if (numAttack == 0 || numDefense == 0) {
+            return (0, 0);
+        }
+        uint256 attackPower = (numAttack * attack);
+        uint256 defensePower = (numDefense * defense);
+
+        uint256 numAttackRound = (numDefense * 100000000) / attackPower;
+        if (numAttackRound * attackPower < (numDefense * 100000000)) {
+            numAttackRound++;
+        }
+        uint256 numDefenseRound = (numAttack * 100000000) / defensePower;
+        if (numDefenseRound * defensePower < (numAttack * 100000000)) {
+            numDefenseRound++;
+        }
+
+        uint256 numRound = Math.min(numAttackRound, numDefenseRound);
+        attackerLoss = uint32(Math.min((numRound * defensePower) / 100000000, numAttack));
+        defenderLoss = uint32(Math.min((numRound * attackPower) / 100000000, numDefense));
     }
 
     function _checkDistance(

@@ -7,6 +7,7 @@
   import {xyToLocation} from 'conquest-eth-common';
   import {space} from '$lib/app/mapState';
   import {timeToText} from '$lib/utils';
+  import {time} from '$lib/stores/time';
 
   $: planetFrom = $sendFlow.data?.from
     ? planetAt(xyToLocation($sendFlow.data.from.x, $sendFlow.data.from.y))
@@ -39,7 +40,7 @@
       prediction = {
         arrivalTime: timeToText(space.timeToArrive($planetFrom, $planetTo)),
         numSpaceshipsAtArrival: space.numSpaceshipsAtArrival($planetFrom, $planetTo),
-        outcome: space.outcome($planetFrom, $planetTo, fleetAmount),
+        outcome: space.outcome($planetFrom, $planetTo, fleetAmount, $time),
       };
     }
   }

@@ -10,6 +10,7 @@
   import {space, spaceInfo} from '$lib/app/mapState';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
+  import {time} from '$lib/stores/time';
 
   $: location = $claimFlow.data?.location;
   $: planet = location ? planetAt(location) : undefined;
@@ -17,7 +18,7 @@
   $: stake = stats && stats.stake;
   $: cost = planet ? BigNumber.from($planet.stats.stake) : undefined; // TODO multiplier from config/contract
 
-  $: result = $planet && $planet.state ? space.simulateCapture($planet) : undefined;
+  $: result = $planet && $planet.state ? space.simulateCapture($planet, $time) : undefined;
 </script>
 
 {#if $claimFlow.error}

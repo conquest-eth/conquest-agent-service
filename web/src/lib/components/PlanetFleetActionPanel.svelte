@@ -13,6 +13,7 @@
   import PanelButton from './PanelButton.svelte';
   import {locationToXY, xyToLocation} from 'conquest-eth-common';
   import {space} from '$lib/app/mapState';
+  import {time} from '$lib/stores/time';
 
   export let location: string;
   export let close: () => void;
@@ -83,7 +84,7 @@
   $: attacking =
     $sendFlow.step === 'PICK_ORIGIN' && destinationPlanet && $destinationPlanet.state?.owner !== $wallet.address;
 
-  $: captureResult = $planet?.state ? space.simulateCapture($planet) : undefined;
+  $: captureResult = $planet?.state ? space.simulateCapture($planet, $time) : undefined;
 </script>
 
 {#if $planet.state}
