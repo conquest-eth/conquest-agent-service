@@ -1036,7 +1036,8 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
             {blockTag: Math.max(0, latestBlockNumber - finality)}
           );
         } catch (e) {
-          //
+          console.error(e);
+          return;
         }
         if (
           !this.$store.walletAddress ||
@@ -1117,7 +1118,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
             }
           }
         } else {
-          if (latestFinalityBlock.timestamp > expiryTime) {
+          if (latestFinalityBlock.timestamp > fleet.actualLaunchTime + fleet.duration) {
             let fleetData;
             try {
               fleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
@@ -1140,8 +1141,6 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
               console.log({fleetWasResolved: fleetId});
               // it was resolved
               this.deleteFleet(fleetId);
-            } else {
-              console.log({fleetExpired: fleetId});
             }
 
             // consider it expired elsewhere (expired for sure = no resolveTx + expired time )
