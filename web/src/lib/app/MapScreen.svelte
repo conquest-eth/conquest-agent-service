@@ -6,6 +6,8 @@
   import ClaimFlow from '$lib/flows/ClaimFlow.svelte';
   import sendFlow from '$lib/stores/send';
   import SendFlow from '$lib/flows/SendFlow.svelte';
+  import simulateFlow from '$lib/stores/simulateFlow';
+  import SimulateFlow from '$lib/flows/SimulateFlow.svelte';
   import exitFlow from '$lib/stores/exit';
   import ExitFlow from '$lib/flows/ExitFlow.svelte';
   import resolveFlow from '$lib/stores/resolve';
@@ -40,6 +42,10 @@
 
 {#if $sendFlow.error || $sendFlow.step !== 'IDLE'}
   <SendFlow />
+{/if}
+
+{#if $simulateFlow.error || $simulateFlow.step !== 'IDLE'}
+  <SimulateFlow />
 {/if}
 
 {#if $resolveFlow.error || $resolveFlow.step !== 'IDLE'}

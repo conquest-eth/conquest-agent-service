@@ -57,8 +57,10 @@
                 {#if event.won}
                   captured planet
                   <Coord location={event.planet.id} />
-                  from
-                  <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
+                  {#if event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}
+                    from
+                    <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
+                  {/if}
                 {:else}
                   destroyed
                   {event.planetLoss}

@@ -1,6 +1,7 @@
 <script lang="ts">
   import claimFlow from '$lib/stores/claim';
   import sendFlow from '$lib/stores/send';
+  import simulateFlow from '$lib/stores/simulateFlow';
   import exitFlow from '$lib/stores/exit';
   import messageFlow from '$lib/stores/message';
   import showPlanetDepartures from '$lib/stores/showPlanetDepartures';
@@ -34,6 +35,19 @@
 
   function cancelSend() {
     sendFlow.cancel();
+  }
+
+  function simulateFrom() {
+    simulateFlow.simulateFrom(locationToXY(location));
+    close();
+  }
+
+  function showSimulation() {
+    simulateFlow.simulate(locationToXY(location));
+  }
+
+  function cancelSimulation() {
+    simulateFlow.cancel();
   }
 
   function exitFrom() {
@@ -220,6 +234,19 @@
       <PanelButton label="Cancel" class="m-2" on:click={cancelSend}>
         <div class="w-20">Cancel</div>
       </PanelButton>
+    {:else if $simulateFlow.step === 'PICK_DESTINATION'}
+      <PanelButton
+        label="Show simulation"
+        class="m-2"
+        color="text-green-500"
+        borderColor="border-green-500"
+        on:click={showSimulation}>
+        <div class="w-20">Show Simulation</div>
+      </PanelButton>
+
+      <PanelButton label="Cancel" class="m-2" on:click={cancelSimulation}>
+        <div class="w-20">Cancel</div>
+      </PanelButton>
     {:else if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
       <PanelButton
         label="Capture"
@@ -364,6 +391,14 @@
         class="m-2"
         on:click={messageOwner}>
         <div class="w-20">Message Owner</div>
+      </PanelButton>
+      <PanelButton
+        label="Simulate"
+        color="text-gray-200"
+        borderColor="border-gray-200"
+        class="m-2"
+        on:click={simulateFrom}>
+        <div class="w-20">Simulate Attack</div>
       </PanelButton>
     {/if}
     <PanelButton

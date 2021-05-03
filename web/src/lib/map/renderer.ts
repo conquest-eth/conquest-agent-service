@@ -751,6 +751,10 @@ export class Renderer {
               Math.max((1 / render.scale) * 2, render.scale * 2),
               this.renderState.space.player &&
                 planet.state?.owner.toLowerCase() === this.renderState.space.player.toLowerCase()
+                ? 1
+                : planet.state?.active
+                ? 2
+                : 0
             );
           }
 

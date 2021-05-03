@@ -36,7 +36,7 @@ export class Blockie {
   }
 
   //TODO Image Texture
-  draw(ctx: CanvasRenderingContext2D, x: number, y: number, furtherScale: number, greenBorder: boolean): void {
+  draw(ctx: CanvasRenderingContext2D, x: number, y: number, furtherScale: number, border = 0): void {
     const oldColor = ctx.fillStyle;
     const appliedScale = this.scale * furtherScale;
     const appliedSize = this.size * appliedScale;
@@ -50,7 +50,7 @@ export class Blockie {
     // 	case Center: y-= appliedSize/2;
     // 	case Bottom: y-= appliedSize;
     // }
-    if (greenBorder) {
+    if (border === 1) {
       ctx.strokeStyle = 'green';
       ctx.lineWidth = appliedScale;
       ctx.setLineDash([]);
@@ -61,6 +61,17 @@ export class Blockie {
         Math.floor(appliedSize + appliedScale * 2)
       );
     }
+    // else if (border === 2) {
+    //   ctx.strokeStyle = 'red';
+    //   ctx.lineWidth = appliedScale / 4;
+    //   ctx.setLineDash([]);
+    //   ctx.strokeRect(
+    //     Math.floor(x - appliedScale),
+    //     Math.floor(y - appliedScale),
+    //     Math.floor(appliedSize + appliedScale * 2),
+    //     Math.floor(appliedSize + appliedScale * 2)
+    //   );
+    // }
 
     ctx.fillStyle = this.bgcolor;
     ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(appliedSize), Math.floor(appliedSize));
