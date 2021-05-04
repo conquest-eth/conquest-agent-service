@@ -5,15 +5,21 @@
   import selection from '$lib/stores/selection';
 
   let coords: string;
-  function go(): void {
+  function go(e: Event): void {
+    e.stopPropagation();
+    e.preventDefault();
     const split = coords.split(',').map((v) => v.trim());
     if (split.length === 2) {
       const x = parseInt(split[0]);
       const y = parseInt(split[1]);
-      (window as any).camera.navigate(x * 48 * 2 * 4, y * 48 * 2 * 4);
-      const planet = spaceInfo.getPlanetInfo(x, y);
-      if (planet) {
-        selection.select(planet.location.id);
+      if (!isNaN(x) && !isNaN(y)) {
+        (window as any).camera.navigate(x * 48 * 2 * 4, y * 48 * 2 * 4);
+        const planet = spaceInfo.getPlanetInfo(x, y);
+        if (planet) {
+          selection.select(planet.location.id);
+        }
+      } else {
+        console.log('invalid coords');
       }
     }
   }
