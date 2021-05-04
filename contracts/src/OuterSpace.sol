@@ -23,7 +23,7 @@ contract OuterSpace is Proxied {
     int256 internal constant EXPANSION = 8;
     uint32 internal constant INITIAL_SPACE = 16;
 
-    uint256 internal constant COMBAT_RULE_SWITCH_TIME = 1620111600; // Tuesday, 4 May 2021 07:00:00 GMT
+    uint256 internal constant COMBAT_RULE_SWITCH_TIME = 1620144000; // Tuesday, 4 May 2021 16:00:00 GMT
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // CONFIGURATION / IMMUTABLE
