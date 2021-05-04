@@ -35,9 +35,9 @@
       <ul>
         {#each $globalLogs.data as event}
           <li>
-            {timeToText($time - parseInt(event.timestamp), {compact: true})}
-            ago
             {#if event.__typename === 'FleetSentEvent'}
+              {timeToText($time - parseInt(event.timestamp), {compact: true})}
+              ago
               <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
               sent
               {event.quantity}
@@ -49,6 +49,8 @@
                 href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`}
                 class="underline">(see tx)</a>
             {:else if event.__typename === 'FleetArrivedEvent'}
+              {timeToText($time - parseInt(event.timestamp), {compact: true})}
+              ago
               <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
               fleet from
               <Coord location={event.from.id} />
@@ -83,6 +85,8 @@
                 href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`}
                 class="underline">(see tx)</a>
             {:else if event.__typename === 'PlanetExitEvent'}
+              {timeToText($time - parseInt(event.timestamp), {compact: true})}
+              ago
               <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
               attempting to exit planet
               <Coord location={event.planet.id} />
@@ -97,6 +101,8 @@
                 href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`}
                 class="underline">(see tx)</a>
             {:else if event.__typename === 'PlanetStakeEvent'}
+              {timeToText($time - parseInt(event.timestamp), {compact: true})}
+              ago
               <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
               claimed planet
               <Coord location={event.planet.id} />
@@ -108,6 +114,12 @@
               <a
                 href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`}
                 class="underline">(see tx)</a>
+              <!-- {:else if event.__typename === 'StakeToWithdrawEvent'} -->
+              <!-- TODO ?-->
+              <!-- {:else if event.__typename === 'ExitCompleteEvent'} -->
+              <!-- TODO ?-->
+              <!-- {:else if event.__typename === 'RewardToWithdrawEvent'} -->
+              <!-- TODO ?-->
             {:else}
               <!-- unknown event -->
               <!-- <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
