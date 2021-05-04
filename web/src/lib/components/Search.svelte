@@ -26,11 +26,16 @@
     <h2 class={`flex-auto text-center pt-1 font-bold text-white`}>Enter coords</h2>
   </div>
   <div class="w-full h-1 bg-cyan-300 my-2" />
-  <input
-    bind:value={coords}
-    class="relative inline-block ml-1 max-w-lg shadow-sm w-14 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md bg-gray-700"
-    type="text" />
-  <button class="relative inline-block border border-cyan-500 my-1 px-1 text-center" on:click={go}>GO</button>
+  <form on:submit={go}>
+    <input
+      bind:value={coords}
+      class="relative inline-block ml-1 max-w-lg shadow-sm w-14 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md bg-gray-700"
+      type="text" />
+    <input
+      type="submit"
+      value="GO"
+      class="relative inline-block bg-black border border-cyan-500 my-1 px-1 text-center" />
+  </form>
   <div class="w-full h-1 bg-cyan-300 mt-2" />
   <a class="relative inline-block border border-cyan-500 ml-8 my-2 px-1 text-center" href={`${base}/logs/`}>LOGS</a>
   <div class="w-full h-1 bg-cyan-300" />
