@@ -9,6 +9,7 @@
   import type {OwnFleet} from 'conquest-eth-common';
   import {locationToXY} from 'conquest-eth-common';
   import {contracts as contractsInfo} from '$lib/app/contractInfos';
+import { logPeriod } from '$lib/config';
 
   export let location: string;
   export let close: () => void;
@@ -36,6 +37,14 @@
         if (fleet.toDelete) {
           continue;
         }
+
+        // TODO investigate why need to hide 7 days old events
+        const launchTime = fleet.actualLaunchTime || fleet.launchTime;
+        const donotSHowTime = launchTime + fleet.duration + logPeriod;
+        if ($time > donotSHowTime) {
+          continue;
+        }
+
         let status: 'Success' | 'Error' | 'Expired' | undefined;
         if (fleet.resolveTx) {
           const txStatus = privateAccount.txStatus(fleet.resolveTx.hash);
