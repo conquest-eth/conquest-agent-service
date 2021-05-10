@@ -969,12 +969,15 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     if (!this.$store.data) {
       return;
     }
+    const fleetsToDelete: string[] = [];
     const fleetIds = Object.keys(this.$store.data.fleets);
     for (const fleetId of fleetIds) {
       const fleet = this.$store.data.fleets[fleetId];
 
       if (fleet.toDelete) {
-        if (now() - fleet.updatedAt > 24 * 3600) this.deleteFleet(fleetId);
+        if (now() - fleet.updatedAt > 24 * 3600) {
+          fleetsToDelete.push(fleetId);
+        }
         continue;
       }
 
@@ -1141,7 +1144,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
             if (fleetData && fleetData.quantity == 0) {
               console.log({fleetWasResolved: fleetId});
               // it was resolved
-              this.deleteFleet(fleetId);
+              fleetsToDelete.push(fleetId);
             }
 
             // consider it expired elsewhere (expired for sure = no resolveTx + expired time )
@@ -1149,6 +1152,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
         }
       }
     }
+    this.deleteFleets(fleetsToDelete);
   }
 
   async login(): Promise<void> {
@@ -1519,7 +1523,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
   }
 
-  deleteFleet(fleetId: string) {
+  deleteFleets(fleetIds: string[]) {
     if (!wallet.address) {
       throw new Error(`no wallet.address`);
     }
@@ -1530,12 +1534,15 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       return;
     }
     const fleets = this.$store.data.fleets;
-    delete fleets[fleetId];
+    for (const fleetId of fleetIds) {
+      delete fleets[fleetId];
+    }
+
     // TODO delete txStatuses
     this.setPartial({
       data: this.$store.data,
     });
-    this._setData(wallet.address, wallet.chain.chainId, this.$store.data, [fleetId]);
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data, fleetIds);
   }
 
   requestFleetDeletion(fleetId: string) {
