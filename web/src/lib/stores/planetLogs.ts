@@ -65,7 +65,7 @@ class PlanetLogsStore extends BaseStoreWithData<PlanetLogs, undefined> {
   async fetch() {
     const latestBlock = await wallet.provider.getBlock('latest');
     const toBlock = latestBlock.number - finality;
-    const fromBlockNumber = (this.lastQueryBlockNumber || Math.max(0, toBlock - Math.floor(logPeriod / blockTime))) + 1;
+    const fromBlockNumber = Math.max(this.lastQueryBlockNumber || 0, toBlock - Math.floor(logPeriod / blockTime)) + 1;
     const OuterSpace = wallet.contracts.OuterSpace;
     const addressUsed = this.address.toLowerCase();
     const filter = OuterSpace.filters.FleetArrived(null, null, this.address);
