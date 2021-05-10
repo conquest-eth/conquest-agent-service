@@ -422,16 +422,17 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       newDataOnLocal = true;
     }
 
-    if (this.$store.data.logs) {
-      const fleetList = Object.keys(this.$store.data.logs.fleetAcknowledged);
-      for (const fleetId of fleetList) {
-        // remove old
-        if (this.$store.data.logs.fleetAcknowledged[fleetId] < now() - 7 * 24 * 60 * 60) {
-          delete this.$store.data.logs.fleetAcknowledged[fleetId];
-          newDataOnLocal = true;
-        }
-      }
-    }
+    // TODO reenable
+    // if (this.$store.data.logs) {
+    //   const fleetList = Object.keys(this.$store.data.logs.fleetAcknowledged);
+    //   for (const fleetId of fleetList) {
+    //     // remove old
+    //     if (this.$store.data.logs.fleetAcknowledged[fleetId] < now() - 7 * 24 * 60 * 60) {
+    //       delete this.$store.data.logs.fleetAcknowledged[fleetId];
+    //       newDataOnLocal = true;
+    //     }
+    //   }
+    // }
 
     if (data.agentHeartBeat) {
       if (!this.$store.data.agentHeartBeat || data.agentHeartBeat.update > this.$store.data.agentHeartBeat.update) {
