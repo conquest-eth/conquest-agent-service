@@ -19,7 +19,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const playToken_l2 = await hre.deployments.get('PlayToken_L2');
 
   let genesisHash = '0xcce77b122615b6093c0df0c7392bec6f537eb7a0595c337a573ee6d96d1107c8';
-  const resolveWindow = hours(2);
+  const resolveWindow = hours(12);
   let timePerDistance = hours(2);
   let exitDuration = hours(3 * 24);
   const acquireNumSpaceships = 100000;
