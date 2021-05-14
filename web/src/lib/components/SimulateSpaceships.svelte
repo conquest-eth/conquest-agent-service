@@ -33,8 +33,11 @@
   let prediction:
     | {
         arrivalTime: string;
-        numSpaceshipsAtArrival: number;
-        outcome: {captured: boolean; numSpaceshipsLeft: number};
+        numSpaceshipsAtArrival: {max: number; min: number};
+        outcome: {
+          min: {captured: boolean; numSpaceshipsLeft: number};
+          max: {captured: boolean; numSpaceshipsLeft: number};
+        };
       }
     | undefined = undefined;
   $: {
@@ -50,7 +53,7 @@
   let confirmDisabled = false;
   $: {
     if (planetTo) {
-      confirmDisabled = !!($planetTo.state?.natives && !prediction?.outcome.captured);
+      confirmDisabled = !!($planetTo.state?.natives && !prediction?.outcome.min.captured);
     }
   }
 
@@ -114,18 +117,19 @@
             <span>Arrives in</span><span class="text-right">Spaceships Then</span>
           </div>
           <div class="flex flex-row justify-between">
-            <span>{prediction?.arrivalTime}</span><span class="text-right">{prediction?.numSpaceshipsAtArrival}</span>
+            <span>{prediction?.arrivalTime}</span><span
+              class="text-right">{prediction?.numSpaceshipsAtArrival.min}</span>
           </div>
 
           <div class="flex flex-row  justify-center mt-2 text-xs text-gray-500">
             <span>Predicted outcome at time of arrival</span>
           </div>
           <div class="flex flex-row justify-center">
-            {#if prediction?.outcome.captured}
-              <span class="text-green-600">{prediction?.outcome.numSpaceshipsLeft} (captured)</span>
+            {#if prediction?.outcome.min.captured}
+              <span class="text-green-600">{prediction?.outcome.min.numSpaceshipsLeft} (captured)</span>
             {:else if $planetTo.state?.natives}
-              <span class="text-red-400">{prediction?.outcome.numSpaceshipsLeft} (native population resists)</span>
-            {:else}<span class="text-red-400">{prediction?.outcome.numSpaceshipsLeft} (attack failed)</span>{/if}
+              <span class="text-red-400">{prediction?.outcome.min.numSpaceshipsLeft} (native population resists)</span>
+            {:else}<span class="text-red-400">{prediction?.outcome.min.numSpaceshipsLeft} (attack failed)</span>{/if}
           </div>
         {:else}
           <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
@@ -133,7 +137,7 @@
           </div>
           <div class="flex flex-row justify-between">
             <span>{prediction?.arrivalTime}</span><span
-              class="text-right">{(prediction?.numSpaceshipsAtArrival || 0) + fleetAmount}</span>
+              class="text-right">{(prediction?.numSpaceshipsAtArrival.min || 0) + fleetAmount}</span>
           </div>
         {/if}
       </div>
