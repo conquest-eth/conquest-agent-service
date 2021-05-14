@@ -3,6 +3,7 @@
   import Modal from '$lib/components/Modal.svelte';
   import Button from '$lib/components/PanelButton.svelte';
   import {planetAt} from '$lib/stores/planets';
+  import {wallet} from '$lib/stores/wallet';
   import {playTokenAccount} from '$lib/stores/playToken';
   import {BigNumber} from '@ethersproject/bignumber';
   import PlayCoin from '$lib/components/PlayCoin.svelte';
@@ -18,7 +19,7 @@
   $: stake = stats && stats.stake;
   $: cost = planet ? BigNumber.from($planet.stats.stake) : undefined; // TODO multiplier from config/contract
 
-  $: result = $planet && $planet.state ? space.simulateCapture($planet, $time) : undefined;
+  $: result = $planet && $planet.state ? space.simulateCapture($wallet.address, $planet, $time) : undefined;
 </script>
 
 {#if $claimFlow.error}
@@ -59,7 +60,7 @@
             Stake
             <span class="text-yellow-500">{stake}
               <PlayCoin class="inline w-4" /></span>
-            to capute Planet
+            to capture Planet
             <span class="text-green-500">"{$planet.stats.name}"</span>.
           </h2>
           <p class="text-gray-300 mt-2 text-sm">

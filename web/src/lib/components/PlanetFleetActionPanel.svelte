@@ -84,7 +84,7 @@
   $: attacking =
     $sendFlow.step === 'PICK_ORIGIN' && destinationPlanet && $destinationPlanet.state?.owner !== $wallet.address;
 
-  $: captureResult = $planet?.state ? space.simulateCapture($planet, $time) : undefined;
+  $: captureResult = $planet?.state ? space.simulateCapture($wallet.address, $planet, $time) : undefined;
 </script>
 
 {#if $planet.state}
