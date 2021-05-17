@@ -7,7 +7,7 @@ import {space, spaceInfo} from '$lib/app/mapState';
 import {xyToLocation} from 'conquest-eth-common';
 import {now} from './time';
 import type {Event} from '@ethersproject/contracts';
-import {highFrequencyFetch, mediumFrequencyFetch} from '$lib/config';
+import {finality, highFrequencyFetch, mediumFrequencyFetch} from '$lib/config';
 
 type FleetArrivedEvent = Event & {
   args: {
@@ -67,13 +67,21 @@ class AgentStore extends BaseStore<Agent> {
         return {...fleet, arrivalTime};
       })
       .filter((fleet) => {
-        if (fleet.resolveTx) {
-          return false;
-        }
         if (fleet.arrivalTime + spaceInfo.resolveWindow <= now()) {
           // too late
           return false;
         }
+
+        if (fleet.resolveTx) {
+          const status = privateAccount.txStatus(fleet.resolveTx.hash);
+          if (status && typeof status !== 'string') {
+            if (status.finalized && status.status === 'Failure') {
+              return true;
+            }
+          }
+          return false;
+        }
+
         return true;
       })
       .sort((a, b) => a.arrivalTime - b.arrivalTime);
@@ -109,7 +117,7 @@ class AgentStore extends BaseStore<Agent> {
           });
         } else {
           const gasPrice = await wallet.provider.getGasPrice();
-          const cost = gasPrice.mul(100000); // TODO config
+          const cost = gasPrice.mul(200000); // TODO config
           const ownerAddress = wallet.address;
           const agentWallet = await privateAccount.getAgentWallet();
           const balance = await wallet.provider.getBalance(agentWallet.address);
@@ -218,9 +226,14 @@ class AgentStore extends BaseStore<Agent> {
           secretHash
         );
       } catch (e) {
+        // const latestBlock = await wallet.provider.getBlock('latest');
         console.error('error with the fleet, checking if it has already been resolved....');
         const filter = contract.filters.FleetArrived(fleetId);
-        const logs = ((await contract.queryFilter(filter)) as unknown) as FleetArrivedEvent[];
+        const logs = ((await contract.queryFilter(
+          filter
+          // 0,
+          // latestBlock.number - finality
+        )) as unknown) as FleetArrivedEvent[];
         if (logs && logs.length > 0) {
           console.log('resolution event found...');
           const transaction = await logs[0].getTransaction();
@@ -230,6 +243,7 @@ class AgentStore extends BaseStore<Agent> {
         }
         throw e;
       }
+      const gasPrice = await wallet.provider.getGasPrice();
       const gasToUse = gas.add(40000);
       const tx = await contract.resolveFleet(
         fleetId,
@@ -237,7 +251,7 @@ class AgentStore extends BaseStore<Agent> {
         xyToLocation(fleet.to.x, fleet.to.y),
         distance,
         secretHash,
-        {gasLimit: gasToUse}
+        {gasLimit: gasToUse, gasPrice: gasPrice.mul(2)}
       );
       privateAccount.recordFleetResolvingTxhash(fleetId, tx.hash, tx.nonce, true);
     }
