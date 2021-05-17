@@ -1112,11 +1112,22 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
               this.set(this.$store);
               console.log(`fleet ${fleetId} expired!`);
             } else {
-              // check for cancelation ?
-              this.$store.txStatuses[fleet.resolveTx.hash] = {
-                finalized: false,
-                status: 'Pending',
-              };
+              // wait 1 hour // TODO better check for cancelation
+              if (now() > (fleet.actualLaunchTime || fleet.launchTime) + fleet.duration + 60 * 60) {
+                this.$store.txStatuses[fleet.resolveTx.hash] = {
+                  finalized: true, // for now assume true, should use nonce
+                  status: 'Failure',
+                };
+
+                // this would ensure agent keep trying but this is not what we really want to do
+                // fleet.resolveTx = undefined; // hopefully this work for now, no syncing
+              } else {
+                this.$store.txStatuses[fleet.resolveTx.hash] = {
+                  finalized: false,
+                  status: 'Pending',
+                };
+              }
+
               this.set(this.$store);
               // TODO keep waiting for ever ? or add mechanism to delete it?
             }
