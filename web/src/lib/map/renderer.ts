@@ -907,7 +907,7 @@ export class Renderer {
     for (const xy of Object.keys(bleeps)) {
       const [x, y] = xy.split(',').map((s) => parseInt(s));
 
-      const planet = this.renderState.space.planetAt(x, y);
+      const planet = this.renderState.space.ensurePlanetAt(x, y);
       if (planet) {
         let color = 'green';
         if (bleeps[xy] === 'Error') {
