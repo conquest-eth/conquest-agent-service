@@ -992,7 +992,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
 
       // if sendTxHash has not been confirmed yet, check it (if resolveTx.hash is set assume sendTxHash has been confirmed too and thus skip this)
       if (
-        // !fleet.sendTx.blockNumber &&
+        !fleet.sendTx.blockNumber &&
         !fleet.resolveTx &&
         // !fleet.actualLaunchTime && // commenting it out  allows the sendTx to still be checked when the expiry time kicked in, TODO check
         !(this.$store.txStatuses[fleet.sendTx.hash] && this.$store.txStatuses[fleet.sendTx.hash].finalized)
@@ -1025,11 +1025,11 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
               status: 'Success',
             };
             console.log(`success ${finalized ? 'finalized' : ''}`);
-            // if (finalized) {
-            //   console.log('recording tx as complete');
-            //   fleet.sendTx.blockNumber = receipt.blockNumber;
-            //   fleetsToRecord[fleetId] = fleet;
-            // }
+            if (finalized) {
+              console.log('recording tx as complete');
+              fleet.sendTx.blockNumber = receipt.blockNumber;
+              fleetsToRecord[fleetId] = fleet;
+            }
             // TODO flag the fleet sendTx as done : remove the need to check it every time (see TODO for check above: !fleet.actualLaunchTime )
             this.set(this.$store);
           }
@@ -1060,8 +1060,8 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
               finalized: true,
               status: 'Success',
             };
-            // fleet.sendTx.blockNumber = latestBlock.number; // not true number
-            // fleetsToRecord[fleetId] = fleet;
+            fleet.sendTx.blockNumber = latestBlock.number; // not true number
+            fleetsToRecord[fleetId] = fleet;
           } else {
             // TODO check for cancelation ?
             this.$store.txStatuses[fleet.sendTx.hash] = {
