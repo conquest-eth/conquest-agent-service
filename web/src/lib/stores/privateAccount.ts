@@ -981,6 +981,10 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     const fleetIds = Object.keys(this.$store.data.fleets);
     for (const fleetId of fleetIds) {
       const fleet = this.$store.data.fleets[fleetId];
+      if (!fleet) {
+        console.log('deleted while checking?');
+        continue;
+      }
       let fleetData;
 
       if (fleet.toDelete) {
