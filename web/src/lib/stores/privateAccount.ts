@@ -969,6 +969,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     if (!this.$store.data) {
       return;
     }
+    const fleetsToRecord: {[fleetId: string]: OwnFleet} = {};
     const fleetsToDelete: string[] = [];
     const fleetIds = Object.keys(this.$store.data.fleets);
     for (const fleetId of fleetIds) {
@@ -1053,7 +1054,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
         // use only finalised data
         if (fleetData.launchTime > 0 && fleet.actualLaunchTime !== fleetData.launchTime) {
           fleet.actualLaunchTime = fleetData.launchTime;
-          this.recordFleet(fleetId, fleet);
+          fleetsToRecord[fleetId] = fleet;
         }
       } else {
         const launchTime = fleet.actualLaunchTime;
@@ -1163,7 +1164,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
         }
       }
     }
-    this.deleteFleets(fleetsToDelete);
+    this.recordFleets(fleetsToRecord, fleetsToDelete);
   }
 
   async login(): Promise<void> {
@@ -1478,7 +1479,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     this._setData(wallet.address, wallet.chain.chainId, this.$store.data, [], [], [], true);
   }
 
-  recordFleet(fleetId: string, fleet: OwnFleet): void {
+  recordFleets(fleetsToRecord: {[fleetId: string]: OwnFleet}, fleetIdsToDelete: string[]): void {
     if (!wallet.address) {
       throw new Error(`no wallet.address`);
     }
@@ -1489,11 +1490,41 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       this.$store.data = {fleets: {}, exits: {}, captures: {}};
     }
     const fleets = this.$store.data.fleets;
-    fleets[fleetId] = fleet;
+    for (const fleetId of Object.keys(fleetsToRecord)) {
+      fleets[fleetId] = fleetsToRecord[fleetId];
+    }
+
+    for (const fleetId of fleetIdsToDelete) {
+      delete fleets[fleetId];
+    }
+
+    // TODO delete txStatuses
     this.setPartial({
       data: this.$store.data,
     });
-    this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data, fleetIdsToDelete);
+  }
+
+  deleteFleets(fleetIdsToDelete: string[]) {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      return;
+    }
+    const fleets = this.$store.data.fleets;
+    for (const fleetId of fleetIdsToDelete) {
+      delete fleets[fleetId];
+    }
+
+    // TODO delete txStatuses
+    this.setPartial({
+      data: this.$store.data,
+    });
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data, fleetIdsToDelete);
   }
 
   ckeckCompletion(value: number | undefined, bit: number): boolean {
@@ -1532,28 +1563,6 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       data: this.$store.data,
     });
     this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
-  }
-
-  deleteFleets(fleetIds: string[]) {
-    if (!wallet.address) {
-      throw new Error(`no wallet.address`);
-    }
-    if (!wallet.chain.chainId) {
-      throw new Error(`no chainId, not connected?`);
-    }
-    if (!this.$store.data) {
-      return;
-    }
-    const fleets = this.$store.data.fleets;
-    for (const fleetId of fleetIds) {
-      delete fleets[fleetId];
-    }
-
-    // TODO delete txStatuses
-    this.setPartial({
-      data: this.$store.data,
-    });
-    this._setData(wallet.address, wallet.chain.chainId, this.$store.data, fleetIds);
   }
 
   requestFleetDeletion(fleetId: string) {
