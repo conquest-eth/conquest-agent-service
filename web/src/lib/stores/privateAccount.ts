@@ -1563,7 +1563,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     }
     const fleets = this.$store.data.fleets;
     const fleetIdsToRecord = Object.keys(fleetsToRecord);
-    console.log(`recording ${fleetIdsToRecord}...`);
+    console.log(`recording ${fleetIdsToRecord}... and deleting ${fleetIdsToDelete}`);
     for (const fleetId of fleetIdsToRecord) {
       fleets[fleetId] = fleetsToRecord[fleetId];
     }
