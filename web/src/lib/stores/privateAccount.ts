@@ -100,6 +100,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
   private _reject: ((error: unknown) => void) | undefined;
   private _func: (() => Promise<void>) | undefined;
   private _contracts: Contracts | undefined;
+  private _lastCheckTime = 0;
 
   constructor() {
     super({
@@ -795,6 +796,12 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
   }
 
   async checking(address: string, chainId: string) {
+    if (this._lastCheckTime > 0 && now() - this._lastCheckTime < mediumFrequencyFetch) {
+      console.log('skip for now...');
+      return;
+    }
+    this._lastCheckTime = now();
+
     // TODO check blockNumber and only perform if different ?
     this.listenForFleets(address, chainId);
     this.listenForExits(address, chainId);
@@ -985,11 +992,12 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
 
       // if sendTxHash has not been confirmed yet, check it (if resolveTx.hash is set assume sendTxHash has been confirmed too and thus skip this)
       if (
+        // !fleet.sendTx.blockNumber &&
         !fleet.resolveTx &&
         // !fleet.actualLaunchTime && // commenting it out  allows the sendTx to still be checked when the expiry time kicked in, TODO check
         !(this.$store.txStatuses[fleet.sendTx.hash] && this.$store.txStatuses[fleet.sendTx.hash].finalized)
       ) {
-        console.log(`checking fleet sending ${fleetId}...`);
+        console.log(`checking fleet sending ${fleetId}... ${fleet.sendTx.hash}`);
         // fetch receipt for sendTx
         const receipt = await wallet.provider.getTransactionReceipt(fleet.sendTx.hash);
         if (
@@ -1008,6 +1016,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
               finalized,
               status: 'Failure',
             };
+            console.log(`failure ${finalized ? `acknowledge at: ${fleet.from.x},${fleet.from.y}` : ''}`);
             this.set(this.$store);
             continue; // no point checking further, deleting will happen through acknowledgement
           } else {
@@ -1015,6 +1024,12 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
               finalized,
               status: 'Success',
             };
+            console.log(`success ${finalized ? 'finalized' : ''}`);
+            // if (finalized) {
+            //   console.log('recording tx as complete');
+            //   fleet.sendTx.blockNumber = receipt.blockNumber;
+            //   fleetsToRecord[fleetId] = fleet;
+            // }
             // TODO flag the fleet sendTx as done : remove the need to check it every time (see TODO for check above: !fleet.actualLaunchTime )
             this.set(this.$store);
           }
@@ -1045,6 +1060,8 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
               finalized: true,
               status: 'Success',
             };
+            // fleet.sendTx.blockNumber = latestBlock.number; // not true number
+            // fleetsToRecord[fleetId] = fleet;
           } else {
             // TODO check for cancelation ?
             this.$store.txStatuses[fleet.sendTx.hash] = {
