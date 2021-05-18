@@ -1165,8 +1165,12 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
               this.set(this.$store);
               console.log(`fleet ${fleetId} expired!`);
             } else {
+              if (!fleet.resolveTx.submissionTime) {
+                fleet.resolveTx.submissionTime = now();
+                fleetsToRecord[fleetId] = fleet;
+              }
               // wait 1 hour // TODO better check for cancelation
-              if (now() > (fleet.actualLaunchTime || fleet.launchTime) + fleet.duration + 60 * 60) {
+              if (now() > fleet.resolveTx.submissionTime + fleet.duration + 60 * 60) {
                 this.$store.txStatuses[fleet.resolveTx.hash] = {
                   finalized: true, // for now assume true, should use nonce
                   status: 'Failure',
@@ -1717,7 +1721,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       if (agent) {
         this.$store.data.agentHeartBeat = {update: now(), keepAlive: now()};
       }
-      fleet.resolveTx = {hash: txHash, nonce};
+      fleet.resolveTx = {hash: txHash, nonce, submissionTime: now()};
       fleet.updatedAt = now();
       this.setPartial({
         data: this.$store.data,
