@@ -1527,6 +1527,24 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     this._setData(wallet.address, wallet.chain.chainId, this.$store.data, [], [], [], true);
   }
 
+  recordFleet(fleetId: string, fleet: OwnFleet): void {
+    if (!wallet.address) {
+      throw new Error(`no wallet.address`);
+    }
+    if (!wallet.chain.chainId) {
+      throw new Error(`no chainId, not connected?`);
+    }
+    if (!this.$store.data) {
+      this.$store.data = {fleets: {}, exits: {}, captures: {}};
+    }
+    const fleets = this.$store.data.fleets;
+    fleets[fleetId] = fleet;
+    this.setPartial({
+      data: this.$store.data,
+    });
+    this._setData(wallet.address, wallet.chain.chainId, this.$store.data);
+  }
+
   recordFleets(fleetsToRecord: {[fleetId: string]: OwnFleet}, fleetIdsToDelete: string[]): void {
     if (!wallet.address) {
       throw new Error(`no wallet.address`);
@@ -1538,7 +1556,9 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       this.$store.data = {fleets: {}, exits: {}, captures: {}};
     }
     const fleets = this.$store.data.fleets;
-    for (const fleetId of Object.keys(fleetsToRecord)) {
+    const fleetIdsToRecord = Object.keys(fleetsToRecord);
+    console.log(`recording ${fleetIdsToRecord}...`);
+    for (const fleetId of fleetIdsToRecord) {
       fleets[fleetId] = fleetsToRecord[fleetId];
     }
 
