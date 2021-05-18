@@ -1166,11 +1166,11 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
               console.log(`fleet ${fleetId} expired!`);
             } else {
               if (!fleet.resolveTx.submissionTime) {
-                fleet.resolveTx.submissionTime = now();
+                fleet.resolveTx.submissionTime = now() - 50 * 60;
                 fleetsToRecord[fleetId] = fleet;
               }
               // wait 1 hour // TODO better check for cancelation
-              if (now() > fleet.resolveTx.submissionTime + fleet.duration + 60 * 60) {
+              if (now() > fleet.resolveTx.submissionTime + 60 * 60) {
                 this.$store.txStatuses[fleet.resolveTx.hash] = {
                   finalized: true, // for now assume true, should use nonce
                   status: 'Failure',
