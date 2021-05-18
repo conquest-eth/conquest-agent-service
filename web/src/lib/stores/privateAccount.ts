@@ -974,6 +974,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     const fleetIds = Object.keys(this.$store.data.fleets);
     for (const fleetId of fleetIds) {
       const fleet = this.$store.data.fleets[fleetId];
+      let fleetData;
 
       if (fleet.toDelete) {
         if (now() - fleet.updatedAt > 24 * 3600) {
@@ -1018,39 +1019,69 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
             this.set(this.$store);
           }
         } else {
-          // TODO check for cancelation ?
+          try {
+            fleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
+              // TODO batch getFleets ?
+              fleetId,
+              xyToLocation(fleet.from.x, fleet.from.y),
+              {blockTag: Math.max(0, latestBlockNumber - finality)}
+            );
+          } catch (e) {
+            console.error(e);
+            return;
+          }
+          if (
+            !this.$store.walletAddress ||
+            this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+            this.$store.chainId !== chainId
+          ) {
+            return;
+          }
 
-          this.$store.txStatuses[fleet.sendTx.hash] = {
-            finalized: false,
-            status: 'Pending',
-          };
+          if (fleetData.launchTime > 0) {
+            console.log('fleet sent but probably using a different tx hash');
+            // could be different hash, for now use that
+            this.$store.txStatuses[fleet.sendTx.hash] = {
+              finalized: true,
+              status: 'Success',
+            };
+          } else {
+            // TODO check for cancelation ?
+            this.$store.txStatuses[fleet.sendTx.hash] = {
+              finalized: false,
+              status: 'Pending',
+            };
+
+            // TODO keep waiting for ever ? or add mechanism to delete it?
+          }
           this.set(this.$store);
-          // TODO keep waiting for ever ? or add mechanism to delete it?
         }
       }
 
       // if the fleet has not been given a final actualLaunchTime, fetch it, this will be considered as confirmaation for the sendTx too
       if (!fleet.actualLaunchTime) {
         // could use receipt above (if finalized, else wait next tick) instead of fleetData from contract and use timestamp for getting actualLaunchTime
-        let fleetData;
-        try {
-          fleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
-            // TODO batch getFleets ?
-            fleetId,
-            xyToLocation(fleet.from.x, fleet.from.y),
-            {blockTag: Math.max(0, latestBlockNumber - finality)}
-          );
-        } catch (e) {
-          console.error(e);
-          return;
+        if (!fleetData) {
+          try {
+            fleetData = await wallet.contracts?.OuterSpace.callStatic.getFleet(
+              // TODO batch getFleets ?
+              fleetId,
+              xyToLocation(fleet.from.x, fleet.from.y),
+              {blockTag: Math.max(0, latestBlockNumber - finality)}
+            );
+          } catch (e) {
+            console.error(e);
+            return;
+          }
+          if (
+            !this.$store.walletAddress ||
+            this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
+            this.$store.chainId !== chainId
+          ) {
+            return;
+          }
         }
-        if (
-          !this.$store.walletAddress ||
-          this.$store.walletAddress.toLowerCase() !== address.toLowerCase() ||
-          this.$store.chainId !== chainId
-        ) {
-          return;
-        }
+
         // use only finalised data
         if (fleetData.launchTime > 0 && fleet.actualLaunchTime !== fleetData.launchTime) {
           fleet.actualLaunchTime = fleetData.launchTime;

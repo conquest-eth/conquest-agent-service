@@ -133,13 +133,18 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
     const {toHash, fleetId} = await privateAccount.hashFleet(from, to, nonce);
 
+    const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
+
     this.setPartial({step: 'WAITING_TX'});
 
     // TODO type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let tx: any;
     try {
-      tx = await wallet.contracts?.OuterSpace.send(xyToLocation(from.x, from.y), fleetAmount, toHash, {nonce});
+      tx = await wallet.contracts?.OuterSpace.send(xyToLocation(from.x, from.y), fleetAmount, toHash, {
+        nonce,
+        gasPrice,
+      });
     } catch (e) {
       console.error(e);
       if (e.message && e.message.indexOf('User denied') >= 0) {
