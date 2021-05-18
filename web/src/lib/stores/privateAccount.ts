@@ -1216,7 +1216,9 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
         }
       }
     }
-    this.recordFleets(fleetsToRecord, fleetsToDelete);
+    if (Object.keys(fleetsToRecord).length > 0 || fleetsToDelete.length > 0) {
+      this.recordFleets(fleetsToRecord, fleetsToDelete);
+    }
   }
 
   async login(): Promise<void> {
