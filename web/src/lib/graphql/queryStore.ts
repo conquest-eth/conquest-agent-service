@@ -83,7 +83,7 @@ export function queryStore<T>(
     }
 
     stopCurrentQuery = endpoint
-      .query({
+      .subscribeToQuery({
         query: queryString,
         variables: options.variables,
         context: {
