@@ -1,0 +1,94 @@
+[
+  {
+    "address": "0x724a118ea4f9b0d2a764f870ff1c986fe956caf0",
+    "numTokens": 500,
+    "numWCHI": 150
+  },
+  {
+    "address": "0xa514f4d58e9b0e1cbcd5d15f0967655cf6e8b096",
+    "numTokens": 200
+  },
+  {
+    "address": "0x1d4ebeda35092cb0b3d27b4c5d39af5facb00077",
+    "numTokens": 100,
+    "numWCHI": 150
+  },
+  {
+    "address": "0x60d38778adbbeeac88f741b833cbb9877228eea0",
+    "numTokens": 50,
+    "numWCHI": 600
+  },
+  {
+    "address": "0xfe3865dd730eabfe973b2d9035c4eefed3076a36",
+    "numTokens": 25
+  },
+  {
+    "address": "0xc6ccd3c2d63bc8de8fcf43ede80d135666b7acee",
+    "numTokens": 10
+  },
+  {
+    "address": "0x02eaa3f22d83d672d8d8e900f2e3fc43d07a5b9e",
+    "numTokens": 10
+  },
+  {
+    "address": "0x90bf1e866a1b4681e1a82c377b4839859f97dab7",
+    "numTokens": 10
+  },
+  {
+    "address": "0xfbe849ea94aa5acd53c83776449620b1b51976db",
+    "numTokens": 10
+  },
+  {
+    "address": "0x2adcbe31a816897fadad6d61c9a9fcfb9254b823",
+    "numTokens": 10,
+    "numWCHI": 450
+  },
+  {
+    "address": "0x3ef342908f3a8b20127bda3a11ad7a62adbfad5c",
+    "numTokens": 10,
+    "numWCHI": 150
+  },
+  {
+    "address": "0xe25791aa3cb2808b24dd5971f8f02e6a6cba5ce1",
+    "numTokens": 10
+  },
+  {
+    "address": "0x1e61cf58e9f9b273a3e13ddec1a4b4c34bae5a8b",
+    "numTokens": 10,
+    "numWCHI": 300
+  },
+  {
+    "address": "0x8f78f00e6503414c8d91aa98bd61860784faeeaf",
+    "numTokens": 10
+  },
+  {
+    "address": "0xfeff33456de40aa9ffc85b796cb731b91ea6eb04",
+    "numTokens": 10
+  },
+  {
+    "address": "0xeedfbb28576db4be41d6dff31ad2efc4d686af78",
+    "numTokens": 10
+  },
+  {
+    "address": "0x83cf995d3177c7d317f215b9f4061cd1aeb1d846",
+    "numTokens": 10,
+    "numWCHI": 300
+  },
+  {
+    "address": "0x044500949fe2a5b4ee983b47b5040c6016ef4b68",
+    "numTokens": 5,
+    "numWCHI": 150
+  },
+  {
+    "address": "0x7aa4b3742fc528db0dc4ad6edfb276be7b68b5fd",
+    "numWCHI": 300
+  },
+  {
+    "address": "0x039de3eb5002d2cc40faea403f69fb02c40b88ee",
+    "numWCHI": 300
+  },
+  {
+    "address": "0x4a1d757699ab73dd4b48b15049b6f1479b2f3511",
+    "numWCHI": 150
+  }
+]
