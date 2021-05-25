@@ -151,6 +151,7 @@ importers:
       '@urql/core': ^2.0.0
       chokidar: ^3.5.1
       cross-var: ^1.1.0
+      dotenv: ^10.0.0
       dotenv-cli: ^4.0.0
       fs-extra: ^9.1.0
       handlebars: ^4.7.7
@@ -166,6 +167,7 @@ importers:
       '@urql/core': 2.0.0
       chokidar: 3.5.1
       cross-var: 1.1.0
+      dotenv: 10.0.0
       dotenv-cli: 4.0.0
       fs-extra: 9.1.0
       handlebars: 4.7.7
@@ -4565,6 +4567,11 @@ packages:
     resolution: {integrity: sha512-YXQl1DSa4/PQyRfgrv6aoNjhasp/p4qs9FjJ4q4cQk+8m4r6k4ZSiEyytKG8f8W9gi8WsQtIObNmKd+tMzNTmA==}
     dev: true
 
+  /dotenv/10.0.0:
+    resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
+    engines: {node: '>=10'}
+    dev: true
+
   /dotenv/8.2.0:
     resolution: {integrity: sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==}
     engines: {node: '>=8'}
@@ -6044,6 +6051,17 @@ packages:
 
   /glob/7.1.6:
     resolution: {integrity: sha512-LwaxwyZ72Lk7vZINtNNrywX0ZuLyStrdDtabefZKAY5ZGJhVtgdznluResxNmPitE0SAO+O26sWTHeKSI2wMBA==}
+    dependencies:
+      fs.realpath: 1.0.0
+      inflight: 1.0.6
+      inherits: 2.0.4
+      minimatch: 3.0.4
+      once: 1.4.0
+      path-is-absolute: 1.0.1
+    dev: true
+
+  /glob/7.1.7:
+    resolution: {integrity: sha512-OvD9ENzPLbegENnYP5UUfJIirTg4+XwMWGaQfQTY0JenxNvvIKP3U3/tAQSPIu/lHxXYSZmpXlUHeqAIdKzBLQ==}
     dependencies:
       fs.realpath: 1.0.0
       inflight: 1.0.6
@@ -13751,7 +13769,7 @@ packages:
     dependencies:
       '@protobufjs/utf8': 1.1.0
       binaryen: 77.0.0-nightly.20190407
-      glob: 7.1.6
+      glob: 7.1.7
       long: 4.0.0
       opencollective-postinstall: 2.0.3
       source-map-support: 0.5.19
