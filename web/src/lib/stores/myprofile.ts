@@ -1,4 +1,4 @@
-import {BaseStoreWithData} from '$lib/utils/stores';
+import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {wallet} from './wallet';
 
 export type ProfileFlow = {

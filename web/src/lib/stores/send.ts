@@ -2,7 +2,7 @@ import {wallet} from './wallet';
 import privateAccount from './privateAccount';
 import {xyToLocation} from 'conquest-eth-common';
 import {spaceInfo} from '$lib/app/mapState';
-import {BaseStoreWithData} from '$lib/utils/stores';
+import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {now, correctTime, isCorrected} from './time';
 import {TutorialSteps} from './constants';
 

@@ -1,4 +1,4 @@
-import {BaseStoreWithData} from '$lib/utils/stores';
+import {BaseStoreWithData} from '$lib/utils/stores/base';
 
 type Data = {
   to: {x: number; y: number};

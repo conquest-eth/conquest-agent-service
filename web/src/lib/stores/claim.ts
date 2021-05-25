@@ -1,6 +1,6 @@
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
-import {BaseStoreWithData} from '$lib/utils/stores';
+import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {spaceInfo} from '$lib/app/mapState';
 import {locationToXY} from 'conquest-eth-common';
 import {BigNumber} from '@ethersproject/bignumber';

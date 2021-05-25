@@ -18,7 +18,9 @@ class LocalCache {
   setItem(key: string, value: string): void {
     try {
       localStorage.setItem(this._prefix + key, value);
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 
   getItem(key: string): string | null {
@@ -32,7 +34,9 @@ class LocalCache {
   removeItem(key: string) {
     try {
       localStorage.removeItem(this._prefix + key);
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 
   clear(): void {

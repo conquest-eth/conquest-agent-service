@@ -2,7 +2,7 @@ import {wallet} from './wallet';
 import privateAccount from './privateAccount';
 import {xyToLocation} from 'conquest-eth-common';
 import {spaceInfo} from '$lib/app/mapState';
-import {BaseStore} from '$lib/utils/stores';
+import {BaseStore} from '$lib/utils/stores/base';
 
 export type ResolveFlow = {
   type: 'RESOLVE';

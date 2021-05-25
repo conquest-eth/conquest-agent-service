@@ -1,10 +1,10 @@
 import {wallet, chain, flow} from './wallet';
 // import type {BigNumber} from '@ethersproject/bignumber';
 import type {ChainStore, WalletStore} from 'web3w';
-import {BaseStore} from '$lib/utils/stores';
+import {BaseStore} from '$lib/utils/stores/base';
 import {Wallet} from '@ethersproject/wallet';
 import {rebuildLocationHash} from '$lib/utils/web';
-import {hashParams} from '$lib/init';
+import {hashParams} from '$lib/config';
 
 type TokenClaim = {
   inUrl: boolean;

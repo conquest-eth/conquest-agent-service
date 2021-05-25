@@ -1,7 +1,7 @@
 import {wallet} from './wallet';
 import type {BigNumber} from '@ethersproject/bignumber';
 import type {WalletStore} from 'web3w';
-import {BaseStore} from '$lib/utils/stores';
+import {BaseStore} from '$lib/utils/stores/base';
 import {highFrequencyFetch} from '$lib/config';
 
 type TokenAccount = {

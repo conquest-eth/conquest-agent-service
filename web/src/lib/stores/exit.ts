@@ -1,7 +1,7 @@
 import {wallet} from './wallet';
 import privateAccount from './privateAccount';
 import {xyToLocation} from 'conquest-eth-common';
-import {BaseStoreWithData} from '$lib/utils/stores';
+import {BaseStoreWithData} from '$lib/utils/stores/base';
 
 type Data = {
   txHash?: string;

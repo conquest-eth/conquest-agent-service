@@ -1,4 +1,4 @@
-import {BaseStoreWithData} from '$lib/utils/stores';
+import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {wallet} from '$lib/stores/wallet';
 import {blockTime, finality, logPeriod} from '$lib/config';
 import type {BigNumber} from '@ethersproject/bignumber';

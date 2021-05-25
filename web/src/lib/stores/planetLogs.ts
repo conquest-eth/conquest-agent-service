@@ -1,4 +1,4 @@
-import {BaseStoreWithData} from '$lib/utils/stores';
+import {BaseStoreWithData} from '$lib/utils/stores/base';
 import privateAccount from './privateAccount';
 import {wallet} from './wallet';
 import {blockTime, finality, logPeriod, lowFrequencyFetch} from '$lib/config';

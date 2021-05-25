@@ -1,4 +1,4 @@
-import {BaseStoreWithData} from '$lib/utils/stores';
+import {BaseStoreWithData} from '$lib/utils/stores/base';
 
 export type MessageFlow = {
   type: 'MESSAGE';

@@ -23,16 +23,8 @@ if (import.meta.env.MODE === 'development') {
 export class EndPoint {
   private client: Client;
   constructor(url: string) {
-    // TODO move that out of the constructor
-    try {
-      const queryParams = new URLSearchParams(location.search);
-      if (queryParams.has('subgraph')) {
-        url = queryParams.get('subgraph') as string;
-      }
-    } catch (e) {}
-
     if (!url) {
-      console.error(`no url specific either at build time or runtim (through query params) for subgraph`);
+      throw new Error(`need an url for graphql queries`);
     }
 
     this.client = new Client({
@@ -49,31 +41,29 @@ export class EndPoint {
     return this.client.mutation(args.query, args.variables, args.context).toPromise();
   }
 
-  query<
-    Data extends Record<string, unknown>,
-    Variables extends Record<string, unknown> = Record<string, unknown>
-  >(args: {
+  query<Data, Variables extends Record<string, unknown> = Record<string, unknown>>(args: {
     query: DocumentNode | string;
     variables?: Variables;
     context?: Partial<OperationContext>;
+    // TODO path?: string
   }): Promise<OperationResult<Data, Variables>> {
     return this.client.query(args.query, args.variables, args.context).toPromise();
   }
 
-  async queryList<T>(
-    queryString: string,
-    field: string,
-    variables: Record<string, unknown>,
-    getLastId?: (entries: T[]) => string,
-    context?: Partial<OperationContext>
-  ): Promise<T[]> {
-    const fields = field.split('.');
+  async queryList<T, Variables extends Record<string, unknown> = Record<string, unknown>>(args: {
+    query: DocumentNode | string;
+    variables?: Variables;
+    context?: Partial<OperationContext>;
+    path?: string;
+    getLastId?: (entries: T[]) => string;
+  }): Promise<T[]> {
+    const fields = args.path.split('.');
     const first = 100;
     let lastId = '0x0';
     let numEntries = first;
     let entries: T[] = [];
     while (numEntries === first) {
-      const result = await this.client.query(queryString, {first, lastId, ...variables}, context).toPromise();
+      const result = await this.client.query(args.query, {first, lastId, ...args.variables}, context).toPromise();
       if (result.error) {
         throw new Error(result.error.message);
       }
@@ -81,7 +71,7 @@ export class EndPoint {
 
       // TODO deep access on root array
       let newEntries = [];
-      if (data && field) {
+      if (data && args.path) {
         let tmp = data;
         for (const fieldPart of fields) {
           tmp = tmp[fieldPart];
@@ -91,7 +81,7 @@ export class EndPoint {
 
       numEntries = newEntries.length;
       if (numEntries > 0) {
-        const newLastId = getLastId !== undefined ? getLastId(entries) : newEntries[numEntries - 1].id;
+        const newLastId = args.getLastId !== undefined ? args.getLastId(entries) : newEntries[numEntries - 1].id;
         if (lastId === newLastId) {
           console.log('same query, stop');
           break;

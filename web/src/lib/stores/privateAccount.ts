@@ -9,10 +9,10 @@ import {finality, blockTime, mediumFrequencyFetch, lowFrequencyFetch} from '$lib
 import aes from 'aes-js';
 import {base64, compressToUint8Array, decompressFromUint8Array} from '$lib/utils';
 import localCache from '$lib/utils/localCache';
-import {params} from '$lib/init';
+import {params} from '$lib/config';
 
 import {contracts as contractsInfo} from '$lib/app/contractInfos';
-import {BaseStoreWithData} from '$lib/utils/stores';
+import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {now} from './time';
 
 // TODO tweetnacl do not work with vite

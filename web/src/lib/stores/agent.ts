@@ -1,5 +1,5 @@
 import {BigNumber} from '@ethersproject/bignumber';
-import {BaseStore} from '$lib/utils/stores';
+import {BaseStore} from '$lib/utils/stores/base';
 import privateAccount from './privateAccount';
 import {wallet} from './wallet';
 import type {Wallet} from '@ethersproject/wallet';

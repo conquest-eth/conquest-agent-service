@@ -1,4 +1,4 @@
-import {BaseStore} from '$lib/utils/stores';
+import {BaseStore} from '$lib/utils/stores/base';
 import {now} from '$lib/stores/time';
 import localCache from '$lib/utils/localCache';
 
