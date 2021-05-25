@@ -1,11 +1,12 @@
 import {BigNumber} from '@ethersproject/bignumber';
 import {parseEther} from '@ethersproject/units';
 import {defaultAbiCoder} from '@ethersproject/abi';
-import {getUnnamedAccounts, ethers, deployments, getNamedAccounts} from 'hardhat';
+import {getUnnamedAccounts, deployments, getNamedAccounts} from 'hardhat';
 import {SpaceInfo} from 'conquest-eth-common';
 
 // TODO move to util
-const waitFor = <T>(p: Promise<{wait: () => Promise<T>}>) => p.then((tx) => tx.wait());
+const waitFor = <T>(p: Promise<{wait: () => Promise<T>}>) =>
+  p.then((tx) => tx.wait());
 
 async function main() {
   const {stableTokenBeneficiary} = await getNamedAccounts();
@@ -29,15 +30,17 @@ async function main() {
 
   let planetPointer;
   for (let i = 0; i < 4; i++) {
-    const outerSpaceContract = await ethers.getContract('OuterSpace', players[i]);
-    const playToken_L2_Contract = await ethers.getContract('PlayToken_L2', players[i]);
+    const outerSpaceContract = await deployments.get('OuterSpace');
     planetPointer = spaceInfo.findNextPlanet(planetPointer);
-
-    await waitFor(
-      playToken_L2_Contract.transferAndCall(
-        outerSpaceContract.address,
-        BigNumber.from(planetPointer.data.stats.stake).mul('1000000000000000000'),
-        defaultAbiCoder.encode(['address', 'uint256'], [players[i], planetPointer.data.location.id])
+    await deployments.execute(
+      'PlayToken_L2',
+      {from: players[i], log: true, autoMine: true},
+      'transferAndCall',
+      outerSpaceContract.address,
+      BigNumber.from(planetPointer.data.stats.stake).mul('1000000000000000000'),
+      defaultAbiCoder.encode(
+        ['address', 'uint256'],
+        [players[i], planetPointer.data.location.id]
       )
     );
     console.log(
