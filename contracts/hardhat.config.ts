@@ -86,7 +86,7 @@ const config: HardhatUserConfig = {
         l2_dev_seed,
       ],
     },
-    staging: {
+    testing: {
       url: node_url('goerli'),
       accounts: accounts('goerli'),
       deploy: [
@@ -95,7 +95,7 @@ const config: HardhatUserConfig = {
         l1_dev_seed,
         l2_deploy,
         l2_dev_seed,
-      ], // staging inclues both
+      ], // testing inclues both
     },
     quick: {
       url: node_url('goerli'),
@@ -123,26 +123,6 @@ const config: HardhatUserConfig = {
       url: node_url('mainnet'),
       accounts: accounts('mainnet'),
       deploy: [l1_deploy],
-    },
-    mainnet: {
-      url: node_url('mainnet'),
-      accounts: accounts('mainnet'),
-      deploy: [l1_deploy],
-    },
-    rinkeby: {
-      url: node_url('rinkeby'),
-      accounts: accounts('rinkeby'),
-      deploy: [l1_pre_deploy_missing_contracts, l1_deploy, l2_deploy], // rinkeby inclues both
-    },
-    kovan: {
-      url: node_url('kovan'),
-      accounts: accounts('kovan'),
-      deploy: [l1_pre_deploy_missing_contracts, l1_deploy],
-    },
-    goerli: {
-      url: node_url('goerli'),
-      accounts: accounts('goerli'),
-      deploy: [l1_pre_deploy_missing_contracts, l1_deploy],
     },
   },
   paths: {

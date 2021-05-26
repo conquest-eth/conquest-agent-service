@@ -174,7 +174,6 @@ async function performAction(rawArgs) {
     await performAction(['web:build', network]);
     await execute(`${env}npm --prefix web run deploy`);
   } else if (firstArg === 'deploy') {
-    //run-s staging:contracts staging:subgraph web:prepare common:build staging:web:rebuild staging:web:deploy
     const {fixedArgs, extra} = parseArgs(args, 1, {});
     const network = fixedArgs[0] || process.env.NETWORK_NAME;
     if (!network) {
