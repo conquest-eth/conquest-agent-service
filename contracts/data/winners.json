@@ -6,7 +6,10 @@
   },
   {
     "address": "0xa514f4d58e9b0e1cbcd5d15f0967655cf6e8b096",
-    "numTokens": 200
+    "numTokens": 200,
+    "addressToSendTo": "0xA514F4D58e9b0E1CbCd5D15F0967655cF6e8B096",
+    "signature": "0xf31ccc4ca67ee64541d8a9ac63671c6ddf5ebf561eeee67a49f036cd650d46b34ab81b7a191bede23de6528682adcf3e6dbc8442e2a6f86a6eb4356623f405b71b",
+    "signedMessage": "I agree to have my alpha.conquest.eth reward sent to the following address: 0xA514F4D58e9b0E1CbCd5D15F0967655cF6e8B096"
   },
   {
     "address": "0x1d4ebeda35092cb0b3d27b4c5d39af5facb00077",
@@ -16,7 +19,8 @@
   {
     "address": "0x60d38778adbbeeac88f741b833cbb9877228eea0",
     "numTokens": 50,
-    "numWCHI": 600
+    "numWCHI": 600,
+    "addressToSendTo": "0x60D38778ADbBeeAc88f741B833cbB9877228EEa0"
   },
   {
     "address": "0xfe3865dd730eabfe973b2d9035c4eefed3076a36",
@@ -32,7 +36,10 @@
   },
   {
     "address": "0x90bf1e866a1b4681e1a82c377b4839859f97dab7",
-    "numTokens": 10
+    "numTokens": 10,
+    "addressToSendTo": "0x90bF1e866A1b4681E1A82c377b4839859F97DaB7",
+    "signature": "0xa5515742e15c13100ca61c36b7c029ab85638bafddf97d974a4a5d41e24b919b490a7c8dcb653489989f5199eccdef06b5fccea12da36f29671fddddf8e28f931b",
+    "signedMessage": "I agree to have my alpha.conquest.eth reward sent to the following address: 0x90bF1e866A1b4681E1A82c377b4839859F97DaB7"
   },
   {
     "address": "0xfbe849ea94aa5acd53c83776449620b1b51976db",
@@ -55,7 +62,10 @@
   {
     "address": "0x1e61cf58e9f9b273a3e13ddec1a4b4c34bae5a8b",
     "numTokens": 10,
-    "numWCHI": 300
+    "numWCHI": 300,
+    "addressToSendTo": "0x1e61CF58e9F9b273A3e13DDeC1a4b4C34BAe5A8b",
+    "signature": "0x3739f4e3105fcb81a951c9d9587008b5128652c215d2c2705f0c29b33615e8a157e793c92b5d82cb55531cb299b862a92e34edbd3a524e488317426b8076382f1b",
+    "signedMessage": "I agree to have my alpha.conquest.eth reward sent to the following address: 0x1e61CF58e9F9b273A3e13DDeC1a4b4C34BAe5A8b"
   },
   {
     "address": "0x8f78f00e6503414c8d91aa98bd61860784faeeaf",
@@ -81,7 +91,10 @@
   },
   {
     "address": "0x7aa4b3742fc528db0dc4ad6edfb276be7b68b5fd",
-    "numWCHI": 300
+    "numWCHI": 300,
+    "addressToSendTo": "0x7Aa4b3742FC528dB0dc4Ad6EdfB276be7B68b5fD",
+    "signature": "0x0490592581a6b2c8ee51599dc55ac9dd98fec47f1fef5034dea30cea3ca9f7c9344c5fe870fa6d18a1fd72919ea6a9376e2b297446326c0c48dee7226b7352861c",
+    "signedMessage": "I agree to have my alpha.conquest.eth reward sent to the following address: 0x7Aa4b3742FC528dB0dc4Ad6EdfB276be7B68b5fD"
   },
   {
     "address": "0x039de3eb5002d2cc40faea403f69fb02c40b88ee",
