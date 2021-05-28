@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Modal from '$lib/components/Modal.svelte';
-  import PanelButton from '$lib/components/PanelButton.svelte';
-  import messageFlow from '$lib/stores/message';
+  import Modal from '$lib/components/generic/Modal.svelte';
+  import PanelButton from '$lib/components/generic/PanelButton.svelte';
+  import messageFlow from '$lib/flows/message';
 </script>
 
 {#if $messageFlow.error}

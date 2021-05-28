@@ -1,12 +1,12 @@
 <script lang="ts">
   import {timeToText} from '$lib//utils';
-  import Button from '$lib/components/PanelButton.svelte';
-  import PlayCoin from '$lib/components/PlayCoin.svelte';
-  import Modal from '$lib/components/Modal.svelte';
-  import PanelButton from '$lib/components/PanelButton.svelte';
-  import exitFlow from '$lib/stores/exit';
-  import {spaceInfo} from '$lib/app/mapState';
-  import {planetAt} from '$lib/stores/planets';
+  import Button from '$lib/components/generic/PanelButton.svelte';
+  import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
+  import Modal from '$lib/components/generic/Modal.svelte';
+  import PanelButton from '$lib/components/generic/PanelButton.svelte';
+  import exitFlow from '$lib/flows/exit';
+  import {spaceInfo} from '$lib/space/spaceInfo';
+  import {planetAt} from '$lib/space/planets';
   import {xyToLocation} from 'conquest-eth-common';
 
   $: planet = $exitFlow.data?.location

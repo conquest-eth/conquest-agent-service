@@ -2,7 +2,7 @@
   type LinkInfo = {href: string; title: string};
   export let links: LinkInfo[];
   import NavLink from './NavLink.svelte';
-  import Loading from '../Loading.svelte';
+  import Loading from '../../screens/loading/Loading.svelte';
   import {base} from '$app/paths';
   import {page, navigating} from '$app/stores';
 </script>

@@ -13,6 +13,59 @@ function _recurseSet(target: any, obj: any) {
   }
 }
 
+export class BasicObjectStore<T extends Record<string, number | string>> implements Readable<T> {
+  protected store: Writable<T>;
+  protected __set: (newValue: T) => void;
+  private value: T;
+  private oldValue: T;
+  constructor(initialValue?: T) {
+    this.value = initialValue;
+    this.oldValue = {...initialValue};
+    this.store = writable(this.value, this._start.bind(this));
+  }
+
+  public get $store(): T {
+    return this.value;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected _start(_: (newValue: T) => void): void {
+    return this._stop.bind(this);
+  }
+
+  protected _stop(): void {}
+
+  protected _set(newValue: T): void {
+    let changes = false;
+    if (!this.value) {
+      this.value = {...newValue};
+      changes = true;
+    } else {
+      for (const key of Object.keys(this.oldValue)) {
+        if (newValue[key] !== this.oldValue[key]) {
+          changes = true;
+          (this.value as Record<string, unknown>)[key] = newValue[key];
+        }
+      }
+      for (const key of Object.keys(newValue)) {
+        if (newValue[key] !== this.oldValue[key]) {
+          changes = true;
+          (this.value as Record<string, unknown>)[key] = newValue[key];
+        }
+      }
+    }
+
+    if (changes) {
+      this.oldValue = {...this.value};
+      this.store.set(this.value);
+    }
+  }
+
+  subscribe(run: (value: T) => void, invalidate?: (value?: T) => void): () => void {
+    return this.store.subscribe(run, invalidate);
+  }
+}
+
 export class BaseStore<T extends Record<string, unknown>> implements Readable<T> {
   protected store: Writable<T>;
   constructor(protected readonly $store: T) {

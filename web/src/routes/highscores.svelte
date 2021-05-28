@@ -1,9 +1,9 @@
 <script lang="ts">
   import {base} from '$app/paths';
 
-  import Blockie from '$lib/components/Blockie.svelte';
+  import Blockie from '$lib/components/account/Blockie.svelte';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
-  import PlayCoin from '$lib/components/PlayCoin.svelte';
+  import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
 
   import {highscores} from '$lib/stores/highscores';
   import {BigNumber} from '@ethersproject/bignumber';

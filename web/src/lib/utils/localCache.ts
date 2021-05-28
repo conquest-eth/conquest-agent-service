@@ -1,5 +1,5 @@
 import {base} from '$app/paths';
-import {contracts as contractsInfo} from '$lib/app/contractInfos';
+import {contractsInfos} from '$lib/blockchain/contractsInfos';
 
 class LocalCache {
   private _prefix: string;
@@ -53,4 +53,4 @@ class LocalCache {
   }
 }
 
-export default new LocalCache(contractsInfo.contracts.OuterSpace.address);
+export default new LocalCache(contractsInfos.contracts.OuterSpace.address);

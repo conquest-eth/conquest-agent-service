@@ -1,11 +1,11 @@
 <script lang="ts">
-  import Modal from '$lib/components/Modal.svelte';
-  import PanelButton from '$lib/components/PanelButton.svelte';
-  import showPlanetDepartures from '$lib/stores/showPlanetDepartures';
-  import {now} from '$lib/stores/time';
+  import Modal from '$lib/components/generic/Modal.svelte';
+  import PanelButton from '$lib/components/generic/PanelButton.svelte';
+  import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
+  import {now} from '$lib/time';
   import {timeToText} from '$lib/utils';
   import {logPeriod} from '$lib/config';
-  import Blockie from '$lib/components/Blockie.svelte';
+  import Blockie from '$lib/components/account/Blockie.svelte';
 </script>
 
 {#if $showPlanetDepartures.error}

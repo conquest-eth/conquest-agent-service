@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Button from '$lib/components/PanelButton.svelte';
-  import Banner from '$lib/components/Banner.svelte';
-  import simulateFlow from '$lib/stores/simulateFlow';
-  import Modal from '$lib/components/Modal.svelte';
-  import SimulateSpaceships from '$lib/components/SimulateSpaceships.svelte';
+  import Button from '$lib/components/generic/PanelButton.svelte';
+  import Banner from '$lib/components/screen/Banner.svelte';
+  import simulateFlow from '$lib/flows/simulateFlow';
+  import Modal from '$lib/components/generic/Modal.svelte';
+  import SimulateSpaceships from '$lib/components/fleets/SimulateSpaceships.svelte';
 </script>
 
 {#if $simulateFlow.error}

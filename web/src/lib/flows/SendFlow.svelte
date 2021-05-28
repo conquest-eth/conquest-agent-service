@@ -1,12 +1,12 @@
 <script lang="ts">
-  import SendingSpaceships from '$lib/components/SendingSpaceships.svelte';
-  import Button from '$lib/components/PanelButton.svelte';
-  import Banner from '$lib/components/Banner.svelte';
-  import sendFlow from '$lib/stores/send';
-  import Modal from '$lib/components/Modal.svelte';
-  import SpaceshipsSent from '$lib/components/SpaceshipsSent.svelte';
-  import PanelButton from '$lib/components/PanelButton.svelte';
-  import SendPreTransactionMessage from '$lib/components/SendPreTransactionMessage.svelte';
+  import SendingSpaceships from '$lib/components/fleets/SendingSpaceships.svelte';
+  import Button from '$lib/components/generic/PanelButton.svelte';
+  import Banner from '$lib/components/screen/Banner.svelte';
+  import sendFlow from '$lib/flows/send';
+  import Modal from '$lib/components/generic/Modal.svelte';
+  import SpaceshipsSent from '$lib/components/fleets/SpaceshipsSent.svelte';
+  import PanelButton from '$lib/components/generic/PanelButton.svelte';
+  import SendPreTransactionMessage from '$lib/components/fleets/SendPreTransactionMessage.svelte';
 
   $: pickNeeded =
     $sendFlow.step === 'PICK_DESTINATION' ? 'destination' : $sendFlow.step === 'PICK_ORIGIN' ? 'origin' : undefined;

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Modal from '$lib/components/Modal.svelte';
-  import Button from '$lib/components/PanelButton.svelte';
-  import PanelButton from '$lib/components/PanelButton.svelte';
-  import resolveFlow from '$lib/stores/resolve';
+  import Modal from '$lib/components/generic/Modal.svelte';
+  import Button from '$lib/components/generic/PanelButton.svelte';
+  import PanelButton from '$lib/components/generic/PanelButton.svelte';
+  import resolveFlow from '$lib/flows/resolve';
 </script>
 
 {#if $resolveFlow.error}

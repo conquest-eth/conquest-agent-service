@@ -1,14 +1,14 @@
 <script lang="ts">
   import {base} from '$app/paths';
-  import {spaceInfo} from '$lib/app/mapState';
+  import {spaceInfo} from '$lib/space/spaceInfo';
 
-  import Blockie from '$lib/components/Blockie.svelte';
+  import Blockie from '$lib/components/account/Blockie.svelte';
   import Coord from '$lib/components/Coord.svelte';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
-  import PlayCoin from '$lib/components/PlayCoin.svelte';
+  import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
 
-  import {globalLogs} from '$lib/stores/globalLogs';
-  import {now, time} from '$lib/stores/time';
+  import {globalLogs} from '$lib/space/globalLogs';
+  import {now, time} from '$lib/time';
   import {timeToText} from '$lib/utils';
   import {BigNumber} from '@ethersproject/bignumber';
   import {locationToXY} from 'conquest-eth-common';
@@ -45,9 +45,9 @@
               <Coord location={event.planet.id} />
               <!-- {timeToText(now() - event.timestamp)} -->
               <!-- ago -->
-              <a
-                href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`}
-                class="underline">(see tx)</a>
+              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`} class="underline"
+                >(see tx)</a
+              >
             {:else if event.__typename === 'FleetArrivedEvent'}
               {timeToText($time - parseInt(event.timestamp), {compact: true})}
               ago
@@ -81,9 +81,9 @@
 
               <!-- {timeToText(now() - event.timestamp)} -->
               <!-- ago -->
-              <a
-                href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`}
-                class="underline">(see tx)</a>
+              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`} class="underline"
+                >(see tx)</a
+              >
             {:else if event.__typename === 'PlanetExitEvent'}
               {timeToText($time - parseInt(event.timestamp), {compact: true})}
               ago
@@ -97,9 +97,9 @@
               {timeToText($time - (parseInt(event.exitTime) + spaceInfo.exitDuration))} -->
               <!-- {timeToText(now() - event.timestamp)} -->
               <!-- ago -->
-              <a
-                href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`}
-                class="underline">(see tx)</a>
+              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`} class="underline"
+                >(see tx)</a
+              >
             {:else if event.__typename === 'PlanetStakeEvent'}
               {timeToText($time - parseInt(event.timestamp), {compact: true})}
               ago
@@ -111,9 +111,9 @@
               <PlayCoin class="w-4 h-4 inline" />
               <!-- {timeToText(now() - event.timestamp)} -->
               <!-- ago -->
-              <a
-                href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`}
-                class="underline">(see tx)</a>
+              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`} class="underline"
+                >(see tx)</a
+              >
               <!-- {:else if event.__typename === 'StakeToWithdrawEvent'} -->
               <!-- TODO ?-->
               <!-- {:else if event.__typename === 'ExitCompleteEvent'} -->

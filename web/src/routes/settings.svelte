@@ -1,12 +1,12 @@
 <script lang="ts">
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
-  import {wallet, builtin, flow} from '$lib/stores/wallet';
-  import privateAccount from '$lib/stores/privateAccount';
-  import myprofile from '$lib/stores/myprofile';
+  import {wallet, builtin, flow} from '$lib/blockchain/wallet';
+  import privateAccount from '$lib/account/privateAccount';
+  import myprofile from '$lib/flows/myprofile';
   import {BigNumber} from '@ethersproject/bignumber';
-  import WalletAccess from '$lib/WalletAccess.svelte';
-  import Button from '$lib/components/PanelButton.svelte';
+  import WalletAccess from '$lib/blockchain/WalletAccess.svelte';
+  import Button from '$lib/components/generic/PanelButton.svelte';
   import {base64} from '$lib/utils';
 
   // TODO remove duplication, abstract away profile sync but also sync in general
@@ -94,7 +94,8 @@
         class="w-max-content m-4"
         label="connect"
         disabled={$privateAccount.step !== 'IDLE'}
-        on:click={() => privateAccount.login()}>
+        on:click={() => privateAccount.login()}
+      >
         <!-- TODO privateAccount so we can get access to the public key-->
         Connect
       </Button>
@@ -117,7 +118,8 @@
                       name="name"
                       id="name"
                       autocomplete="off"
-                      class="flex-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300 bg-gray-700" />
+                      class="flex-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 min-w-0 rounded-none rounded-r-md sm:text-sm border-gray-300 bg-gray-700"
+                    />
                   </div>
                 </div>
               </div>
@@ -130,7 +132,8 @@
                     id="contact"
                     name="contact"
                     rows="3"
-                    class="max-w-lg shadow-sm block w-full focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md  bg-gray-700" />
+                    class="max-w-lg shadow-sm block w-full focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300 rounded-md  bg-gray-700"
+                  />
                   <p class="mt-2 text-sm">Describe how other players can contact you.</p>
                 </div>
               </div>
@@ -147,7 +150,8 @@
         </button> -->
           <button
             on:click={setProfile}
-            class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
             Save
           </button>
         </div>

@@ -2,8 +2,8 @@
   import '../service-worker-handler';
   import '../global.css';
   import Notifications from '$lib/components/notification/Notifications.svelte';
-  import NoInstallPrompt from '$lib/components/NoInstallPrompt.svelte';
-  import NewVersionNotification from '$lib/components/NewVersionNotification.svelte';
+  import NoInstallPrompt from '$lib/components/web/NoInstallPrompt.svelte';
+  import NewVersionNotification from '$lib/components/web/NewVersionNotification.svelte';
   // import Install from './components/Install.svelte';
 </script>
 

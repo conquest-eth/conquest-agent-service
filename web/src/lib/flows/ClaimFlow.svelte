@@ -1,17 +1,17 @@
 <script lang="ts">
-  import claimFlow from '$lib/stores/claim';
-  import Modal from '$lib/components/Modal.svelte';
-  import Button from '$lib/components/PanelButton.svelte';
-  import {planetAt} from '$lib/stores/planets';
-  import {wallet} from '$lib/stores/wallet';
-  import {playTokenAccount} from '$lib/stores/playToken';
+  import claimFlow from '$lib/flows/claim';
+  import Modal from '$lib/components/generic/Modal.svelte';
+  import Button from '$lib/components/generic/PanelButton.svelte';
+  import {planetAt} from '$lib/space/planets';
+  import {wallet} from '$lib/blockchain/wallet';
+  import {playTokenAccount} from '$lib/account/playToken';
   import {BigNumber} from '@ethersproject/bignumber';
-  import PlayCoin from '$lib/components/PlayCoin.svelte';
+  import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import {timeToText} from '$lib/utils';
-  import {space, spaceInfo} from '$lib/app/mapState';
+  import {spaceInfo} from '$lib/space/spaceInfo';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
-  import {time} from '$lib/stores/time';
+  import {time} from '$lib/time';
 
   $: location = $claimFlow.data?.location;
   $: planet = location ? planetAt(location) : undefined;
@@ -58,8 +58,10 @@
         <div class="text-center">
           <h2>
             Stake
-            <span class="text-yellow-500">{stake}
-              <PlayCoin class="inline w-4" /></span>
+            <span class="text-yellow-500"
+              >{stake}
+              <PlayCoin class="inline w-4" /></span
+            >
             to capture Planet
             <span class="text-green-500">"{$planet.stats.name}"</span>.
           </h2>

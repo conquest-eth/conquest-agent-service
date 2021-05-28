@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Button from '$lib/components/PanelButton.svelte';
+  import Button from '$lib/components/generic/PanelButton.svelte';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
-  import WalletAccess from '$lib/WalletAccess.svelte';
-  import {wallet, builtin, flow} from '$lib/stores/wallet';
-  import privateAccount from '$lib/stores/privateAccount';
-  import {withdrawals} from '$lib/stores/withdrawals';
+  import WalletAccess from '$lib/blockchain/WalletAccess.svelte';
+  import {wallet, builtin, flow} from '$lib/blockchain/wallet';
+  import privateAccount from '$lib/account/privateAccount';
+  import {withdrawals} from '$lib/flows/withdrawals';
   import {onDestroy, onMount} from 'svelte';
   import {base} from '$app/paths';
 
@@ -28,7 +28,8 @@
           class="w-max-content m-4"
           label="connect"
           disabled={!$builtin.available || $wallet.connecting}
-          on:click={() => privateAccount.login()}>
+          on:click={() => privateAccount.login()}
+        >
           Connect
         </Button>
       {:else if $privateAccount.data && $privateAccount.data.lastWithdrawal}
@@ -43,7 +44,8 @@
           class="w-max-content m-4"
           label="withdraw"
           disabled={$withdrawals.balance.eq(0)}
-          on:click={() => withdrawals.withdraw()}>
+          on:click={() => withdrawals.withdraw()}
+        >
           withdraw
         </Button>
       {/if}

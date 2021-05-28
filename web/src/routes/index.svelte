@@ -1,10 +1,10 @@
 <script lang="ts">
-  import WalletAccess from '$lib/WalletAccess.svelte';
-  import MapScreen from '$lib/app/MapScreen.svelte';
+  import WalletAccess from '$lib/blockchain/WalletAccess.svelte';
+  import MapScreen from '$lib/screens/map/MapScreen.svelte';
   import {fade} from 'svelte/transition';
-  import ClaimTokenScreen from '$lib/screens/ClaimTokenScreen.svelte';
+  import ClaimTokenScreen from '$lib/screens/tokenClaim/ClaimTokenScreen.svelte';
 
-  import {logo} from '$lib/stores/logo';
+  import {logo} from '$lib/screens/loading/logo';
 
   import {onMount} from 'svelte';
   import {browser} from '$app/env';
@@ -27,7 +27,8 @@
         src="./conquest.png"
         alt="conquest.eth"
         style="width:80%;"
-        on:load={() => logo.gameLogoReady()} />
+        on:load={() => logo.gameLogoReady()}
+      />
       <p class="m-6 mt-20 text-gray-500 text-2xl font-black">
         An unstoppable and open-ended game of war and diplomacy running on ethereum.
       </p>
@@ -44,7 +45,8 @@
           src="./logo_with_text_on_black.png"
           alt="etherplay.eth"
           style="width:80%; heigh: 40%;"
-          on:load={() => logo.etherplayLogoReady()} />
+          on:load={() => logo.etherplayLogoReady()}
+        />
         <!-- <p class="m-6 text-gray-400 dark:text-gray-500 text-4xl font-black">
       presents
     </p> -->

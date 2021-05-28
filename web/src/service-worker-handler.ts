@@ -1,5 +1,5 @@
 // import {logs} from 'named-logs-console';
-import {updateAvailable} from './lib/stores/appUpdates';
+import {updateAvailable} from './lib/web/appUpdates';
 import {base} from '$app/paths';
 
 // const log = logs('sw.js');
