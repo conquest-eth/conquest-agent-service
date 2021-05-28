@@ -35,7 +35,10 @@ export class Camera extends BasicObjectStore<CameraState> {
 
   constructor() {
     super();
-    this.zoomIndex = Camera.zoomLevels.length - 2;
+    this.zoomIndex = Camera.zoomLevels.indexOf(3);
+    if (this.zoomIndex === -1) {
+      this.zoomIndex = Camera.zoomLevels.length - 3;
+    }
   }
 
   start(surface: HTMLElement, renderView: RenderViewReadable): void {
@@ -149,6 +152,10 @@ export class Camera extends BasicObjectStore<CameraState> {
   }
 
   onmousedown(e: TouchEvent | MouseEvent): void {
+    // console.log({button: (e as MouseEvent).button});
+    if ((e as MouseEvent).button === 2) {
+      return;
+    }
     // console.log('startPanning');
     this.isPanning = true;
     let eventX;

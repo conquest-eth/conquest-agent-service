@@ -48,8 +48,8 @@
   }
   const frameInfo = (planetsFrame.frames as any)[frameType] as {frame: Frame};
   const frame = frameInfo.frame;
-  const x = planetInfo.location.globalX;
-  const y = planetInfo.location.globalY;
+  const x = planetInfo.location.globalX - 24;
+  const y = planetInfo.location.globalY - 24;
 </script>
 
 <div
@@ -57,6 +57,7 @@
     frame.w
   }px; height: ${frame.h}px;
   `}
+  data={`${planetInfo.location.x}, ${planetInfo.location.y}`}
 />
 
 <!-- <div class="text-red-600" style={`position: absolute; left: ${x}px; top: ${y}px;`}>a</div> -->

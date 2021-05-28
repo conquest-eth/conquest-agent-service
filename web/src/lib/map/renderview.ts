@@ -39,21 +39,17 @@ export class CanvasRenderView extends BasicObjectStore<RenderViewState> implemen
 }
 
 export class ElementRenderView extends BasicObjectStore<RenderViewState> implements RenderView {
-  private lastWidth;
-  private lastHeight;
   constructor(protected elem: HTMLElement) {
     super({
       width: elem.clientWidth,
       height: elem.clientHeight,
       devicePixelRatio: 1,
     });
-    this.lastHeight = elem.clientHeight;
-    this.lastWidth = elem.clientWidth;
   }
 
   updateDevicePixelRatio(newRatio: number): void {
     this.$store.devicePixelRatio = newRatio;
-    this._set(this.$store);
+    this.update();
   }
 
   update(): void {
@@ -62,7 +58,7 @@ export class ElementRenderView extends BasicObjectStore<RenderViewState> impleme
     const displayWidth = Math.floor(elem.clientWidth * devicePixelRatio);
     const displayHeight = Math.floor(elem.clientHeight * devicePixelRatio);
 
-    if (this.lastWidth !== displayWidth || this.lastHeight !== displayHeight) {
+    if (this.$store.width !== displayWidth || this.$store.height !== displayHeight) {
       this.$store.width = displayWidth;
       this.$store.height = displayHeight;
       this._set(this.$store);

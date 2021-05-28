@@ -48,7 +48,7 @@
     -ms-user-select: none; /* IE10+/Edge */
     user-select: none; /* Standard */
     overflow: hidden;
-    border: 3px blue solid;
+    outline: 3px blue solid;
   }
 
   /* #surface {
