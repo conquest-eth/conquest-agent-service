@@ -48,16 +48,17 @@
   }
   const frameInfo = (planetsFrame.frames as any)[frameType] as {frame: Frame};
   const frame = frameInfo.frame;
-  const x = planetInfo.location.globalX - 24;
-  const y = planetInfo.location.globalY - 24;
+  const scale = 0.04;
+  const x = planetInfo.location.globalX - frame.w / 2;
+  const y = planetInfo.location.globalY - frame.h / 2;
 </script>
 
 <div
-  style={`position: absolute; transform: translate(${x}px,${y}px) scale(0.04,0.04); background: url(${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
+  style={`position: absolute; transform: translate(${x}px,${y}px) scale(${scale}, ${scale}); background: url(${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
     frame.w
   }px; height: ${frame.h}px;
   `}
-  data={`${planetInfo.location.x}, ${planetInfo.location.y}`}
+  data={`${planetInfo.location.x}, ${planetInfo.location.y} : ${planetInfo.stats.subX}, ${planetInfo.stats.subY} -| ${planetInfo.location.globalX}, ${planetInfo.location.globalY}`}
 />
 
 <!-- <div class="text-red-600" style={`position: absolute; left: ${x}px; top: ${y}px;`}>a</div> -->

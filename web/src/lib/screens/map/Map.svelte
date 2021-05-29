@@ -52,6 +52,22 @@
   }
 
   /* #surface {
+    background-color: black;
+    background-image: radial-gradient(white, rgba(255, 255, 255, 0.2) 2px, transparent 40px),
+      radial-gradient(white, rgba(255, 255, 255, 0.15) 1px, transparent 30px),
+      radial-gradient(white, rgba(255, 255, 255, 0.1) 2px, transparent 40px),
+      radial-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1) 2px, transparent 30px);
+    background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px;
+    background-position: 0 0, 40px 60px, 130px 270px, 70px 100px;
+  } */
+
+  /* #surface {
+    background-size: 40px 40px;
+    background-image: linear-gradient(to right, grey 1px, transparent 1px),
+      linear-gradient(to bottom, grey 1px, transparent 1px);
+  } */
+
+  /* #surface {
     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAATklEQVQoU2O0O3X+PwMDA8MhM0NGEI0LMBKtEJsJD27YgW1R0DgEtwWrdUQrxGYLY8V5iDUdhghrKFOITfenmXFgW/jSF+H3DNEKsdkCAO99IAvXcD3VAAAAAElFTkSuQmCC)
       repeat;
   } */
