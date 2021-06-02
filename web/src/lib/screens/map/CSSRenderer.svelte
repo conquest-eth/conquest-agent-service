@@ -2,6 +2,7 @@
   import {spaceInfo} from '$lib/space/spaceInfo';
   import PlanetElement from './PlanetElement.svelte';
   import {camera} from '$lib/map/camera';
+  import spaceBackground from '../../../assets/Red3.png';
 
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
 </script>
@@ -21,7 +22,7 @@ width:100%; height: 100%;
     background-image: radial-gradient(circle, #CCCCCC ${gridTickness}px, rgba(0.8, 0.8, 0.8, 0) ${gridTickness}px);
     background-position: ${$camera ? $camera.renderX : 0}px ${$camera ? $camera.renderY : 0}px;
   `
-      : ''
+      : ``
   }
 
      /* background-color: black;
@@ -33,6 +34,17 @@ width:100%; height: 100%;
     background-position: ${($camera ? $camera.renderX : 0) - 2}px ${($camera ? $camera.renderY : 0) - 2}px;*/
 `}
 >
+  <div
+    style={`
+  position: absolute;
+  width:150%; height: 150%;
+  top: -25%;
+  left: -25%;
+  opacity: ${$camera ? Math.max(0.2, Math.min(0.4, 1 - $camera.renderScale / 10)) : 0};
+  background-image: url(${spaceBackground});
+  background-position: ${($camera ? $camera.renderX * 1.5 : 0) - 2}px ${($camera ? $camera.renderY * 1.5 : 0) - 2}px;
+  `}
+  />
   <div
     style={`
     position: absolute;

@@ -33,7 +33,7 @@
 
 <ConnectPanel />
 
-<div class="opacity-40 bg-green-300 text-red-600 top-0 mx-auto z-50 absolute">
+<!-- <div class="opacity-40 bg-green-300 text-red-600 top-0 mx-auto z-50 absolute">
   CAMERA
   {#if $camera}
     {JSON.stringify(
@@ -53,7 +53,7 @@
       2
     )}
   {/if}
-</div>
+</div> -->
 
 <!-- <div class="absolute right-0 top-12">
   <FleetsToResolve />
