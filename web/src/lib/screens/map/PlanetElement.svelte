@@ -79,7 +79,7 @@
 
 {#if owner}
   <SharedBlockie
-    style={`position: absolute; transform: translate(${x + 0.6 * multiplier}px,${
+    style={`z-index: 1; position: absolute; transform: translate(${x + 0.6 * multiplier}px,${
       y - 0.9 * multiplier
     }px) scale(${blockieScale}, ${blockieScale}); background: url(${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
       frame.w

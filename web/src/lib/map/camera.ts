@@ -331,76 +331,82 @@ export class Camera extends BasicObjectStore<CameraState> {
 
   updateZoom(offsetX: number, offsetY: number, dir: 1 | -1 | 0): void {
     const {x, y} = this.screenToWorld(offsetX, offsetY);
-    // const oldZoom = this.world.zoom;
 
-    // console.log({offsetX, offsetY, x, y});
+    const maxSize = 700 * 700;
+    const minSize = 16 * 16;
 
-    // const lastZoomIndex = this.zoomIndex;
-    // if (dir > 0) {
-    //   // console.log('zoom out');
-    //   this.zoomIndex = Math.min(this.zoomIndex + 1, Camera.zoomLevels.length - 1);
-    //   this.$store.zoom = Camera.zoomLevels[this.zoomIndex];
-    // } else {
-    //   this.zoomIndex = Math.max(0, this.zoomIndex - 1);
-    //   this.$store.zoom = Camera.zoomLevels[this.zoomIndex];
-    // }
-    // // this.$store.zoom = Math.min(Math.max(0.25, this.$store.zoom), 2);
-    // const scale = this.$store.zoom * this.$store.devicePixelRatio;
-    // const newWidth = this.$store.renderWidth / scale;
-    // const newHeight = this.$store.renderHeight / scale;
-    // if (newWidth < 9 || newHeight < 9 || newWidth > 600 || newHeight > 600) {
-    //   this.zoomIndex = lastZoomIndex;
-    //   this.$store.zoom = Camera.zoomLevels[this.zoomIndex];
-    //   return;
-    // }
-
+    const size = this.$store.width * this.$store.height;
+    const renderSize = this.$store.renderWidth * this.$store.renderHeight;
+    let newSize = size;
     if (dir > 0) {
-      const size = this.$store.width * this.$store.height;
-      const renderSize = this.$store.renderWidth * this.$store.renderHeight;
-      let newSize = size + size / 5; // + 20%
-      if (newSize > 700 * 700) {
-        if ((700 * 700) / size > 1.1) {
-          newSize = 700 * 700;
+      newSize = size + size / 5; // + 20%
+      if (newSize > maxSize) {
+        if (maxSize / size > 1.1) {
+          newSize = maxSize;
         } else {
           return;
         }
       }
-      const scale = Math.sqrt(renderSize) / Math.sqrt(newSize);
-      this.$store.zoom = scale / this.$store.devicePixelRatio;
-      // let size = this.$store.width;
-      // let renderSize = this.$store.renderWidth;
-      // if (this.$store.height > size) {
-      //   size = this.$store.height;
-      //   renderSize = this.$store.renderHeight;
-      // }
-      // let newSize = size + size / 5; // + 20%
-      // if (newSize > 1000) {
-      //   if (1000 / size > 1.1) {
-      //     newSize = 1000;
-      //   } else {
-      //     return;
-      //   }
-      // }
-      // const scale = renderSize / newSize;
-      // this.$store.zoom = scale / this.$store.devicePixelRatio;
     } else {
-      let size = this.$store.width;
-      let renderSize = this.$store.renderWidth;
-      if (this.$store.height < size) {
-        size = this.$store.height;
-        renderSize = this.$store.renderHeight;
-      }
-      let newSize = size - size / 5; // - 20%
-      if (newSize < 9) {
-        if (9 / size < 0.9) {
-          newSize = 9;
+      newSize = size - size / 5; // - 20%
+      if (newSize < minSize) {
+        if (minSize / size < 0.9) {
+          newSize = minSize;
         } else {
           return;
         }
       }
-      const scale = renderSize / newSize;
-      this.$store.zoom = scale / this.$store.devicePixelRatio;
     }
+    const scale = Math.sqrt(renderSize) / Math.sqrt(newSize);
+    this.$store.zoom = scale / this.$store.devicePixelRatio;
+
+    // if (dir > 0) {
+    //   const size = this.$store.width * this.$store.height;
+    //   const renderSize = this.$store.renderWidth * this.$store.renderHeight;
+    //   let newSize = size + size / 5; // + 20%
+    //   if (newSize > maxSize) {
+    //     if ((maxSize) / size > 1.1) {
+    //       newSize = maxSize;
+    //     } else {
+    //       return;
+    //     }
+    //   }
+    //   const scale = Math.sqrt(renderSize) / Math.sqrt(newSize);
+    //   this.$store.zoom = scale / this.$store.devicePixelRatio;
+    //   // let size = this.$store.width;
+    //   // let renderSize = this.$store.renderWidth;
+    //   // if (this.$store.height > size) {
+    //   //   size = this.$store.height;
+    //   //   renderSize = this.$store.renderHeight;
+    //   // }
+    //   // let newSize = size + size / 5; // + 20%
+    //   // if (newSize > 1000) {
+    //   //   if (1000 / size > 1.1) {
+    //   //     newSize = 1000;
+    //   //   } else {
+    //   //     return;
+    //   //   }
+    //   // }
+    //   // const scale = renderSize / newSize;
+    //   // this.$store.zoom = scale / this.$store.devicePixelRatio;
+    // } else {
+    //   let size = this.$store.width;
+    //   let renderSize = this.$store.renderWidth;
+    //   if (this.$store.height < size) {
+    //     size = this.$store.height;
+    //     renderSize = this.$store.renderHeight;
+    //   }
+    //   let newSize = size - size / 5; // - 20%
+    //   if (newSize < 9) {
+    //     if (9 / size < 0.9) {
+    //       newSize = 9;
+    //     } else {
+    //       return;
+    //     }
+    //   }
+    //   const scale = renderSize / newSize;
+    //   this.$store.zoom = scale / this.$store.devicePixelRatio;
+    // }
 
     const screenPos = this.worldToScreen(x, y);
     const delta = {
