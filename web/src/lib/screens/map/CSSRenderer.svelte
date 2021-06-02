@@ -15,9 +15,11 @@ width:100%; height: 100%;
     $camera && $camera.zoom >= 10
       ? `
     background-size: 4px 4px;
-    background-image: linear-gradient(to right, grey ${gridTickness}px, transparent ${gridTickness}px),
+    /*background-image: linear-gradient(to right, grey ${gridTickness}px, transparent ${gridTickness}px),
     linear-gradient(to bottom, grey ${gridTickness}px, transparent ${gridTickness}px);
-    background-position: ${($camera ? $camera.renderX : 0) - 2}px ${($camera ? $camera.renderY : 0) - 2}px;
+    background-position: ${($camera ? $camera.renderX : 0) - 2}px ${($camera ? $camera.renderY : 0) - 2}px;*/
+    background-image: radial-gradient(circle, #CCCCCC ${gridTickness}px, rgba(0.8, 0.8, 0.8, 0) ${gridTickness}px);
+    background-position: ${$camera ? $camera.renderX : 0}px ${$camera ? $camera.renderY : 0}px;
   `
       : ''
   }

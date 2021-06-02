@@ -148,6 +148,7 @@ export class SpaceInfoStore {
           numPlanetsLeft--;
         }
       }
+      this.planetsOnFocus.sort((a, b) => a.location.y - b.location.y);
       this.store.set(this.planetsOnFocus);
     }
 
