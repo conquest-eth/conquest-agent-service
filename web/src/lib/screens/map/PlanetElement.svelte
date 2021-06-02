@@ -78,13 +78,29 @@
 {/if}
 
 {#if owner}
-  <SharedBlockie
-    style={`z-index: 1; position: absolute; transform: translate(${x + 0.6 * multiplier}px,${
-      y - 0.9 * multiplier
-    }px) scale(${blockieScale}, ${blockieScale}); background: url(${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
-      frame.w
-    }px; height: ${frame.h}px;
+  {#if blockieScale <= scale}
+    <div
+      style={`z-index: 2; position: absolute; transform: translate(${x + (0.6 - 0.1) * multiplier}px,${
+        y - 0.9 * multiplier
+      }px) scale(${blockieScale}, ${blockieScale * 1.5});
+    border-left: 4px solid white;
+    width: ${frame.w}px; height: ${frame.h}px;
+  `}
+    />
+    <SharedBlockie
+      style={`z-index: 1; position: absolute; transform: translate(${x + 0.6 * multiplier}px,${
+        y - 1.2 * multiplier
+      }px) scale(${blockieScale}, ${blockieScale}); width: ${frame.w}px; height: ${frame.h}px;
 `}
-    address={owner}
-  />
+      address={owner}
+    />
+  {:else}
+    <SharedBlockie
+      style={`z-index: 1; position: absolute; transform: translate(${x + 0 * multiplier}px,${
+        y - 0 * multiplier
+      }px) scale(${blockieScale}, ${blockieScale}); width: ${frame.w}px; height: ${frame.h}px;
+`}
+      address={owner}
+    />
+  {/if}
 {/if}
