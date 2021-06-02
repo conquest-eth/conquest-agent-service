@@ -4,6 +4,8 @@
   import planetsFrame from '../../../assets/planets.json';
   import planetsImageURL from '../../../assets/planets.png';
   import type {PlanetInfo} from 'conquest-eth-common';
+  import SharedBlockie from './SharedBlockie.svelte';
+  import {camera} from '$lib/map/camera';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -50,12 +52,39 @@
   const scale = 0.025 * multiplier;
   const x = planetInfo.location.globalX - frame.w / 2;
   const y = planetInfo.location.globalY - frame.h / 2;
+
+  let owner: string | undefined = undefined;
+
+  if (x > -20 * 4 && x < 20 * 4 && y > -20 * 4 && y < 20 * 4) {
+    owner = '0x3333333333333333333333333333333333333333';
+  }
+
+  let blockieScale = scale;
+  $: if (owner && $camera && $camera.renderScale < 10) {
+    blockieScale = scale * (10 / $camera.renderScale);
+  } else {
+    blockieScale = scale;
+  }
 </script>
 
-<div
-  style={`position: absolute; transform: translate(${x}px,${y}px) scale(${scale}, ${scale}); background: url(${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
-    frame.w
-  }px; height: ${frame.h}px;
+{#if blockieScale <= scale}
+  <div
+    style={`position: absolute; transform: translate(${x}px,${y}px) scale(${scale}, ${scale}); background: url(${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
+      frame.w
+    }px; height: ${frame.h}px;
   `}
-  data={`${planetInfo.location.x}, ${planetInfo.location.y} : ${planetInfo.stats.subX}, ${planetInfo.stats.subY} -| ${planetInfo.location.globalX}, ${planetInfo.location.globalY}`}
-/>
+    data={`${planetInfo.location.x}, ${planetInfo.location.y} : ${planetInfo.stats.subX}, ${planetInfo.stats.subY} -| ${planetInfo.location.globalX}, ${planetInfo.location.globalY}`}
+  />
+{/if}
+
+{#if owner}
+  <SharedBlockie
+    style={`position: absolute; transform: translate(${x + 0.6 * multiplier}px,${
+      y - 0.9 * multiplier
+    }px) scale(${blockieScale}, ${blockieScale}); background: url(${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
+      frame.w
+    }px; height: ${frame.h}px;
+`}
+    address={owner}
+  />
+{/if}
