@@ -355,20 +355,50 @@ export class Camera extends BasicObjectStore<CameraState> {
     // }
 
     if (dir > 0) {
-      const newWitdh = this.$store.width + this.$store.width / 5; // + 20%
-      const newHeight = this.$store.height + this.$store.height / 5; // + 20%
-      if (newWitdh > 600 || newHeight > 600) {
-        return;
+      const size = this.$store.width * this.$store.height;
+      const renderSize = this.$store.renderWidth * this.$store.renderHeight;
+      let newSize = size + size / 5; // + 20%
+      if (newSize > 700 * 700) {
+        if ((700 * 700) / size > 1.1) {
+          newSize = 700 * 700;
+        } else {
+          return;
+        }
       }
-      const scale = this.$store.renderWidth / newWitdh;
+      const scale = Math.sqrt(renderSize) / Math.sqrt(newSize);
       this.$store.zoom = scale / this.$store.devicePixelRatio;
+      // let size = this.$store.width;
+      // let renderSize = this.$store.renderWidth;
+      // if (this.$store.height > size) {
+      //   size = this.$store.height;
+      //   renderSize = this.$store.renderHeight;
+      // }
+      // let newSize = size + size / 5; // + 20%
+      // if (newSize > 1000) {
+      //   if (1000 / size > 1.1) {
+      //     newSize = 1000;
+      //   } else {
+      //     return;
+      //   }
+      // }
+      // const scale = renderSize / newSize;
+      // this.$store.zoom = scale / this.$store.devicePixelRatio;
     } else {
-      const newWitdh = this.$store.width - this.$store.width / 5; // - 20%
-      const newHeight = this.$store.height - this.$store.height / 5; // - 20%
-      if (newWitdh < 9 || newHeight < 9) {
-        return;
+      let size = this.$store.width;
+      let renderSize = this.$store.renderWidth;
+      if (this.$store.height < size) {
+        size = this.$store.height;
+        renderSize = this.$store.renderHeight;
       }
-      const scale = this.$store.renderWidth / newWitdh;
+      let newSize = size - size / 5; // - 20%
+      if (newSize < 9) {
+        if (9 / size < 0.9) {
+          newSize = 9;
+        } else {
+          return;
+        }
+      }
+      const scale = renderSize / newSize;
       this.$store.zoom = scale / this.$store.devicePixelRatio;
     }
 
