@@ -238,7 +238,9 @@ export class Camera extends BasicObjectStore<CameraState> {
 
   onwheel(e: WheelEvent): void {
     e.preventDefault();
-    const {offsetX, offsetY, deltaY} = e;
+    const {clientX, clientY, deltaY} = e;
+    const offsetX = clientX - this.surface.clientLeft;
+    const offsetY = clientY - this.surface.clientTop;
     const dir = (Math.abs(deltaY) / deltaY) as 0 | -1 | 1;
     this.updateZoom(offsetX, offsetY, dir);
   }
@@ -330,6 +332,8 @@ export class Camera extends BasicObjectStore<CameraState> {
     const {x, y} = this.screenToWorld(offsetX, offsetY);
     // const oldZoom = this.world.zoom;
 
+    // console.log({offsetX, offsetY, x, y});
+
     if (dir > 0) {
       // console.log('zoom out');
       this.zoomIndex = Math.min(this.zoomIndex + 1, Camera.zoomLevels.length - 1);
@@ -342,22 +346,15 @@ export class Camera extends BasicObjectStore<CameraState> {
 
     const screenPos = this.worldToScreen(x, y);
     const delta = {
-      x: Math.round((offsetX - screenPos.x) / this.$store.zoom),
-      y: Math.round((offsetY - screenPos.y) / this.$store.zoom),
+      x: (offsetX - screenPos.x) / this.$store.zoom,
+      y: (offsetY - screenPos.y) / this.$store.zoom,
     };
+
+    // console.log({screenPosX: screenPos.x, screenPosY: screenPos.y, deltaX: delta.x, deltaY: delta.y});
+
     this.$store.x -= delta.x;
     this.$store.y -= delta.y;
     this._update();
-  }
-
-  initZoom(): void {
-    const zero = this.worldToScreen(0, 0);
-    for (let i = 0; i < 4; i++) {
-      this.updateZoom(zero.x, zero.y, 1);
-    }
-    while (this.$store.width < 48 * 8 * 7) {
-      this.updateZoom(zero.x, zero.y, 1);
-    }
   }
 
   onRenderViewUpdates(renderView: {width: number; height: number; devicePixelRatio}): void {

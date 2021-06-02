@@ -48,7 +48,7 @@
   }
   const frameInfo = (planetsFrame.frames as any)[frameType] as {frame: Frame};
   const frame = frameInfo.frame;
-  const scale = 0.04;
+  const scale = 0.03;
   const x = planetInfo.location.globalX - frame.w / 2;
   const y = planetInfo.location.globalY - frame.h / 2;
 </script>
