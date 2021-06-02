@@ -46,7 +46,8 @@
   }
   const frameInfo = (planetsFrame.frames as any)[frameType] as {frame: Frame};
   const frame = frameInfo.frame;
-  const scale = 0.03;
+  const multiplier = planetInfo.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
+  const scale = 0.025 * multiplier;
   const x = planetInfo.location.globalX - frame.w / 2;
   const y = planetInfo.location.globalY - frame.h / 2;
 </script>
