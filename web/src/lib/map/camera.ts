@@ -31,14 +31,14 @@ export class Camera extends BasicObjectStore<CameraState> {
 
   private unsubscribeFromRenderView: () => void;
 
-  private static zoomLevels = [1000, 500, 200, 100, 50, 20, 10, 5, 4, 3, 2];
+  // private static zoomLevels = [1000, 500, 200, 100, 50, 20, 10, 5, 4, 3, 2, 1, 0.5];
 
   constructor() {
     super();
-    this.zoomIndex = Camera.zoomLevels.indexOf(3);
-    if (this.zoomIndex === -1) {
-      this.zoomIndex = Camera.zoomLevels.length - 3;
-    }
+    // this.zoomIndex = Camera.zoomLevels.indexOf(3);
+    // if (this.zoomIndex === -1) {
+    //   this.zoomIndex = Camera.zoomLevels.length - 3;
+    // }
   }
 
   start(surface: HTMLElement, renderView: RenderViewReadable): void {
@@ -60,7 +60,8 @@ export class Camera extends BasicObjectStore<CameraState> {
         renderScale: 0,
         devicePixelRatio: 1,
       });
-      this._setXYZoom(0, 0, Camera.zoomLevels[this.zoomIndex]);
+      this._setXYZoom(0, 0, 5);
+      // this._setXYZoom(0, 0, Camera.zoomLevels[this.zoomIndex]);
     }
 
     this.unsubscribeFromRenderView = this.renderView.subscribe(this.onRenderViewUpdates.bind(this));
@@ -334,15 +335,42 @@ export class Camera extends BasicObjectStore<CameraState> {
 
     // console.log({offsetX, offsetY, x, y});
 
+    // const lastZoomIndex = this.zoomIndex;
+    // if (dir > 0) {
+    //   // console.log('zoom out');
+    //   this.zoomIndex = Math.min(this.zoomIndex + 1, Camera.zoomLevels.length - 1);
+    //   this.$store.zoom = Camera.zoomLevels[this.zoomIndex];
+    // } else {
+    //   this.zoomIndex = Math.max(0, this.zoomIndex - 1);
+    //   this.$store.zoom = Camera.zoomLevels[this.zoomIndex];
+    // }
+    // // this.$store.zoom = Math.min(Math.max(0.25, this.$store.zoom), 2);
+    // const scale = this.$store.zoom * this.$store.devicePixelRatio;
+    // const newWidth = this.$store.renderWidth / scale;
+    // const newHeight = this.$store.renderHeight / scale;
+    // if (newWidth < 9 || newHeight < 9 || newWidth > 600 || newHeight > 600) {
+    //   this.zoomIndex = lastZoomIndex;
+    //   this.$store.zoom = Camera.zoomLevels[this.zoomIndex];
+    //   return;
+    // }
+
     if (dir > 0) {
-      // console.log('zoom out');
-      this.zoomIndex = Math.min(this.zoomIndex + 1, Camera.zoomLevels.length - 1);
-      this.$store.zoom = Camera.zoomLevels[this.zoomIndex];
+      const newWitdh = this.$store.width + this.$store.width / 5; // + 20%
+      const newHeight = this.$store.height + this.$store.height / 5; // + 20%
+      if (newWitdh > 600 || newHeight > 600) {
+        return;
+      }
+      const scale = this.$store.renderWidth / newWitdh;
+      this.$store.zoom = scale / this.$store.devicePixelRatio;
     } else {
-      this.zoomIndex = Math.max(0, this.zoomIndex - 1);
-      this.$store.zoom = Camera.zoomLevels[this.zoomIndex];
+      const newWitdh = this.$store.width - this.$store.width / 5; // - 20%
+      const newHeight = this.$store.height - this.$store.height / 5; // - 20%
+      if (newWitdh < 9 || newHeight < 9) {
+        return;
+      }
+      const scale = this.$store.renderWidth / newWitdh;
+      this.$store.zoom = scale / this.$store.devicePixelRatio;
     }
-    // this.$store.zoom = Math.min(Math.max(0.25, this.$store.zoom), 2);
 
     const screenPos = this.worldToScreen(x, y);
     const delta = {

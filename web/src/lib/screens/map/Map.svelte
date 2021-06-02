@@ -5,7 +5,7 @@
   import {ElementRenderView} from '$lib/map/renderview';
   import CSSRenderer from './CSSRenderer.svelte';
 
-  let surface: HTMLElement; // TODO HTMLCanvasElement; ?
+  let surface: HTMLElement;
   let renderView: RenderView;
   let cancelRenderViewUpdate: number;
 
@@ -15,7 +15,7 @@
   }
 
   onMount(() => {
-    renderView = new ElementRenderView(surface); // TODO CanvasRenderView ?
+    renderView = new ElementRenderView(surface);
     camera.start(surface, renderView);
     cancelRenderViewUpdate = window.requestAnimationFrame(update);
   });
@@ -32,7 +32,6 @@
   <CSSRenderer />
 </div>
 
-<!-- <canvas id="surface" bind:this={canvas} /> -->
 <style>
   #surface {
     width: 100%;
@@ -48,7 +47,7 @@
     -ms-user-select: none; /* IE10+/Edge */
     user-select: none; /* Standard */
     overflow: hidden;
-    outline: 3px blue solid;
+    /* outline: 3px blue solid; */
   }
 
   /* #surface {

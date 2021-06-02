@@ -4,8 +4,6 @@
   import planetsFrame from '../../../assets/planets.json';
   import planetsImageURL from '../../../assets/planets.png';
   import type {PlanetInfo} from 'conquest-eth-common';
-  import {camera} from '$lib/map/camera';
-  // import {onDestroy, onMount} from 'svelte';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -60,16 +58,3 @@
   `}
   data={`${planetInfo.location.x}, ${planetInfo.location.y} : ${planetInfo.stats.subX}, ${planetInfo.stats.subY} -| ${planetInfo.location.globalX}, ${planetInfo.location.globalY}`}
 />
-
-<!-- <div class="text-red-600" style={`position: absolute; left: ${x}px; top: ${y}px;`}>a</div> -->
-
-<!-- <div
-  style={`position: absolute; left: ${x}px; top: ${y}px; background: url(${planetsImageURL}); background-position: ${
-    -frame.x / planetsFrame.meta.size.w
-  }% ${-frame.y / planetsFrame.meta.size.h}%; width: ${frame.w / 2}px; height: ${frame.h / 2}px;
-  background-size: 50% 50%
-  `}
-/> -->
-
-<!-- zoom:0.5; -moz-transform:scale(0.5); -moz-transform-origin: 0 0; -->
-<!-- background-size: ${Math.floor(frame.w / 1)}px ${Math.floor(frame.h / 1)}px -->
