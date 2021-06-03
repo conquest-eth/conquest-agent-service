@@ -59,11 +59,16 @@
     owner = '0x3333333333333333333333333333333333333333';
   }
 
+  $: renderScale = $camera ? $camera.renderScale : 1;
+
+  let adjustedRenderScale;
   let blockieScale = scale;
-  $: if (owner && $camera && $camera.renderScale < 10) {
-    blockieScale = scale * (10 / $camera.renderScale);
+  $: if (owner && renderScale < 10) {
+    blockieScale = scale * (10 / renderScale);
+    adjustedRenderScale = 10 / renderScale;
   } else {
     blockieScale = scale;
+    adjustedRenderScale = 1;
   }
 </script>
 
@@ -103,8 +108,8 @@
 
   {#if planetInfo.location.x % 3 === 0 && planetInfo.location.y % 3 === 0}
     <div
-      style={`position: absolute; transform: translate(${x}px,${y}px)  scale(${(scale / multiplier) * 6}, ${
-        (scale / multiplier) * 6
+      style={`position: absolute; transform: translate(${x}px,${y}px)  scale(${0.1 * adjustedRenderScale}, ${
+        0.1 * adjustedRenderScale
       }); width: ${frame.w}px;
   height: ${frame.h}px;`}
     >
@@ -112,7 +117,7 @@
         style={`
 width: ${frame.w}px;
 height: ${frame.h}px;
-border: ${2}px solid white;
+border: ${1 + (6 / renderScale) * 2}px solid white;
 border-left-color: red;
 border-radius: 50%;
 animation-name: rotate-s-loader;
