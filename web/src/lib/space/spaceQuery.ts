@@ -2,7 +2,7 @@ import type {Invalidator, Subscriber, Unsubscriber} from 'web3w/dist/esm/utils/i
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
 import {HookedQueryStore, QueryState, QueryStore} from '$lib/utils/stores/graphql';
 import type {EndPoint} from '$lib/utils/graphql/endpoint';
-import {chainTempo} from '$lib/blockchain/chainTempo';
+import {chainTempo, replayTempo} from '$lib/blockchain/chainTempo';
 import {writable, Writable} from 'svelte/store';
 
 export type PlanetQueryState = {
@@ -42,9 +42,8 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
   constructor(endpoint: EndPoint) {
     this.queryStore = new HookedQueryStore( // TODO full list
       endpoint,
-      // TODO remove block: {number:4830319}
-      `query($first: Int! $lastId: ID!) {
-  planets(first: $first where: {id_gt: $lastId} block: {number:4830319}) {
+      `query($first: Int! $lastId: ID! $blockNumber: Int) {
+  planets(first: $first where: {id_gt: $lastId} ?$blockNumber?block: {number:$blockNumber}?) {
     id
     owner {
       id
@@ -62,7 +61,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     maxY
   }
 }`,
-      chainTempo,
+      chainTempo, // replayTempo, //
       {
         list: {path: 'planets'},
       }

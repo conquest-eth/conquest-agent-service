@@ -47,7 +47,7 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
     this.setPartial({error: undefined});
   }
 
-  protected async fetch(): Promise<void> {
+  protected async fetch(extraVariables?: Record<string, unknown>): Promise<void> {
     console.info('fetching....');
     const first = 1000;
     let numEntries = first;
@@ -57,8 +57,21 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
     let list: any[];
     while (numEntries === first) {
       try {
-        const result = await this.endpoint.query<Record<string, unknown>, V>(this.query, {
-          variables: {first, lastId, ...this.options?.variables},
+        const variables = {first, lastId, ...this.options?.variables, ...extraVariables};
+        const querySplitted = this.query.split('?');
+        let query = '';
+        for (let i = 0; i < querySplitted.length; i++) {
+          const split = querySplitted[i];
+          if (split.startsWith('$')) {
+            if (!variables[split.substr(1)]) {
+              i++; // skip
+            }
+          } else {
+            query += split;
+          }
+        }
+        const result = await this.endpoint.query<Record<string, unknown>, V>(query, {
+          variables,
           context: {
             requestPolicy: 'cache-and-network', // required as cache-first will not try to get new data
           },
@@ -189,7 +202,9 @@ export class HookedQueryStore<T, V extends Record<string, unknown> = Record<stri
     this.listenerCount++;
     if (this.listenerCount === 1) {
       console.info(`start fetching`);
-      this.stopUpdates = this.hook.subscribe(() => this.fetch());
+      this.stopUpdates = this.hook.subscribe((chainInfo: ChainTempoInfo) =>
+        this.fetch({blockNumber: chainInfo.lastBlockNumber})
+      );
     }
     const unsubscribe = this.store.subscribe(run, invalidate);
     return () => {

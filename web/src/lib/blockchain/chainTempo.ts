@@ -92,3 +92,68 @@ class ChainTempo {
 }
 
 export const chainTempo = new ChainTempo(blockTime * 6);
+
+class ReplayTempo {
+  private blockListeners: TempoListener[] = [];
+  private timeout: NodeJS.Timeout;
+  private startTime = 0;
+  private triggerTimeout: NodeJS.Timeout;
+  private chainInfo: ChainTempoInfo = {lastBlockNumber: undefined, stale: true};
+
+  constructor(private options: {start: number; end: number; period: number; numBlock: number}) {
+    this.chainInfo.lastBlockNumber = options.start;
+    this.chainInfo.stale = false;
+  }
+
+  subscribe(func: TempoListener): () => void {
+    func(this.chainInfo);
+    this.blockListeners.push(func);
+    return removeFrom.bind(null, this.blockListeners, func);
+  }
+
+  check() {
+    const now = Date.now() / 1000;
+    const numPeriod = Math.floor((now - this.startTime) / this.options.period);
+    const numBlocks = numPeriod * this.options.numBlock;
+    this.onBlock(Math.min(this.options.start + numBlocks, this.options.end));
+    this.timeout = setTimeout(this.check.bind(this), this.options.period * 1000);
+  }
+
+  start() {
+    this.startTime = Date.now() / 1000;
+    if (!this.timeout) {
+      this.timeout = setTimeout(this.check.bind(this), this.options.period * 1000);
+    }
+  }
+  private onBlock(blockNumber?: number) {
+    if (blockNumber) {
+      this.chainInfo.lastBlockNumber = blockNumber;
+      this.chainInfo.stale = false;
+    } else {
+      this.chainInfo.stale = true;
+    }
+    this.triggerListeners();
+  }
+
+  private triggerListeners() {
+    if (this.triggerTimeout) {
+      clearTimeout(this.triggerTimeout);
+    }
+    this.triggerTimeout = setTimeout(this.callListeners.bind(this), 0);
+  }
+
+  private callListeners() {
+    console.info(`onBlock ${this.chainInfo.lastBlockNumber}`);
+
+    for (const listener of this.blockListeners) {
+      // TODO delay them ?
+      listener(this.chainInfo); // TODO wait for each one ?
+    }
+    // TODO wait for them (if delayed) before triggering the next update?
+  }
+}
+
+// 4698089
+// 4714378
+export const replayTempo = new ReplayTempo({start: 4714000, end: 4830319, period: 2, numBlock: 20});
+replayTempo.start();
