@@ -78,6 +78,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
   protected stop(): void {
     if (this.unsubscribeFromQuery) {
       this.unsubscribeFromQuery();
+      this.unsubscribeFromQuery = undefined;
     }
   }
 
