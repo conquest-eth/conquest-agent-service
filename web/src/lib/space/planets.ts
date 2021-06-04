@@ -1,26 +1,27 @@
-import {locationToXY} from 'conquest-eth-common';
-import type {Planet} from 'conquest-eth-common/types';
+import type {PlanetInfo, PlanetState} from 'conquest-eth-common';
 import {Readable, Writable, writable} from 'svelte/store';
-// import {space} from '$lib/space/spaceInfo';
+import {planetStates} from './planetStates';
 
-const stores: Record<string, Writable<Planet>> = {};
-export function planetAt(location: string): Readable<Planet> {
-  if (!location) {
-    throw new Error(`invalid location ${location}`);
-  }
-  let store: Writable<Planet> | undefined = stores[location];
-  if (!store) {
-    const xy = locationToXY(location);
-    store = writable(space.ensurePlanetAt(xy.x, xy.y), (set) => {
-      stores[location] = store as Writable<Planet>;
-      const listenerIndex = space.onPlannetUpdates(location, (planet: Planet) => {
-        set(planet);
+class PLanetStateStores {
+  private stores: Record<string, Writable<PlanetState>> = {};
+
+  planetStateFor(planetInfo: PlanetInfo): Readable<PlanetState> {
+    const id = planetInfo.location.id;
+    let store: Writable<PlanetState> | undefined = this.stores[id];
+    if (!store) {
+      store = writable(undefined, (set) => {
+        this.stores[id] = store as Writable<PlanetState>;
+        const listenerIndex = planetStates.onPlannetUpdates(planetInfo, (planet: PlanetState) => {
+          set(planet);
+        });
+        return () => {
+          planetStates.switchOffPlanetUpdates(listenerIndex);
+          // delete this.stores[id]; // TODO ?
+        };
       });
-      return () => {
-        space.switchOffPlanetUpdates(listenerIndex);
-        delete stores[location];
-      };
-    });
+    }
+    return store;
   }
-  return store;
 }
+
+export const planets = new PLanetStateStores();

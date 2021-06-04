@@ -1,6 +1,6 @@
 import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {blockTime, finality, logPeriod, lowFrequencyFetch} from '$lib/config';
-import {SUBGRAPH_ENDPOINT} from '$lib/graphql/graphql_endpoints';
+import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
 
 export type OwnerEvent = {
   transactionID: string;

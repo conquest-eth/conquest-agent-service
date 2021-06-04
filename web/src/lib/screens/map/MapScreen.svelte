@@ -1,37 +1,37 @@
 <script lang="ts">
   import Map from './Map.svelte';
-  import ConnectPanel from '$lib/components/account/ConnectPanel.svelte';
+  // import ConnectPanel from '$lib/components/account/ConnectPanel.svelte';
 
-  import claimFlow from '$lib/flows/claim';
-  import ClaimFlow from '$lib/flows/ClaimFlow.svelte';
-  import sendFlow from '$lib/flows/send';
-  import SendFlow from '$lib/flows/SendFlow.svelte';
-  import simulateFlow from '$lib/flows/simulateFlow';
-  import SimulateFlow from '$lib/flows/SimulateFlow.svelte';
-  import exitFlow from '$lib/flows/exit';
-  import ExitFlow from '$lib/flows/ExitFlow.svelte';
-  import resolveFlow from '$lib/flows/resolve';
-  import ResolveFlow from '$lib/flows/ResolveFlow.svelte';
-  import FleetsToResolve from '$lib/components/fleets/FleetsToResolve.svelte';
-  import messageFlow from '$lib/flows/message';
-  import MessageFlow from '$lib/flows/MessageFlow.svelte';
-  import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
-  import ShowPlanetDeparturesFlow from '$lib/flows/ShowPlanetDeparturesFlow.svelte';
-  import Search from '$lib/components/utils/Search.svelte';
-  import PlanetInfoPanel from '$lib/components/planets/PlanetInfoPanel.svelte';
-  import privateAccount from '$lib/account/privateAccount';
-  import Banner from '$lib/components/screen/Banner.svelte';
-  import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
-  import {timeToText} from '$lib/utils';
-  import {spaceInfo} from '$lib/space/spaceInfo';
-  import {TutorialSteps} from '$lib/account/constants';
-  import selection from '$lib/map/selection';
-  import {camera} from '$lib/map/camera';
+  // import claimFlow from '$lib/flows/claim';
+  // import ClaimFlow from '$lib/flows/ClaimFlow.svelte';
+  // import sendFlow from '$lib/flows/send';
+  // import SendFlow from '$lib/flows/SendFlow.svelte';
+  // import simulateFlow from '$lib/flows/simulateFlow';
+  // import SimulateFlow from '$lib/flows/SimulateFlow.svelte';
+  // import exitFlow from '$lib/flows/exit';
+  // import ExitFlow from '$lib/flows/ExitFlow.svelte';
+  // import resolveFlow from '$lib/flows/resolve';
+  // import ResolveFlow from '$lib/flows/ResolveFlow.svelte';
+  // import FleetsToResolve from '$lib/components/fleets/FleetsToResolve.svelte';
+  // import messageFlow from '$lib/flows/message';
+  // import MessageFlow from '$lib/flows/MessageFlow.svelte';
+  // import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
+  // import ShowPlanetDeparturesFlow from '$lib/flows/ShowPlanetDeparturesFlow.svelte';
+  // import Search from '$lib/components/utils/Search.svelte';
+  // import PlanetInfoPanel from '$lib/components/planets/PlanetInfoPanel.svelte';
+  // import privateAccount from '$lib/account/privateAccount';
+  // import Banner from '$lib/components/screen/Banner.svelte';
+  // import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
+  // import {timeToText} from '$lib/utils';
+  // import {spaceInfo} from '$lib/space/spaceInfo';
+  // import {TutorialSteps} from '$lib/account/constants';
+  // import selection from '$lib/map/selection';
+  // import {camera} from '$lib/map/camera';
 </script>
 
 <Map />
 
-<ConnectPanel />
+<!-- <ConnectPanel /> -->
 
 <!-- <div class="opacity-40 bg-green-300 text-red-600 top-0 mx-auto z-50 absolute">
   CAMERA

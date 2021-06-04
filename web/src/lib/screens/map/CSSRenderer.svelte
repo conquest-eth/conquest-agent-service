@@ -1,8 +1,9 @@
 <script lang="ts">
-  import {spaceInfo} from '$lib/space/spaceInfo';
+  import {spaceView} from '$lib/space/spaceInfo';
   import PlanetElement from './PlanetElement.svelte';
   import {camera} from '$lib/map/camera';
   import spaceBackground from '../../../assets/Red3.png';
+  import {base} from '$app/paths';
 
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
 </script>
@@ -42,7 +43,7 @@ width:100%; height: 100%;
   top: -25%;
   left: -25%;
   opacity: ${$camera ? Math.max(0.2, Math.min(0.4, 1 - $camera.renderScale / 10)) : 0};
-  background-image: url(${spaceBackground});
+  background-image: url(${base}${spaceBackground});
   background-position: ${($camera ? $camera.renderX * 1.5 : 0) - 2}px ${($camera ? $camera.renderY * 1.5 : 0) - 2}px;
   `}
   />
@@ -54,7 +55,7 @@ width:100%; height: 100%;
     width:100%; height: 100%;
     `}
   >
-    {#each $spaceInfo as planetInfo (planetInfo.location.id)}
+    {#each $spaceView as planetInfo (planetInfo.location.id)}
       <PlanetElement {planetInfo} />
     {/each}
   </div>

@@ -3,7 +3,7 @@
   import NavButton from '$lib/components/navigation/NavButton.svelte';
 </script>
 
-<style>
+<!-- <style>
   /* purgecss start ignore */
   /* Markdown Styles */
   /* Global */
@@ -102,7 +102,7 @@
     white-space: pre-line;
   }
   /* purgecss end ignore */
-</style>
+</style> -->
 
 <div class="w-full h-full bg-black">
   <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>

@@ -6,13 +6,20 @@ import {notifications} from '../web/notifications';
 import {finality, fallbackProviderOrUrl, chainId} from '$lib/config';
 import {isCorrected, correctTime} from '../time';
 import {base} from '$app/paths';
+import {chainTempo} from '$lib/blockchain/chainTempo';
 
-const walletStores = WalletStores({
+// weird bug in vite build?
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const walletStores = ((WalletStores as any).default || WalletStores)({
+  // const walletStores = WalletStores({
   chainConfigs: contractsInfos,
   builtin: {autoProbe: true},
   transactions: {
     autoDelete: true,
     finality,
+  },
+  flow: {
+    autoUnlock: true,
   },
   autoSelectPrevious: true,
   localStoragePrefix: base.startsWith('/ipfs/') || base.startsWith('/ipns/') ? base.slice(6) : undefined, // ensure local storage is not conflicting across web3w-based apps on ipfs gateways
@@ -71,6 +78,7 @@ transactions.subscribe(($transactions) => {
 });
 
 chain.subscribe(async (v) => {
+  chainTempo.startOrUpdateProvider(wallet.provider);
   if (!isCorrected()) {
     if (v.state === 'Connected' || v.state === 'Ready') {
       const latestBlock = await wallet.provider?.getBlock('latest');

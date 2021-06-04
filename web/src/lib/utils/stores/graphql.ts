@@ -14,6 +14,13 @@ export type QueryState<T> = {
   error?: string;
 };
 
+export type ListOptions =
+  | {
+      path?: string;
+      getLastId?: (entries: unknown[]) => string;
+    }
+  | boolean;
+
 export type QueryStore<T> = Readable<QueryState<T>> & {
   acknowledgeError: () => void;
 };
@@ -28,6 +35,7 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
     private options?: {
       variables?: V;
       path?: string;
+      list?: ListOptions;
     }
   ) {
     super({
@@ -41,26 +49,66 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
 
   protected async fetch(): Promise<void> {
     console.info('fetching....');
-    try {
-      const result = await this.endpoint.query<Record<string, unknown>, V>({
-        query: this.query,
-        variables: this.options?.variables,
-        context: {
-          requestPolicy: 'cache-and-network', // required as cache-first will not try to get new data
-        },
-      });
+    const first = 1000;
+    let numEntries = first;
+    let lastId = '0x0';
+    let data: T;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let list: any[];
+    while (numEntries === first) {
+      try {
+        const result = await this.endpoint.query<Record<string, unknown>, V>(this.query, {
+          variables: {first, lastId, ...this.options?.variables},
+          context: {
+            requestPolicy: 'cache-and-network', // required as cache-first will not try to get new data
+          },
+        });
 
-      if (!result.data) {
-        this.setPartial({error: `cannot fetch from thegraph node`});
-        throw new Error(`cannot fetch from thegraph node`);
+        if (!result.data) {
+          this.setPartial({error: `cannot fetch from thegraph node`});
+          throw new Error(`cannot fetch from thegraph node`);
+        }
+
+        const freshData = (this.options?.path ? result.data[this.options.path] : result.data) as T;
+        if (!data) {
+          data = freshData;
+        }
+
+        if (this.options?.list) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let freshList = freshData as unknown as any[];
+          if (typeof this.options.list !== 'boolean' && this.options.list.path) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            freshList = freshData[this.options.list.path] as any[];
+          }
+
+          numEntries = freshList.length;
+          if (numEntries > 0) {
+            const newLastId =
+              typeof this.options.list !== 'boolean' && this.options.list.getLastId !== undefined
+                ? this.options.list.getLastId(freshList)
+                : freshList[numEntries - 1].id;
+            if (lastId === newLastId) {
+              console.log('same query, stop');
+              break;
+            }
+            lastId = newLastId;
+          }
+
+          if (!list) {
+            list = freshList;
+          } else {
+            list.push(...freshList);
+          }
+        } else {
+          numEntries = 0; // stop the loop
+        }
+      } catch (e) {
+        numEntries = 0;
+        console.error(e);
       }
-
-      const data = (this.options?.path ? result.data[this.options.path] : result.data) as T;
-
-      this.setPartial({data, step: 'READY'});
-    } catch (e) {
-      console.error(e);
     }
+    this.setPartial({data, step: 'READY'});
   }
 }
 
@@ -124,6 +172,7 @@ export class HookedQueryStore<T, V extends Record<string, unknown> = Record<stri
     options?: {
       variables?: V;
       path?: string;
+      list?: ListOptions;
     }
   ) {
     super(endpoint, query, options);

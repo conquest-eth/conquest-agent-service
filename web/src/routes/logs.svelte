@@ -1,9 +1,8 @@
 <script lang="ts">
   import {base} from '$app/paths';
-  import {spaceInfo} from '$lib/space/spaceInfo';
 
   import Blockie from '$lib/components/account/Blockie.svelte';
-  import Coord from '$lib/components/Coord.svelte';
+  import Coord from '$lib/components/utils/Coord.svelte';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
 
@@ -11,7 +10,6 @@
   import {now, time} from '$lib/time';
   import {timeToText} from '$lib/utils';
   import {BigNumber} from '@ethersproject/bignumber';
-  import {locationToXY} from 'conquest-eth-common';
   import {onMount} from 'svelte';
   onMount(() => {
     globalLogs.start();

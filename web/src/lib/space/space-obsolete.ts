@@ -1,19 +1,31 @@
 import {contractsInfos} from '$lib/blockchain/contractsInfos';
 import {camera, Camera, CameraState} from '$lib/map/camera';
-import {PlanetInfo, SpaceInfo} from 'conquest-eth-common';
+import {Planet, PlanetContractState, PlanetInfo, SpaceInfo} from 'conquest-eth-common';
 import {Writable, writable} from 'svelte/store';
 
-export class SpaceViewStore {
-  private readonly spaceInfo: SpaceInfo;
+export type PlanetWithContractState = PlanetInfo & {
+  state?: PlanetContractState;
+};
+
+type SpaceState = {
+  planetsOnFocus: PlanetWithContractState[];
+  // ownFleets: Fleet[];
+};
+
+export class SpaceStore {
+  private spaceInfo: SpaceInfo;
   private camera: Camera;
-  public readonly planetsOnFocus: PlanetInfo[] = [];
+  private state: SpaceState;
   private lastFocus: {x0: number; y0: number; x1: number; y1: number} = {x0: 0, y0: 0, x1: 0, y1: 0};
-  private store: Writable<PlanetInfo[]>;
+  private store: Writable<SpaceState>;
 
   constructor(spaceInfo: SpaceInfo, camera: Camera) {
     this.camera = camera;
     this.spaceInfo = spaceInfo;
-    this.store = writable(this.planetsOnFocus, this.start.bind(this));
+    this.state = {
+      planetsOnFocus: [],
+    };
+    this.store = writable(this.state, this.start.bind(this));
   }
 
   start(): () => void {
@@ -27,7 +39,7 @@ export class SpaceViewStore {
     this.updateFocus(view);
   }
 
-  subscribe(run: (value: PlanetInfo[]) => void, invalidate?: (value?: PlanetInfo[]) => void): () => void {
+  subscribe(run: (value: SpaceState) => void, invalidate?: (value?: SpaceState) => void): () => void {
     return this.store.subscribe(run, invalidate);
   }
 
@@ -39,16 +51,16 @@ export class SpaceViewStore {
     this.smart_focus(x0, y0, x1, y1);
   }
 
-  private smart_focus(x0: number, y0: number, x1: number, y1: number): PlanetInfo[] {
+  private smart_focus(x0: number, y0: number, x1: number, y1: number): void {
     // console.log({x0, x1, y0, y1});
-    let numPlanetsLeft = this.planetsOnFocus.length;
+    let numPlanetsLeft = this.state.planetsOnFocus.length;
     if (this.lastFocus.x0 !== x0 || this.lastFocus.x1 !== x1 || this.lastFocus.y0 !== y0 || this.lastFocus.y1 !== y1) {
       for (let x = x0; x <= x1; x++) {
         for (let y = y0; y <= y1; y++) {
           if (x < this.lastFocus.x0 || x > this.lastFocus.x1 || y < this.lastFocus.y0 || y > this.lastFocus.y1) {
-            const planet = this.spaceInfo.getPlanetInfo(x, y);
+            const planet = this.spaceInfo.getPlanetInfo(x, y) as PlanetWithContractState;
             if (planet) {
-              this.planetsOnFocus.push(planet);
+              this.state.planetsOnFocus.push(planet);
             }
           }
         }
@@ -59,21 +71,18 @@ export class SpaceViewStore {
       this.lastFocus.y1 = y1;
       // this.store.set(this.planetsOnFocus);
       for (let i = 0; i < numPlanetsLeft; i++) {
-        const px = this.planetsOnFocus[i].location.x;
-        const py = this.planetsOnFocus[i].location.y;
+        const px = this.state.planetsOnFocus[i].location.x;
+        const py = this.state.planetsOnFocus[i].location.y;
         if (px < x0 || px > x1 || py < y0 || py > y1) {
-          this.planetsOnFocus.splice(i, 1);
+          this.state.planetsOnFocus.splice(i, 1);
           i--;
           numPlanetsLeft--;
         }
       }
-      this.planetsOnFocus.sort((a, b) => a.location.y - b.location.y);
-      this.store.set(this.planetsOnFocus);
+      this.state.planetsOnFocus.sort((a, b) => a.location.y - b.location.y);
+      this.store.set(this.state);
     }
-
-    return this.planetsOnFocus;
   }
 }
 
-export const spaceInfo = new SpaceInfo(contractsInfos.contracts.OuterSpace.linkedData);
-export const spaceView = new SpaceViewStore(spaceInfo, camera);
+export const space = new SpaceStore(new SpaceInfo(contractsInfos.contracts.OuterSpace.linkedData), camera);

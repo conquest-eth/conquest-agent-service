@@ -6,6 +6,8 @@
   import type {PlanetInfo} from 'conquest-eth-common';
   import SharedBlockie from './SharedBlockie.svelte';
   import {camera} from '$lib/map/camera';
+  import {planets} from '$lib/space/planets';
+  import {base} from '$app/paths';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -39,6 +41,8 @@
     'Terran.png',
   ];
 
+  const planetState = planets.planetStateFor(planetInfo);
+
   let frameType: string;
   if (!frameType) {
     frameType = planetTypesToFrame[planetInfo.type % planetTypesToFrame.length];
@@ -53,29 +57,32 @@
   const x = planetInfo.location.globalX - frame.w / 2;
   const y = planetInfo.location.globalY - frame.h / 2;
 
-  let owner: string | undefined = undefined;
+  $: owner = $planetState?.owner;
 
-  if (x > -20 * 4 && x < 20 * 4 && y > -20 * 4 && y < 20 * 4) {
-    owner = '0x3333333333333333333333333333333333333333';
-  }
+  // if (x > -20 * 4 && x < 20 * 4 && y > -20 * 4 && y < 20 * 4) {
+  //   owner = '0x3333333333333333333333333333333333333333';
+  // }
 
   $: renderScale = $camera ? $camera.renderScale : 1;
 
   let adjustedRenderScale;
   let blockieScale = scale;
+  let zoomIn = true;
   $: if (owner && renderScale < 10) {
     blockieScale = scale * (10 / renderScale);
+    zoomIn = false;
     adjustedRenderScale = 10 / renderScale;
   } else {
+    zoomIn = true;
     blockieScale = scale;
     adjustedRenderScale = 1;
   }
 </script>
 
 <div>
-  {#if blockieScale <= scale}
+  {#if zoomIn}
     <div
-      style={`position: absolute; transform: translate(${x}px,${y}px) scale(${scale}, ${scale}); background: url(${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
+      style={`position: absolute; transform: translate(${x}px,${y}px) scale(${scale}, ${scale}); background: url(${base}${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
         frame.w
       }px; height: ${frame.h}px;
   `}
@@ -106,7 +113,7 @@
     />
   </div> -->
 
-  {#if planetInfo.location.x % 3 === 0 && planetInfo.location.y % 3 === 0}
+  <!-- {#if planetInfo.location.x % 3 === 0 && planetInfo.location.y % 3 === 0}
     <div
       style={`position: absolute; transform: translate(${x}px,${y}px)  scale(${0.1 * adjustedRenderScale}, ${
         0.1 * adjustedRenderScale
@@ -127,7 +134,7 @@ animation-timing-function: linear;
 `}
       />
     </div>
-  {/if}
+  {/if} -->
 
   {#if owner}
     {#if blockieScale <= scale}
