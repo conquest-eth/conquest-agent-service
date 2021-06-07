@@ -3,14 +3,14 @@
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {wallet} from '$lib/blockchain/wallet';
   import {playTokenAccount} from '$lib/account/playToken';
-  import privateAccount from '$lib/account/privateAccount';
+  import {privateWallet} from '$lib/account/privateWallet';
   import Blockie from '$lib/components/account/Blockie.svelte';
   import Help from '$lib/components/utils/Help.svelte';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import {url} from '$lib/utils/url';
 
   function connect() {
-    privateAccount.login();
+    privateWallet.login();
   }
   function disconnect() {
     wallet.disconnect();
@@ -21,7 +21,7 @@
 <svelte:window on:click={() => (menu = false)} />
 
 {#if $wallet.address}
-  {#if !($privateAccount.step === 'READY')}
+  {#if !($privateWallet.step === 'READY')}
     <div class="absolute right-0 top-16 bg-gray-900 bg-opacity-80 z-10">
       <PanelButton class="m-1" label="Connect" on:click={connect}>
         Sign In

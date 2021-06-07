@@ -6,7 +6,7 @@
   import Modal from '$lib/components/generic/Modal.svelte';
   import {base} from '$app/paths';
   import {wallet, builtin, chain, transactions, balance, flow, fallback} from '$lib/blockchain/wallet';
-  import privateAccount from '$lib/account/privateAccount';
+  import {privateWallet} from '$lib/account/privateWallet';
 
   $: executionError = $flow.executionError as any;
 
@@ -40,18 +40,33 @@
     });
 
   let storeSignatureLocally = false;
-  let syncRemotely = true;
+
+  let setByUser: string | undefined = undefined;
+  let syncRemotely: boolean = true;
+
+  $: {
+    console.log({syncRemotely, syncEnabled: $privateWallet.syncEnabled, setByUser});
+    if (setByUser !== $wallet.address) {
+      syncRemotely = $privateWallet.syncEnabled;
+    }
+  }
+
+  function onSyncCheckBoxChanged(e) {
+    setByUser = $wallet.address;
+    syncRemotely = e.target.checked;
+  }
 
   let onSharedStorage = !!(base && (base.startsWith('/ipfs/') || base.startsWith('/ipns/')));
 </script>
 
 <slot />
 
-{#if $chain.state === 'Idle' && !$chain.connecting && $fallback.state === 'Idle' && !$fallback.connecting}
+<!-- {#if $chain.state === 'Idle' && !$chain.connecting && $fallback.state === 'Idle' && !$fallback.connecting}
   <div class="w-full flex items-center justify-center fixed top-0 pointer-events-none" style="z-index: 5;">
     <p class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">Please Connect.</p>
   </div>
-{:else if $chain.state === 'Idle' && !$chain.connecting && $fallback.error}
+{:else if $chain.state === 'Idle' && !$chain.connecting && $fallback.error} -->
+{#if $chain.state === 'Idle' && !$chain.connecting && $fallback.error}
   <div class="w-full flex items-center justify-center fixed top-0 pointer-events-none" style="z-index: 5;">
     <p class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
       Network Issues, Please Connect.
@@ -67,7 +82,7 @@
 {/if}
 
 {#if $flow.inProgress}
-  <Modal {title} cancelable={!$wallet.connecting} on:close={() => privateAccount.cancel()} closeButton={false}>
+  <Modal {title} cancelable={!$wallet.connecting} on:close={() => privateWallet.cancel()} closeButton={false}>
     {#if $wallet.state === 'Idle'}
       {#if $wallet.loadingModule}
         Loading module:
@@ -136,7 +151,7 @@
       {:else if $wallet.pendingUserConfirmation[0] === 'signature'}
         Please accept signature...
       {:else}Please accept request...{/if}
-    {:else if $privateAccount.step === 'SIGNATURE_REQUIRED'}
+    {:else if $privateWallet.step === 'SIGNATURE_REQUIRED'}
       <div class="text-center">
         <p>
           conquest.eth require your signature to operate. Do not sign this message outside of conquest.eth or other
@@ -158,20 +173,14 @@
             {:else}<span class="ml-2">Do not ask again. (trust computer and {window.location.host})</span>{/if}
           </label>
           <label class="flex items-center">
-            <input type="checkbox" class="form-checkbox" bind:checked={syncRemotely} />
+            <input type="checkbox" class="form-checkbox" checked={syncRemotely} on:change={onSyncCheckBoxChanged} />
             <span class="ml-2">enable encrypted sync across devices</span>
           </label>
         </div>
-        <Button
-          label="sign"
-          class="mt-5"
-          on:click={() => privateAccount.confirm({storeSignatureLocally, syncRemotely})}
-        >
+        <Button label="sign" class="mt-5" on:click={() => privateWallet.confirm({storeSignatureLocally, syncRemotely})}>
           sign
         </Button>
       </div>
-    {:else if $privateAccount.step === 'LOADING'}
-      Loading Data...
     {:else if executionError}
       <div class="text-center">
         <p>
@@ -181,6 +190,16 @@
         </p>
         <Button class="mt-4" label="Retry" on:click={() => flow.retry()}>Retry</Button>
       </div>
-    {:else}Error: let us know {$privateAccount.step}{/if}
+    {:else if $privateWallet.step === 'READY'}
+      <div class="text-center">
+        <p>Connection Aborted</p>
+        <Button class="mt-4" label="Retry" on:click={() => privateWallet.cancel()}>OK</Button>
+      </div>
+    {:else}
+      <div class="text-center">
+        <p>Flow aborted</p>
+        <Button class="mt-4" label="Retry" on:click={() => privateWallet.cancel()}>OK</Button>
+      </div>
+    {/if}
   </Modal>
 {/if}

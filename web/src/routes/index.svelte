@@ -14,10 +14,10 @@
   });
 </script>
 
-<!-- <WalletAccess> -->
-<!-- <ClaimTokenScreen /> -->
-<MapScreen />
-<!-- </WalletAccess> -->
+<WalletAccess>
+  <ClaimTokenScreen />
+  <MapScreen />
+</WalletAccess>
 
 {#if $logo.stage === 1}
   <div class="fixed z-50 inset-0 overflow-y-auto bg-black" out:fade on:click={() => logo.nextStage()}>

@@ -1,4 +1,5 @@
 import {getDefaultProvider, Provider} from '@ethersproject/providers';
+import {nameForChainId} from './utils/networks';
 import {getParamsFromLocation, getHashParamsFromLocation} from './utils/web';
 
 export const hashParams = getHashParamsFromLocation();
@@ -28,23 +29,7 @@ if (chainId === '1337' || chainId === '31337') {
   blockTime = 5;
 }
 
-const chainNames: {[chainId: string]: string} = {
-  '1': 'mainnet',
-  '3': 'ropsten',
-  '4': 'rinkeby',
-  '5': 'goerli',
-  '42': 'kovan',
-  '1337': 'localhost chain',
-  '31337': 'localhost chain',
-};
-
-const chainName = (() => {
-  const name = chainNames[chainId];
-  if (name) {
-    return name;
-  }
-  return `chain with id ${chainId}`;
-})();
+const chainName = nameForChainId(chainId);
 
 if (!fallbackProviderOrUrl) {
   const url = import.meta.env.VITE_ETH_NODE_URI as string; // TODO use query string to specify it // TODO settings

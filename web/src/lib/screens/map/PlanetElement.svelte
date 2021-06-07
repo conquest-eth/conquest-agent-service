@@ -8,6 +8,7 @@
   import {camera} from '$lib/map/camera';
   import {planets} from '$lib/space/planets';
   import {base} from '$app/paths';
+  import {wallet} from '$lib/blockchain/wallet';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -77,6 +78,8 @@
     blockieScale = scale;
     adjustedRenderScale = 1;
   }
+
+  $: playerIsOwner = owner && owner.toLowerCase() === $wallet.address?.toLowerCase();
 </script>
 
 <div>
@@ -157,7 +160,7 @@ animation-timing-function: linear;
           translate(${x + 0.6 * multiplier}px,${y - 1.2 * multiplier}px)
           scale(${blockieScale}, ${blockieScale});
         width: ${frame.w}px; height: ${frame.h}px;
-        outline: solid ${0.25 / scale}px white;
+        outline: solid ${0.25 / scale}px ${playerIsOwner ? 'lime' : 'white'};
 `}
         address={owner}
       />
@@ -170,7 +173,7 @@ animation-timing-function: linear;
           translate(${x + 0 * multiplier}px,${y - 0 * multiplier}px)
           scale(${blockieScale}, ${blockieScale});
         width: ${frame.w}px; height: ${frame.h}px;
-        outline: solid ${0.25 / scale}px white;
+        outline: solid ${0.25 / scale}px ${playerIsOwner ? 'lime' : 'white'};
 `}
         address={owner}
       />

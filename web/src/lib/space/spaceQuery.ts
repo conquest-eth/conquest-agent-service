@@ -2,7 +2,7 @@ import type {Invalidator, Subscriber, Unsubscriber} from 'web3w/dist/esm/utils/i
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
 import {HookedQueryStore, QueryState, QueryStore} from '$lib/utils/stores/graphql';
 import type {EndPoint} from '$lib/utils/graphql/endpoint';
-import {chainTempo, replayTempo} from '$lib/blockchain/chainTempo';
+import {chainTempo} from '$lib/blockchain/chainTempo';
 import {writable, Writable} from 'svelte/store';
 
 export type PlanetQueryState = {

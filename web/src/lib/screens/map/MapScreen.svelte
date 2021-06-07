@@ -1,6 +1,6 @@
 <script lang="ts">
   import Map from './Map.svelte';
-  // import ConnectPanel from '$lib/components/account/ConnectPanel.svelte';
+  import ConnectPanel from '$lib/components/account/ConnectPanel.svelte';
 
   // import claimFlow from '$lib/flows/claim';
   // import ClaimFlow from '$lib/flows/ClaimFlow.svelte';
@@ -31,7 +31,7 @@
 
 <Map />
 
-<!-- <ConnectPanel /> -->
+<ConnectPanel />
 
 <!-- <div class="opacity-40 bg-green-300 text-red-600 top-0 mx-auto z-50 absolute">
   CAMERA
