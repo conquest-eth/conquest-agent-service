@@ -91,8 +91,6 @@ class ChainTempo {
   }
 }
 
-export const chainTempo = new ChainTempo(blockTime * 6);
-
 class ReplayTempo {
   private blockListeners: TempoListener[] = [];
   private timeout: NodeJS.Timeout;
@@ -153,7 +151,9 @@ class ReplayTempo {
   }
 }
 
+export const chainTempo = new ChainTempo(blockTime * 6);
+
 // 4698089
 // 4714378
-export const replayTempo = new ReplayTempo({start: 4714000, end: 4830319, period: 2, numBlock: 20});
-replayTempo.start();
+// export const replayTempo = new ReplayTempo({start: 4714000, end: 4830319, period: 2, numBlock: 20});
+// replayTempo.start();

@@ -138,26 +138,39 @@ animation-timing-function: linear;
 
   {#if owner}
     {#if blockieScale <= scale}
-      <div
-        style={`z-index: 1; position: absolute; transform: translate(${x + (0.6 - 0.1) * multiplier}px,${
-          y - 0.9 * multiplier
-        }px) scale(${blockieScale}, ${blockieScale * 1.5});
-    border-left: 4px solid white;
-    width: ${frame.w}px; height: ${frame.h}px;
+      <!-- <div
+        style={`
+        z-index: 1;
+        position: absolute;
+        transform:
+          translate(${x + (0.6 - 0.1) * multiplier}px,${y - 0.9 * multiplier}px)
+          scale(${blockieScale}, ${blockieScale * 1.5});
+        border-left: ${0.25 / scale}px solid white;
+        width: ${frame.w}px; height: ${frame.h}px;
   `}
-      />
+      /> -->
       <SharedBlockie
-        style={`z-index: 1; position: absolute; transform: translate(${x + 0.6 * multiplier}px,${
-          y - 1.2 * multiplier
-        }px) scale(${blockieScale}, ${blockieScale}); width: ${frame.w}px; height: ${frame.h}px;
+        style={`
+        z-index: 1;
+        position: absolute;
+        transform:
+          translate(${x + 0.6 * multiplier}px,${y - 1.2 * multiplier}px)
+          scale(${blockieScale}, ${blockieScale});
+        width: ${frame.w}px; height: ${frame.h}px;
+        outline: solid ${0.25 / scale}px white;
 `}
         address={owner}
       />
     {:else}
       <SharedBlockie
-        style={`z-index: 1; position: absolute; transform: translate(${x + 0 * multiplier}px,${
-          y - 0 * multiplier
-        }px) scale(${blockieScale}, ${blockieScale}); width: ${frame.w}px; height: ${frame.h}px;
+        style={`
+        z-index: 1;
+        position: absolute;
+        transform:
+          translate(${x + 0 * multiplier}px,${y - 0 * multiplier}px)
+          scale(${blockieScale}, ${blockieScale});
+        width: ${frame.w}px; height: ${frame.h}px;
+        outline: solid ${0.25 / scale}px white;
 `}
         address={owner}
       />

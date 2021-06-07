@@ -4,6 +4,7 @@
   import type {RenderView} from '$lib/map/renderview';
   import {ElementRenderView} from '$lib/map/renderview';
   import CSSRenderer from './CSSRenderer.svelte';
+  import {planetStates} from '$lib/space/planetStates';
 
   let surface: HTMLElement;
   let renderView: RenderView;
@@ -18,6 +19,7 @@
     renderView = new ElementRenderView(surface);
     camera.start(surface, renderView);
     cancelRenderViewUpdate = window.requestAnimationFrame(update);
+    planetStates.start(); // this trigger the queries (but not in the dev server)
   });
 
   onDestroy(() => {

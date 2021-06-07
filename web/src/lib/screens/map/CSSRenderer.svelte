@@ -10,7 +10,7 @@
 
 <div
   style={`
-  pointer-events: none;
+  /*pointer-events: none;*/
 position: absolute;
 transform: scale(${$camera ? $camera.renderScale : 1},${$camera ? $camera.renderScale : 1});
 width:100%; height: 100%;

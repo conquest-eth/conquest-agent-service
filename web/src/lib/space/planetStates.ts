@@ -1,4 +1,4 @@
-import {now} from '$lib/time';
+import {now, time} from '$lib/time';
 import type {QueryState} from '$lib/utils/stores/graphql';
 import type {PlanetInfo, PlanetState} from 'conquest-eth-common';
 import {spaceInfo} from './spaceInfo';
@@ -11,8 +11,15 @@ export class PlanetStates {
 
   private spaceStateCache: SpaceState;
 
-  constructor() {
+  start(): void {
     spaceQuery.subscribe(this.onQueryResult.bind(this));
+    time.subscribe(this.onTime.bind(this));
+  }
+
+  private onTime() {
+    if (this.spaceStateCache) {
+      this.processSpace(this.spaceStateCache, now());
+    }
   }
 
   onPlannetUpdates(planetInfo: PlanetInfo, func: (planetState: PlanetState) => void): number {
