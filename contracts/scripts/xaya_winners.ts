@@ -1,9 +1,11 @@
 import {locationToXY, xyToLocation} from 'conquest-eth-common';
 import 'dotenv/config';
-import {TheGraph} from '../../subgraph/utils/thegraph';
+import {TheGraph} from './utils/thegraph';
 import fs from 'fs';
 
-const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
+const theGraph = new TheGraph(
+  `https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`
+);
 
 const xayaPlanetsStrings = [
   '129,-177',
@@ -49,7 +51,9 @@ query($planets: [ID!]! $blockNumber: Int!) {
 `;
 
 async function main() {
-  const result = await theGraph.query(queryString, {variables: {planets: xayaPlanets, blockNumber: 4830319}});
+  const result = await theGraph.query(queryString, {
+    variables: {planets: xayaPlanets, blockNumber: 4830319},
+  });
   const data = result[0] as {
     exitCompleteEvents: {owner: {id: string}; planet: {id: string}}[];
     planets: {owner: {id: string}; id: string}[];
@@ -129,7 +133,9 @@ async function main() {
     winnersArray = JSON.parse(fs.readFileSync('winners.json').toString());
   } catch (e) {}
   for (const winner of Object.keys(winners)) {
-    const found = winnersArray.findIndex((v) => v.address.toLowerCase() === winner);
+    const found = winnersArray.findIndex(
+      (v) => v.address.toLowerCase() === winner
+    );
     if (found !== -1) {
       winnersArray[found].numWCHI = winners[winner];
     } else {

@@ -69,6 +69,7 @@ importers:
       '@types/qrcode': 1.4.0
       '@typescript-eslint/eslint-plugin': ^4.24.0
       '@typescript-eslint/parser': ^4.24.0
+      '@urql/core': ^2.1.3
       chai: ^4.2.0
       chai-ethers: ^0.0.1
       conquest-eth-common: workspace:*
@@ -83,6 +84,7 @@ importers:
       hardhat-contract-sizer: ^2.0.3
       hardhat-deploy: ^0.7.7
       hardhat-gas-reporter: ^1.0.4
+      isomorphic-unfetch: ^3.1.0
       mocha: ^8.4.0
       prettier: ^2.3.0
       prettier-plugin-solidity: ^1.0.0-beta.10
@@ -104,7 +106,7 @@ importers:
       '@ethersproject/solidity': 5.2.0
       '@ethersproject/units': 5.2.0
       '@ethersproject/wallet': 5.2.0
-      '@nomiclabs/hardhat-ethers': /hardhat-deploy-ethers/0.3.0-beta.7_ethers@5.2.0+hardhat@2.3.0
+      '@nomiclabs/hardhat-ethers': /hardhat-deploy-ethers/0.3.0-beta.8_ethers@5.2.0+hardhat@2.3.0
       '@openzeppelin/contracts': 3.4.1
       '@typechain/ethers-v5': 7.0.0_e3e038bf3a2fff3c67fa0d11d275705b
       '@typechain/hardhat': 2.0.1_6c110edc764a4c2da3dabff581858a86
@@ -114,6 +116,7 @@ importers:
       '@types/qrcode': 1.4.0
       '@typescript-eslint/eslint-plugin': 4.25.0_6fb86b31e39dbd15f93824c03ca6ca0c
       '@typescript-eslint/parser': 4.25.0_eslint@7.27.0+typescript@4.2.4
+      '@urql/core': 2.1.3
       chai: 4.3.4
       chai-ethers: 0.0.1
       conquest-eth-common: link:../common-lib
@@ -128,6 +131,7 @@ importers:
       hardhat-contract-sizer: 2.0.3_hardhat@2.3.0
       hardhat-deploy: 0.7.9_hardhat@2.3.0
       hardhat-gas-reporter: 1.0.4_hardhat@2.3.0
+      isomorphic-unfetch: 3.1.0
       mocha: 8.4.0
       prettier: 2.3.0
       prettier-plugin-solidity: 1.0.0-beta.10
@@ -728,6 +732,12 @@ packages:
     resolution: {integrity: sha512-+R0Tu/MD4Fiq0Fo+v1l+xznz+ZrciQKWlzMtXjDrhM70vlMNVL9wDmf90MVFYpslgqIfw024hT6XwlmyNyOWbQ==}
     dependencies:
       assemblyscript: github.com/AssemblyScript/assemblyscript/36040d5b5312f19a025782b5e36663823494c2f3
+    dev: true
+
+  /@graphql-typed-document-node/core/3.1.0:
+    resolution: {integrity: sha512-wYn6r8zVZyQJ6rQaALBEln5B1pzxb9shV5Ef97kTvn6yVGrqyXVnDqnU24MXnFubR+rZjBY9NWuxX3FB2sTsjg==}
+    peerDependencies:
+      graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
     dev: true
 
   /@graphql-typed-document-node/core/3.1.0_graphql@15.5.0:
@@ -1757,6 +1767,15 @@ packages:
       graphql: 15.5.0
       wonka: 4.0.15
     dev: false
+
+  /@urql/core/2.1.3:
+    resolution: {integrity: sha512-CzrTMhO5SG7qdAaS3B5/g1TPH5k7326GHIyta1owT2vzxX9ev8YytxOE5m73EuacxIfF7qVZFhCzY+rubOlI0w==}
+    peerDependencies:
+      graphql: ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0
+    dependencies:
+      '@graphql-typed-document-node/core': 3.1.0
+      wonka: 4.0.15
+    dev: true
 
   /@urql/devtools/2.0.3_@urql+core@2.1.2+graphql@15.5.0:
     resolution: {integrity: sha512-TktPLiBS9LcBPHD6qcnb8wqOVcg3Bx0iCtvQ80uPpfofwwBGJmqnQTjUdEFU6kwaLOFZULQ9+Uo4831G823mQw==}
@@ -6299,8 +6318,8 @@ packages:
       hardhat: 2.3.0
     dev: true
 
-  /hardhat-deploy-ethers/0.3.0-beta.7_ethers@5.2.0+hardhat@2.3.0:
-    resolution: {integrity: sha512-JKMNte6vudu9LSNqgmBtNxc1gfxp3NUcPKVAf/FANHfl9pa/mBGg6hpQO7tD8CLkAbe6f4K5BjyYIPWX3p7MKw==}
+  /hardhat-deploy-ethers/0.3.0-beta.8_ethers@5.2.0+hardhat@2.3.0:
+    resolution: {integrity: sha512-asPqbKxMZ0XGjf5x2F/zdfW5dzEID9xXOCx7ZVrEB0dkxbCIzjsYUb5ovYSZkoCWMVLOrCa4sNh8CkOVNMBJCQ==}
     peerDependencies:
       ethers: ^5.0.0
       hardhat: ^2.0.0
@@ -7533,6 +7552,13 @@ packages:
   /iso-url/0.4.7:
     resolution: {integrity: sha512-27fFRDnPAMnHGLq36bWTpKET+eiXct3ENlCcdcMdk+mjXrb2kw3mhBUg1B7ewAC0kVzlOPhADzQgz1SE6Tglog==}
     engines: {node: '>=10'}
+    dev: true
+
+  /isomorphic-unfetch/3.1.0:
+    resolution: {integrity: sha512-geDJjpoZ8N0kWexiwkX8F9NkTsXhetLPVbZFQ+JTW239QNOwvB0gniuR1Wc6f0AMTn7/mFGyXvHTifrCp/GH8Q==}
+    dependencies:
+      node-fetch: 2.6.1
+      unfetch: 4.2.0
     dev: true
 
   /isstream/0.1.2:
@@ -12695,6 +12721,10 @@ packages:
     resolution: {integrity: sha512-hEQt0+ZLDVUMhebKxL4x1BTtDY7bavVofhZ9KZ4aI26X9SRaE+Y3m83XUL1UP2jn8ynjndwCCpEHdUG+9pP1Tw==}
     dev: true
 
+  /unfetch/4.2.0:
+    resolution: {integrity: sha512-F9p7yYCn6cIW9El1zi0HI6vqpeIvBsr3dSuRO6Xuppb1u5rXpCPmMvLSyECLhybr9isec8Ohl0hPekMVrEinDA==}
+    dev: true
+
   /uniqs/2.0.0:
     resolution: {integrity: sha1-/+3ks2slKQaW5uFl1KWe25mOawI=}
     dev: true
@@ -13315,7 +13345,6 @@ packages:
 
   /wonka/4.0.15:
     resolution: {integrity: sha512-U0IUQHKXXn6PFo9nqsHphVCE5m3IntqZNB9Jjn7EB1lrR7YTDY3YWgFvEvwniTzXSvOH/XMzAZaIfJF/LvHYXg==}
-    dev: false
 
   /word-wrap/1.2.3:
     resolution: {integrity: sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==}

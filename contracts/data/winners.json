@@ -60,7 +60,9 @@
   {
     "address": "0x2adcbe31a816897fadad6d61c9a9fcfb9254b823",
     "numTokens": 10,
-    "numWCHI": 450
+    "numWCHI": 450,
+    "addressToSendTo": "0x2ADCbe31a816897FaDaD6d61c9a9Fcfb9254B823",
+    "WCHI_sent": "0xe884825cee633851d3de425abea15514fd5242ac742e314e8b4f3baacd524bf8"
   },
   {
     "address": "0x3ef342908f3a8b20127bda3a11ad7a62adbfad5c",
