@@ -1,6 +1,13 @@
 <script lang="ts">
   import Map from './Map.svelte';
   import ConnectPanel from '$lib/components/account/ConnectPanel.svelte';
+  import {account} from '$lib/account/account';
+  import {TutorialSteps} from '$lib/account/constants';
+  import Banner from '$lib/components/screen/Banner.svelte';
+  import {bitMaskMatch, timeToText} from '$lib/utils';
+  import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
+  import {spaceInfo} from '$lib/space/spaceInfo';
+  import selection from '$lib/map/selection';
 
   // import claimFlow from '$lib/flows/claim';
   // import ClaimFlow from '$lib/flows/ClaimFlow.svelte';
@@ -20,12 +27,8 @@
   // import Search from '$lib/components/utils/Search.svelte';
   // import PlanetInfoPanel from '$lib/components/planets/PlanetInfoPanel.svelte';
   // import privateAccount from '$lib/account/privateAccount';
-  // import Banner from '$lib/components/screen/Banner.svelte';
-  // import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
-  // import {TutorialSteps} from '$lib/account/constants';
-  // import selection from '$lib/map/selection';
   // import {camera} from '$lib/map/camera';
 </script>
 
@@ -123,3 +126,33 @@
 {:else}
   <Search />
 {/if} -->
+
+{#if $account.step === 'READY' && !$account.syncing && !bitMaskMatch($account.data?.welcomingStep, TutorialSteps.WELCOME)}
+  <Banner on:mounted={() => selection.unselect()} on:close={() => account.recordWelcomingStep(TutorialSteps.WELCOME)}>
+    <p>
+      Welcome to
+      <span class="text-cyan-600">conquest.eth</span>
+      a game of war and diplomacy running on
+      <a href="https://ethereum.org" target="_blank" class="text-cyan-100">ethereum</a>.
+    </p>
+    <p class="mt-3">
+      To participate you'll have to first acquire planets by depositing a stake in form of
+      <PlayCoin class="inline w-4" />
+      (Play tokens).
+    </p>
+    <p class="mt-3">
+      These planets will then produce spaceships that you can use to attack other planets. You'll also have to make sure
+      you have enough spaceships to protect your planets. It is a good idea to reach out to other player and plan
+      strategies together.
+    </p>
+    <p class="mt-3">
+      At any time (whether you acquired the planet via staking or via attack), you can exit the planet. This take
+      {timeToText(spaceInfo.exitDuration, {verbose: true})}
+      during which you cannot use it but at the end of which you ll get the deposit, ready to be withdrawn.
+    </p>
+    <p class="mt-3">
+      Be careful, even though your planet will continue to produce spaceships, you can lose it while waiting for the
+      exit period to end.
+    </p>
+  </Banner>
+{/if}

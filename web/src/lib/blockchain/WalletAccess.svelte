@@ -145,6 +145,17 @@
         {chainName}
         <!-- ({$chain.chainId}) -->
       {/if}
+    {:else if executionError}
+      <div class="text-center">
+        <p>
+          {#if executionError.code === 4001}
+            You rejected the request
+          {:else if executionError.message}{executionError.message}{:else}Error: {executionError}{/if}
+        </p>
+        <Button class="mt-4" label="Retry" on:click={() => flow.retry()}>Retry</Button>
+      </div>
+    {:else if $privateWallet.step === 'SIGNATURE_REQUESTED'}
+      Please accept the signature to unlock your account.
     {:else if $wallet.pendingUserConfirmation}
       {#if $wallet.pendingUserConfirmation[0] === 'transaction'}
         Please accept transaction...
@@ -181,15 +192,6 @@
           sign
         </Button>
       </div>
-    {:else if executionError}
-      <div class="text-center">
-        <p>
-          {#if executionError.code === 4001}
-            You rejected the request
-          {:else if executionError.message}{executionError.message}{:else}Error: {executionError}{/if}
-        </p>
-        <Button class="mt-4" label="Retry" on:click={() => flow.retry()}>Retry</Button>
-      </div>
     {:else if $privateWallet.step === 'READY'}
       <div class="text-center">
         <p>Connection Aborted</p>
@@ -197,7 +199,7 @@
       </div>
     {:else}
       <div class="text-center">
-        <p>Flow aborted</p>
+        <p>Flow aborted {$privateWallet.step}</p>
         <Button class="mt-4" label="Retry" on:click={() => privateWallet.cancel()}>OK</Button>
       </div>
     {/if}

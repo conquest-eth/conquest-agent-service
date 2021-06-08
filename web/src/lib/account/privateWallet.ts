@@ -189,8 +189,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
 
   private _start(): () => void {
     this.stopWalletSubscription = wallet.subscribe(async ($wallet) => {
-      if (!this.lastWalletAddress) {
-        this.lastWalletAddress = $wallet.address;
+      if (this.lastWalletAddress === $wallet.address) {
         return;
       }
       // console.log({walletAddress: $wallet.address, lastChainId: this.lastChainId});
@@ -200,8 +199,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
       }
     });
     this.stopChainSubscription = chain.subscribe(async ($chain) => {
-      if (!this.lastChainId) {
-        this.lastChainId = $chain.chainId;
+      if (this.lastChainId === $chain.chainId) {
         return;
       }
       // console.log({chainId: $chain.chainId, lastWalletAddress: this.lastWalletAddress});

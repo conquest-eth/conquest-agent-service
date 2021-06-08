@@ -1,4 +1,5 @@
 import {getDefaultProvider, Provider} from '@ethersproject/providers';
+import {contractsInfos} from './blockchain/contractsInfos';
 import {nameForChainId} from './utils/networks';
 import {getParamsFromLocation, getHashParamsFromLocation} from './utils/web';
 
@@ -64,6 +65,9 @@ const highFrequencyFetch = blockTime * 2;
 
 const globalQueryParams = ['debug', 'log', 'subgraph', 'ethnode', '_d_eruda'];
 
+const SYNC_URI = params.sync || (import.meta.env.VITE_SYNC_URI as string); //  'http://invalid.io'; // to emulate connection loss :)
+const SYNC_DB_NAME = 'conquest-' + contractsInfos.contracts.OuterSpace.address;
+
 export {
   finality,
   fallbackProviderOrUrl,
@@ -77,4 +81,6 @@ export {
   mediumFrequencyFetch,
   highFrequencyFetch,
   globalQueryParams,
+  SYNC_URI,
+  SYNC_DB_NAME,
 };
