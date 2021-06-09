@@ -10,7 +10,13 @@ function LOCAL_STORAGE_KEY(address: string, chainId: string) {
   return `${LOCAL_STORAGE_PRIVATE_ACCOUNT}_${address.toLowerCase()}_${chainId}`;
 }
 
-export type SyncingState<T> = {data?: T; syncing: boolean; error?: unknown};
+export type SyncingState<T> = {
+  data?: T;
+  syncing: boolean;
+  remoteFetchedAtLeastOnce: boolean;
+  remoteSyncEnabled: boolean;
+  error?: unknown;
+};
 
 export class AccountDB<T extends Record<string, unknown>> implements Readable<SyncingState<T>> {
   private _lastId: number;
@@ -25,9 +31,10 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     private dbName: string,
     private wallet: Wallet,
     private aesKey: Uint8Array,
-    private merge: (localData?: T, remoteData?: T) => {newData: T; newDataOnLocal: boolean; newDataOnRemote: boolean}
+    private merge: (localData?: T, remoteData?: T) => {newData: T; newDataOnLocal: boolean; newDataOnRemote: boolean},
+    remoteSyncEnabled: boolean
   ) {
-    this.state = {data: undefined, syncing: false};
+    this.state = {data: undefined, syncing: false, remoteFetchedAtLeastOnce: false, remoteSyncEnabled};
     this.store = writable(this.state);
   }
 
@@ -43,7 +50,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     }
 
     // TODO sync in time
-    this._sync();
+    this._syncRemote();
   }
 
   requestSync(): void {
@@ -51,10 +58,13 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     if (!notified) {
       this._notify();
     }
-    this._sync();
+    this._syncRemote();
   }
 
-  private async _sync(): Promise<void> {
+  private async _syncRemote(): Promise<void> {
+    if (!this.state.remoteSyncEnabled) {
+      return;
+    }
     this.state.syncing = true;
     this._notify();
     const {data: remoteData, counter} = await this._fetchRemoteData();
@@ -69,6 +79,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     if (newDataOnLocal) {
       this._postToRemote(this.state.data, counter);
     }
+    this.state.remoteFetchedAtLeastOnce = true;
     this.state.syncing = false;
     this._notify();
   }

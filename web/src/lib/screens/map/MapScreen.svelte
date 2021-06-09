@@ -127,7 +127,7 @@
   <Search />
 {/if} -->
 
-{#if $account.step === 'READY' && !$account.syncing && !bitMaskMatch($account.data?.welcomingStep, TutorialSteps.WELCOME)}
+{#if $account.step === 'READY' && $account.remoteDisabledOrSynced && !bitMaskMatch($account.data?.welcomingStep, TutorialSteps.WELCOME)}
   <Banner on:mounted={() => selection.unselect()} on:close={() => account.recordWelcomingStep(TutorialSteps.WELCOME)}>
     <p>
       Welcome to

@@ -7,6 +7,7 @@ export type AccountState = {
   step: 'IDLE' | 'READY';
   data?: AccountData;
   syncing: boolean;
+  remoteDisabledOrSynced: boolean;
   syncError?: unknown;
 };
 
@@ -28,6 +29,7 @@ class Account implements Readable<AccountState> {
       step: 'IDLE',
       data: undefined,
       syncing: false,
+      remoteDisabledOrSynced: false,
     };
     this.store = writable(this.state, this._start.bind(this));
   }
@@ -72,7 +74,8 @@ class Account implements Readable<AccountState> {
           SYNC_DB_NAME,
           $privateWallet.signer,
           $privateWallet.aesKey,
-          this._merge.bind(this)
+          this._merge.bind(this),
+          $privateWallet.syncEnabled
         );
         this.unsubscribeFromSync = this.accountDB.subscribe(this.onSync.bind(this));
         this.accountDB.requestSync();
@@ -84,6 +87,7 @@ class Account implements Readable<AccountState> {
     this.state.syncError = syncingState.error;
     this.state.data = syncingState.data;
     this.state.syncing = syncingState.syncing;
+    this.state.remoteDisabledOrSynced = syncingState.remoteFetchedAtLeastOnce || !syncingState.remoteSyncEnabled;
     if (this.state.data) {
       this.state.step = 'READY';
     } else {
