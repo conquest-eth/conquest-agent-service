@@ -7,30 +7,30 @@
   import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
   import {wallet} from '$lib/blockchain/wallet';
   import privateAccount from '$lib/account/privateAccount';
-  import {planetAt} from '$lib/space/planets';
   import Help from '$lib/components/utils/Help.svelte';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
-  import {locationToXY, xyToLocation} from 'conquest-eth-common';
-  // import {space} from '$lib/space/spaceInfo';
-  import {time} from '$lib/time';
+  import {spaceInfo} from '$lib/space/spaceInfo';
+  import {planets} from '$lib/space/planets';
 
-  export let location: string;
+  export let coords: {x: number; y: number};
   export let close: () => void;
 
-  $: planet = planetAt(location);
+  $: planetInfo = spaceInfo.getPlanetInfo(coords.x, coords.y);
+
+  $: planetState = planets.planetStateFor(planetInfo);
 
   function capture() {
-    claimFlow.claim(location);
+    claimFlow.claim(coords);
   }
 
   function sendTo() {
-    sendFlow.sendTo(locationToXY(location));
+    sendFlow.sendTo(coords);
     close();
   }
 
   function sendFrom() {
-    sendFlow.sendFrom(locationToXY(location));
+    sendFlow.sendFrom(coords);
     close();
   }
 
@@ -39,12 +39,12 @@
   }
 
   function simulateFrom() {
-    simulateFlow.simulateFrom(locationToXY(location));
+    simulateFlow.simulateFrom(coords);
     close();
   }
 
   function showSimulation() {
-    simulateFlow.simulate(locationToXY(location));
+    simulateFlow.simulate(coords);
   }
 
   function cancelSimulation() {
@@ -52,54 +52,53 @@
   }
 
   function exitFrom() {
-    exitFlow.exitFrom(locationToXY(location));
+    exitFlow.exitFrom(coords);
     close();
   }
 
   function messageOwner() {
-    messageFlow.show($planet.state.owner);
+    messageFlow.show($planetState.owner);
   }
 
   function showDepartures() {
-    showPlanetDepartures.show($planet.location.id);
+    showPlanetDepartures.show(planetInfo.location.id);
   }
 
   function connect() {
     privateAccount.login();
   }
 
-  $: walletIsOwner = $wallet.address && $wallet.address?.toLowerCase() === $planet.state?.owner.toLowerCase();
+  $: walletIsOwner = $wallet.address && $wallet.address?.toLowerCase() === $planetState?.owner?.toLowerCase();
   $: textColor =
-    $planet.state && $planet.state.owner !== '0x0000000000000000000000000000000000000000'
-      ? walletIsOwner
-        ? 'text-green-500'
-        : 'text-red-500'
-      : 'text-gray-100';
+    $planetState && $planetState.owner ? (walletIsOwner ? 'text-green-500' : 'text-red-500') : 'text-gray-100';
 
-  $: destinationPlanet =
-    $sendFlow.data?.to && planetAt(xyToLocation($sendFlow.data?.to.x as number, $sendFlow.data?.to.y as number));
+  $: destinationPlanetInfo =
+    $sendFlow.data?.to && spaceInfo.getPlanetInfo($sendFlow.data?.to.x as number, $sendFlow.data?.to.y as number);
+  $: destinationPlanetState = $sendFlow.data?.to && planets.planetStateFor(destinationPlanetInfo);
 
-  $: originPlanet =
-    $sendFlow.data?.from && planetAt(xyToLocation($sendFlow.data?.from.x as number, $sendFlow.data?.from.y as number));
+  $: originPlanetInfo =
+    $sendFlow.data?.from && spaceInfo.getPlanetInfo($sendFlow.data?.from.x as number, $sendFlow.data?.from.y as number);
+  $: originPlanetState = $sendFlow.data?.from && planets.planetStateFor(originPlanetInfo);
+
   $: attacking =
-    $sendFlow.step === 'PICK_ORIGIN' && destinationPlanet && $destinationPlanet.state?.owner !== $wallet.address;
+    $sendFlow.step === 'PICK_ORIGIN' && destinationPlanetState && $destinationPlanetState?.owner !== $wallet.address;
 
-  $: captureResult = $planet?.state ? space.simulateCapture($wallet.address, $planet, $time) : undefined;
+  $: captureResult = undefined; // TODO $planetState ? space.simulateCapture($wallet.address, $planet, $time) : undefined;
 </script>
 
-{#if $planet.state}
+{#if $planetState}
   {#if $wallet.address}
-    {#if !!$planet.state?.capturing}
-      {#if $planet.state.capturing === 'Loading'}
+    {#if !!$planetState?.capturing}
+      {#if $planetState.capturing === 'Loading'}
         <p>Please wait....</p>
-      {:else if $planet.state.capturing.status === 'Failure'}
+      {:else if $planetState.capturing.status === 'Failure'}
         <p>The Capture Transaction Failed.</p>
         <p class="p-2">
           See
           <a
             target="_blank"
             class="underline text-cyan-100"
-            href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${$planet.state.capturing.txHash}`}>here</a
+            href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${$planetState.capturing.txHash}`}>here</a
           >
         </p>
         <PanelButton
@@ -107,7 +106,7 @@
           class="m-2"
           color="text-green-500"
           borderColor="border-green-500"
-          on:click={() => privateAccount.acknowledgeCaptureFailure($planet.location.id)}
+          on:click={() => privateAccount.acknowledgeCaptureFailure(planetInfo.location.id)}
         >
           <div class="w-20">Ok</div>
         </PanelButton>
@@ -115,9 +114,9 @@
         <p>Capturing....</p>
       {/if}
     {:else if $sendFlow.step === 'PICK_DESTINATION'}
-      {#if $planet.location.id === (originPlanet ? $originPlanet.location.id : null)}
+      {#if planetInfo.location.id === (originPlanetInfo ? originPlanetInfo.location.id : null)}
         <p class="m-3">Pick a Different Planet than Itself</p>
-      {:else if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
+      {:else if !$planetState.owner}
         <!-- SEND TO CONQUERE -->
         <PanelButton label="Attack!" class="m-2" color="text-red-500" borderColor="border-red-500" on:click={sendTo}>
           <div class="w-20">
@@ -128,7 +127,7 @@
             </Help>
           </div>
         </PanelButton>
-      {:else if walletIsOwner && !$planet.state.active}
+      {:else if walletIsOwner && !$planetState.active}
         <!-- SEND MORE -->
         <PanelButton
           label="Send Reinforcment"
@@ -166,16 +165,16 @@
         <div class="w-20">Cancel</div>
       </PanelButton>
     {:else if $sendFlow.step === 'PICK_ORIGIN'}
-      {#if $planet.location.id === (destinationPlanet ? $destinationPlanet.location.id : null)}
+      {#if planetInfo.location.id === (destinationPlanetInfo ? destinationPlanetInfo.location.id : null)}
         <p class="m-3">Pick a Different Planet than Itself</p>
-      {:else if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
+      {:else if !$planetState.owner}
         <!-- SEND TO CONQUERE -->
         <p class="m-3">Pick a Planet you own.</p>
-      {:else if walletIsOwner && $planet.state.exiting}
+      {:else if walletIsOwner && $planetState.exiting}
         <!-- SEND TO CONQUERE -->
         <p class="m-3">This Planet is exiting, pick another one</p>
-      {:else if walletIsOwner && !$planet.state.active}
-        {#if $planet.state.numSpaceships == 0}
+      {:else if walletIsOwner && !$planetState.active}
+        {#if $planetState.numSpaceships == 0}
           <p class="m-3">Pick a Planet with spaceships.</p>
         {:else}
           <!-- SEND MORE -->
@@ -257,19 +256,19 @@
       <PanelButton label="Cancel" class="m-2" on:click={cancelSimulation}>
         <div class="w-20">Cancel</div>
       </PanelButton>
-    {:else if $planet.state.owner === '0x0000000000000000000000000000000000000000'}
+    {:else if !$planetState.owner}
       <PanelButton
         label="Capture"
         class="m-2"
         color="text-yellow-400"
         borderColor="border-yellow-400"
-        disabled={!$planet.state.inReach}
+        disabled={!$planetState.inReach}
         on:click={capture}
       >
         <div class="w-20">
           Capture
           <span class="text-sm">
-            {#if !$planet.state.inReach}
+            {#if !$planetState.inReach}
               (unreachable)
               <Help class="inline w-4 h-4">
                 The Reachable Universe expands as more planets get captured. Note though that you can still send attack
@@ -290,7 +289,7 @@
           </span>
         </div>
       </PanelButton>
-      {#if $planet.state.natives}
+      {#if $planetState.natives}
         <PanelButton label="Attack" class="m-2" color="text-red-500" borderColor="border-red-500" on:click={sendTo}>
           <div class="w-20">
             Attack
@@ -306,23 +305,23 @@
           <div class="w-20">Send Spaceships Here</div>
         </PanelButton>
       {/if}
-    {:else if walletIsOwner && $planet.state.exiting}
+    {:else if walletIsOwner && $planetState.exiting}
       <PanelButton label="Request Reinforcment" class="m-2" on:click={sendTo}>
         <div class="w-20">Request Reinforcment</div>
       </PanelButton>
-    {:else if walletIsOwner && !$planet.state.active}
+    {:else if walletIsOwner && !$planetState.active}
       <PanelButton
         label="Capture"
         class="m-2"
         color="text-yellow-400"
         borderColor="border-yellow-400"
-        disabled={!$planet.state.inReach}
+        disabled={!$planetState.inReach}
         on:click={capture}
       >
         <div class="w-20">
           Capture
           <span class="text-sm">
-            {!$planet.state.inReach ? ' (unreachable)' : ''}
+            {!$planetState.inReach ? ' (unreachable)' : ''}
             <Help class="inline w-4 h-4">
               The Reachable Universe expands as more planets get captured. Note though that you can still send attack
               unreachable planets. But these planets cannot produce spaceships until they get in range and you stake on
@@ -334,7 +333,7 @@
       <PanelButton label="Request Reinforcment" class="m-2" on:click={sendTo}>
         <div class="w-20">Request Reinforcment</div>
       </PanelButton>
-      {#if $planet.state.numSpaceships > 0}
+      {#if $planetState.numSpaceships > 0}
         <PanelButton label="Send Fleet" class="m-2" on:click={sendFrom}>
           <div class="w-20">Send Fleet</div>
         </PanelButton>
@@ -359,19 +358,19 @@
           </Help>
         </div>
       </PanelButton>
-      {#if !$planet.state.active}
+      {#if !$planetState.active}
         <PanelButton
           label="Capture"
           class="m-2"
           color="text-yellow-400"
           borderColor="border-yellow-400"
-          disabled={!$planet.state.inReach || !captureResult.success}
+          disabled={!$planetState.inReach || !captureResult.success}
           on:click={capture}
         >
           <div class="w-20">
             Capture
             <span class="text-sm">
-              {#if !$planet.state.inReach}
+              {#if !$planetState.inReach}
                 (unreachable)
                 <Help class="inline w-4 h-4">
                   The Reachable Universe expands as more planets get captured. Note though that you can still send

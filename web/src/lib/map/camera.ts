@@ -26,6 +26,8 @@ export class Camera extends BasicObjectStore<CameraState> {
   private lastDist = 0;
   private zoomPoint = {x: 0, y: 0};
 
+  public onClick: (x: number, y: number) => void | undefined;
+
   protected renderView: RenderViewReadable;
   protected surface: HTMLElement;
 
@@ -39,6 +41,10 @@ export class Camera extends BasicObjectStore<CameraState> {
     // if (this.zoomIndex === -1) {
     //   this.zoomIndex = Camera.zoomLevels.length - 3;
     // }
+  }
+
+  get zoom(): number {
+    return this.$store.zoom;
   }
 
   start(surface: HTMLElement, renderView: RenderViewReadable): void {
@@ -146,10 +152,9 @@ export class Camera extends BasicObjectStore<CameraState> {
 
   _onClick(x: number, y: number): void {
     const worldPos = this.screenToWorld(x, y);
-    // const globalX = worldPos.x / 48 / 2;
-    // const globalY = worldPos.y / 48 / 2;
-
-    // TODO
+    if (this.onClick) {
+      this.onClick(worldPos.x, worldPos.y);
+    }
   }
 
   onmousedown(e: TouchEvent | MouseEvent): void {

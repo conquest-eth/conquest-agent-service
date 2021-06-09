@@ -1,4 +1,5 @@
 import {SYNC_DB_NAME, SYNC_URI} from '$lib/config';
+import {bitMaskMatch} from '$lib/utils';
 import {AccountDB, SyncingState} from '$lib/utils/sync';
 import {Readable, Writable, writable} from 'svelte/store';
 import {privateWallet, PrivateWalletState} from './privateWallet';
@@ -11,8 +12,50 @@ export type AccountState = {
   syncError?: unknown;
 };
 
+type PlanetCoords = {x: number; y: number};
+
+type PendingActionBase = {
+  txOrigin?: string; // used if the controller is not owner
+  timestamp: number;
+  nonce: number;
+};
+
+type PendingResolution = {
+  txOrigin?: string; // used if the resolver is not owner (agent)
+  timestamp: number;
+  nonce: number;
+  txHash: string;
+};
+
+export type PendingSend = PendingActionBase & {
+  type: 'SEND';
+  from: PlanetCoords;
+  to: PlanetCoords;
+  quantity: number;
+  resolution?: PendingResolution;
+};
+
+export type PendingExit = PendingActionBase & {
+  type: 'EXIT';
+  planetCoords: PlanetCoords;
+};
+
+export type PendingWithdrawal = PendingActionBase & {
+  type: 'WITHDRAWAL';
+  planets: PlanetCoords[];
+};
+
+export type PendingCapture = PendingActionBase & {
+  type: 'CAPTURE';
+  planetCoords: PlanetCoords;
+};
+
+export type PendingAction = PendingSend | PendingExit | PendingCapture | PendingWithdrawal;
+
+export type PendingActions = {[txHash: string]: PendingAction};
+
 export type AccountData = {
-  pendingActions: {[id: string]: {timestamp: number}};
+  pendingActions: PendingActions;
   welcomingStep: number;
 };
 
@@ -39,14 +82,33 @@ class Account implements Readable<AccountState> {
   }
 
   recordWelcomingStep(bit: number): void {
+    this.check();
     if (bit > 32) {
       throw new Error('bit > 32');
     }
+    this.state.data.welcomingStep = Math.pow(2, bit);
+    this.accountDB.save(this.state.data);
+  }
+
+  isWelcomingStepCompleted(bit: number): boolean {
+    return bitMaskMatch(this.state.data?.welcomingStep, bit);
+  }
+
+  recordCapture(planetCoords: PlanetCoords, txHash: string, timestamp: number, nonce: number): void {
+    this.check();
+    this.state.data.pendingActions[txHash] = {
+      type: 'CAPTURE',
+      timestamp,
+      nonce,
+      planetCoords,
+    };
+    this.accountDB.save(this.state.data);
+  }
+
+  private check() {
     if (!this.state.data) {
       throw new Error(`Account not ready yet`);
     }
-    this.state.data.welcomingStep = Math.pow(2, bit);
-    this.accountDB.save(this.state.data);
   }
 
   private _start(): () => void {

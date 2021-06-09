@@ -9,6 +9,7 @@
   import {planets} from '$lib/space/planets';
   import {base} from '$app/paths';
   import {wallet} from '$lib/blockchain/wallet';
+  import selection from '$lib/map/selection';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -66,20 +67,23 @@
 
   $: renderScale = $camera ? $camera.renderScale : 1;
 
+  let selectionBorder = 4;
   let adjustedRenderScale;
   let blockieScale = scale;
   let zoomIn = true;
   $: if (owner && renderScale < 10) {
-    blockieScale = scale * (10 / renderScale);
-    zoomIn = false;
     adjustedRenderScale = 10 / renderScale;
+    blockieScale = scale * adjustedRenderScale;
+    zoomIn = false;
+    selectionBorder = 4;
   } else {
+    selectionBorder = 4;
     zoomIn = true;
     blockieScale = scale;
     adjustedRenderScale = 1;
   }
 
-  $: playerIsOwner = owner && owner.toLowerCase() === $wallet.address?.toLowerCase();
+  $: playerIsOwner = owner?.toLowerCase() === $wallet.address?.toLowerCase();
 </script>
 
 <div>
@@ -116,10 +120,10 @@
     />
   </div> -->
 
-  <!-- {#if planetInfo.location.x % 3 === 0 && planetInfo.location.y % 3 === 0}
+  {#if $selection && $selection.x === planetInfo.location.x && $selection.y === planetInfo.location.y}
     <div
-      style={`position: absolute; transform: translate(${x}px,${y}px)  scale(${0.1 * adjustedRenderScale}, ${
-        0.1 * adjustedRenderScale
+      style={`z-index: 5; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
+        blockieScale * 3
       }); width: ${frame.w}px;
   height: ${frame.h}px;`}
     >
@@ -127,7 +131,7 @@
         style={`
 width: ${frame.w}px;
 height: ${frame.h}px;
-border: ${1 + (6 / renderScale) * 2}px solid white;
+border: ${selectionBorder}px solid white;
 border-left-color: red;
 border-radius: 50%;
 animation-name: rotate-s-loader;
@@ -137,7 +141,7 @@ animation-timing-function: linear;
 `}
       />
     </div>
-  {/if} -->
+  {/if}
 
   {#if owner}
     {#if blockieScale <= scale}

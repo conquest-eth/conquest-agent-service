@@ -8,9 +8,10 @@
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import selection from '$lib/map/selection';
+  import PlanetInfoPanel from '$lib/components/planets/PlanetInfoPanel.svelte';
+  import claimFlow from '$lib/flows/claim';
+  import ClaimFlow from '$lib/flows/ClaimFlow.svelte';
 
-  // import claimFlow from '$lib/flows/claim';
-  // import ClaimFlow from '$lib/flows/ClaimFlow.svelte';
   // import sendFlow from '$lib/flows/send';
   // import SendFlow from '$lib/flows/SendFlow.svelte';
   // import simulateFlow from '$lib/flows/simulateFlow';
@@ -25,7 +26,7 @@
   // import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
   // import ShowPlanetDeparturesFlow from '$lib/flows/ShowPlanetDeparturesFlow.svelte';
   // import Search from '$lib/components/utils/Search.svelte';
-  // import PlanetInfoPanel from '$lib/components/planets/PlanetInfoPanel.svelte';
+
   // import privateAccount from '$lib/account/privateAccount';
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
@@ -60,36 +61,37 @@
 
 <!-- <div class="absolute right-0 top-12">
   <FleetsToResolve />
-</div>
+</div> -->
 
 {#if $claimFlow.error || $claimFlow.step !== 'IDLE'}
   <ClaimFlow />
 {/if}
 
-{#if $sendFlow.error || $sendFlow.step !== 'IDLE'}
+<!-- {#if $sendFlow.error || $sendFlow.step !== 'IDLE'}
   <SendFlow />
-{/if}
+{/if} -->
 
-{#if $simulateFlow.error || $simulateFlow.step !== 'IDLE'}
+<!-- {#if $simulateFlow.error || $simulateFlow.step !== 'IDLE'}
   <SimulateFlow />
-{/if}
+{/if} -->
 
-{#if $resolveFlow.error || $resolveFlow.step !== 'IDLE'}
+<!-- {#if $resolveFlow.error || $resolveFlow.step !== 'IDLE'}
   <ResolveFlow />
-{/if}
+{/if} -->
 
-{#if $exitFlow.error || $exitFlow.step !== 'IDLE'}
+<!-- {#if $exitFlow.error || $exitFlow.step !== 'IDLE'}
   <ExitFlow />
-{/if}
+{/if} -->
 
-{#if $messageFlow.error || $messageFlow.step !== 'IDLE'}
+<!-- {#if $messageFlow.error || $messageFlow.step !== 'IDLE'}
   <MessageFlow />
-{/if}
+{/if} -->
 
-{#if $showPlanetDepartures.error || $showPlanetDepartures.step !== 'IDLE'}
+<!-- {#if $showPlanetDepartures.error || $showPlanetDepartures.step !== 'IDLE'}
   <ShowPlanetDeparturesFlow />
-{/if}
+{/if} -->
 
+<!--
 {#if $privateAccount.step === 'READY' && !privateAccount.ckeckCompletion($privateAccount.data?.welcomingStep, TutorialSteps.WELCOME)}
   <Banner
     on:mounted={() => selection.unselect()}
@@ -155,4 +157,8 @@
       exit period to end.
     </p>
   </Banner>
+{:else if $selection}
+  <PlanetInfoPanel coords={$selection} />
+{:else}
+  <!-- <Search /> -->
 {/if}

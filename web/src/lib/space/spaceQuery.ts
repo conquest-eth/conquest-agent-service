@@ -90,7 +90,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       planets: data.planets.map((v) => {
         return {
           id: v.id,
-          owner: v.owner ? v.owner.id : '0x0000000000000000000000000000000000000000',
+          owner: v.owner ? v.owner.id : undefined,
           numSpaceships: parseInt(v.numSpaceships),
           lastUpdated: parseInt(v.lastUpdated),
           exitTime: parseInt(v.exitTime),

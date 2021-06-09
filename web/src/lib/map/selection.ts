@@ -1,26 +1,21 @@
 import {BaseStore} from '$lib/utils/stores/base';
 
 export type Selection = {
-  id?: string;
+  x: number;
+  y: number;
 };
 
 class SelectionStore extends BaseStore<Selection> {
   constructor() {
-    super({
-      id: undefined,
-    });
+    super(undefined);
   }
 
-  get id() {
-    return this.$store.id;
-  }
-
-  select(id: string): void {
-    this.set({id});
+  select(x: number, y: number): void {
+    this.set({x, y});
   }
 
   unselect(): void {
-    this.set({id: undefined});
+    this.set(undefined);
   }
 }
 

@@ -1,13 +1,14 @@
 import {wallet} from '$lib/blockchain/wallet';
-import privateAccount from '$lib/account/privateAccount';
 import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {spaceInfo} from '$lib/space/spaceInfo';
-import {locationToXY} from 'conquest-eth-common';
 import {BigNumber} from '@ethersproject/bignumber';
 import {defaultAbiCoder} from '@ethersproject/abi';
 import {TutorialSteps} from '$lib/account/constants';
+import {account} from '$lib/account/account';
+import {privateWallet} from '$lib/account/privateWallet';
+import {xyToLocation} from 'conquest-eth-common';
 
-type Data = {txHash?: string; location: string};
+type Data = {txHash?: string; coords: {x: number; y: number}};
 export type ClaimFlow = {
   type: 'CLAIM';
   step: 'IDLE' | 'CONNECTING' | 'CHOOSE_STAKE' | 'CREATING_TX' | 'WAITING_TX' | 'PROFILE_INFO' | 'SUCCESS';
@@ -36,9 +37,9 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
     this.setPartial({error: undefined});
   }
 
-  async claim(location: string): Promise<void> {
-    this.setPartial({data: {location}, step: 'CONNECTING'});
-    await privateAccount.login();
+  async claim(coords: {x: number; y: number}): Promise<void> {
+    this.setPartial({data: {coords}, step: 'CONNECTING'});
+    await privateWallet.login();
     this.setPartial({step: 'CHOOSE_STAKE'});
   }
 
@@ -52,18 +53,19 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
       throw new Error(`can't fetch latest block`);
     }
     // console.log('HELLO');
-    const location = flow.data?.location;
-    const {x, y} = locationToXY(location);
-    const planetInfo = spaceInfo.getPlanetInfo(x, y);
+    const planetInfo = spaceInfo.getPlanetInfo(flow.data.coords.x, flow.data.coords.y);
     if (!planetInfo) {
-      throw new Error(`no planet at ${location}`);
+      throw new Error(`no planet at ${flow.data.coords.x}, ${flow.data.coords.y}`);
     }
     let tx;
     try {
       tx = await wallet.contracts?.PlayToken_L2.transferAndCall(
         wallet.contracts?.OuterSpace.address,
         BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'),
-        defaultAbiCoder.encode(['address', 'uint256'], [wallet.address, location])
+        defaultAbiCoder.encode(
+          ['address', 'uint256'],
+          [wallet.address, xyToLocation(flow.data.coords.x, flow.data.coords.y)]
+        )
       );
     } catch (e) {
       console.error(e);
@@ -78,9 +80,9 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
       return;
     }
 
-    privateAccount.recordCapture(flow.data.location, tx.hash, latestBlock.timestamp, tx.nonce); // TODO check
+    account.recordCapture(flow.data.coords, tx.hash, latestBlock.timestamp, tx.nonce); // TODO check
 
-    if (!privateAccount.isWelcomingStepCompleted(TutorialSteps.SUGGESTION_PROFILE)) {
+    if (!account.isWelcomingStepCompleted(TutorialSteps.SUGGESTION_PROFILE)) {
       this.setData({txHash: tx.hash}, {step: 'PROFILE_INFO'});
     } else {
       this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
@@ -88,7 +90,7 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
   }
 
   async acknowledgeProfileSuggestion() {
-    privateAccount.recordWelcomingStep(TutorialSteps.SUGGESTION_PROFILE);
+    account.recordWelcomingStep(TutorialSteps.SUGGESTION_PROFILE);
     this.setPartial({step: 'SUCCESS'});
   }
 

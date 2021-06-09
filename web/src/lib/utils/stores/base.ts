@@ -77,6 +77,10 @@ export class BaseStore<T extends Record<string, unknown>> implements Readable<T>
   }
 
   protected setPartial(obj: Partial<T>): T {
+    if (!this.$store) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.$store as any) = {};
+    }
     for (const key of Object.keys(obj)) {
       (this.$store as Record<string, unknown>)[key] = obj[key];
     }
@@ -84,6 +88,15 @@ export class BaseStore<T extends Record<string, unknown>> implements Readable<T>
     return this.$store;
   }
   protected set(obj: T): T {
+    if (!this.$store) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.$store as any) = {};
+    }
+
+    if (!obj) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.$store as any) = obj;
+    }
     // Testing hmr for subclasses
     //   const objAny: any = obj;
     //   objAny.value += 7;

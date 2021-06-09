@@ -5,6 +5,8 @@
   import {ElementRenderView} from '$lib/map/renderview';
   import CSSRenderer from './CSSRenderer.svelte';
   import {planetStates} from '$lib/space/planetStates';
+  import selection from '$lib/map/selection';
+  import {spaceInfo} from '$lib/space/spaceInfo';
 
   let surface: HTMLElement;
   let renderView: RenderView;
@@ -15,14 +17,53 @@
     cancelRenderViewUpdate = window.requestAnimationFrame(update);
   }
 
+  function onClick(x: number, y: number): void {
+    const locX = Math.floor((Math.round(x) + 2) / 4);
+    const locY = Math.floor((Math.round(y) + 2) / 4);
+    for (let i = 0; i < 9; i++) {
+      const offsetX = i % 3;
+      const offsetY = Math.floor(i / 3);
+      const planetInfo = spaceInfo.getPlanetInfo(
+        locX + (offsetX == 2 ? -1 : offsetX),
+        locY + (offsetY == 2 ? -1 : offsetY)
+      );
+
+      console.log({
+        x,
+        y,
+        zoom: camera.zoom,
+        pX: planetInfo && planetInfo.location.globalX,
+        pY: planetInfo && planetInfo.location.globalY,
+      });
+
+      if (planetInfo) {
+        const multiplier = planetInfo.stats.production / 3600;
+
+        if (
+          Math.sqrt(Math.pow(planetInfo.location.globalX - x, 2) + Math.pow(planetInfo.location.globalY - y, 2)) <=
+          (camera.zoom < 3 ? 6 / camera.zoom : 2) * multiplier
+        ) {
+          // console.log(JSON.stringify(planet, null, '  '));
+          selection.select(planetInfo.location.x, planetInfo.location.y);
+          return;
+        }
+      }
+    }
+    selection.unselect();
+  }
+
   onMount(() => {
     renderView = new ElementRenderView(surface);
     camera.start(surface, renderView);
     cancelRenderViewUpdate = window.requestAnimationFrame(update);
     planetStates.start(); // this trigger the queries (but not in the dev server)
+    camera.onClick = onClick;
   });
 
   onDestroy(() => {
+    if (camera) {
+      camera.onClick = undefined;
+    }
     camera.stop();
     if (cancelRenderViewUpdate) {
       window.cancelAnimationFrame(cancelRenderViewUpdate);
