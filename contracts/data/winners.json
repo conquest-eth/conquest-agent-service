@@ -67,7 +67,8 @@
   {
     "address": "0x3ef342908f3a8b20127bda3a11ad7a62adbfad5c",
     "numTokens": 10,
-    "numWCHI": 150
+    "numWCHI": 150,
+    "WCHI_sent": "0x4824194dbb546f8ac6accdba7673b22d82fb1c7c5fe3f8f780b58f2d04367c55"
   },
   {
     "address": "0xe25791aa3cb2808b24dd5971f8f02e6a6cba5ce1",
@@ -106,7 +107,8 @@
   {
     "address": "0x044500949fe2a5b4ee983b47b5040c6016ef4b68",
     "numTokens": 5,
-    "numWCHI": 150
+    "numWCHI": 150,
+    "WCHI_sent": "0xf1fede9bbeb4b14456833066bc55329598d725e0d231ae3bb677e4340661c592"
   },
   {
     "address": "0x7aa4b3742fc528db0dc4ad6edfb276be7b68b5fd",
@@ -118,10 +120,12 @@
   },
   {
     "address": "0x039de3eb5002d2cc40faea403f69fb02c40b88ee",
-    "numWCHI": 300
+    "numWCHI": 300,
+    "WCHI_sent": "0xc6bd32f0c263870223654483c80363e7ffbe5aec37298a71827bcca010bc4923"
   },
   {
     "address": "0x4a1d757699ab73dd4b48b15049b6f1479b2f3511",
-    "numWCHI": 150
+    "numWCHI": 150,
+    "WCHI_sent": "0x79f78e592dc2ddec98f3f61b6975ed7579a32afb55a1fffb0a7dd9d4aaa2e923"
   }
 ]
