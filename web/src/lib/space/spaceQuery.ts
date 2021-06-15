@@ -28,11 +28,13 @@ export type PlanetContractState = {
 export type SpaceQueryResult = {
   planets: PlanetQueryState[];
   space: {minX: string; maxX: string; minY: string; maxY: string};
+  chain: {blockHash: string; blockNumber: string};
 };
 
 export type SpaceState = {
   planets: PlanetContractState[];
   space: {x1: number; x2: number; y1: number; y2: number};
+  chain: {blockHash: string; blockNumber: string};
 };
 
 export class SpaceQueryStore implements QueryStore<SpaceState> {
@@ -53,6 +55,10 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     exitTime
     active
     reward
+  }
+  chain(id: "Chain") {
+    blockHash
+    blockNumber
   }
   space(id: "Space") {
     minX
@@ -103,6 +109,10 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
         x2: parseInt(data.space.maxX),
         y1: -parseInt(data.space.minY),
         y2: parseInt(data.space.maxY),
+      },
+      chain: {
+        blockHash: data.chain.blockHash,
+        blockNumber: data.chain.blockNumber,
       },
     };
   }

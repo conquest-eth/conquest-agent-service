@@ -1,5 +1,6 @@
 import {CheckedPendingActions, pendingActions} from '$lib/account/pendingActions';
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
+import {now} from '$lib/time';
 import type {QueryState} from '$lib/utils/stores/graphql';
 import {Readable, writable, Writable} from 'svelte/store';
 import {spaceQuery, SpaceState} from './spaceQuery';
@@ -13,6 +14,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
   private state: SpaceQueryWithPendingState;
   private store: Writable<SpaceQueryWithPendingState>;
 
+  private lastQueryTime: number;
   private rawPendingActions: CheckedPendingActions = [];
   private includedTx: {[txHash: string]: boolean} = {};
   private queryState: QueryState<SpaceState> = {step: 'IDLE'};
@@ -33,7 +35,33 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
 
   private _handlePendingActions(pendingActions: CheckedPendingActions): void {
     this.rawPendingActions = pendingActions;
-    this._updateAndNotify();
+    // this._updateAndNotify();
+    // TODO consider loading
+    // show pendingActions as loading, since we do not want to show them until we queries the graph and check if these have already been included
+    // we could trigger a query update, or just a query for txs with last query result
+
+    // TODO consider account switching
+    // if account switches, this should bring loading again as above
+
+    // TODO consider new pendingActions: they won't be visible
+    // issue: newly added pendingActions are not visible straight away
+    // fix : use lastQueryTimestamp vs pendingAction timestamp
+
+    if (!this.lastQueryTime) {
+      return this._updateAndNotify();
+    }
+
+    const dict: {[id: string]: boolean} = {};
+    for (const pendingAction of this.state.pendingActions) {
+      dict[pendingAction.id] = true;
+    }
+    for (const pendingAction of this.rawPendingActions) {
+      if (!dict[pendingAction.id] && pendingAction.action.timestamp >= this.lastQueryTime) {
+        // not full proof (a second resolution) but sufficient
+        this.state.pendingActions.push(pendingAction);
+      }
+    }
+    this._notify();
   }
 
   private _updateAndNotify() {
@@ -47,20 +75,45 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
       // TODO error
       return;
     }
-    const txToCHeck: string[] = [];
+    const txsToCheck: string[] = [];
     for (const pendingAction of this.rawPendingActions) {
-      txToCHeck.push(pendingAction.id); // TODO SEND + RESOLVE
+      txsToCheck.push(pendingAction.id); // TODO SEND + RESOLVE
     }
-    // TODO query txHash existence at same blockHash as query
 
-    // const result = await SUBGRAPH_ENDPOINT.query(``, {
-    //   variables: {txs: txToCHeck},
-    //   context: {
-    //     requestPolicy: 'cache-and-network', // required as cache-first will not try to get new data
-    //   },
-    // });
+    this.lastQueryTime = now();
+    let includedTx: string[] = [];
+    if (txsToCheck.length > 0) {
+      const variables = {txs: txsToCheck, blockHash: space.data.chain.blockHash};
+      console.log(variables);
 
-    // for all included add them to includedTx
+      const result = await SUBGRAPH_ENDPOINT.query<{transactions: {id: string}[]}>(
+        `query($blockHash: String! $txs: [String]) {
+      transactions( where: {id_in: $txs} block: {hash: $blockHash}) {
+        id
+      }
+    }`,
+        {
+          variables,
+          context: {
+            requestPolicy: 'cache-and-network', // required as cache-first will not try to get new data
+          },
+        }
+      );
+      if (result.error) {
+        this.state.queryState.error = result.error.message;
+        this._notify();
+        return;
+      }
+      if (result.data && result.data.transactions) {
+        includedTx = result.data.transactions.map((v) => v.id);
+      }
+    }
+
+    this.includedTx = {};
+    for (const tx of includedTx) {
+      this.includedTx[tx] = true;
+    }
+
     this.state.queryState = space;
     this._updateAndNotify();
   }
