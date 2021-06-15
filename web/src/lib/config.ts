@@ -66,7 +66,10 @@ const highFrequencyFetch = blockTime * 2;
 const globalQueryParams = ['debug', 'log', 'subgraph', 'ethnode', '_d_eruda'];
 
 const SYNC_URI = params.sync || (import.meta.env.VITE_SYNC_URI as string); //  'http://invalid.io'; // to emulate connection loss :)
-const SYNC_DB_NAME = 'conquest-' + contractsInfos.contracts.OuterSpace.address;
+const SYNC_DB_NAME =
+  'conquest-' +
+  contractsInfos.contracts.OuterSpace.address +
+  (contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash || '');
 
 export {
   finality,

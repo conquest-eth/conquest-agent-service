@@ -10,7 +10,7 @@ import {chainTempo} from '$lib/blockchain/chainTempo';
 
 // weird bug in vite build?
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const walletStores = ((WalletStores as any).default || WalletStores)({
+const walletStores = WalletStores({
   // const walletStores = WalletStores({
   chainConfigs: contractsInfos,
   builtin: {autoProbe: true},

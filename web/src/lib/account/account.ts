@@ -10,6 +10,7 @@ export type AccountState = {
   syncing: boolean;
   remoteDisabledOrSynced: boolean;
   syncError?: unknown;
+  ownerAddress?: string;
 };
 
 type PlanetCoords = {x: number; y: number};
@@ -18,6 +19,10 @@ type PendingActionBase = {
   txOrigin?: string; // used if the controller is not owner
   timestamp: number;
   nonce: number;
+  acknowledged?: {
+    final: boolean;
+    type: 'ERROR' | 'SUCCESS';
+  };
 };
 
 type PendingResolution = {
@@ -86,7 +91,7 @@ class Account implements Readable<AccountState> {
     if (bit > 32) {
       throw new Error('bit > 32');
     }
-    this.state.data.welcomingStep = Math.pow(2, bit);
+    this.state.data.welcomingStep = (this.state.data.welcomingStep || 0) | Math.pow(2, bit);
     this.accountDB.save(this.state.data);
   }
 
@@ -100,9 +105,20 @@ class Account implements Readable<AccountState> {
       type: 'CAPTURE',
       timestamp,
       nonce,
-      planetCoords,
+      planetCoords: {...planetCoords},
     };
     this.accountDB.save(this.state.data);
+  }
+
+  acknowledgeActionFailure(txHash: string, final: boolean) {
+    this.check();
+    const pendingAction = this.state.data.pendingActions[txHash];
+    if (pendingAction) {
+      pendingAction.acknowledged = {
+        final,
+        type: 'ERROR',
+      };
+    }
   }
 
   private check() {
@@ -128,6 +144,10 @@ class Account implements Readable<AccountState> {
         this.unsubscribeFromSync();
         this.unsubscribeFromSync = undefined;
       }
+
+      this.state.ownerAddress = $privateWallet.ownerAddress;
+      this._notify();
+
       if ($privateWallet.ownerAddress) {
         this.accountDB = new AccountDB(
           $privateWallet.ownerAddress,
@@ -171,18 +191,40 @@ class Account implements Readable<AccountState> {
         welcomingStep: 0,
       };
     }
-    if (remoteData) {
-      if (remoteData.welcomingStep > newData.welcomingStep) {
-        newDataOnRemote = true;
-        newData.welcomingStep = newData.welcomingStep | remoteData.welcomingStep;
-      } else if (newData.welcomingStep > remoteData.welcomingStep) {
-        newDataOnLocal = true;
+
+    if (!remoteData) {
+      remoteData = {
+        pendingActions: {},
+        welcomingStep: 0,
+      };
+    }
+
+    if (remoteData.welcomingStep > newData.welcomingStep) {
+      newDataOnRemote = true;
+      newData.welcomingStep = newData.welcomingStep | remoteData.welcomingStep;
+    } else if (!remoteData.welcomingStep || newData.welcomingStep > remoteData.welcomingStep) {
+      newDataOnLocal = true;
+    }
+    if (remoteData.pendingActions) {
+      for (const txHash of Object.keys(remoteData.pendingActions)) {
+        const pendingAction = newData.pendingActions[txHash];
+        if (!pendingAction) {
+          newData.pendingActions[txHash] = remoteData.pendingActions[txHash];
+          newDataOnRemote = true;
+        } else {
+          // TODO merge pendingAction
+          // newDataOnLocal = true;
+          // newDataOnRemote = true;
+        }
+      }
+      for (const txHash of Object.keys(newData.pendingActions)) {
+        if (!remoteData.pendingActions[txHash]) {
+          newDataOnLocal = true;
+        }
       }
     } else {
       newDataOnLocal = true;
     }
-
-    // TODO pendingActions
 
     return {
       newData,

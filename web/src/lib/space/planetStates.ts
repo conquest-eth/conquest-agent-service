@@ -1,8 +1,9 @@
+import type {CheckedPendingActions} from '$lib/account/pendingActions';
+import {spaceQueryWithPendingActions, SpaceQueryWithPendingState} from '$lib/space/optimisticSpace';
 import {now, time} from '$lib/time';
-import type {QueryState} from '$lib/utils/stores/graphql';
-import type {PlanetInfo, PlanetState} from 'conquest-eth-common';
+import {PlanetInfo, PlanetState, xyToLocation} from 'conquest-eth-common';
 import {spaceInfo} from './spaceInfo';
-import {PlanetContractState, spaceQuery, SpaceState} from './spaceQuery';
+import type {PlanetContractState, SpaceState} from './spaceQuery';
 
 type ListenerInfo = {planetInfo: PlanetInfo; func: (planetState: PlanetState) => void};
 
@@ -11,17 +12,12 @@ export class PlanetStates {
   private listenerIndex = 0;
   private listeners: Record<number, ListenerInfo> = {};
 
-  private spaceStateCache: SpaceState;
+  private spaceStateCache: SpaceQueryWithPendingState;
+  private pendingActionsPerPlanet: {[location: string]: CheckedPendingActions};
 
   start(): void {
-    spaceQuery.subscribe(this.onQueryResult.bind(this));
     time.subscribe(this.onTime.bind(this));
-  }
-
-  private onTime() {
-    if (this.spaceStateCache) {
-      this.processSpace(this.spaceStateCache, now());
-    }
+    spaceQueryWithPendingActions.subscribe(this.onSpaceUpdate.bind(this));
   }
 
   onPlannetUpdates(planetInfo: PlanetInfo, func: (planetState: PlanetState) => void): number {
@@ -35,12 +31,7 @@ export class PlanetStates {
     this.planetListeners[planetInfo.location.id] = currentListeners;
 
     if (this.spaceStateCache) {
-      const planetStates = this._transform(this.spaceStateCache, now());
-      for (const planet of planetStates) {
-        if (planet.id === planetInfo.location.id) {
-          func(planet.state);
-        }
-      }
+      this.processSpace(this.spaceStateCache, now());
     }
 
     return this.listenerIndex;
@@ -68,23 +59,37 @@ export class PlanetStates {
     }
   }
 
-  onQueryResult(space: QueryState<SpaceState>): void {
-    if (!space.data) {
+  private onTime() {
+    if (this.spaceStateCache) {
+      this.processSpace(this.spaceStateCache, now());
+    }
+  }
+
+  private onSpaceUpdate(update: SpaceQueryWithPendingState): void {
+    if (!update.queryState.data) {
       // TODO error
       return;
     }
-    this.spaceStateCache = space.data;
-    this.processSpace(space.data, now());
+    this.spaceStateCache = update;
+    this.pendingActionsPerPlanet = {};
+    for (const pendingAction of update.pendingActions) {
+      if (pendingAction.action.type === 'CAPTURE') {
+        const location = xyToLocation(pendingAction.action.planetCoords.x, pendingAction.action.planetCoords.y);
+        const currentlist = (this.pendingActionsPerPlanet[location] = this.pendingActionsPerPlanet[location] || []);
+        currentlist.push(pendingAction);
+      }
+    }
+
+    this.processSpace(update, now());
   }
 
-  processSpace(space: SpaceState, time: number): void {
-    // const planetStates = this._transform(space, time);
-    // for (const planet of planetStates) {
-    //   this._callListeners(planet.id, planet.state);
-    // }
+  private processSpace(space: SpaceQueryWithPendingState, time: number): void {
+    if (!space.queryState.data) {
+      return;
+    }
 
     const planetContractStates: {[id: string]: PlanetContractState} = {};
-    for (const planetContractState of space.planets) {
+    for (const planetContractState of space.queryState.data.planets) {
       planetContractStates[planetContractState.id] = planetContractState;
     }
 
@@ -95,7 +100,8 @@ export class PlanetStates {
         const listenerInfo = this.listeners[listeners[0]];
         const planetState = this._transformPlanet(
           listenerInfo.planetInfo,
-          space,
+          space.queryState.data,
+          this.pendingActionsPerPlanet,
           planetContractStates[listenerInfo.planetInfo.location.id],
           time
         );
@@ -104,9 +110,10 @@ export class PlanetStates {
     }
   }
 
-  _transformPlanet(
+  private _transformPlanet(
     planetInfo: PlanetInfo,
     space: SpaceState,
+    pendingActionsPerPlanet: {[location: string]: CheckedPendingActions},
     contractState: PlanetContractState | undefined,
     time: number
   ): PlanetState {
@@ -115,7 +122,6 @@ export class PlanetStates {
       planetInfo.location.x <= space.space.x2 &&
       planetInfo.location.y >= space.space.y1 &&
       planetInfo.location.y <= space.space.y2;
-    // let capturing: (TxStatus & {txHash: string}) | null | 'Loading' = null;
 
     let owner: string | undefined = undefined;
     let active = false;
@@ -124,11 +130,12 @@ export class PlanetStates {
     let exiting = false;
     let exitTimeLeft = 0; // this.spaceInfo.exitDuration - (time - planet.exitTime);
     let natives = true;
+    let capturing = false;
 
     if (contractState) {
       owner = contractState.owner;
       active = contractState.active;
-      reward = contractState.reward.toString();
+      reward = contractState.reward ? contractState.reward.toString() : '0';
       numSpaceships = contractState.numSpaceships;
       exiting = !!contractState.exitTime;
       exitTimeLeft = 0; // this.spaceInfo.exitDuration - (time - planet.exitTime);
@@ -153,9 +160,14 @@ export class PlanetStates {
       }
     }
 
-    // if (!active) {
-    //   capturing = this.capturingStatus(planetId);
-    // }
+    const pendingActions = pendingActionsPerPlanet[planetInfo.location.id];
+    if (pendingActions) {
+      for (const pendingAction of pendingActions) {
+        if (pendingAction.action.type === 'CAPTURE') {
+          capturing = true;
+        }
+      }
+    }
 
     return {
       owner,
@@ -164,71 +176,71 @@ export class PlanetStates {
       exiting,
       exitTimeLeft,
       natives,
-      capturing: null, // TODO
+      capturing,
       inReach,
       reward: reward.toString(),
     };
   }
 
-  _transform(space: SpaceState, time: number): {state: PlanetState; id: string}[] {
-    const planets: {state: PlanetState; id: string}[] = [];
-    for (const planet of space.planets) {
-      const planetInfo = spaceInfo.getPlanetInfoViaId(planet.id);
-      if (!planetInfo) {
-        continue;
-      }
-      const inReach =
-        planetInfo.location.x >= space.space.x1 &&
-        planetInfo.location.x <= space.space.x2 &&
-        planetInfo.location.y >= space.space.y1 &&
-        planetInfo.location.y <= space.space.y2;
-      // let capturing: (TxStatus & {txHash: string}) | null | 'Loading' = null;
-      let owner = planet.owner;
-      let active = planet.active;
-      let reward = planet.reward;
-      let numSpaceships = planet.numSpaceships;
-      let exiting = !!planet.exitTime;
-      let exitTimeLeft = 0; // this.spaceInfo.exitDuration - (time - planet.exitTime);
-      const natives = planet.lastUpdated == 0;
-      if (planet.exitTime > 0 && time > planet.exitTime + spaceInfo.exitDuration) {
-        // exited
-        numSpaceships = 0;
-        owner = '0x0000000000000000000000000000000000000000';
-        active = false;
-        exiting = false;
-        exitTimeLeft = 0;
-        reward = '0'; //BigNumber.from('0'); // TODO ?
-      } else if (planet.active) {
-        numSpaceships =
-          planet.numSpaceships +
-          Math.floor(
-            ((time - planet.lastUpdated) * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
-          );
-      } else if (natives) {
-        numSpaceships = planetInfo.stats.natives; // TODO show num Natives
-      }
+  // private _transform(space: SpaceState, time: number): {state: PlanetState; id: string}[] {
+  //   const planets: {state: PlanetState; id: string}[] = [];
+  //   for (const planet of space.planets) {
+  //     const planetInfo = spaceInfo.getPlanetInfoViaId(planet.id);
+  //     if (!planetInfo) {
+  //       continue;
+  //     }
+  //     const inReach =
+  //       planetInfo.location.x >= space.space.x1 &&
+  //       planetInfo.location.x <= space.space.x2 &&
+  //       planetInfo.location.y >= space.space.y1 &&
+  //       planetInfo.location.y <= space.space.y2;
+  //     // let capturing: (TxStatus & {txHash: string}) | null | 'Loading' = null;
+  //     let owner = planet.owner;
+  //     let active = planet.active;
+  //     let reward = planet.reward;
+  //     let numSpaceships = planet.numSpaceships;
+  //     let exiting = !!planet.exitTime;
+  //     let exitTimeLeft = 0; // this.spaceInfo.exitDuration - (time - planet.exitTime);
+  //     const natives = planet.lastUpdated == 0;
+  //     if (planet.exitTime > 0 && time > planet.exitTime + spaceInfo.exitDuration) {
+  //       // exited
+  //       numSpaceships = 0;
+  //       owner = '0x0000000000000000000000000000000000000000';
+  //       active = false;
+  //       exiting = false;
+  //       exitTimeLeft = 0;
+  //       reward = '0'; //BigNumber.from('0'); // TODO ?
+  //     } else if (planet.active) {
+  //       numSpaceships =
+  //         planet.numSpaceships +
+  //         Math.floor(
+  //           ((time - planet.lastUpdated) * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
+  //         );
+  //     } else if (natives) {
+  //       numSpaceships = planetInfo.stats.natives; // TODO show num Natives
+  //     }
 
-      // if (!active) {
-      //   capturing = this.capturingStatus(planetId);
-      // }
+  //     // if (!active) {
+  //     //   capturing = this.capturingStatus(planetId);
+  //     // }
 
-      planets.push({
-        id: planetInfo.location.id,
-        state: {
-          owner,
-          active,
-          numSpaceships,
-          exiting,
-          exitTimeLeft,
-          natives,
-          capturing: null, // TODO
-          inReach,
-          reward: reward.toString(),
-        },
-      });
-    }
-    return planets;
-  }
+  //     planets.push({
+  //       id: planetInfo.location.id,
+  //       state: {
+  //         owner,
+  //         active,
+  //         numSpaceships,
+  //         exiting,
+  //         exitTimeLeft,
+  //         natives,
+  //         capturing: null, // TODO
+  //         inReach,
+  //         reward: reward.toString(),
+  //       },
+  //     });
+  //   }
+  //   return planets;
+  // }
 
   // private _callListeners(planetId: string, planet: PlanetState) {
   //   const listeners = this.planetListeners[planetId];
@@ -251,7 +263,7 @@ export class PlanetStates {
   //   }
   // }
 
-  _call(listeners: number[], planet: PlanetState): void {
+  private _call(listeners: number[], planet: PlanetState): void {
     const num = listeners.length;
     for (let i = 0; i < num; i++) {
       const listenerIndex = listeners[i];

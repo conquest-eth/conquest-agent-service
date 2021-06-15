@@ -1,6 +1,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
-import {network} from 'hardhat';
+import {ethers, network} from 'hardhat';
 
 function minutes(num: number): number {
   return num * 60;
@@ -18,7 +18,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const playToken_l2 = await hre.deployments.get('PlayToken_L2');
 
-  let genesisHash = '0xcce77b122615b6093c0df0c7392bec6f537eb7a0595c337a573ee6d96d1107c8';
+  let chainGenesisHash = '';
+  if (chainId === '1337' || chainId === '31337') {
+    const earliestBlock = await ethers.provider.getBlock('earliest');
+    chainGenesisHash = earliestBlock.hash;
+  }
+  let genesisHash =
+    '0xcce77b122615b6093c0df0c7392bec6f537eb7a0595c337a573ee6d96d1107c8';
   const resolveWindow = hours(12);
   let timePerDistance = hours(2);
   let exitDuration = hours(3 * 24);
@@ -34,7 +40,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   if (network.name === 'quick') {
     // TODO remove when updating quick to a new contract
-    genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
+    genesisHash =
+      '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
     timePerDistance /= 40;
     exitDuration /= 40;
     productionSpeedUp = 40;
@@ -42,12 +49,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // TODO remove when updating staging to a new contract
   if (network.name === 'staging') {
-    genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
+    genesisHash =
+      '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
   }
 
   await deploy('OuterSpace', {
     from: deployer,
-    linkedData: {genesisHash, resolveWindow, timePerDistance, exitDuration, acquireNumSpaceships, productionSpeedUp},
+    linkedData: {
+      genesisHash,
+      resolveWindow,
+      timePerDistance,
+      exitDuration,
+      acquireNumSpaceships,
+      productionSpeedUp,
+      chainGenesisHash,
+    },
     args: [
       playToken_l2.address,
       genesisHash,

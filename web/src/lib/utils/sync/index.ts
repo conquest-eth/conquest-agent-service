@@ -67,19 +67,33 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     }
     this.state.syncing = true;
     this._notify();
-    const {data: remoteData, counter} = await this._fetchRemoteData();
-    const {newData, newDataOnLocal, newDataOnRemote} = this.merge(this.state.data, remoteData);
-    if (newDataOnRemote) {
-      this.state.data = newData;
-      const notified = this._syncLocal();
-      if (!notified) {
-        this._notify();
+
+    let error: unknown | undefined = undefined;
+    let remoteData: T;
+    let counter: BigNumber | undefined;
+    try {
+      const remoteResult = await this._fetchRemoteData();
+      remoteData = remoteResult.data;
+      counter = remoteResult.counter;
+    } catch (e) {
+      error = e;
+    }
+
+    if (!error && remoteData) {
+      const {newData, newDataOnLocal, newDataOnRemote} = this.merge(this.state.data, remoteData);
+      if (newDataOnRemote) {
+        this.state.data = newData;
+        const notified = this._syncLocal();
+        if (!notified) {
+          this._notify();
+        }
       }
+      if (newDataOnLocal) {
+        this._postToRemote(this.state.data, counter);
+      }
+      this.state.remoteFetchedAtLeastOnce = true;
     }
-    if (newDataOnLocal) {
-      this._postToRemote(this.state.data, counter);
-    }
-    this.state.remoteFetchedAtLeastOnce = true;
+
     this.state.syncing = false;
     this._notify();
   }
@@ -125,22 +139,11 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     localCache.setItem(LOCAL_STORAGE_KEY(address, chainId), encrypted);
   }
 
-  private async _fetchRemoteData(): Promise<{data: T | undefined; counter: BigNumber}> {
-    let json;
-    let error;
-    try {
-      const response = await this._syncRequest('wallet_getString', [this.wallet.address, this.dbName]);
-      json = await response.json();
-      // TODO check signature
-      if (json.error) {
-        throw new Error(json.error);
-      }
-    } catch (e) {
-      error = e;
-    }
-    if (error || json.error) {
-      console.error('syncDown', error || json.error);
-      return; // TODO retry ?
+  private async _fetchRemoteData(): Promise<{data: T; counter: BigNumber}> {
+    const response = await this._syncRequest('wallet_getString', [this.wallet.address, this.dbName]);
+    const json = await response.json();
+    if (json.error) {
+      throw new Error(json.error); // TODO retry before throw
     }
     let data: T;
     if (json.result.data && json.result.data !== '') {
@@ -149,7 +152,10 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
         data = JSON.parse(decryptedData);
       } catch (e) {
         console.error(e);
+        throw new Error(e);
       }
+    } else {
+      data = {} as T;
     }
     return {data, counter: BigNumber.from(json.result.counter)};
   }

@@ -6,12 +6,13 @@
   import messageFlow from '$lib/flows/message';
   import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
   import {wallet} from '$lib/blockchain/wallet';
-  import privateAccount from '$lib/account/privateAccount';
   import Help from '$lib/components/utils/Help.svelte';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import {planets} from '$lib/space/planets';
+  import {account} from '$lib/account/account';
+  import {privateWallet} from '$lib/account/privateWallet';
 
   export let coords: {x: number; y: number};
   export let close: () => void;
@@ -65,7 +66,7 @@
   }
 
   function connect() {
-    privateAccount.login();
+    privateWallet.login();
   }
 
   $: walletIsOwner = $wallet.address && $wallet.address?.toLowerCase() === $planetState?.owner?.toLowerCase();
@@ -88,31 +89,8 @@
 
 {#if $planetState}
   {#if $wallet.address}
-    {#if !!$planetState?.capturing}
-      {#if $planetState.capturing === 'Loading'}
-        <p>Please wait....</p>
-      {:else if $planetState.capturing.status === 'Failure'}
-        <p>The Capture Transaction Failed.</p>
-        <p class="p-2">
-          See
-          <a
-            target="_blank"
-            class="underline text-cyan-100"
-            href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${$planetState.capturing.txHash}`}>here</a
-          >
-        </p>
-        <PanelButton
-          label="Ok"
-          class="m-2"
-          color="text-green-500"
-          borderColor="border-green-500"
-          on:click={() => privateAccount.acknowledgeCaptureFailure(planetInfo.location.id)}
-        >
-          <div class="w-20">Ok</div>
-        </PanelButton>
-      {:else}
-        <p>Capturing....</p>
-      {/if}
+    {#if $planetState.capturing}
+      <p>Capturing....</p>
     {:else if $sendFlow.step === 'PICK_DESTINATION'}
       {#if planetInfo.location.id === (originPlanetInfo ? originPlanetInfo.location.id : null)}
         <p class="m-3">Pick a Different Planet than Itself</p>

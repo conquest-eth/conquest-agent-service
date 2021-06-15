@@ -99,6 +99,7 @@ export class Camera extends BasicObjectStore<CameraState> {
     if (this.unsubscribeFromRenderView) {
       console.log(this.unsubscribeFromRenderView);
       this.unsubscribeFromRenderView();
+      this.unsubscribeFromRenderView = undefined;
     }
 
     if (this.surface) {

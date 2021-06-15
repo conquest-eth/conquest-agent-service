@@ -9,6 +9,7 @@
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import {timeToText} from '$lib/utils';
   import {spaceInfo} from '$lib/space/spaceInfo';
+  import {simulateCapture} from '$lib/space/utils';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
   import {time} from '$lib/time';
@@ -20,7 +21,7 @@
   $: stake = stats && stats.stake;
   $: cost = stats ? BigNumber.from(stats.stake) : undefined; // TODO multiplier from config/contract
 
-  $: result = undefined; // TODO planetInfo && $planetState ? space.simulateCapture($wallet.address, $planet, $time) : undefined;
+  $: result = planetInfo && $planetState ? simulateCapture($wallet.address, planetInfo, $planetState) : undefined;
 </script>
 
 {#if $claimFlow.error}
@@ -63,7 +64,7 @@
               >{stake}
               <PlayCoin class="inline w-4" /></span
             >
-            to capture Planet
+            to activate Planet
             <span class="text-green-500">"{stats.name}"</span>.
           </h2>
           <p class="text-gray-300 mt-2 text-sm">
@@ -71,7 +72,7 @@
             {timeToText(spaceInfo.exitDuration, {verbose: true})}).
           </p>
           <p class="text-blue-400 mt-2 text-sm">
-            Once captured, the planet will start with
+            Once the tx will be mined, the planet will start with
             {result && result.numSpaceshipsLeft}
             spaceships and will produce
             {stats.production / 60}
@@ -95,7 +96,7 @@
       the universe!
     </p>
     <p class="text-center mt-3">
-      <NavButton href={`${base}/settings`}>Setup Profile</NavButton>
+      <NavButton label="profile" href={`${base}/settings`}>Setup Profile</NavButton>
     </p>
   </Modal>
 {/if}
