@@ -1,12 +1,18 @@
-import {CheckedPendingActions, pendingActions} from '$lib/account/pendingActions';
+import {CheckedPendingAction, CheckedPendingActions, pendingActions} from '$lib/account/pendingActions';
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
 import {now} from '$lib/time';
 import type {QueryState} from '$lib/utils/stores/graphql';
 import {Readable, writable, Writable} from 'svelte/store';
 import {spaceQuery, SpaceState} from './spaceQuery';
 
+export type SyncedPendingAction = CheckedPendingAction & {
+  counted: boolean;
+};
+
+export type SyncedPendingActions = SyncedPendingAction[];
+
 export type SpaceQueryWithPendingState = {
-  pendingActions: CheckedPendingActions;
+  pendingActions: SyncedPendingActions;
   queryState: QueryState<SpaceState>;
 };
 
@@ -58,14 +64,16 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
     for (const pendingAction of this.rawPendingActions) {
       if (!dict[pendingAction.id] && pendingAction.action.timestamp >= this.lastQueryTime) {
         // not full proof (a second resolution) but sufficient
-        this.state.pendingActions.push(pendingAction);
+        this.state.pendingActions.push({...pendingAction, counted: false});
       }
     }
     this._notify();
   }
 
   private _updateAndNotify() {
-    this.state.pendingActions = this.rawPendingActions.filter((v) => !this.includedTx[v.id]);
+    this.state.pendingActions = this.rawPendingActions.map((v) => {
+      return {...v, counted: this.includedTx[v.id]};
+    });
     this._notify();
   }
 
@@ -77,6 +85,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
     }
     const txsToCheck: string[] = [];
     for (const pendingAction of this.rawPendingActions) {
+      // TODO filter out aknowledged one, => auto acknowledge
       txsToCheck.push(pendingAction.id); // TODO SEND + RESOLVE
     }
 
@@ -114,7 +123,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
       this.includedTx[tx] = true;
     }
 
-    this.state.queryState = space;
+    this.state = {queryState: space, pendingActions: this.state.pendingActions};
     this._updateAndNotify();
   }
 

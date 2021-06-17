@@ -10,6 +10,7 @@
   import Help from '$lib/components/utils/Help.svelte';
   import PlanetActionPanel from '$lib/components/planets/PlanetActionPanel.svelte';
   import selection from '$lib/map/selection';
+  import {account} from '$lib/account/account';
 
   export let coords: {x: number; y: number};
   function close() {
@@ -25,6 +26,10 @@
   }
   function select(e: MouseEvent) {
     _select(e.currentTarget as HTMLElement);
+  }
+
+  function acknowledgeClaim(txHash: string) {
+    account.acknowledgeSuccess(txHash);
   }
 
   $: planetInfo = spaceInfo.getPlanetInfo(coords.x, coords.y);
@@ -78,6 +83,10 @@
           <p class="p-0 mb-1">Exiting in:</p>
           <p class="p-0 mb-1">{timeToText($planetState.exitTimeLeft)}</p>
         </div>
+      {/if}
+
+      {#if $planetState?.requireClaimAcknowledgement}
+        <button on:click={() => acknowledgeClaim($planetState?.requireClaimAcknowledgement)}>OK</button>
       {/if}
     {/if}
 

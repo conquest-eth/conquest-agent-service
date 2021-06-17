@@ -1,5 +1,10 @@
 import type {CheckedPendingActions} from '$lib/account/pendingActions';
-import {spaceQueryWithPendingActions, SpaceQueryWithPendingState} from '$lib/space/optimisticSpace';
+import {
+  spaceQueryWithPendingActions,
+  SpaceQueryWithPendingState,
+  SyncedPendingAction,
+  SyncedPendingActions,
+} from '$lib/space/optimisticSpace';
 import {now, time} from '$lib/time';
 import {PlanetInfo, PlanetState, xyToLocation} from 'conquest-eth-common';
 import {spaceInfo} from './spaceInfo';
@@ -13,7 +18,7 @@ export class PlanetStates {
   private listeners: Record<number, ListenerInfo> = {};
 
   private spaceStateCache: SpaceQueryWithPendingState;
-  private pendingActionsPerPlanet: {[location: string]: CheckedPendingActions};
+  private pendingActionsPerPlanet: {[location: string]: SyncedPendingActions};
 
   start(): void {
     time.subscribe(this.onTime.bind(this));
@@ -113,7 +118,7 @@ export class PlanetStates {
   private _transformPlanet(
     planetInfo: PlanetInfo,
     space: SpaceState,
-    pendingActionsPerPlanet: {[location: string]: CheckedPendingActions},
+    pendingActionsPerPlanet: {[location: string]: SyncedPendingActions},
     contractState: PlanetContractState | undefined,
     time: number
   ): PlanetState {
@@ -160,11 +165,19 @@ export class PlanetStates {
       }
     }
 
+    let requireClaimAcknowledgement: string | undefined = undefined;
+
     const pendingActions = pendingActionsPerPlanet[planetInfo.location.id];
     if (pendingActions) {
       for (const pendingAction of pendingActions) {
-        if (pendingAction.action.type === 'CAPTURE') {
-          capturing = true;
+        if (!pendingAction.counted) {
+          if (pendingAction.action.type === 'CAPTURE') {
+            capturing = true;
+          }
+        } else if (!pendingAction.action.acknowledged) {
+          if (pendingAction.action.type === 'CAPTURE') {
+            requireClaimAcknowledgement = pendingAction.id;
+          }
         }
       }
     }
@@ -179,6 +192,7 @@ export class PlanetStates {
       capturing,
       inReach,
       reward: reward.toString(),
+      requireClaimAcknowledgement,
     };
   }
 

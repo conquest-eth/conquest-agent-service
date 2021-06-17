@@ -19,7 +19,7 @@ export type SyncingState<T> = {
 };
 
 export class AccountDB<T extends Record<string, unknown>> implements Readable<SyncingState<T>> {
-  private _lastId: number;
+  private _lastId = 1;
   private state: SyncingState<T>;
   private store: Writable<SyncingState<T>>;
 
@@ -50,6 +50,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     }
 
     // TODO sync in time
+    // handle multiple request and do only once once all has been process (timer of 1 second ?)
     this._syncRemote();
   }
 
@@ -76,6 +77,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
       remoteData = remoteResult.data;
       counter = remoteResult.counter;
     } catch (e) {
+      console.error(e);
       error = e;
     }
 
@@ -140,7 +142,14 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
   }
 
   private async _fetchRemoteData(): Promise<{data: T; counter: BigNumber}> {
-    const response = await this._syncRequest('wallet_getString', [this.wallet.address, this.dbName]);
+    let response: Response;
+    try {
+      response = await this._syncRequest('wallet_getString', [this.wallet.address, this.dbName]);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
+
     const json = await response.json();
     if (json.error) {
       throw new Error(json.error); // TODO retry before throw
@@ -197,7 +206,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
   }
 
   private async _syncRequest(method: string, params: string[]): Promise<Response> {
-    return await fetch(this.syncURI, {
+    return fetch(this.syncURI, {
       // TODO env variable
       method: 'POST',
       body: JSON.stringify({

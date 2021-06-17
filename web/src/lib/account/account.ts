@@ -19,10 +19,7 @@ type PendingActionBase = {
   txOrigin?: string; // used if the controller is not owner
   timestamp: number;
   nonce: number;
-  acknowledged?: {
-    final: boolean;
-    type: 'ERROR' | 'SUCCESS';
-  };
+  acknowledged?: 'ERROR' | 'SUCCESS';
 };
 
 type PendingResolution = {
@@ -57,7 +54,7 @@ export type PendingCapture = PendingActionBase & {
 
 export type PendingAction = PendingSend | PendingExit | PendingCapture | PendingWithdrawal;
 
-export type PendingActions = {[txHash: string]: PendingAction};
+export type PendingActions = {[txHash: string]: PendingAction | number};
 
 export type AccountData = {
   pendingActions: PendingActions;
@@ -71,6 +68,8 @@ class Account implements Readable<AccountState> {
   private stopPrivateWalletSubscription: (() => void) | undefined = undefined;
   private accountDB: AccountDB<AccountData> | undefined;
   private unsubscribeFromSync: () => void;
+
+  private deletedPendingActions: string[] = [];
 
   constructor() {
     this.state = {
@@ -110,15 +109,57 @@ class Account implements Readable<AccountState> {
     this.accountDB.save(this.state.data);
   }
 
-  acknowledgeActionFailure(txHash: string, final: boolean) {
+  deletePendingAction(txHash: string) {
+    this.check();
+    if (this.deletedPendingActions.indexOf(txHash) === -1) {
+      this.deletedPendingActions.push(txHash);
+    }
+    delete this.state.data.pendingActions[txHash];
+    this.accountDB.save(this.state.data);
+  }
+
+  cancelAcknowledgment(txHash: string) {
+    this.check();
+    const action = this.state.data.pendingActions[txHash];
+    if (action && typeof action !== 'number') {
+      action.acknowledged = undefined;
+      this.accountDB.save(this.state.data);
+    }
+  }
+
+  acknowledgeSuccess(txHash: string, final?: number) {
     this.check();
     const pendingAction = this.state.data.pendingActions[txHash];
-    if (pendingAction) {
-      pendingAction.acknowledged = {
-        final,
-        type: 'ERROR',
-      };
+    if (pendingAction && typeof pendingAction !== 'number') {
+      if (final) {
+        this.state.data.pendingActions[txHash] = final;
+      } else {
+        pendingAction.acknowledged = 'SUCCESS';
+      }
     }
+    this.accountDB.save(this.state.data);
+  }
+
+  markAsFullyAcknwledged(txHash: string, timestamp: number) {
+    this.check();
+    const action = this.state.data.pendingActions[txHash];
+    if (action && typeof action !== 'number') {
+      this.state.data.pendingActions[txHash] = timestamp;
+      this.accountDB.save(this.state.data);
+    }
+  }
+
+  acknowledgeActionFailure(txHash: string, final?: number) {
+    this.check();
+    const pendingAction = this.state.data.pendingActions[txHash];
+    if (pendingAction && typeof pendingAction !== 'number') {
+      if (final) {
+        this.state.data.pendingActions[txHash] = final;
+      } else {
+        pendingAction.acknowledged = 'ERROR';
+      }
+    }
+    this.accountDB.save(this.state.data);
   }
 
   private check() {
@@ -199,6 +240,17 @@ class Account implements Readable<AccountState> {
       };
     }
 
+    for (const txHash of this.deletedPendingActions) {
+      if (remoteData.pendingActions[txHash]) {
+        delete remoteData.pendingActions[txHash];
+        newDataOnLocal = true;
+      }
+      if (newData.pendingActions[txHash]) {
+        delete newData.pendingActions[txHash];
+        newDataOnLocal = true;
+      }
+    }
+
     if (remoteData.welcomingStep > newData.welcomingStep) {
       newDataOnRemote = true;
       newData.welcomingStep = newData.welcomingStep | remoteData.welcomingStep;
@@ -207,12 +259,29 @@ class Account implements Readable<AccountState> {
     }
     if (remoteData.pendingActions) {
       for (const txHash of Object.keys(remoteData.pendingActions)) {
+        const remotePendingAction = remoteData.pendingActions[txHash];
         const pendingAction = newData.pendingActions[txHash];
+
         if (!pendingAction) {
-          newData.pendingActions[txHash] = remoteData.pendingActions[txHash];
+          newData.pendingActions[txHash] = remotePendingAction;
           newDataOnRemote = true;
         } else {
-          // TODO merge pendingAction
+          if (typeof pendingAction === 'number' && typeof remotePendingAction !== 'number') {
+            newDataOnLocal = true;
+          } else if (typeof pendingAction !== 'number' && typeof remotePendingAction === 'number') {
+            newDataOnRemote = true;
+            newData.pendingActions[txHash] = remotePendingAction;
+          } else if (typeof pendingAction !== 'number' && typeof remotePendingAction !== 'number') {
+            if (pendingAction.acknowledged !== remotePendingAction.acknowledged) {
+              if (pendingAction.acknowledged) {
+                newDataOnLocal = true;
+              } else {
+                newDataOnRemote = true;
+                pendingAction.acknowledged = remotePendingAction.acknowledged;
+              }
+            }
+          }
+          // TODO more merge pendingAction
           // newDataOnLocal = true;
           // newDataOnRemote = true;
         }

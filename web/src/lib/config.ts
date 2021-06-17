@@ -58,6 +58,7 @@ if (fallbackProviderOrUrl && typeof fallbackProviderOrUrl === 'string') {
 const graphNodeURL = import.meta.env.VITE_THE_GRAPH_HTTP as string;
 
 const logPeriod = 7 * 24 * 60 * 60;
+const deletionDelay = 7 * 24 * 60 * 60;
 
 const lowFrequencyFetch = blockTime * 8;
 const mediumFrequencyFetch = blockTime * 4;
@@ -86,4 +87,5 @@ export {
   globalQueryParams,
   SYNC_URI,
   SYNC_DB_NAME,
+  deletionDelay,
 };

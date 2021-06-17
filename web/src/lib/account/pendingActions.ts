@@ -3,7 +3,7 @@ import {account, AccountState, PendingCapture, PendingExit, PendingSend, Pending
 import {chainTempo, ChainTempoInfo} from '$lib/blockchain/chainTempo';
 import {wallet} from '$lib/blockchain/wallet';
 import {now} from '$lib/time';
-import {finality} from '$lib/config';
+import {deletionDelay, finality} from '$lib/config';
 
 // type CheckedStatus = {
 //   failedAtBlock?: number;
@@ -32,7 +32,7 @@ import {finality} from '$lib/config';
 
 export type CheckedPendingAction = {
   id: string;
-  final?: boolean;
+  final?: number;
   status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
   action: PendingSend | PendingExit | PendingCapture | PendingWithdrawal;
 };
@@ -75,9 +75,12 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
       const txHashes = Object.keys($account.data.pendingActions);
       for (const txHash of txHashes) {
         const action = $account.data.pendingActions[txHash];
-        if (action.acknowledged && action.acknowledged.final) {
+        if (typeof action === 'number') {
           continue;
         }
+        // if (action.acknowledged) {
+        //   continue;
+        // }
         const found = this.state.find((v) => v.id === txHash);
         if (!found) {
           this.state.push({
@@ -88,7 +91,10 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         }
       }
       for (let i = this.state.length - 1; i >= 0; i--) {
-        if (!$account.data.pendingActions[this.state[i].id]) {
+        if (
+          !$account.data.pendingActions[this.state[i].id] ||
+          typeof $account.data.pendingActions[this.state[i].id] === 'number'
+        ) {
           this.state.splice(i, 1);
         }
       }
@@ -109,7 +115,11 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     const ownerAddress = this.ownerAddress;
     this.checkingInProgress = true;
     for (const item of this.state) {
-      await this._checkAction(ownerAddress, item, $chainTempoInfo.lastBlockNumber);
+      try {
+        await this._checkAction(ownerAddress, item, $chainTempoInfo.lastBlockNumber);
+      } catch (e) {
+        console.error(e);
+      }
       if (this.ownerAddress !== ownerAddress) {
         this.checkingInProgress = false;
         return;
@@ -118,13 +128,47 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     this.checkingInProgress = false;
   }
 
+  private _handleFinalAcknowledgement(
+    checkedAction: CheckedPendingAction,
+    timestamp: number,
+    finalStatus: 'SUCCESS' | 'ERROR'
+  ) {
+    if (now() - timestamp > deletionDelay) {
+      console.log(`delay over, deleting ${checkedAction.id}`);
+      account.deletePendingAction(checkedAction.id);
+    } else {
+      if (checkedAction.action.acknowledged) {
+        if (checkedAction.action.acknowledged !== finalStatus) {
+          console.log(`cancel acknowledgement as not matching new status ${checkedAction.id}`);
+          account.cancelAcknowledgment(checkedAction.id);
+        } else if (typeof checkedAction.action !== 'number') {
+          console.log(`acknowledgedment final for ${checkedAction.id}`);
+          account.markAsFullyAcknwledged(checkedAction.id, timestamp);
+        }
+      } else {
+        console.log(`not acknowledged yet`);
+      }
+    }
+  }
+
   private async _checkAction(ownerAddress: string, checkedAction: CheckedPendingAction, blockNumber: number) {
     if (!wallet.provider) {
       return;
     }
-    if (checkedAction.final) {
+
+    if (typeof checkedAction.action === 'number') {
+      if (now() - checkedAction.action > deletionDelay) {
+        account.deletePendingAction(checkedAction.id);
+      }
       return;
     }
+
+    if (checkedAction.final && checkedAction.status !== 'PENDING' && checkedAction.status !== 'LOADING') {
+      const status = checkedAction.status === 'SUCCESS' ? 'SUCCESS' : 'ERROR';
+      this._handleFinalAcknowledgement(checkedAction, checkedAction.final, status);
+      return;
+    }
+
     let changes = false;
     if (checkedAction.action.type === 'SEND') {
       // TODO
@@ -135,18 +179,25 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         if (txFromPeers.blockNumber) {
           pending = false;
           const receipt = await wallet.provider.getTransactionReceipt(checkedAction.id);
+          const block = await wallet.provider.getBlock(txFromPeers.blockHash);
           const final = receipt.confirmations >= finality;
           if (receipt.status === 0) {
-            if (checkedAction.status !== 'FAILURE') {
+            if (checkedAction.status !== 'FAILURE' || checkedAction.final !== block.timestamp) {
               checkedAction.status = 'FAILURE';
               changes = true;
-              checkedAction.final = final;
+              checkedAction.final = final ? block.timestamp : undefined;
+              if (final) {
+                this._handleFinalAcknowledgement(checkedAction, block.timestamp, 'ERROR');
+              }
             }
           } else {
-            if (checkedAction.status !== 'SUCCESS') {
+            if (checkedAction.status !== 'SUCCESS' || checkedAction.final !== block.timestamp) {
               checkedAction.status = 'SUCCESS';
               changes = true;
-              checkedAction.final = final;
+              checkedAction.final = final ? block.timestamp : undefined;
+              if (final) {
+                this._handleFinalAcknowledgement(checkedAction, txFromPeers.timestamp, 'ERROR');
+              }
             }
           }
         }
@@ -158,9 +209,10 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         if (finalityNonce > checkedAction.action.nonce) {
           pending = false;
           // replaced
-          if (checkedAction.status !== 'CANCELED') {
+          if (checkedAction.status !== 'CANCELED' || checkedAction.final !== checkedAction.action.timestamp) {
             checkedAction.status = 'CANCELED';
-            checkedAction.final = true;
+            checkedAction.final = checkedAction.action.timestamp;
+            this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'ERROR');
             changes = true;
           }
         }
@@ -169,9 +221,10 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
       if (pending) {
         if (now() - checkedAction.action.timestamp > 3600) {
           // 1 hour to TODO config
-          if (checkedAction.status !== 'TIMEOUT') {
+          if (checkedAction.status !== 'TIMEOUT' || checkedAction.final !== checkedAction.action.timestamp) {
             checkedAction.status = 'TIMEOUT';
-            checkedAction.final = true;
+            checkedAction.final = checkedAction.action.timestamp;
+            this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'ERROR');
             changes = true;
           }
         } else {
