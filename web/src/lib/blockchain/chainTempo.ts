@@ -154,7 +154,7 @@ class ReplayTempo implements Readable<ChainTempoInfo> {
 
 export const chainTempo = new ChainTempo(blockTime * 6);
 
-// 4698089
-// 4714378
-// export const replayTempo = new ReplayTempo({start: 4714000, end: 4830319, period: 2, numBlock: 20});
-// replayTempo.start();
+// // 4698089
+// // 4714378
+// export const chainTempo = new ReplayTempo({start: 4714000, end: 4830319, period: 2, numBlock: 20});
+// chainTempo.start();

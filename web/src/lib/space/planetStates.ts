@@ -170,7 +170,14 @@ export class PlanetStates {
     const pendingActions = pendingActionsPerPlanet[planetInfo.location.id];
     if (pendingActions) {
       for (const pendingAction of pendingActions) {
+        // TODO
+        if (pendingAction.status === 'FAILURE') {
+        } else if (pendingAction.status === 'CANCELED') {
+        } else if (pendingAction.status === 'TIMEOUT') {
+        }
+
         if (!pendingAction.counted) {
+          // should we ensure that if counted, status becomes SUCCESS ? see pendingActions.ts
           if (pendingAction.action.type === 'CAPTURE') {
             capturing = true;
           }
