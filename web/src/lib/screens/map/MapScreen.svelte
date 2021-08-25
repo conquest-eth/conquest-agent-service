@@ -14,12 +14,12 @@
 
   import sendFlow from '$lib/flows/send';
   import SendFlow from '$lib/flows/SendFlow.svelte';
-  // import simulateFlow from '$lib/flows/simulateFlow';
-  // import SimulateFlow from '$lib/flows/SimulateFlow.svelte';
+  import simulateFlow from '$lib/flows/simulateFlow';
+  import SimulateFlow from '$lib/flows/SimulateFlow.svelte';
   // import exitFlow from '$lib/flows/exit';
   // import ExitFlow from '$lib/flows/ExitFlow.svelte';
-  // import resolveFlow from '$lib/flows/resolve';
-  // import ResolveFlow from '$lib/flows/ResolveFlow.svelte';
+  import resolveFlow from '$lib/flows/resolve';
+  import ResolveFlow from '$lib/flows/ResolveFlow.svelte';
   import FleetsToResolve from '$lib/components/fleets/FleetsToResolve.svelte';
   // import messageFlow from '$lib/flows/message';
   // import MessageFlow from '$lib/flows/MessageFlow.svelte';
@@ -71,13 +71,13 @@
   <SendFlow />
 {/if}
 
-<!-- {#if $simulateFlow.error || $simulateFlow.step !== 'IDLE'}
+{#if $simulateFlow.error || $simulateFlow.step !== 'IDLE'}
   <SimulateFlow />
-{/if} -->
+{/if}
 
-<!-- {#if $resolveFlow.error || $resolveFlow.step !== 'IDLE'}
+{#if $resolveFlow.error || $resolveFlow.step !== 'IDLE'}
   <ResolveFlow />
-{/if} -->
+{/if}
 
 <!-- {#if $exitFlow.error || $exitFlow.step !== 'IDLE'}
   <ExitFlow />
