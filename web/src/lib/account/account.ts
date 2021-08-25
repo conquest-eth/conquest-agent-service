@@ -264,7 +264,6 @@ class Account implements Readable<AccountState> {
     if (!newData) {
       newData = {
         pendingActions: {},
-        fleets: {},
         welcomingStep: 0,
       };
     }
@@ -272,7 +271,6 @@ class Account implements Readable<AccountState> {
     if (!remoteData) {
       remoteData = {
         pendingActions: {},
-        fleets: {},
         welcomingStep: 0,
       };
     }
@@ -325,29 +323,6 @@ class Account implements Readable<AccountState> {
       }
       for (const txHash of Object.keys(newData.pendingActions)) {
         if (!remoteData.pendingActions[txHash]) {
-          newDataOnLocal = true;
-        }
-      }
-    } else {
-      newDataOnLocal = true;
-    }
-
-    if (remoteData.fleets) {
-      for (const fleetId of Object.keys(remoteData.fleets)) {
-        const remoteFleet = remoteData.fleets[fleetId];
-        const fleet = newData.fleets[fleetId];
-
-        if (!fleet) {
-          newData.fleets[fleetId] = remoteFleet;
-          newDataOnRemote = true;
-        } else {
-          // TODO more merge pendingAction
-          // newDataOnLocal = true;
-          // newDataOnRemote = true;
-        }
-      }
-      for (const txHash of Object.keys(newData.fleets)) {
-        if (!remoteData.fleets[txHash]) {
           newDataOnLocal = true;
         }
       }
