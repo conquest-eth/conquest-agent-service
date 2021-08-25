@@ -1,25 +1,24 @@
 <script lang="ts">
-  // import Button from '$lib/components/generic/PanelButton.svelte';
-  // import NavButton from '$lib/components/navigation/NavButton.svelte';
-  // import WalletAccess from '$lib/blockchain/WalletAccess.svelte';
-  // import {wallet, builtin, flow} from '$lib/blockchain/wallet';
-  // import privateAccount from '$lib/account/privateAccount';
-  // import {withdrawals} from '$lib/flows/withdrawals';
-  // import {onDestroy, onMount} from 'svelte';
-  // import {base} from '$app/paths';
+  import Button from '$lib/components/generic/PanelButton.svelte';
+  import NavButton from '$lib/components/navigation/NavButton.svelte';
+  import WalletAccess from '$lib/blockchain/WalletAccess.svelte';
+  import {wallet, builtin, flow} from '$lib/blockchain/wallet';
+  import {withdrawals} from '$lib/flows/withdrawals';
+  import {onDestroy, onMount} from 'svelte';
+  import {base} from '$app/paths';
 
-  // onMount(() => {
-  //   withdrawals.loadWithrawableBalance();
-  // });
+  onMount(() => {
+    withdrawals.loadWithrawableBalance();
+  });
 
-  // onDestroy(() => {
-  //   withdrawals.stop();
-  // });
+  onDestroy(() => {
+    withdrawals.stop();
+  });
 </script>
 
-WORK IN PROGRESS
+<!-- WORK IN PROGRESS -->
 
-<!-- <div class="w-full h-full bg-black">
+<div class="w-full h-full bg-black">
   <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
 
   <br />
@@ -53,4 +52,4 @@ WORK IN PROGRESS
       {/if}
     </div>
   </WalletAccess>
-</div> -->
+</div>

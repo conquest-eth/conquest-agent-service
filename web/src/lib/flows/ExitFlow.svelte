@@ -6,12 +6,8 @@
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import exitFlow from '$lib/flows/exit';
   import {spaceInfo} from '$lib/space/spaceInfo';
-  import {planetAt} from '$lib/space/planets';
-  import {xyToLocation} from 'conquest-eth-common';
 
-  $: planet = $exitFlow.data?.location
-    ? planetAt(xyToLocation($exitFlow.data?.location.x, $exitFlow.data?.location.y))
-    : undefined;
+  $: planetInfo = spaceInfo.getPlanetInfo($exitFlow.data?.location.x, $exitFlow.data?.location.y);
 </script>
 
 {#if $exitFlow.error}
@@ -25,7 +21,7 @@
 {:else if $exitFlow.step === 'WAITING_CONFIRMATION'}
   <Modal on:close={() => exitFlow.cancel()} on:confirm={() => exitFlow.confirm()}>
     <p class="text-center">
-      Exiting a planet will allow you to claim the stake back ({$planet.stats.stake}
+      Exiting a planet will allow you to claim the stake back ({planetInfo.stats.stake}
       <PlayCoin class="inline w-4" />
       for this planet). But be careful, while you are exiting (this take
       {timeToText(spaceInfo.exitDuration, {verbose: true})}), you cannot operate with the spaceships and someone else

@@ -143,7 +143,7 @@ export class PlanetStates {
       reward = contractState.reward ? contractState.reward.toString() : '0';
       numSpaceships = contractState.numSpaceships;
       exiting = !!contractState.exitTime;
-      exitTimeLeft = 0; // this.spaceInfo.exitDuration - (time - planet.exitTime);
+      exitTimeLeft = Math.max(spaceInfo.exitDuration - (time - contractState.exitTime), 0);
       natives = contractState.lastUpdated == 0;
 
       if (contractState.exitTime > 0 && time > contractState.exitTime + spaceInfo.exitDuration) {

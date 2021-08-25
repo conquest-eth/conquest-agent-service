@@ -9,18 +9,20 @@
   import {spaceInfo} from '$lib/space/spaceInfo';
   import selection from '$lib/map/selection';
   import PlanetInfoPanel from '$lib/components/planets/PlanetInfoPanel.svelte';
+
   import claimFlow from '$lib/flows/claim';
   import ClaimFlow from '$lib/flows/ClaimFlow.svelte';
-
   import sendFlow from '$lib/flows/send';
   import SendFlow from '$lib/flows/SendFlow.svelte';
   import simulateFlow from '$lib/flows/simulateFlow';
   import SimulateFlow from '$lib/flows/SimulateFlow.svelte';
-  // import exitFlow from '$lib/flows/exit';
-  // import ExitFlow from '$lib/flows/ExitFlow.svelte';
+  import exitFlow from '$lib/flows/exit';
+  import ExitFlow from '$lib/flows/ExitFlow.svelte';
   import resolveFlow from '$lib/flows/resolve';
   import ResolveFlow from '$lib/flows/ResolveFlow.svelte';
   import FleetsToResolve from '$lib/components/fleets/FleetsToResolve.svelte';
+
+
   // import messageFlow from '$lib/flows/message';
   // import MessageFlow from '$lib/flows/MessageFlow.svelte';
   // import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
@@ -79,9 +81,9 @@
   <ResolveFlow />
 {/if}
 
-<!-- {#if $exitFlow.error || $exitFlow.step !== 'IDLE'}
+{#if $exitFlow.error || $exitFlow.step !== 'IDLE'}
   <ExitFlow />
-{/if} -->
+{/if}
 
 <!-- {#if $messageFlow.error || $messageFlow.step !== 'IDLE'}
   <MessageFlow />
