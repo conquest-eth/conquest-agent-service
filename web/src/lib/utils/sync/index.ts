@@ -62,6 +62,28 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     this._syncRemote();
   }
 
+  async clearData(): Promise<void> {
+    this.state.data = {} as T;
+    this._saveToLocalStorage(this.ownerAddress, this.chainId, this.state.data);
+
+    let error: unknown | undefined = undefined;
+    let counter: BigNumber | undefined;
+    try {
+      const remoteResult = await this._fetchRemoteData();
+      counter = remoteResult.counter;
+    } catch (e) {
+      console.error(e);
+      error = e;
+    }
+
+    if (!error) {
+      this._postToRemote(this.state.data, counter);
+    }
+
+    this.state.syncing = false;
+    this._notify();
+  }
+
   private async _syncRemote(): Promise<void> {
     if (!this.state.remoteSyncEnabled) {
       return;

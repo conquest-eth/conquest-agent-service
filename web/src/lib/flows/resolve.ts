@@ -1,8 +1,9 @@
 import {wallet} from '$lib/blockchain/wallet';
-import privateAccount from '$lib/account/privateAccount';
-import {xyToLocation} from 'conquest-eth-common';
+import {Fleet, xyToLocation} from 'conquest-eth-common';
 import {spaceInfo} from '$lib/space/spaceInfo';
 import {BaseStore} from '$lib/utils/stores/base';
+import { account } from '$lib/account/account';
+import { isCorrected, correctTime } from '$lib/time';
 
 export type ResolveFlow = {
   type: 'RESOLVE';
@@ -18,24 +19,21 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
     });
   }
 
-  async resolve(fleetId: string): Promise<void> {
+  async resolve(fleet: Fleet): Promise<void> {
     this.setPartial({step: 'CONNECTING'});
-    await privateAccount.login();
     this.setPartial({step: 'CREATING_TX'});
-    const fleet = privateAccount.getFleet(fleetId);
-    if (!fleet) {
-      throw new Error(`no fleet with id ${fleetId}`);
+    const fleetData = await account.hashFleet(fleet.from.location, fleet.to.location, fleet.sending.action.nonce);
+    const latestBlock = await wallet.provider.getBlock('latest');
+    if (!isCorrected) {
+      // TODO extreact or remove (assume time will be corrected by then)
+      correctTime(latestBlock.timestamp);
     }
-    const secretHash = privateAccount.fleetSecret(fleetId);
+
+    const secretHash = fleetData.secretHash;
     // console.log('resolve', {secretHash});
-    const to = spaceInfo.getPlanetInfo(fleet.to.x, fleet.to.y);
-    const from = spaceInfo.getPlanetInfo(fleet.from.x, fleet.from.y);
-    if (!from || !to) {
-      throw new Error(`cannot get from or to`);
-    }
     const distanceSquared =
-      Math.pow(to.location.globalX - from.location.globalX, 2) +
-      Math.pow(to.location.globalY - from.location.globalY, 2);
+      Math.pow(fleet.to.location.globalX - fleet.from.location.globalX, 2) +
+      Math.pow(fleet.to.location.globalY - fleet.from.location.globalY, 2);
     const distance = Math.floor(Math.sqrt(distanceSquared));
 
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
@@ -43,14 +41,14 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
     this.setPartial({step: 'WAITING_TX'});
     try {
       const tx = await wallet.contracts?.OuterSpace.resolveFleet(
-        fleetId,
-        xyToLocation(fleet.from.x, fleet.from.y),
-        xyToLocation(fleet.to.x, fleet.to.y),
+        fleetData.fleetId,
+        xyToLocation(fleet.from.location.x, fleet.from.location.y),
+        xyToLocation(fleet.to.location.x, fleet.to.location.y),
         distance,
         secretHash,
         {gasPrice}
       );
-      privateAccount.recordFleetResolvingTxhash(fleetId, tx.hash, tx.nonce, false);
+      account.recordFleetResolvingTxhash(fleet.txHash, tx.hash, latestBlock.timestamp, tx.nonce, false);
       this.setPartial({step: 'SUCCESS'}); // TODO IDLE ?
     } catch (e) {
       console.error(e);

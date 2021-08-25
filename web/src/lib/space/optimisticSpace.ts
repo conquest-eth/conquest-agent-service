@@ -93,7 +93,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
     let includedTx: string[] = [];
     if (txsToCheck.length > 0) {
       const variables = {txs: txsToCheck, blockHash: space.data.chain.blockHash};
-      console.log(variables);
+      // console.log(variables);
 
       const result = await SUBGRAPH_ENDPOINT.query<{transactions: {id: string}[]}>(
         `query($blockHash: String! $txs: [String]) {

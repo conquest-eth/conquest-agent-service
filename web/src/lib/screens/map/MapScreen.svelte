@@ -20,7 +20,7 @@
   // import ExitFlow from '$lib/flows/ExitFlow.svelte';
   // import resolveFlow from '$lib/flows/resolve';
   // import ResolveFlow from '$lib/flows/ResolveFlow.svelte';
-  // import FleetsToResolve from '$lib/components/fleets/FleetsToResolve.svelte';
+  import FleetsToResolve from '$lib/components/fleets/FleetsToResolve.svelte';
   // import messageFlow from '$lib/flows/message';
   // import MessageFlow from '$lib/flows/MessageFlow.svelte';
   // import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
@@ -59,9 +59,9 @@
   {/if}
 </div> -->
 
-<!-- <div class="absolute right-0 top-12">
+<div class="absolute right-0 top-12">
   <FleetsToResolve />
-</div> -->
+</div>
 
 {#if $claimFlow.error || $claimFlow.step !== 'IDLE'}
   <ClaimFlow />

@@ -1,4 +1,5 @@
 import { account } from '$lib/account/account';
+import type { CheckedPendingAction } from '$lib/account/pendingActions';
 import {
   spaceQueryWithPendingActions,
   SpaceQueryWithPendingState
@@ -52,8 +53,9 @@ export class FleetsStore {
           if (timeLeft <= 0) {
             timeToResolve = Math.max((launchTime + duration + spaceInfo.resolveWindow) - now(), 0);
           }
-          let resolution;
+          let resolution: CheckedPendingAction | undefined;
           if (sendAction.resolution) {
+            // console.log('RESOLUTION', sendAction.resolution);
             // TODO handle multiple resolution
             const pendingResolution = update.pendingActions.find((v => v.id === sendAction.resolution[0]));
             if (pendingResolution) {
@@ -63,19 +65,22 @@ export class FleetsStore {
               // TODO error ?
             }
           }
-          this.fleets.push({
-            txHash: pendingAction.id, // TODO better id
-            from,
-            to,
-            duration,
-            quantity: sendAction.quantity,
-            launchTime,
-            amountDestroyed: 0, // TODO
-            timeLeft,
-            timeToResolve,
-            sending: pendingAction,
-            resolution
-          })
+          // if (!(resolution && resolution.final && resolution.status === 'SUCCESS')) {
+              this.fleets.push({
+              txHash: pendingAction.id, // TODO better id
+              from,
+              to,
+              duration,
+              quantity: sendAction.quantity,
+              launchTime,
+              amountDestroyed: 0, // TODO
+              timeLeft,
+              timeToResolve,
+              sending: pendingAction,
+              resolution
+            });
+          // }
+
         }
       }
     }

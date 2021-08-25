@@ -132,7 +132,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
     const nonce = await wallet.provider.getTransactionCount(wallet.address);
 
-    const {toHash, fleetId} = await account.hashFleet(from, to, nonce);
+    const {toHash} = await account.hashFleet(from, to, nonce);
 
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 

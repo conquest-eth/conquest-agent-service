@@ -142,6 +142,19 @@ class Account implements Readable<AccountState> {
       quantity: fleet.fleetAmount
     };
     this.accountDB.save(this.state.data);
+    this._notify();
+  }
+
+  recordFleetResolvingTxhash(sendTxHash: string, txHash: string, timestamp: number, nonce: number, agent: boolean): void {
+    this.check();
+    (this.state.data.pendingActions[sendTxHash] as PendingSend).resolution = [txHash]; // TODO multiple in array
+    this.state.data.pendingActions[txHash] = {
+      type: 'RESOLUTION',
+      timestamp,
+      nonce
+    };
+    this.accountDB.save(this.state.data);
+    // TODO agent ?
   }
 
   deletePendingAction(txHash: string) {

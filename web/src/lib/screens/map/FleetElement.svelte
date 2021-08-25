@@ -20,7 +20,7 @@
 <div>
   <!-- <p> {fleet.from.location.x}</p> -->
   <div
-      style={`position: absolute; transform: translate(${x}px,${y}px) scale(${scale}, ${scale}); background-color: red; width: 1px; height: 1px;
+      style={`position: absolute; z-index: 50; transform: translate(${x}px,${y}px) scale(${scale}, ${scale}); background-color: red; width: 1px; height: 1px;
   `}/>
   <!-- <svg width="500" height="500"><line x1="50" y1="50" x2="350" y2="350" stroke="black"/></svg> -->
 </div>
