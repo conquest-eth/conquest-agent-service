@@ -1,5 +1,6 @@
 import {wallet} from '$lib/blockchain/wallet';
-import privateAccount from '$lib/account/privateAccount';
+import {privateWallet} from '$lib/account/privateWallet';
+import {account} from '$lib/account/account';
 import {xyToLocation} from 'conquest-eth-common';
 import {spaceInfo} from '$lib/space/spaceInfo';
 import {BaseStoreWithData} from '$lib/utils/stores/base';
@@ -43,7 +44,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     if (this.$store.step == 'PICK_ORIGIN') {
       this.pickOrigin(from);
     } else {
-      await privateAccount.login();
+      await privateWallet.login();
       this.setData({from}, {step: 'PICK_DESTINATION'});
     }
   }
@@ -52,7 +53,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     if (this.$store.step == 'PICK_DESTINATION') {
       this.pickDestination(to);
     } else {
-      await privateAccount.login();
+      await privateWallet.login();
       this.setData({to}, {step: 'PICK_ORIGIN'});
     }
   }
@@ -74,7 +75,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
   }
 
   _chooseFleetAmount() {
-    if (!privateAccount.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_AMOUNT)) {
+    if (!account.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_AMOUNT)) {
       this.setPartial({step: 'TUTORIAL_PRE_FLEET_AMOUNT'});
     } else {
       this.setPartial({step: 'CHOOSE_FLEET_AMOUNT'});
@@ -82,13 +83,13 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
   }
 
   async acknowledgeWelcomingStep1() {
-    privateAccount.recordWelcomingStep(TutorialSteps.TUTORIAL_FLEET_AMOUNT);
+    account.recordWelcomingStep(TutorialSteps.TUTORIAL_FLEET_AMOUNT);
     this._chooseFleetAmount();
   }
 
   confirm(fleetAmount: number) {
     this.setData({fleetAmount});
-    if (!privateAccount.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION)) {
+    if (!account.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION)) {
       this.setPartial({step: 'TUTORIAL_PRE_TRANSACTION'});
     } else {
       this._confirm(fleetAmount);
@@ -99,7 +100,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     if (!this.$store.data?.fleetAmount) {
       throw new Error(`not fleetAmount recorded`);
     }
-    privateAccount.recordWelcomingStep(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION);
+    account.recordWelcomingStep(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION);
     this.confirm(this.$store.data?.fleetAmount);
   }
 
@@ -123,15 +124,15 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       throw new Error(`no provider`);
     }
 
+    const latestBlock = await wallet.provider.getBlock('latest');
     if (!isCorrected) {
       // TODO extreact or remove (assume time will be corrected by then)
-      const latestBlock = await wallet.provider.getBlock('latest');
       correctTime(latestBlock.timestamp);
     }
 
     const nonce = await wallet.provider.getTransactionCount(wallet.address);
 
-    const {toHash, fleetId} = await privateAccount.hashFleet(from, to, nonce);
+    const {toHash, fleetId} = await account.hashFleet(from, to, nonce);
 
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 
@@ -158,24 +159,19 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       return;
     }
 
-    const gToX = toPlanetInfo.location.globalX;
-    const gToY = toPlanetInfo.location.globalY;
-    const gFromX = fromPlanetInfo.location.globalX;
-    const gFromY = fromPlanetInfo.location.globalY;
-    const speed = fromPlanetInfo.stats.speed;
-    const fullDistance = Math.floor(Math.sqrt(Math.pow(gToX - gFromX, 2) + Math.pow(gToY - gFromY, 2)));
-    const fleetDuration = fullDistance * ((spaceInfo.timePerDistance * 10000) / speed);
+    // const gToX = toPlanetInfo.location.globalX;
+    // const gToY = toPlanetInfo.location.globalY;
+    // const gFromX = fromPlanetInfo.location.globalX;
+    // const gFromY = fromPlanetInfo.location.globalY;
+    // const speed = fromPlanetInfo.stats.speed;
+    // const fullDistance = Math.floor(Math.sqrt(Math.pow(gToX - gFromX, 2) + Math.pow(gToY - gFromY, 2)));
+    // const fleetDuration = fullDistance * ((spaceInfo.timePerDistance * 10000) / speed);
 
-    privateAccount.recordFleet(fleetId, {
-      to: {...to}, // TODO handle it better
-      from: {...from},
+    account.recordFleet({
+      to, // TODO handle it better
+      from,
       fleetAmount,
-      duration: fleetDuration, // TODO stricly speaking not necessary but allow us to not need to refetch the stats from spaceInfo
-      launchTime: now(),
-      owner: wallet.address,
-      sendTx: {hash: tx.hash, nonce},
-      updatedAt: now(),
-    });
+    }, tx.hash, latestBlock.timestamp, tx.nonce);
 
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
 
@@ -211,4 +207,10 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
   }
 }
 
-export default new SendFlowStore();
+const store = new SendFlowStore();
+export default store;
+
+
+// TODO remove
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+if ("undefined" !== typeof window)(window as any).sendFlow = store;

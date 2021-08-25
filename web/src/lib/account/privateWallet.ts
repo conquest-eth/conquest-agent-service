@@ -2,6 +2,7 @@ import {chain, flow, wallet} from '$lib/blockchain/wallet';
 import localCache from '$lib/utils/localCache';
 import {nameForChainId} from '$lib/utils/networks';
 import type {Contract} from '@ethersproject/contracts';
+import { keccak256 } from '@ethersproject/solidity';
 import {Wallet} from '@ethersproject/wallet';
 import aes from 'aes-js';
 import {Readable, Writable, writable} from 'svelte/store';
@@ -86,7 +87,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
       this._notify();
     }
 
-    return flow.execute((contracts: Contracts): Promise<void> => {
+    const p = flow.execute((contracts: Contracts): Promise<void> => {
       if (this.state.step !== 'READY') {
         this.state.step = 'SIGNATURE_REQUIRED';
         this._notify();
@@ -102,11 +103,13 @@ class PrivateWallet implements Readable<PrivateWalletState> {
         return this._promise;
       }
       if (func) {
-        return func(this.state.signer, contracts);
+       return func(this.state.signer, contracts);
       } else {
         return Promise.resolve();
       }
     });
+
+    return p.then((contracts) => {return {signer: this.state.signer, contracts}});
   }
 
   async confirm({
@@ -123,13 +126,13 @@ class PrivateWallet implements Readable<PrivateWalletState> {
     this._notify();
 
     if (!wallet.provider) {
-      return this.cancel(new Error(`no wallet.provider`));
+      return this.cancel(false, new Error(`no wallet.provider`));
     }
     if (!wallet.address) {
-      return this.cancel(new Error(`no wallet.address`));
+      return this.cancel(false, new Error(`no wallet.address`));
     }
     if (!wallet.chain.chainId) {
-      return this.cancel(new Error(`no chainId, not connected?`));
+      return this.cancel(false, new Error(`no chainId, not connected?`));
     }
     const chainId = wallet.chain.chainId;
     const chainName = nameForChainId(chainId);
@@ -308,6 +311,17 @@ class PrivateWallet implements Readable<PrivateWalletState> {
       )
     );
     return {signer, aesKey, messagingKey};
+  }
+
+  hashString() {
+    if (!this.state.signer) {
+      throw new Error(`no signer`);
+    }
+    // TODO cache
+    return keccak256(
+      ['bytes32', 'bytes32'],
+      [this.state.signer.privateKey.slice(0, 66), '0x' + this.state.signer.privateKey.slice(66, 130)]
+    );
   }
 }
 

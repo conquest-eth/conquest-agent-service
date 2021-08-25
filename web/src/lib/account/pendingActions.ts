@@ -1,5 +1,5 @@
 import {Readable, Writable, writable} from 'svelte/store';
-import {account, AccountState, PendingCapture, PendingExit, PendingSend, PendingWithdrawal} from './account';
+import {account, AccountState, PendingAction, PendingCapture, PendingExit, PendingResolution, PendingSend, PendingWithdrawal} from './account';
 import {chainTempo, ChainTempoInfo} from '$lib/blockchain/chainTempo';
 import {wallet} from '$lib/blockchain/wallet';
 import {now} from '$lib/time';
@@ -34,7 +34,7 @@ export type CheckedPendingAction = {
   id: string;
   final?: number;
   status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
-  action: PendingSend | PendingExit | PendingCapture | PendingWithdrawal;
+  action: PendingAction;
 };
 
 export type CheckedPendingActions = CheckedPendingAction[];
@@ -170,68 +170,65 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     }
 
     let changes = false;
-    if (checkedAction.action.type === 'SEND') {
-      // TODO
-    } else {
-      const txFromPeers = await wallet.provider.getTransaction(checkedAction.id);
-      let pending = true;
-      if (txFromPeers) {
-        if (txFromPeers.blockNumber) {
-          pending = false;
-          const receipt = await wallet.provider.getTransactionReceipt(checkedAction.id);
-          const block = await wallet.provider.getBlock(txFromPeers.blockHash);
-          const final = receipt.confirmations >= finality;
-          if (receipt.status === 0) {
-            if (checkedAction.status !== 'FAILURE' || checkedAction.final !== block.timestamp) {
-              checkedAction.status = 'FAILURE';
-              changes = true;
-              checkedAction.final = final ? block.timestamp : undefined;
-              if (final) {
-                this._handleFinalAcknowledgement(checkedAction, block.timestamp, 'ERROR');
-              }
-            }
-          } else {
-            if (checkedAction.status !== 'SUCCESS' || checkedAction.final !== block.timestamp) {
-              checkedAction.status = 'SUCCESS';
-              changes = true;
-              checkedAction.final = final ? block.timestamp : undefined;
-              if (final) {
-                this._handleFinalAcknowledgement(checkedAction, txFromPeers.timestamp, 'ERROR');
-              }
+
+    const txFromPeers = await wallet.provider.getTransaction(checkedAction.id);
+    let pending = true;
+    if (txFromPeers) {
+      if (txFromPeers.blockNumber) {
+        pending = false;
+        const receipt = await wallet.provider.getTransactionReceipt(checkedAction.id);
+        const block = await wallet.provider.getBlock(txFromPeers.blockHash);
+        const final = receipt.confirmations >= finality;
+        if (receipt.status === 0) {
+          if (checkedAction.status !== 'FAILURE' || checkedAction.final !== block.timestamp) {
+            checkedAction.status = 'FAILURE';
+            changes = true;
+            checkedAction.final = final ? block.timestamp : undefined;
+            if (final) {
+              this._handleFinalAcknowledgement(checkedAction, block.timestamp, 'ERROR');
             }
           }
-        }
-      } else {
-        const finalityNonce = await wallet.provider.getTransactionCount(
-          checkedAction.action.txOrigin || ownerAddress,
-          blockNumber - finality
-        );
-        if (finalityNonce > checkedAction.action.nonce) {
-          pending = false;
-          // replaced
-          if (checkedAction.status !== 'CANCELED' || checkedAction.final !== checkedAction.action.timestamp) {
-            checkedAction.status = 'CANCELED';
-            checkedAction.final = checkedAction.action.timestamp;
-            this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'ERROR');
+        } else {
+          if (checkedAction.status !== 'SUCCESS' || checkedAction.final !== block.timestamp) {
+            checkedAction.status = 'SUCCESS';
             changes = true;
+            checkedAction.final = final ? block.timestamp : undefined;
+            if (final) {
+              this._handleFinalAcknowledgement(checkedAction, txFromPeers.timestamp, 'ERROR');
+            }
           }
         }
       }
+    } else {
+      const finalityNonce = await wallet.provider.getTransactionCount(
+        checkedAction.action.txOrigin || ownerAddress,
+        blockNumber - finality
+      );
+      if (finalityNonce > checkedAction.action.nonce) {
+        pending = false;
+        // replaced
+        if (checkedAction.status !== 'CANCELED' || checkedAction.final !== checkedAction.action.timestamp) {
+          checkedAction.status = 'CANCELED';
+          checkedAction.final = checkedAction.action.timestamp;
+          this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'ERROR');
+          changes = true;
+        }
+      }
+    }
 
-      if (pending) {
-        if (now() - checkedAction.action.timestamp > 3600) {
-          // 1 hour to TODO config
-          if (checkedAction.status !== 'TIMEOUT' || checkedAction.final !== checkedAction.action.timestamp) {
-            checkedAction.status = 'TIMEOUT';
-            checkedAction.final = checkedAction.action.timestamp;
-            this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'ERROR');
-            changes = true;
-          }
-        } else {
-          if (checkedAction.status !== 'PENDING') {
-            checkedAction.status = 'PENDING';
-            changes = true;
-          }
+    if (pending) {
+      if (now() - checkedAction.action.timestamp > 3600) {
+        // 1 hour to TODO config
+        if (checkedAction.status !== 'TIMEOUT' || checkedAction.final !== checkedAction.action.timestamp) {
+          checkedAction.status = 'TIMEOUT';
+          checkedAction.final = checkedAction.action.timestamp;
+          this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'ERROR');
+          changes = true;
+        }
+      } else {
+        if (checkedAction.status !== 'PENDING') {
+          checkedAction.status = 'PENDING';
+          changes = true;
         }
       }
     }

@@ -4,13 +4,15 @@
   import {camera} from '$lib/map/camera';
   import spaceBackground from '../../../assets/Red3.png';
   import {base} from '$app/paths';
+  import { fleets } from '$lib/space/fleets';
+  import FleetElement from './FleetElement.svelte';
 
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
 </script>
 
 <div
   style={`
-  pointer-events: none;
+  /* pointer-events: none; */
 position: absolute;
 transform: scale(${$camera ? $camera.renderScale : 1},${$camera ? $camera.renderScale : 1});
 width:100%; height: 100%;
@@ -57,6 +59,10 @@ width:100%; height: 100%;
   >
     {#each $spaceView as planetInfo (planetInfo.location.id)}
       <PlanetElement {planetInfo} />
+    {/each}
+
+    {#each $fleets as fleet}
+      <FleetElement {fleet} />
     {/each}
   </div>
 </div>

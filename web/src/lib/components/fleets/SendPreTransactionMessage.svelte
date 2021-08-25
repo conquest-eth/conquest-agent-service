@@ -2,21 +2,19 @@
   import sendFlow from '$lib/flows/send';
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import Modal from '$lib/components/generic/Modal.svelte';
-  import {planetAt} from '$lib/space/planets';
-  import {xyToLocation} from 'conquest-eth-common';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import {timeToText} from '$lib/utils';
   import {now} from '$lib/time';
 
-  $: planetFrom = $sendFlow.data?.from
-    ? planetAt(xyToLocation($sendFlow.data.from.x, $sendFlow.data.from.y))
-    : undefined;
+  $: fromPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data.from.x, $sendFlow.data.from.y);
+  // $: fromPlanetState = planets.planetStateFor(fromPlanetInfo);
 
-  $: planetTo = $sendFlow.data?.to ? planetAt(xyToLocation($sendFlow.data.to.x, $sendFlow.data.to.y)) : undefined;
+  $: toPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data.to.x, $sendFlow.data.to.y);
+  // $: toPlanetState = planets.planetStateFor(toPlanetInfo);
 
-  $: duration = space.timeToArrive($planetFrom, $planetTo);
+  $: duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
   $: arrival = duration + now();
-  const base: string = window.basepath || '/';
+
 </script>
 
 <Modal>

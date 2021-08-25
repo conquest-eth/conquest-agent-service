@@ -3,24 +3,26 @@
   import Modal from '$lib/components/generic/Modal.svelte';
   import sendFlow from '$lib/flows/send';
   import {onMount} from 'svelte';
-  import {planetAt} from '$lib/space/planets';
-  import {xyToLocation} from 'conquest-eth-common';
-  // import {space} from '$lib/space/spaceInfo';
+
+  import {planets} from '$lib/space/planets';
+  import {spaceInfo} from '$lib/space/spaceInfo';
+
   import {timeToText} from '$lib/utils';
   import {time} from '$lib/time';
 
-  $: planetFrom = $sendFlow.data?.from
-    ? planetAt(xyToLocation($sendFlow.data.from.x, $sendFlow.data.from.y))
-    : undefined;
+  $: fromPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
+  $: fromPlanetState = planets.planetStateFor(fromPlanetInfo);
 
-  $: planetTo = $sendFlow.data?.to ? planetAt(xyToLocation($sendFlow.data.to.x, $sendFlow.data.to.y)) : undefined;
+  $: toPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.to.x, $sendFlow.data?.to.y);
+  $: toPlanetState = planets.planetStateFor(toPlanetInfo);
+
 
   // TODO maxSpaceshipsLoaded and invalid message if maxSpaceships == 0
   let fleetAmountSet: boolean = false;
   let fleetAmount: number = 1;
   let maxSpaceships: number;
   $: {
-    maxSpaceships = (planetFrom && $planetFrom.state?.numSpaceships) || 0;
+    maxSpaceships = (fromPlanetState && $fromPlanetState.numSpaceships) || 0;
     if (maxSpaceships > 0 && !fleetAmountSet) {
       // TODO loading
       fleetAmount = Math.floor(maxSpaceships / 2);
@@ -40,19 +42,19 @@
       }
     | undefined = undefined;
   $: {
-    if (planetTo && planetFrom) {
+    if (toPlanetState && fromPlanetState) {
       prediction = {
-        arrivalTime: timeToText(space.timeToArrive($planetFrom, $planetTo)),
-        numSpaceshipsAtArrival: space.numSpaceshipsAtArrival($planetFrom, $planetTo),
-        outcome: space.outcome($planetFrom, $planetTo, fleetAmount, $time),
+        arrivalTime: timeToText(spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo)),
+        numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(fromPlanetInfo, toPlanetInfo, $toPlanetState),
+        outcome: spaceInfo.outcome(fromPlanetInfo, $fromPlanetState, toPlanetInfo, $toPlanetState, fleetAmount, $time),
       };
     }
   }
 
   let confirmDisabled = false;
   $: {
-    if (planetTo) {
-      confirmDisabled = !!($planetTo.state?.natives && !prediction?.outcome.min.captured);
+    if (toPlanetState) {
+      confirmDisabled = !!($toPlanetState.natives && !prediction?.outcome.min.captured);
     }
   }
 
@@ -87,30 +89,30 @@
     </div>
     <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
 
-    {#if planetFrom && planetTo}
+    {#if fromPlanetInfo && toPlanetInfo}
       <div class="flex flex-col">
         <div class="flex flex-row justify-between">
-          <span class="text-green-600">{$planetFrom.stats.name}</span>
+          <span class="text-green-600">{fromPlanetInfo.stats.name}</span>
           <svg class="w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
-          <span class="text-green-600 text-right">{$planetTo.stats.name}</span>
+          <span class="text-green-600 text-right">{toPlanetInfo.stats.name}</span>
         </div>
 
         <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
           <span>Spaceships</span><span class="text-right">Spaceships</span>
         </div>
         <div class="flex flex-row justify-between">
-          <span>{$planetFrom.state?.numSpaceships}</span><span class="text-right">{$planetTo.state?.numSpaceships}</span
+          <span>{$fromPlanetState.numSpaceships}</span><span class="text-right">{$toPlanetState.numSpaceships}</span
           >
         </div>
 
-        {#if $planetFrom.state?.owner !== $planetTo.state?.owner}
+        {#if $fromPlanetState.owner !== $toPlanetState.owner}
           <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
             <span>Attack</span><span class="text-right">Defense</span>
           </div>
           <div class="flex flex-row justify-between">
-            <span>{$planetFrom.stats.attack}</span><span class="text-right">{$planetTo.stats.defense}</span>
+            <span>{fromPlanetInfo.stats.attack}</span><span class="text-right">{toPlanetInfo.stats.defense}</span>
           </div>
 
           <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
@@ -128,7 +130,7 @@
           <div class="flex flex-row justify-center">
             {#if prediction?.outcome.min.captured}
               <span class="text-green-600">{prediction?.outcome.min.numSpaceshipsLeft} (captured)</span>
-            {:else if $planetTo.state?.natives}
+            {:else if $toPlanetState.natives}
               <span class="text-red-400">{prediction?.outcome.min.numSpaceshipsLeft} (native population resists)</span>
             {:else}<span class="text-red-400">{prediction?.outcome.min.numSpaceshipsLeft} (attack failed)</span>{/if}
           </div>

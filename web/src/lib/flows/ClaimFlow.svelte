@@ -9,7 +9,6 @@
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import {timeToText} from '$lib/utils';
   import {spaceInfo} from '$lib/space/spaceInfo';
-  import {simulateCapture} from '$lib/space/utils';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
   import {time} from '$lib/time';
@@ -21,7 +20,7 @@
   $: stake = stats && stats.stake;
   $: cost = stats ? BigNumber.from(stats.stake) : undefined; // TODO multiplier from config/contract
 
-  $: result = planetInfo && $planetState ? simulateCapture($wallet.address, planetInfo, $planetState) : undefined;
+  $: result = planetInfo && $planetState ? spaceInfo.simulateCapture($wallet.address, planetInfo, $planetState) : undefined;
 </script>
 
 {#if $claimFlow.error}

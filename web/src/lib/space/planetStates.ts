@@ -131,7 +131,7 @@ export class PlanetStates {
     let owner: string | undefined = undefined;
     let active = false;
     let reward = '';
-    let numSpaceships = 0;
+    let numSpaceships = planetInfo.stats.natives;
     let exiting = false;
     let exitTimeLeft = 0; // this.spaceInfo.exitDuration - (time - planet.exitTime);
     let natives = true;

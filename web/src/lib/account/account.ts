@@ -1,8 +1,10 @@
 import {SYNC_DB_NAME, SYNC_URI} from '$lib/config';
 import {bitMaskMatch} from '$lib/utils';
 import {AccountDB, SyncingState} from '$lib/utils/sync';
+import { xyToLocation } from 'conquest-eth-common';
 import {Readable, Writable, writable} from 'svelte/store';
 import {privateWallet, PrivateWalletState} from './privateWallet';
+import {keccak256} from '@ethersproject/solidity';
 
 export type AccountState = {
   step: 'IDLE' | 'READY';
@@ -22,19 +24,18 @@ type PendingActionBase = {
   acknowledged?: 'ERROR' | 'SUCCESS';
 };
 
-type PendingResolution = {
-  txOrigin?: string; // used if the resolver is not owner (agent)
-  timestamp: number;
-  nonce: number;
-  txHash: string;
-};
 
 export type PendingSend = PendingActionBase & {
   type: 'SEND';
   from: PlanetCoords;
   to: PlanetCoords;
   quantity: number;
-  resolution?: PendingResolution;
+  actualLaunchTime?: number;
+  resolution?: string[];
+};
+
+export type PendingResolution = PendingActionBase & {
+  type: 'RESOLUTION';
 };
 
 export type PendingExit = PendingActionBase & {
@@ -52,7 +53,7 @@ export type PendingCapture = PendingActionBase & {
   planetCoords: PlanetCoords;
 };
 
-export type PendingAction = PendingSend | PendingExit | PendingCapture | PendingWithdrawal;
+export type PendingAction = PendingSend | PendingExit | PendingCapture | PendingWithdrawal | PendingResolution;
 
 export type PendingActions = {[txHash: string]: PendingAction | number};
 
@@ -105,6 +106,40 @@ class Account implements Readable<AccountState> {
       timestamp,
       nonce,
       planetCoords: {...planetCoords},
+    };
+    this.accountDB.save(this.state.data);
+  }
+
+  async hashFleet(
+    from: {x: number; y: number},
+    to: {x: number; y: number},
+    nonce: number
+  ): Promise<{toHash: string; fleetId: string; secretHash: string}> {
+    // TODO use timestamp to allow user to retrieve a lost secret by knowing `to` and approximate time of launch
+    // const randomNonce =
+    //   '0x' +
+    //   Array.from(crypto.getRandomValues(new Uint8Array(32)))
+    //     .map((b) => b.toString(16).padStart(2, '0'))
+    //     .join('');
+    const toString = xyToLocation(to.x, to.y);
+    const fromString = xyToLocation(from.x, from.y);
+    // console.log({randomNonce, toString, fromString});
+    const secretHash = keccak256(['bytes32', 'uint256', 'uint256'], [privateWallet.hashString(), fromString, nonce]);
+    // console.log({secretHash});
+    const toHash = keccak256(['bytes32', 'uint256'], [secretHash, toString]);
+    const fleetId = keccak256(['bytes32', 'uint256'], [toHash, fromString]);
+    return {toHash, fleetId, secretHash};
+  }
+
+  recordFleet(fleet: {from: PlanetCoords, to: PlanetCoords, fleetAmount: number}, txHash: string, timestamp: number, nonce: number): void {
+    this.check();
+    this.state.data.pendingActions[txHash] = {
+      timestamp,
+      nonce,
+      type: 'SEND',
+      from: {...fleet.from},
+      to: {...fleet.to},
+      quantity: fleet.fleetAmount
     };
     this.accountDB.save(this.state.data);
   }
@@ -229,6 +264,7 @@ class Account implements Readable<AccountState> {
     if (!newData) {
       newData = {
         pendingActions: {},
+        fleets: {},
         welcomingStep: 0,
       };
     }
@@ -236,6 +272,7 @@ class Account implements Readable<AccountState> {
     if (!remoteData) {
       remoteData = {
         pendingActions: {},
+        fleets: {},
         welcomingStep: 0,
       };
     }
@@ -288,6 +325,29 @@ class Account implements Readable<AccountState> {
       }
       for (const txHash of Object.keys(newData.pendingActions)) {
         if (!remoteData.pendingActions[txHash]) {
+          newDataOnLocal = true;
+        }
+      }
+    } else {
+      newDataOnLocal = true;
+    }
+
+    if (remoteData.fleets) {
+      for (const fleetId of Object.keys(remoteData.fleets)) {
+        const remoteFleet = remoteData.fleets[fleetId];
+        const fleet = newData.fleets[fleetId];
+
+        if (!fleet) {
+          newData.fleets[fleetId] = remoteFleet;
+          newDataOnRemote = true;
+        } else {
+          // TODO more merge pendingAction
+          // newDataOnLocal = true;
+          // newDataOnRemote = true;
+        }
+      }
+      for (const txHash of Object.keys(newData.fleets)) {
+        if (!remoteData.fleets[txHash]) {
           newDataOnLocal = true;
         }
       }

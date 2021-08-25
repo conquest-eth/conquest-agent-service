@@ -5,7 +5,7 @@ import {keccak256} from '@ethersproject/solidity';
 import {xyToLocation} from 'conquest-eth-common';
 import type {OwnFleet, TxStatus} from 'conquest-eth-common';
 import {BigNumber} from '@ethersproject/bignumber';
-import {finality, blockTime, mediumFrequencyFetch, lowFrequencyFetch} from '$lib/config';
+import {finality, blockTime, mediumFrequencyFetch} from '$lib/config';
 import aes from 'aes-js';
 import {base64, compressToUint8Array, decompressFromUint8Array} from '$lib/utils';
 import localCache from '$lib/utils/localCache';
@@ -17,6 +17,7 @@ import {now} from '../time';
 
 // TODO tweetnacl do not work with vite
 // import {sign} from 'tweetnacl';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const nacl = (typeof window !== 'undefined' ? (window as any).nacl : {}) as any;
 
 type MessagingKey = {secretKey: Uint8Array; publicKey: Uint8Array};
@@ -635,6 +636,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       delete dataFromLocalStorage.lastWithdrawal; // TODO should only delete if set later
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((dataFromLocalStorage as any).id !== this.$store.id) {
       this._merge(dataFromLocalStorage);
     }
