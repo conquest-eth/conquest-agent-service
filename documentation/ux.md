@@ -46,6 +46,44 @@ Exit Planet
 - ability to withdraw indivually or other...
 
 
+See list of your planets
+------------------------
+
+- browse list
+- select to go to planet on the map, selected
+
+
+See list of your fleets
+-----------------------
+
+- browse list
+- select to go to fleet destination/origin
+
+
+See list of global events
+-------------------------
+
+- see all players actions and resolution
+- filter per alliance
+
+
+See list of notifications (personal events)
+-------------------------
+
+- see all your fleet resolved/failed
+- see all your planet exited/failed
+- see enemies attack
+- see other player spaceship gifting
+
+
+
+See list of players
+-------------------
+
+- browse list (ordered by amount stake / token available)
+- select to message player
+
+
 Contact Player
 --------------
 
@@ -62,6 +100,14 @@ Read Messages
 - select message
 - read
 - (reply) -> see "Contact Player"
+
+
+
+See list of public alliances
+----------------------------
+
+- browse list
+- select to join
 
 
 Join Public Alliances
@@ -85,3 +131,10 @@ Sell Spaceships
 - select planet
 - (approve sell contract)
 - put spaceship for sale => message
+
+
+Push Notifications
+------------------
+
+- receive notification on personal event + specific filter
+
