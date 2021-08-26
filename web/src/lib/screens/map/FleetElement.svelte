@@ -20,6 +20,8 @@ import { blockTime } from "$lib/config";
 
   $: scale = $camera ? $camera.renderScale : 1;
 
+  // $: console.log({scale});
+
   async function acknowledge() {
     const block = await wallet.provider.getBlock("latest");
     if (fleet.resolution && fleet.resolution.status === "SUCCESS") { // TODO if final
@@ -31,7 +33,7 @@ import { blockTime } from "$lib/config";
 </script>
 
 <div
-      style={`position: absolute; z-index: 50; transform: translate(${x-0.5}px,${y-0.5}px); background-color: red; width: 1px; height: 1px;
+      style={`position: absolute; z-index: 51; transform: translate(${x-(6/scale)}px,${y-(6/scale)}px); background-color: red; width: ${12/scale}px; height: ${12/scale}px;
   `} on:click={acknowledge}></div>
 
 {#if !fleet.resolution || fleet.resolution.status !== "SUCCESS"}
