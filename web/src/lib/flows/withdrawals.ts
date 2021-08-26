@@ -2,7 +2,6 @@ import {BigNumber} from '@ethersproject/bignumber';
 import {locationToXY} from 'conquest-eth-common';
 import {spaceInfo} from '$lib/space/spaceInfo';
 import {BaseStore} from '$lib/utils/stores/base';
-import privateAccount from '../account/privateAccount';
 import {wallet} from '../blockchain/wallet';
 import {now} from '../time';
 import {finality, highFrequencyFetch} from '$lib/config';
@@ -24,14 +23,15 @@ class WithdrawalsStore extends BaseStore<Withdrawals> {
   }
 
   getExits(): {location: string; stake: BigNumber}[] {
-    return privateAccount.getSuccessfulExits().map((v) => {
-      const xy = locationToXY(v);
-      const planetInfo = spaceInfo.getPlanetInfo(xy.x, xy.y);
-      return {
-        location: v,
-        stake: BigNumber.from(planetInfo?.stats.stake).mul('1000000000000000000'),
-      };
-    });
+    // TODO
+    // return privateAccount.getSuccessfulExits().map((v) => {
+    //   const xy = locationToXY(v);
+    //   const planetInfo = spaceInfo.getPlanetInfo(xy.x, xy.y);
+    //   return {
+    //     location: v,
+    //     stake: BigNumber.from(planetInfo?.stats.stake).mul('1000000000000000000'),
+    //   };
+    // });
   }
 
   async check() {

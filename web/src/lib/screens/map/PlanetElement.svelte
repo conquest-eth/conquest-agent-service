@@ -10,6 +10,7 @@
   import {base} from '$app/paths';
   import {wallet} from '$lib/blockchain/wallet';
   import selection from '$lib/map/selection';
+  import { spaceInfo } from '$lib/space/spaceInfo';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -141,6 +142,22 @@ animation-timing-function: linear;
 `}
       />
     </div>
+  {/if}
+
+  {#if $planetState && $planetState.exiting}
+  <div style={`z-index: 5; position: absolute; transform: translate(${x}px,${y}px) scale(${blockieScale * 3}, ${
+    blockieScale * 3
+  }); width: ${frame.w}px;
+  height: ${frame.h}px;`}>
+    <svg viewBox="0 0 36 36"  >
+      <path style="fill: none; stroke-width: 2.8; stroke-linecap: round; stroke: #ff3300;"
+          stroke-dasharray={`${Math.max(((spaceInfo.exitDuration - $planetState.exitTimeLeft) / spaceInfo.exitDuration) * 100, 3)} 100`}
+          d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+        />
+      </svg>
+  </div>
   {/if}
 
   {#if owner}

@@ -159,6 +159,19 @@ class Account implements Readable<AccountState> {
     this._notify();
   }
 
+  recordExit(planetCoords: {x: number; y: number;}, txHash: string, timestamp: number, nonce: number): void {
+    this.check();
+    this.state.data.pendingActions[txHash] = {
+      type: 'EXIT',
+      timestamp,
+      nonce,
+      planetCoords
+    };
+    this.accountDB.save(this.state.data);
+    // TODO agent ?
+    this._notify();
+  }
+
   deletePendingAction(txHash: string) {
     this.check();
     if (this.deletedPendingActions.indexOf(txHash) === -1) {

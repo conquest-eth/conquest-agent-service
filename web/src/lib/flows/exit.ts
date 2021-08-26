@@ -1,7 +1,7 @@
 import {wallet} from '$lib/blockchain/wallet';
-import privateAccount from '$lib/account/privateAccount';
 import {xyToLocation} from 'conquest-eth-common';
 import {BaseStoreWithData} from '$lib/utils/stores/base';
+import { account } from '$lib/account/account';
 
 type Data = {
   txHash?: string;
@@ -24,7 +24,6 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
 
   async exitFrom(location: {x: number; y: number}): Promise<void> {
     this.setData({location}, {step: 'CONNECTING'});
-    await privateAccount.login();
     this.setPartial({step: 'WAITING_CONFIRMATION'});
   }
 
@@ -33,6 +32,7 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
     if (!flow.data) {
       throw new Error(`no flow data`);
     }
+    const latestBlock = await wallet.provider.getBlock('latest');
     const location = flow.data.location;
     const locationId = xyToLocation(location.x, location.y);
     // const latestBlock = await wallet.provider?.getBlock('latest');
@@ -58,7 +58,7 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
       return;
     }
 
-    privateAccount.recordExit(locationId, tx.hash, tx.nonce);
+    account.recordExit(location, tx.hash,  latestBlock.timestamp, tx.nonce);
 
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
   }

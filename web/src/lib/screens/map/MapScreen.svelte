@@ -29,7 +29,6 @@
   // import ShowPlanetDeparturesFlow from '$lib/flows/ShowPlanetDeparturesFlow.svelte';
   // import Search from '$lib/components/utils/Search.svelte';
 
-  // import privateAccount from '$lib/account/privateAccount';
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
   // import {camera} from '$lib/map/camera';
@@ -94,37 +93,6 @@
 {/if} -->
 
 <!--
-{#if $privateAccount.step === 'READY' && !privateAccount.ckeckCompletion($privateAccount.data?.welcomingStep, TutorialSteps.WELCOME)}
-  <Banner
-    on:mounted={() => selection.unselect()}
-    on:close={() => privateAccount.recordWelcomingStep(TutorialSteps.WELCOME)}
-  >
-    <p>
-      Welcome to
-      <span class="text-cyan-600">conquest.eth</span>
-      a game of war and diplomacy running on
-      <a href="https://ethereum.org" target="_blank" class="text-cyan-100">ethereum</a>.
-    </p>
-    <p class="mt-3">
-      To participate you'll have to first acquire planets by depositing a stake in form of
-      <PlayCoin class="inline w-4" />
-      (Play tokens).
-    </p>
-    <p class="mt-3">
-      These planets will then produce spaceships that you can use to attack other planets. You'll also have to make sure
-      you have enough spaceships to protect your planets. It is a good idea to reach out to other player and plan
-      strategies together.
-    </p>
-    <p class="mt-3">
-      At any time (whether you acquired the planet via staking or via attack), you can exit the planet. This take
-      {timeToText(spaceInfo.exitDuration, {verbose: true})}
-      during which you cannot use it but at the end of which you ll get the deposit, ready to be withdrawn.
-    </p>
-    <p class="mt-3">
-      Be careful, even though your planet will continue to produce spaceships, you can lose it while waiting for the
-      exit period to end.
-    </p>
-  </Banner>
 {:else if $selection.id}
   <PlanetInfoPanel location={$selection.id} />
 {:else}

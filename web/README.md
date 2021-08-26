@@ -1,0 +1,2 @@
+- delete privateAccount.ts
+- replace planetLogs.ts
