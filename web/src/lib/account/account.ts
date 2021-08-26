@@ -108,6 +108,7 @@ class Account implements Readable<AccountState> {
       planetCoords: {...planetCoords},
     };
     this.accountDB.save(this.state.data);
+    this._notify();
   }
 
   async hashFleet(
@@ -155,6 +156,7 @@ class Account implements Readable<AccountState> {
     };
     this.accountDB.save(this.state.data);
     // TODO agent ?
+    this._notify();
   }
 
   deletePendingAction(txHash: string) {
@@ -164,6 +166,7 @@ class Account implements Readable<AccountState> {
     }
     delete this.state.data.pendingActions[txHash];
     this.accountDB.save(this.state.data);
+    this._notify();
   }
 
   cancelAcknowledgment(txHash: string) {
@@ -172,6 +175,7 @@ class Account implements Readable<AccountState> {
     if (action && typeof action !== 'number') {
       action.acknowledged = undefined;
       this.accountDB.save(this.state.data);
+      this._notify();
     }
   }
 
@@ -186,6 +190,7 @@ class Account implements Readable<AccountState> {
       }
     }
     this.accountDB.save(this.state.data);
+    this._notify();
   }
 
   markAsFullyAcknwledged(txHash: string, timestamp: number) {
@@ -194,6 +199,7 @@ class Account implements Readable<AccountState> {
     if (action && typeof action !== 'number') {
       this.state.data.pendingActions[txHash] = timestamp;
       this.accountDB.save(this.state.data);
+      this._notify();
     }
   }
 
@@ -208,6 +214,7 @@ class Account implements Readable<AccountState> {
       }
     }
     this.accountDB.save(this.state.data);
+    this._notify();
   }
 
   private check() {

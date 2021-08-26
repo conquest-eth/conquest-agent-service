@@ -1,4 +1,9 @@
 <script lang="ts">
+import { account } from "$lib/account/account";
+import { wallet } from "$lib/blockchain/wallet";
+import { blockTime } from "$lib/config";
+
+  import { camera } from "$lib/map/camera";
   import type { Fleet } from "conquest-eth-common";
   export let fleet: Fleet;
 
@@ -12,15 +17,28 @@
 
   $: x = x1 + (x2-x1) * ratio;
   $: y = y1 + (y2-y1) * ratio;
-  const scale = 1;
 
+  $: scale = $camera ? $camera.renderScale : 1;
+
+  async function acknowledge() {
+    const block = await wallet.provider.getBlock("latest");
+    if (fleet.resolution && fleet.resolution.status === "SUCCESS") { // TODO if final
+      account.acknowledgeSuccess(fleet.txHash, block.timestamp);
+      account.acknowledgeSuccess(fleet.resolution.id, block.timestamp);
+    }
+  }
 
 </script>
 
-<div>
-  <!-- <p> {fleet.from.location.x}</p> -->
-  <div
-      style={`position: absolute; z-index: 50; transform: translate(${x}px,${y}px) scale(${scale}, ${scale}); background-color: red; width: 1px; height: 1px;
-  `}/>
-  <!-- <svg width="500" height="500"><line x1="50" y1="50" x2="350" y2="350" stroke="black"/></svg> -->
-</div>
+<div
+      style={`position: absolute; z-index: 50; transform: translate(${x-0.5}px,${y-0.5}px); background-color: red; width: 1px; height: 1px;
+  `} on:click={acknowledge}></div>
+
+{#if !fleet.resolution || fleet.resolution.status !== "SUCCESS"}
+<svg style={`position: absolute; z-index: 50; overflow: visible`}>
+  <marker xmlns="http://www.w3.org/2000/svg" id="triangle" viewBox="0 0 10 10" refX="10" refY="5" fill="#FFFFFF" stroke="#34D399"  markerUnits="strokeWidth" markerWidth="4" markerHeight="3" orient="auto">
+    <path d="M 0 0 L 10 5 L 0 10 z"/>
+  </marker>
+  <line marker-end="url(#triangle)" stroke-width={`${4/scale}px`} stroke="#34D399"  x1={x1} y1={y1} x2={x2} y2={y2}/>
+</svg>
+{/if}
