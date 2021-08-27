@@ -10,24 +10,24 @@ export type OwnerEvent = {
 
 export type GenericEvent = PlanetStakeEvent | PlanetExitEvent | FleetArrivedEvent | FleetSentEvent; // | ExitCompleteEvent ?
 
-export type OwnedPlanetEvent = OwnerEvent & {
+export type PlanetEvent = OwnerEvent & {
   __typename: 'PlanetStakeEvent' | 'PlanetExitEvent' | 'FleetSentEvent' | 'FleetArrivedEvent';
   planet: {id: string};
 };
 
-export type PlanetStakeEvent = OwnedPlanetEvent & {
+export type PlanetStakeEvent = PlanetEvent & {
   __typename: 'PlanetStakeEvent';
   numSpaceships: string;
   stake: string;
 };
 
-export type PlanetExitEvent = OwnedPlanetEvent & {
+export type PlanetExitEvent = PlanetEvent & {
   __typename: 'PlanetExitEvent';
   exitTime: string;
   stake: string;
 };
 
-export type FleetArrivedEvent = OwnedPlanetEvent & {
+export type FleetArrivedEvent = PlanetEvent & {
   __typename: 'FleetArrivedEvent';
   fleetLoss: string;
   planetLoss: string;
@@ -40,7 +40,7 @@ export type FleetArrivedEvent = OwnedPlanetEvent & {
   quantity: string;
 };
 
-export type FleetSentEvent = OwnedPlanetEvent & {
+export type FleetSentEvent = PlanetEvent & {
   __typename: 'FleetSentEvent';
   fleet: {id: string};
   quantity: string;
@@ -75,7 +75,7 @@ ownerEvents(orderDirection: desc orderBy: blockNumber where: {timestamp_gt: $tim
    transactionID
    timestamp
    owner {id}
-   ... on  OwnedPlanetEvent{
+   ... on  PlanetEvent{
       planet {id}
     }
    ... on PlanetStakeEvent{
