@@ -44,15 +44,33 @@ export class FleetsStore {
         } else if (pendingAction.status === 'CANCELED') {
         } else if (pendingAction.status === 'TIMEOUT') {
         } else {
+          let state = 'SEND_BROADCASTED';
+          if (pendingAction.status == 'SUCCESS') {
+            state = 'TRAVELING';
+          }
+
           const from = spaceInfo.getPlanetInfo(sendAction.from.x, sendAction.from.y);
           const to = spaceInfo.getPlanetInfo(sendAction.to.x, sendAction.to.y);
           const duration = spaceInfo.timeToArrive(from, to);
-          const launchTime = sendAction.actualLaunchTime || sendAction.timestamp;
+          let launchTime = sendAction.timestamp;
+          if(sendAction.actualLaunchTime) {
+            launchTime = sendAction.actualLaunchTime;
+          } else if (pendingAction.txTimestamp) {
+            launchTime = pendingAction.txTimestamp;
+            account.recordFleetLaunchTime(pendingAction.id, launchTime);
+          }
+
+
           const timeLeft = Math.max(duration - (now() - launchTime), 0);
           let timeToResolve = 0;
           if (timeLeft <= 0) {
+            state = 'READY_TO_RESOLVE';
             timeToResolve = Math.max((launchTime + duration + spaceInfo.resolveWindow) - now(), 0);
+            if (timeToResolve <= 0) {
+              state = 'TOO_LATE_TO_RESOLVE';
+            }
           }
+
           let resolution: CheckedPendingAction | undefined;
           if (sendAction.resolution) {
             // console.log('RESOLUTION', sendAction.resolution);
@@ -60,12 +78,17 @@ export class FleetsStore {
             const pendingResolution = update.pendingActions.find((v => v.id === sendAction.resolution[0]));
             if (pendingResolution) {
               resolution = pendingResolution;
+              state = 'RESOLVE_BROADCASTED';
 
+              if (resolution.status === 'SUCCESS') { // TODO error
+                state = 'WAITING_ACKNOWLEDGMENT';
+              }
             } else {
               // TODO error ?
             }
           }
-          // if (!(resolution && resolution.final && resolution.status === 'SUCCESS')) {
+          console.log({state})
+          if (!(resolution && resolution.action.acknowledged)) {
               this.fleets.push({
               txHash: pendingAction.id, // TODO better id
               from,
@@ -77,9 +100,10 @@ export class FleetsStore {
               timeLeft,
               timeToResolve,
               sending: pendingAction,
-              resolution
+              resolution,
+              state
             });
-          // }
+          }
 
         }
       }

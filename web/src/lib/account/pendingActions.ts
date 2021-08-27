@@ -33,6 +33,7 @@ import {deletionDelay, finality} from '$lib/config';
 export type CheckedPendingAction = {
   id: string;
   final?: number;
+  txTimestamp?: number;
   status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
   action: PendingAction;
 };
@@ -182,6 +183,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         if (receipt.status === 0) {
           if (checkedAction.status !== 'FAILURE' || checkedAction.final !== block.timestamp) {
             checkedAction.status = 'FAILURE';
+            checkedAction.txTimestamp = block.timestamp;
             changes = true;
             checkedAction.final = final ? block.timestamp : undefined;
             if (final) {
@@ -191,6 +193,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         } else {
           if (checkedAction.status !== 'SUCCESS' || checkedAction.final !== block.timestamp) {
             checkedAction.status = 'SUCCESS';
+            checkedAction.txTimestamp = block.timestamp;
             changes = true;
             checkedAction.final = final ? block.timestamp : undefined;
             if (final) {

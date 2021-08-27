@@ -90,6 +90,7 @@ Contact Player
 - Select planet
 - send message to owner
 - enter message
+- ability to mention planet or even attack strategy
 - confirm send
 
 
@@ -137,4 +138,19 @@ Push Notifications
 ------------------
 
 - receive notification on personal event + specific filter
+
+
+
+# NOTES
+
+
+- Show visually the difference between planet where a pkayer has some spaceship on it but is not staking there (this could be because the player send spaceship there to get some outward protection, or because some other player exited the planet while he was sending an attack)
+
+- change rules for exiting ? should the natives get back to the planet. If not there is danger ine xiting for planets around since a new player staking on it will have no loss and start at 100,000.
+    An other idea, would be to remove native and normalise the number of starting spaceship. And for sending spaceship to virgin planet, we could either let them send without loss or keep a minimum loss ?
+
+
+- show stake of players, withdrawal balance and token in wallet ?
+- show exit success
+
 

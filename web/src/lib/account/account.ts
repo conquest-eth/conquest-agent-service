@@ -146,6 +146,18 @@ class Account implements Readable<AccountState> {
     this._notify();
   }
 
+  recordFleetLaunchTime(txHash: string, launchTime: number): void {
+    this.check();
+    const pendingAction = this.state.data.pendingActions[txHash] as PendingSend;
+    if (pendingAction && typeof pendingAction !== "number") {
+      if (pendingAction.actualLaunchTime !== launchTime) {
+        pendingAction.actualLaunchTime = launchTime;
+        this.accountDB.save(this.state.data);
+        // this._notify();
+      }
+    }
+  }
+
   recordFleetResolvingTxhash(sendTxHash: string, txHash: string, timestamp: number, nonce: number, agent: boolean): void {
     this.check();
     (this.state.data.pendingActions[sendTxHash] as PendingSend).resolution = [txHash]; // TODO multiple in array
