@@ -3,8 +3,8 @@ import type {
   SyncedPendingActions,
 } from '$lib/space/optimisticSpace';
 import {
-  spaceQueryWithPendingActions
-} from '$lib/space/optimisticSpace';
+  spaceQueryWithPendingActions,
+}  from '$lib/space/optimisticSpace';
 import {now, time} from '$lib/time';
 import type {PlanetInfo, PlanetState} from 'conquest-eth-common';
 import {xyToLocation} from 'conquest-eth-common';

@@ -7,10 +7,28 @@ import {
   spaceQueryWithPendingActions,
 } from '$lib/space/optimisticSpace';
 import {now, time} from '$lib/time';
-import type { Fleet, SpaceInfo } from 'conquest-eth-common';
+import type { SpaceInfo, PlanetInfo } from 'conquest-eth-common';
 import type { Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 import {spaceInfo} from './spaceInfo';
+
+
+// object representing a fleet (publicly)
+export type Fleet = {
+  txHash: string; // TODO better id
+  from: PlanetInfo;
+  to: PlanetInfo;
+  quantity: number; // not needed to store, except to not require contract fetch
+  duration: number;
+  launchTime: number;
+  amountDestroyed: number;
+  timeLeft: number; // not needed to store, except to not require computing stats from from planet
+  timeToResolve: number;
+  sending: {id: string; status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT'; action: {nonce: number}}; // TODO use pendingaction type
+  resolution?: {id: string; status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT'; action: {nonce: number}}; // TODO use pendingaction type
+  state: 'SEND_BROADCASTED' | 'TRAVELING' | 'READY_TO_RESOLVE' | 'TOO_LATE_TO_RESOLVE' | 'RESOLVE_BROADCASTED' | 'WAITING_ACKNOWLEDGMENT';
+};
+
 
 export class FleetsStore {
   private readonly spaceInfo: SpaceInfo;
