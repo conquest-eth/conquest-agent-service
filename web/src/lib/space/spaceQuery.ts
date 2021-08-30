@@ -27,7 +27,7 @@ export type PlanetContractState = {
 
 export type SpaceQueryResult = {
   planets: PlanetQueryState[];
-  space: {minX: string; maxX: string; minY: string; maxY: string};
+  space?: {minX: string; maxX: string; minY: string; maxY: string};
   chain: {blockHash: string; blockNumber: string};
 };
 
@@ -105,10 +105,10 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
         };
       }),
       space: {
-        x1: -parseInt(data.space.minX),
-        x2: parseInt(data.space.maxX),
-        y1: -parseInt(data.space.minY),
-        y2: parseInt(data.space.maxY),
+        x1: -parseInt(data.space?.minX || "16"), // TODO sync CONSTANTS with thegraph and contract
+        x2: parseInt(data.space?.maxX || "16"),
+        y1: -parseInt(data.space?.minY || "16"),
+        y2: parseInt(data.space?.maxY || "16"),
       },
       chain: {
         blockHash: data.chain.blockHash,
