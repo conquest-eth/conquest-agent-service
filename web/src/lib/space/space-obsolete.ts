@@ -1,7 +1,9 @@
 import {contractsInfos} from '$lib/blockchain/contractsInfos';
-import {camera, Camera, CameraState} from '$lib/map/camera';
-import {Planet, PlanetContractState, PlanetInfo, SpaceInfo} from 'conquest-eth-common';
-import {Writable, writable} from 'svelte/store';
+import type {CameraState} from '$lib/map/camera';
+import {camera, Camera} from '$lib/map/camera';
+import type {PlanetContractState, PlanetInfo, SpaceInfo} from 'conquest-eth-common';
+import type { Writable } from 'svelte/store';
+import { writable } from 'svelte/store';
 
 export type PlanetWithContractState = PlanetInfo & {
   state?: PlanetContractState;

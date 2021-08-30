@@ -1,9 +1,11 @@
 import type {Invalidator, Subscriber, Unsubscriber} from 'web3w/dist/esm/utils/internals';
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
-import {HookedQueryStore, QueryState, QueryStore} from '$lib/utils/stores/graphql';
+import type {QueryState, QueryStore} from '$lib/utils/stores/graphql';
+import {HookedQueryStore} from '$lib/utils/stores/graphql';
 import type {EndPoint} from '$lib/utils/graphql/endpoint';
 import {chainTempo} from '$lib/blockchain/chainTempo';
-import {writable, Writable} from 'svelte/store';
+import type { Writable } from 'svelte/store';
+import { writable } from 'svelte/store';
 
 export type PlanetQueryState = {
   id: string;

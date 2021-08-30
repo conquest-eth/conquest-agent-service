@@ -1,6 +1,9 @@
-import {Readable, Writable, writable} from 'svelte/store';
-import {account, AccountState, PendingAction, PendingCapture, PendingExit, PendingResolution, PendingSend, PendingWithdrawal} from './account';
-import {chainTempo, ChainTempoInfo} from '$lib/blockchain/chainTempo';
+import {writable} from 'svelte/store';
+import type {Readable, Writable} from 'svelte/store';
+import type {AccountState, PendingAction} from './account';
+import {account} from './account';
+import type {ChainTempoInfo} from '$lib/blockchain/chainTempo';
+import {chainTempo} from '$lib/blockchain/chainTempo';
 import {wallet} from '$lib/blockchain/wallet';
 import {now} from '$lib/time';
 import {deletionDelay, finality} from '$lib/config';

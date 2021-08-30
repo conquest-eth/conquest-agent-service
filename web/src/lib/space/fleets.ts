@@ -1,12 +1,15 @@
 import { account } from '$lib/account/account';
 import type { CheckedPendingAction } from '$lib/account/pendingActions';
+import type {
+  SpaceQueryWithPendingState
+} from '$lib/space/optimisticSpace';
 import {
   spaceQueryWithPendingActions,
-  SpaceQueryWithPendingState
 } from '$lib/space/optimisticSpace';
 import {now, time} from '$lib/time';
 import type { Fleet, SpaceInfo } from 'conquest-eth-common';
-import { writable, Writable } from 'svelte/store';
+import type { Writable } from 'svelte/store';
+import { writable } from 'svelte/store';
 import {spaceInfo} from './spaceInfo';
 
 export class FleetsStore {

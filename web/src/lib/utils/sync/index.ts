@@ -3,7 +3,8 @@ import {BigNumber} from '@ethersproject/bignumber';
 import aes from 'aes-js';
 import {base64, compressToUint8Array, decompressFromUint8Array} from '$lib/utils';
 import localCache from '$lib/utils/localCache';
-import {Readable, writable, Writable} from 'svelte/store';
+import {writable} from 'svelte/store';
+import type {Readable, Writable} from 'svelte/store';
 
 const LOCAL_STORAGE_PRIVATE_ACCOUNT = '_account';
 function LOCAL_STORAGE_KEY(address: string, chainId: string) {

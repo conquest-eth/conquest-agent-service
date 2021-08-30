@@ -1,12 +1,13 @@
-import type {CheckedPendingActions} from '$lib/account/pendingActions';
-import {
-  spaceQueryWithPendingActions,
+import type {
   SpaceQueryWithPendingState,
-  SyncedPendingAction,
   SyncedPendingActions,
 } from '$lib/space/optimisticSpace';
+import {
+  spaceQueryWithPendingActions
+} from '$lib/space/optimisticSpace';
 import {now, time} from '$lib/time';
-import {PlanetInfo, PlanetState, xyToLocation} from 'conquest-eth-common';
+import type {PlanetInfo, PlanetState} from 'conquest-eth-common';
+import {xyToLocation} from 'conquest-eth-common';
 import {spaceInfo} from './spaceInfo';
 import type {PlanetContractState, SpaceState} from './spaceQuery';
 

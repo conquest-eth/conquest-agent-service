@@ -1,9 +1,12 @@
-import {CheckedPendingAction, CheckedPendingActions, pendingActions} from '$lib/account/pendingActions';
+import type {CheckedPendingAction, CheckedPendingActions} from '$lib/account/pendingActions';
+import {pendingActions} from '$lib/account/pendingActions';
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
 import {now} from '$lib/time';
 import type {QueryState} from '$lib/utils/stores/graphql';
-import {Readable, writable, Writable} from 'svelte/store';
-import {spaceQuery, SpaceState} from './spaceQuery';
+import {writable} from 'svelte/store';
+import type {Readable, Writable} from 'svelte/store';
+import type {SpaceState} from './spaceQuery';
+import {spaceQuery} from './spaceQuery';
 
 export type SyncedPendingAction = CheckedPendingAction & {
   counted: boolean;

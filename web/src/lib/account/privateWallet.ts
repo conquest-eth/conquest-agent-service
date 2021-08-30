@@ -5,7 +5,8 @@ import type {Contract} from '@ethersproject/contracts';
 import { keccak256 } from '@ethersproject/solidity';
 import {Wallet} from '@ethersproject/wallet';
 import aes from 'aes-js';
-import {Readable, Writable, writable} from 'svelte/store';
+import {writable} from 'svelte/store';
+import type {Readable, Writable} from 'svelte/store';
 
 // TODO tweetnacl do not work with vite
 // import {sign} from 'tweetnacl';

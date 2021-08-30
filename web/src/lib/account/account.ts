@@ -1,9 +1,12 @@
 import {SYNC_DB_NAME, SYNC_URI} from '$lib/config';
 import {bitMaskMatch} from '$lib/utils';
-import {AccountDB, SyncingState} from '$lib/utils/sync';
+import type {SyncingState} from '$lib/utils/sync';
+import {AccountDB} from '$lib/utils/sync';
 import { xyToLocation } from 'conquest-eth-common';
-import {Readable, Writable, writable} from 'svelte/store';
-import {privateWallet, PrivateWalletState} from './privateWallet';
+import {writable} from 'svelte/store';
+import type {Readable, Writable} from 'svelte/store';
+import type {PrivateWalletState} from './privateWallet';
+import {privateWallet} from './privateWallet';
 import {keccak256} from '@ethersproject/solidity';
 
 export type AccountState = {
