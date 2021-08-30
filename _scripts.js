@@ -196,6 +196,7 @@ async function performAction(rawArgs) {
     await performAction(['common:build']);
     await performAction(['contracts:seed', 'localhost', '--waitContracts']);
   } else if (firstArg === 'start') {
+    await execute(`docker-compose down -v`); // needed, else contracts,subgraph... get connected to previously running node
     execute(`newsh "npm run externals"`);
     execute(`newsh "npm run common:dev"`);
     execute(`newsh "npm run web:dev -- --skipContracts"`);
