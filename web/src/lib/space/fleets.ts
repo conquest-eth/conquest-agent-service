@@ -1,7 +1,7 @@
 import { account } from '$lib/account/account';
 import type { CheckedPendingAction } from '$lib/account/pendingActions';
 import type {
-  SpaceQueryWithPendingState
+  SpaceQueryWithPendingState, SyncedPendingAction
 } from '$lib/space/optimisticSpace';
 import {
   spaceQueryWithPendingActions,
@@ -93,7 +93,7 @@ export class FleetsStore {
             }
           }
 
-          let resolution: CheckedPendingAction | undefined;
+          let resolution: SyncedPendingAction | undefined;
           if (sendAction.resolution) {
             // console.log('RESOLUTION', sendAction.resolution);
             // TODO handle multiple resolution
@@ -102,14 +102,14 @@ export class FleetsStore {
               resolution = pendingResolution;
               state = 'RESOLVE_BROADCASTED';
 
-              if (resolution.status === 'SUCCESS') { // TODO error
+              if (resolution.status === 'SUCCESS' && resolution.counted) { // TODO error
                 state = 'WAITING_ACKNOWLEDGMENT';
               }
             } else {
               // TODO error ?
             }
           }
-          console.log({state})
+          // console.log({state})
           if (!(resolution && resolution.action.acknowledged)) {
               this.fleets.push({
               txHash: pendingAction.id, // TODO better id
