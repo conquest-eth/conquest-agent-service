@@ -6,8 +6,15 @@
   import {base} from '$app/paths';
   import { fleets } from '$lib/space/fleets';
   import FleetElement from './FleetElement.svelte';
+  import { spaceQueryWithPendingActions } from '$lib/space/optimisticSpace';
 
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
+
+  $: x1 = ($spaceQueryWithPendingActions.queryState.data?.space.x1 || -16) * 4 - 2; // TODO sync CONSTANTS with thegraph and contract
+  $: x2 = ($spaceQueryWithPendingActions.queryState.data?.space.x2 || 16) * 4 + 2;
+  $: y1 = ($spaceQueryWithPendingActions.queryState.data?.space.y1 || -16) * 4 -2;
+  $: y2 = ($spaceQueryWithPendingActions.queryState.data?.space.y2 || 16) * 4 + 2;
+
 </script>
 
 <div
@@ -64,5 +71,18 @@ width:100%; height: 100%;
     {#each $fleets as fleet}
       <FleetElement {fleet} />
     {/each}
+
+    <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+      <line stroke-width="1px" stroke="blue"  x1={x1} y1={y1} x2={x2} y2={y1}/>
+    </svg>
+    <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+      <line stroke-width="1px" stroke="blue"  x1={x2} y1={y1} x2={x2} y2={y2}/>
+    </svg>
+    <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+      <line stroke-width="1px" stroke="blue"  x1={x2} y1={y2} x2={x1} y2={y2}/>
+    </svg>
+    <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+      <line stroke-width="1px" stroke="blue"  x1={x1} y1={y2} x2={x1} y2={y1}/>
+    </svg>
   </div>
 </div>
