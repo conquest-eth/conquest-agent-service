@@ -47,17 +47,6 @@ width:100%; height: 100%;
 >
   <div
     style={`
-  position: absolute;
-  width:150%; height: 150%;
-  top: -25%;
-  left: -25%;
-  opacity: ${$camera ? Math.max(0.2, Math.min(0.4, 1 - $camera.renderScale / 10)) : 0};
-  background-image: url(${base}${spaceBackground});
-  background-position: ${($camera ? $camera.renderX * 1.5 : 0) - 2}px ${($camera ? $camera.renderY * 1.5 : 0) - 2}px;
-  `}
-  />
-  <div
-    style={`
     position: absolute;
     transform:
     translate(${$camera ? $camera.renderX : 1}px,${$camera ? $camera.renderY : 1}px);
@@ -72,7 +61,42 @@ width:100%; height: 100%;
       <FleetElement {fleet} />
     {/each}
 
+    <!-- <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+      <rect x={x1-500} y={y2} width={1000} height={1000} fill="black" fill-opacity="0.5"/>
+    </svg>
     <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+      <rect x={x1-500} y={y1-1000} width={1000} height={1000} fill="black" fill-opacity="0.5"/>
+    </svg>
+    <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+      <rect x={x2} y={y1} width={1000} height={y2-y1} fill="black" fill-opacity="0.5"/>
+    </svg>
+    <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+      <rect x={x1-1000} y={y1} width={1000} height={y2-y1} fill="black" fill-opacity="0.5"/>
+    </svg> -->
+
+
+    <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+      <defs>
+        <clipPath id="space">
+          <rect x={x1} y={y1} width={x2-x1} height={y2-y1} />
+        </clipPath>
+        <mask id="myMask">
+          <rect x={x1-1000000} y={y1-1000000} width={(x2-x1) + 2000000} height={(y2-y1) + 2000000} fill="white" />
+          <rect x={x1} y={y1} width={x2-x1} height={y2-y1} fill="black"/>
+        </mask>
+      </defs>
+
+
+      <!-- <rect x={x1-1000} y={y1-1000} width={(x2-x1) + 2000} height={(y2-y1) + 2000} fill="black" fill-opacity="0.6" clip-path="url(#space)" /> -->
+      <rect x={x1-1000000} y={y1-1000000} width={(x2-x1) + 2000000} height={(y2-y1) + 2000000} fill="black" fill-opacity="0.4" mask="url(#myMask)" />
+    </svg>
+
+
+    <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+      <rect x={x1} y={y1} width={x2-x1} height={y2-y1} stroke="white" stroke-opacity="0.5" fill="none" stroke-dasharray="2 10" />
+    </svg>
+
+    <!-- <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
       <line stroke-width="1px" stroke="blue"  x1={x1} y1={y1} x2={x2} y2={y1}/>
     </svg>
     <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
@@ -83,6 +107,19 @@ width:100%; height: 100%;
     </svg>
     <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
       <line stroke-width="1px" stroke="blue"  x1={x1} y1={y2} x2={x1} y2={y1}/>
-    </svg>
+    </svg> -->
   </div>
+
+
+  <div
+    style={`
+  position: absolute;
+  width:150%; height: 150%;
+  top: -25%;
+  left: -25%;
+  opacity: ${$camera ? Math.max(0.2, Math.min(0.4, 1 - $camera.renderScale / 10)) : 0};
+  background-image: url(${base}${spaceBackground});
+  background-position: ${($camera ? $camera.renderX * 1.5 : 0) - 2}px ${($camera ? $camera.renderY * 1.5 : 0) - 2}px;
+  `}
+  />
 </div>
