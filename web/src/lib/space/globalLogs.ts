@@ -1,56 +1,15 @@
 import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {blockTime, finality, logPeriod, lowFrequencyFetch} from '$lib/config';
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
+import type { GenericEvent } from './subgraphTypes';
 
-export type OwnerEvent = {
-  transactionID: string;
-  owner: {id: string};
-  timestamp: string;
-};
-
-export type GenericEvent = PlanetStakeEvent | PlanetExitEvent | FleetArrivedEvent | FleetSentEvent; // | ExitCompleteEvent ?
-
-export type PlanetEvent = OwnerEvent & {
-  __typename: 'PlanetStakeEvent' | 'PlanetExitEvent' | 'FleetSentEvent' | 'FleetArrivedEvent';
-  planet: {id: string};
-};
-
-export type PlanetStakeEvent = PlanetEvent & {
-  __typename: 'PlanetStakeEvent';
-  numSpaceships: string;
-  stake: string;
-};
-
-export type PlanetExitEvent = PlanetEvent & {
-  __typename: 'PlanetExitEvent';
-  exitTime: string;
-  stake: string;
-};
-
-export type FleetArrivedEvent = PlanetEvent & {
-  __typename: 'FleetArrivedEvent';
-  fleetLoss: string;
-  planetLoss: string;
-  inFlightFleetLoss: string;
-  inFlightPlanetLoss: string;
-  destinationOwner: {id: string};
-  fleet: {id: string};
-  from: {id: string};
-  won: boolean;
-  quantity: string;
-};
-
-export type FleetSentEvent = PlanetEvent & {
-  __typename: 'FleetSentEvent';
-  fleet: {id: string};
-  quantity: string;
-};
 
 export type GlobalLogs = {
   step: 'IDLE' | 'LOADING' | 'READY';
   data?: GenericEvent[];
   error?: string;
 };
+
 
 type QueryData = {
   ownerEvents: GenericEvent[];

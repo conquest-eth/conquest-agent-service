@@ -1,10 +1,7 @@
 <script lang="ts">
-import { account } from "$lib/account/account";
-import { wallet } from "$lib/blockchain/wallet";
-import { blockTime } from "$lib/config";
-
+  import { account } from "$lib/account/account";
   import { camera } from "$lib/map/camera";
-  import type { Fleet } from "conquest-eth-common";
+  import type { Fleet } from "$lib/space/fleets";
   export let fleet: Fleet;
 
 

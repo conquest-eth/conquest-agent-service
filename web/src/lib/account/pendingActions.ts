@@ -102,6 +102,8 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
           this.state.splice(i, 1);
         }
       }
+    } else {
+      this.state.length = 0;
     }
 
     this.ownerAddress = $account.ownerAddress;

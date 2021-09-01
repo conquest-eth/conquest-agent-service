@@ -25,10 +25,19 @@ export type QueryStore<T> = Readable<QueryState<T>> & {
   acknowledgeError: () => void;
 };
 
+export type QueryStoreWithFetch<T> = QueryStore<T> & {
+  fetch(extraVariables?: Record<string, unknown>): Promise<void>;
+};
+
+export type QueryStoreWithRuntimeVariables<T> = QueryStoreWithFetch<T> & {
+  runtimeVariables: Record<string, string>;
+};
+
 class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unknown>>
   extends BaseStoreWithData<QueryState<T>, T>
-  implements QueryStore<T>
+  implements QueryStoreWithRuntimeVariables<T>
 {
+  public runtimeVariables: Record<string, string> = {};
   public constructor(
     private endpoint: EndPoint,
     private query: string,
@@ -47,7 +56,7 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
     this.setPartial({error: undefined});
   }
 
-  protected async fetch(extraVariables?: Record<string, unknown>): Promise<void> {
+  async fetch(extraVariables?: Record<string, unknown>): Promise<void> {
     console.info('fetching....');
     const first = 1000;
     let numEntries = first;
@@ -57,7 +66,7 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
     let list: any[];
     while (numEntries === first) {
       try {
-        const variables = {first, lastId, ...this.options?.variables, ...extraVariables};
+        const variables = {first, lastId, ...this.options?.variables, ...this.runtimeVariables, ...extraVariables};
         const querySplitted = this.query.split('?');
         let query = '';
         for (let i = 0; i < querySplitted.length; i++) {

@@ -269,6 +269,10 @@ class Account implements Readable<AccountState> {
         this.unsubscribeFromSync = undefined;
       }
 
+      this.state.step = 'IDLE';
+      this.state.data = undefined;
+      // if (this.state.data) {this.state.data.pendingActions = {};}
+      // if (this.state.data) {this.state.data.welcomingStep = undefined;}
       this.state.ownerAddress = $privateWallet.ownerAddress;
       this._notify();
 

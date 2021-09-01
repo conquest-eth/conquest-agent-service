@@ -1,5 +1,4 @@
 import { account } from '$lib/account/account';
-import type { CheckedPendingAction } from '$lib/account/pendingActions';
 import type {
   SpaceQueryWithPendingState, SyncedPendingAction
 } from '$lib/space/optimisticSpace';
@@ -8,7 +7,7 @@ import {
 } from '$lib/space/optimisticSpace';
 import {now, time} from '$lib/time';
 import type { SpaceInfo, PlanetInfo } from 'conquest-eth-common';
-import type { Writable } from 'svelte/store';
+import type { Readable, Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 import {spaceInfo} from './spaceInfo';
 
@@ -31,7 +30,7 @@ export type Fleet = {
 };
 
 
-export class FleetsStore {
+export class FleetsStore implements Readable<Fleet[]>{
   private readonly spaceInfo: SpaceInfo;
   private store: Writable<Fleet[]>;
   private fleets: Fleet[] = [];

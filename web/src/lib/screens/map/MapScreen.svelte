@@ -21,6 +21,7 @@
   import resolveFlow from '$lib/flows/resolve';
   import ResolveFlow from '$lib/flows/ResolveFlow.svelte';
   import FleetsToResolve from '$lib/components/fleets/FleetsToResolve.svelte';
+  import { spaceQueryWithPendingActions } from '$lib/space/optimisticSpace';
 
 
   // import messageFlow from '$lib/flows/message';
@@ -35,6 +36,14 @@
 </script>
 
 <Map />
+
+{#if $spaceQueryWithPendingActions.queryState.data?.loading}
+<div class="w-full flex items-center justify-center fixed top-0 pointer-events-none" style="z-index: 5;">
+  <p class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-blue-500 p-1">
+    Loading
+  </p>
+</div>
+{/if}
 
 <ConnectPanel />
 

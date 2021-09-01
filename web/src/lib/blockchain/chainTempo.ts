@@ -25,7 +25,7 @@ class ChainTempo implements Readable<ChainTempoInfo> {
   private timeout: NodeJS.Timeout;
   private lastUpdate = 0;
   private triggerTimeout: NodeJS.Timeout;
-  private chainInfo: ChainTempoInfo = {lastBlockNumber: undefined, stale: true};
+  public readonly chainInfo: ChainTempoInfo = {lastBlockNumber: undefined, stale: true};
 
   constructor(private maxTimeout: number) {}
 

@@ -7,6 +7,7 @@
   import { fleets } from '$lib/space/fleets';
   import FleetElement from './FleetElement.svelte';
   import { spaceQueryWithPendingActions } from '$lib/space/optimisticSpace';
+  import {myevents} from '$lib/space/myevents';
 
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
 
@@ -47,6 +48,7 @@ width:100%; height: 100%;
 >
   <div
     style={`
+    pointer-events: none;
     position: absolute;
     transform:
     translate(${$camera ? $camera.renderX : 1}px,${$camera ? $camera.renderY : 1}px);
@@ -59,6 +61,10 @@ width:100%; height: 100%;
 
     {#each $fleets as fleet}
       <FleetElement {fleet} />
+    {/each}
+
+    {#each $myevents as event}
+      <!-- <FleetElement {event} /> -->
     {/each}
 
     <!-- <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
@@ -75,7 +81,7 @@ width:100%; height: 100%;
     </svg> -->
 
 
-    <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+    <svg style={`pointer-events: none; position: absolute; z-index: 50; overflow: visible;`}>
       <defs>
         <clipPath id="space">
           <rect x={x1} y={y1} width={x2-x1} height={y2-y1} />
@@ -92,7 +98,7 @@ width:100%; height: 100%;
     </svg>
 
 
-    <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+    <svg style={`pointer-events: none; position: absolute; z-index: 50; overflow: visible;`}>
       <rect x={x1} y={y1} width={x2-x1} height={y2-y1} stroke="white" stroke-opacity="0.5" fill="none" stroke-dasharray="2 10" />
     </svg>
 
@@ -113,6 +119,7 @@ width:100%; height: 100%;
 
   <div
     style={`
+    pointer-events: none;
   position: absolute;
   width:150%; height: 150%;
   top: -25%;
