@@ -43,9 +43,9 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     return this.store.subscribe(run, invalidate);
   }
 
-  save(data: T): void {
+  async save(data: T): Promise<void> {
     this.state.data = data;
-    const notified = this._syncLocal();
+    const notified = await this._syncLocal();
     if (!notified) {
       this._notify();
     }
@@ -55,8 +55,8 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     this._syncRemote();
   }
 
-  requestSync(): void {
-    const notified = this._syncLocal();
+  async requestSync(): Promise<void> {
+    const notified = await this._syncLocal();
     if (!notified) {
       this._notify();
     }
@@ -65,7 +65,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
 
   async clearData(): Promise<void> {
     this.state.data = {} as T;
-    this._saveToLocalStorage(this.ownerAddress, this.chainId, this.state.data);
+    await this._saveToLocalStorage(this.ownerAddress, this.chainId, this.state.data);
 
     let error: unknown | undefined = undefined;
     let counter: BigNumber | undefined;
@@ -108,7 +108,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
       const {newData, newDataOnLocal, newDataOnRemote} = this.merge(this.state.data, remoteData);
       if (newDataOnRemote) {
         this.state.data = newData;
-        const notified = this._syncLocal();
+        const notified = await this._syncLocal();
         if (!notified) {
           this._notify();
         }
@@ -123,9 +123,9 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     this._notify();
   }
 
-  private _syncLocal(): boolean {
+  private async _syncLocal(): Promise<boolean> {
     let notified = false;
-    const localStorageAsRemoteData = this._getFromLocalStorage();
+    const localStorageAsRemoteData = await this._getFromLocalStorage();
     const {newData, newDataOnLocal, newDataOnRemote} = this.merge(this.state.data, localStorageAsRemoteData);
     if (!this.state.data) {
       this.state.data = newData;
@@ -136,7 +136,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
       notified = true;
     }
     if (newDataOnLocal) {
-      this._saveToLocalStorage(this.ownerAddress, this.chainId, this.state.data);
+      await this._saveToLocalStorage(this.ownerAddress, this.chainId, this.state.data);
     }
     return notified;
   }
@@ -145,8 +145,8 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
   //   this.destroyed = true;
   // }
 
-  private _getFromLocalStorage(): T | undefined {
-    const fromStorage = localCache.getItem(LOCAL_STORAGE_KEY(this.ownerAddress, this.chainId));
+  private async _getFromLocalStorage(): Promise<T | undefined> {
+    const fromStorage = await localCache.getItem(LOCAL_STORAGE_KEY(this.ownerAddress, this.chainId));
     if (fromStorage) {
       try {
         const decrypted = this._decrypt(fromStorage);
@@ -158,10 +158,10 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     return undefined;
   }
 
-  private _saveToLocalStorage(address: string, chainId: string, data: T) {
+  private async _saveToLocalStorage(address: string, chainId: string, data: T): Promise<void> {
     const toStorage = JSON.stringify(data);
     const encrypted = this._encrypt(toStorage);
-    localCache.setItem(LOCAL_STORAGE_KEY(address, chainId), encrypted);
+    await localCache.setItem(LOCAL_STORAGE_KEY(address, chainId), encrypted);
   }
 
   private async _fetchRemoteData(): Promise<{data: T; counter: BigNumber}> {

@@ -1,11 +1,8 @@
 import {base} from '$app/paths';
 import {contractsInfos} from '$lib/blockchain/contractsInfos';
-import type {IDBPDatabase} from 'idb';
-import { openDB } from 'idb';
 
 class LocalCache {
   private _prefix: string;
-  private _dbP: Promise<IDBPDatabase<unknown>>;
   constructor(version?: string) {
     this._prefix = base && base.startsWith('/ipfs/') || base.startsWith('/ipns/') ? base.slice(6) : ''; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
 
@@ -23,8 +20,7 @@ class LocalCache {
   }
   async setItem(key: string, value: string): Promise<void> {
     try {
-      const db = await this._getDB();
-     await db.put('keyval', value, this._prefix + key);
+      localStorage.setItem(this._prefix + key, value);
     } catch (e) {
       //
     }
@@ -32,8 +28,7 @@ class LocalCache {
 
   async getItem(key: string): Promise<string | null> {
     try {
-      const db = await this._getDB();
-      return db.get('keyval', this._prefix + key);
+      return localStorage.getItem(this._prefix + key);
     } catch (e) {
       return null;
     }
@@ -41,8 +36,7 @@ class LocalCache {
 
   async removeItem(key: string): Promise<void> {
     try {
-      const db = await this._getDB();
-      await db.delete('keyval', this._prefix + key);
+      localStorage.removeItem(this._prefix + key);
     } catch (e) {
       //
     }
@@ -50,26 +44,15 @@ class LocalCache {
 
   async clear(): Promise<void> {
     try {
-      const db = await this._getDB();
-      const keys = await db.getAllKeys('keyval');
-      for(const key of keys) {
-        if (typeof key === 'string' && key.startsWith(this._prefix)) {
+      const l = localStorage.length;
+      for (let i = 0; i < l; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith(this._prefix)) {
           console.log(`removing ${key}...`);
-          await this.removeItem(key);
+          this.removeItem(key);
         }
       }
     } catch (e) {}
-  }
-
-  private _getDB(): Promise<IDBPDatabase<unknown>> {
-    if (!this._dbP) {
-      this._dbP = openDB('keyval-store', 1, {
-        upgrade(db) {
-          db.createObjectStore('keyval');
-        },
-      });
-    }
-    return this._dbP;
   }
 }
 

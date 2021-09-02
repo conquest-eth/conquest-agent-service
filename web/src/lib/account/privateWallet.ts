@@ -150,7 +150,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
         signature: storeSignatureLocally ? signature : undefined,
         syncEnabled: syncRemotely,
       });
-      localCache.setItem(LOCAL_ONLY_STORAGE_KEY(walletAddressLC, chainId), toStorage);
+      await localCache.setItem(LOCAL_ONLY_STORAGE_KEY(walletAddressLC, chainId), toStorage);
 
       this.state.step = 'READY';
       this.state.syncEnabled = syncRemotely;
@@ -226,7 +226,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
       this._clear();
       let inCache = this.cache[walletAddressLC + '_' + chainId];
       if (!inCache) {
-        const fromStorage = localCache.getItem(LOCAL_ONLY_STORAGE_KEY(walletAddressLC, chainId));
+        const fromStorage = await localCache.getItem(LOCAL_ONLY_STORAGE_KEY(walletAddressLC, chainId));
         if (fromStorage) {
           let storage: {syncEnabled: boolean; signature?: string} | undefined;
           try {

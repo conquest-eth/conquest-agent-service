@@ -1,6 +1,6 @@
 import {BaseStore} from '$lib/utils/stores/base';
 import {now} from '$lib/time';
-import localCache from '$lib/utils/localCache';
+import lstorage from '$lib/utils/lstorage';
 
 class LogoStore extends BaseStore<{stage: number}> {
   private stageTime: number;
@@ -8,7 +8,7 @@ class LogoStore extends BaseStore<{stage: number}> {
   private visited: boolean;
 
   constructor() {
-    const result = localCache.getItem('_conquest_visited');
+    const result = lstorage.getItem('_conquest_visited');
     const visited = result === 'true';
     super({stage: visited ? 1 : 0});
     this.stageTime = now();
@@ -43,7 +43,7 @@ class LogoStore extends BaseStore<{stage: number}> {
     this.stageTime = now();
     this.set({stage: this.$store.stage + 1});
     if (this.$store.stage === 2) {
-      localCache.setItem('_conquest_visited', 'true');
+      lstorage.setItem('_conquest_visited', 'true');
     }
   }
 }

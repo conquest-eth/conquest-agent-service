@@ -1,6 +1,6 @@
 <script lang="ts">
   import {onMount} from 'svelte';
-  import localCache from '$lib/utils/localCache';
+  import lstorage from '$lib/utils/lstorage';
   import {base} from '$app/paths';
   type BeforeInstallPromptEvent = Event & {
     prompt: () => void;
@@ -11,10 +11,10 @@
 
   let deferredPrompt: BeforeInstallPromptEvent;
   function getVisited() {
-    return localCache.getItem('install-prompt') === 'true';
+    return lstorage.getItem('install-prompt') === 'true';
   }
   function setVisited() {
-    localCache.setItem('install-prompt', 'true');
+    lstorage.setItem('install-prompt', 'true');
   }
   function beforeinstallprompt(event: Event) {
     event.preventDefault();

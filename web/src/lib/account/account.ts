@@ -89,20 +89,20 @@ class Account implements Readable<AccountState> {
     return this.store.subscribe(run, invalidate);
   }
 
-  recordWelcomingStep(bit: number): void {
+  async recordWelcomingStep(bit: number): Promise<void> {
     this.check();
     if (bit > 32) {
       throw new Error('bit > 32');
     }
     this.state.data.welcomingStep = (this.state.data.welcomingStep || 0) | Math.pow(2, bit);
-    this.accountDB.save(this.state.data);
+    await this.accountDB.save(this.state.data);
   }
 
   isWelcomingStepCompleted(bit: number): boolean {
     return bitMaskMatch(this.state.data?.welcomingStep, bit);
   }
 
-  recordCapture(planetCoords: PlanetCoords, txHash: string, timestamp: number, nonce: number): void {
+  async recordCapture(planetCoords: PlanetCoords, txHash: string, timestamp: number, nonce: number): Promise<void> {
     this.check();
     this.state.data.pendingActions[txHash] = {
       type: 'CAPTURE',
@@ -110,7 +110,7 @@ class Account implements Readable<AccountState> {
       nonce,
       planetCoords: {...planetCoords},
     };
-    this.accountDB.save(this.state.data);
+    await this.accountDB.save(this.state.data);
     this._notify();
   }
 
@@ -135,7 +135,7 @@ class Account implements Readable<AccountState> {
     return {toHash, fleetId, secretHash};
   }
 
-  recordFleet(fleet: {from: PlanetCoords, to: PlanetCoords, fleetAmount: number}, txHash: string, timestamp: number, nonce: number): void {
+  async recordFleet(fleet: {from: PlanetCoords, to: PlanetCoords, fleetAmount: number}, txHash: string, timestamp: number, nonce: number): Promise<void> {
     this.check();
     this.state.data.pendingActions[txHash] = {
       timestamp,
@@ -145,23 +145,23 @@ class Account implements Readable<AccountState> {
       to: {...fleet.to},
       quantity: fleet.fleetAmount
     };
-    this.accountDB.save(this.state.data);
+    await this.accountDB.save(this.state.data);
     this._notify();
   }
 
-  recordFleetLaunchTime(txHash: string, launchTime: number): void {
+  async recordFleetLaunchTime(txHash: string, launchTime: number): Promise<void> {
     this.check();
     const pendingAction = this.state.data.pendingActions[txHash] as PendingSend;
     if (pendingAction && typeof pendingAction !== "number") {
       if (pendingAction.actualLaunchTime !== launchTime) {
         pendingAction.actualLaunchTime = launchTime;
-        this.accountDB.save(this.state.data);
+        await this.accountDB.save(this.state.data);
         // this._notify();
       }
     }
   }
 
-  recordFleetResolvingTxhash(sendTxHash: string, txHash: string, timestamp: number, nonce: number, agent: boolean): void {
+  async recordFleetResolvingTxhash(sendTxHash: string, txHash: string, timestamp: number, nonce: number, agent: boolean): Promise<void> {
     this.check();
     (this.state.data.pendingActions[sendTxHash] as PendingSend).resolution = [txHash]; // TODO multiple in array
     this.state.data.pendingActions[txHash] = {
@@ -169,12 +169,12 @@ class Account implements Readable<AccountState> {
       timestamp,
       nonce
     };
-    this.accountDB.save(this.state.data);
+    await this.accountDB.save(this.state.data);
     // TODO agent ?
     this._notify();
   }
 
-  recordExit(planetCoords: {x: number; y: number;}, txHash: string, timestamp: number, nonce: number): void {
+  async recordExit(planetCoords: {x: number; y: number;}, txHash: string, timestamp: number, nonce: number): Promise<void> {
     this.check();
     this.state.data.pendingActions[txHash] = {
       type: 'EXIT',
@@ -182,32 +182,32 @@ class Account implements Readable<AccountState> {
       nonce,
       planetCoords
     };
-    this.accountDB.save(this.state.data);
+    await this.accountDB.save(this.state.data);
     // TODO agent ?
     this._notify();
   }
 
-  deletePendingAction(txHash: string) {
+  async deletePendingAction(txHash: string): Promise<void> {
     this.check();
     if (this.deletedPendingActions.indexOf(txHash) === -1) {
       this.deletedPendingActions.push(txHash);
     }
     delete this.state.data.pendingActions[txHash];
-    this.accountDB.save(this.state.data);
+    await this.accountDB.save(this.state.data);
     this._notify();
   }
 
-  cancelAcknowledgment(txHash: string) {
+  async cancelAcknowledgment(txHash: string): Promise<void> {
     this.check();
     const action = this.state.data.pendingActions[txHash];
     if (action && typeof action !== 'number') {
       action.acknowledged = undefined;
-      this.accountDB.save(this.state.data);
+      await this.accountDB.save(this.state.data);
       this._notify();
     }
   }
 
-  acknowledgeSuccess(txHash: string, final?: number) {
+  async acknowledgeSuccess(txHash: string, final?: number): Promise<void> {
     this.check();
     const pendingAction = this.state.data.pendingActions[txHash];
     if (pendingAction && typeof pendingAction !== 'number') {
@@ -217,21 +217,21 @@ class Account implements Readable<AccountState> {
         pendingAction.acknowledged = 'SUCCESS';
       }
     }
-    this.accountDB.save(this.state.data);
+    await this.accountDB.save(this.state.data);
     this._notify();
   }
 
-  markAsFullyAcknwledged(txHash: string, timestamp: number) {
+  async markAsFullyAcknwledged(txHash: string, timestamp: number): Promise<void> {
     this.check();
     const action = this.state.data.pendingActions[txHash];
     if (action && typeof action !== 'number') {
       this.state.data.pendingActions[txHash] = timestamp;
-      this.accountDB.save(this.state.data);
+      await this.accountDB.save(this.state.data);
       this._notify();
     }
   }
 
-  acknowledgeActionFailure(txHash: string, final?: number) {
+  async acknowledgeActionFailure(txHash: string, final?: number): Promise<void> {
     this.check();
     const pendingAction = this.state.data.pendingActions[txHash];
     if (pendingAction && typeof pendingAction !== 'number') {
@@ -241,7 +241,7 @@ class Account implements Readable<AccountState> {
         pendingAction.acknowledged = 'ERROR';
       }
     }
-    this.accountDB.save(this.state.data);
+    await this.accountDB.save(this.state.data);
     this._notify();
   }
 
