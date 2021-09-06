@@ -1231,9 +1231,7 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
     await this.execute();
   }
 
-  async generateKeys(
-    signature: string
-  ): Promise<{
+  async generateKeys(signature: string): Promise<{
     privateWallet: Wallet;
     aesKey: Uint8Array;
     messagingKey: MessagingKey;
@@ -1334,27 +1332,25 @@ class PrivateAccountStore extends BaseStoreWithData<PrivateAccountData, SecretDa
       this.setPartial({step: 'CONNECTING'});
     }
 
-    return flow.execute(
-      (contracts: Contracts): Promise<void> => {
-        if (this.$store.step !== 'READY') {
-          this.setPartial({step: 'SIGNATURE_REQUIRED'});
-          this._promise = new Promise<void>((resolve, reject) => {
-            this._contracts = contracts;
-            this._resolve = resolve;
-            this._reject = reject;
-            if (func) {
-              this._func = () => func(contracts);
-            }
-          });
-          return this._promise;
-        }
-        if (func) {
-          return func(contracts);
-        } else {
-          return Promise.resolve();
-        }
+    return flow.execute((contracts: Contracts): Promise<void> => {
+      if (this.$store.step !== 'READY') {
+        this.setPartial({step: 'SIGNATURE_REQUIRED'});
+        this._promise = new Promise<void>((resolve, reject) => {
+          this._contracts = contracts;
+          this._resolve = resolve;
+          this._reject = reject;
+          if (func) {
+            this._func = () => func(contracts);
+          }
+        });
+        return this._promise;
       }
-    );
+      if (func) {
+        return func(contracts);
+      } else {
+        return Promise.resolve();
+      }
+    });
   }
 
   recordWithdrawal(hash: string, nonce: number) {

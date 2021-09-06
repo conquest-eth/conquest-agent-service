@@ -2,7 +2,7 @@ import {chain, flow, wallet} from '$lib/blockchain/wallet';
 import localCache from '$lib/utils/localCache';
 import {nameForChainId} from '$lib/utils/networks';
 import type {Contract} from '@ethersproject/contracts';
-import { keccak256 } from '@ethersproject/solidity';
+import {keccak256} from '@ethersproject/solidity';
 import {Wallet} from '@ethersproject/wallet';
 import aes from 'aes-js';
 import {writable} from 'svelte/store';
@@ -104,13 +104,15 @@ class PrivateWallet implements Readable<PrivateWalletState> {
         return this._promise;
       }
       if (func) {
-       return func(this.state.signer, contracts);
+        return func(this.state.signer, contracts);
       } else {
         return Promise.resolve();
       }
     });
 
-    return p.then((contracts) => {return {signer: this.state.signer, contracts}});
+    return p.then((contracts) => {
+      return {signer: this.state.signer, contracts};
+    });
   }
 
   async confirm({

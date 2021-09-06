@@ -2,10 +2,6 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 import {ethers, network} from 'hardhat';
 
-function minutes(num: number): number {
-  return num * 60;
-}
-
 function hours(num: number): number {
   return num * 3600;
 }

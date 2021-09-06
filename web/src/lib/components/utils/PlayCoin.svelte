@@ -1,5 +1,5 @@
 <script lang="ts">
-  let class_list: string = '';
+  let class_list = '';
   export {class_list as class};
 </script>
 

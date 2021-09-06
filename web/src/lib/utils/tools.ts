@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export function trackInstances<T extends {new (...args: any[]): {}}>(
-  constructor: T
-): T | undefined {
+export function trackInstances<T extends {new (...args: any[]): {}}>(constructor: T): T | undefined {
   if (import.meta.hot) {
     return class extends constructor {
       static __instances: any[] = [];

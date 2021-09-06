@@ -1,15 +1,13 @@
 import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {blockTime, finality, logPeriod, lowFrequencyFetch} from '$lib/config';
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
-import type { GenericEvent } from './subgraphTypes';
-
+import type {GenericEvent} from './subgraphTypes';
 
 export type GlobalLogs = {
   step: 'IDLE' | 'LOADING' | 'READY';
   data?: GenericEvent[];
   error?: string;
 };
-
 
 type QueryData = {
   ownerEvents: GenericEvent[];

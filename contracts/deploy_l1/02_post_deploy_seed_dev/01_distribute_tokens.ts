@@ -4,13 +4,18 @@ import {parseEther} from '@ethersproject/units';
 import {BigNumber} from '@ethersproject/bignumber';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const {deployer, stableTokenBeneficiary, claimKeyDistributor} = await hre.getNamedAccounts();
+  const {deployer, stableTokenBeneficiary, claimKeyDistributor} =
+    await hre.getNamedAccounts();
   const {read, execute} = hre.deployments;
   const {ethers} = hre;
 
   const playToken = await ethers.getContract('PlayToken');
 
-  const claimKeyDistributorBalance = await read('PlayToken', 'balanceOf', claimKeyDistributor);
+  const claimKeyDistributorBalance = await read(
+    'PlayToken',
+    'balanceOf',
+    claimKeyDistributor
+  );
   if (claimKeyDistributorBalance.eq(0)) {
     // mint stable tokens
     await execute(
@@ -27,7 +32,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       {from: stableTokenBeneficiary, log: true, autoMine: true},
       'approve',
       playToken.address,
-      BigNumber.from('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF')
+      BigNumber.from(
+        '0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF'
+      )
     );
     await execute(
       'PlayToken',

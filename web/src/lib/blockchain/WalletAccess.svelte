@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let title: string = '';
+  export let title = '';
   import {chainName} from '$lib/config';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import Button from '$lib/components/generic/PanelButton.svelte';
@@ -42,7 +42,7 @@
   let storeSignatureLocally = false;
 
   let setByUser: string | undefined = undefined;
-  let syncRemotely: boolean = true;
+  let syncRemotely = true;
 
   $: {
     console.log({syncRemotely, syncEnabled: $privateWallet.syncEnabled, setByUser});

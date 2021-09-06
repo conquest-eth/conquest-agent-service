@@ -4,11 +4,11 @@ import type {QueryState, QueryStore, QueryStoreWithRuntimeVariables} from '$lib/
 import {HookedQueryStore} from '$lib/utils/stores/graphql';
 import type {EndPoint} from '$lib/utils/graphql/endpoint';
 import {chainTempo} from '$lib/blockchain/chainTempo';
-import type { Writable } from 'svelte/store';
-import { writable } from 'svelte/store';
+import type {Writable} from 'svelte/store';
+import {writable} from 'svelte/store';
 import type {AccountState} from '$lib/account/account';
-import { account } from '$lib/account/account';
-import type { FleetArrivedEvent } from './subgraphTypes';
+import {account} from '$lib/account/account';
+import type {FleetArrivedEvent} from './subgraphTypes';
 
 export type PlanetQueryState = {
   id: string;
@@ -36,7 +36,7 @@ export type SpaceQueryResult = {
   planets: PlanetQueryState[];
   space?: {minX: string; maxX: string; minY: string; maxY: string};
   chain: {blockHash: string; blockNumber: string};
-  fleetsArrivedFromYou:FleetArrivedEvent[]; // TODO
+  fleetsArrivedFromYou: FleetArrivedEvent[]; // TODO
   fleetsArrivedToYou: FleetArrivedEvent[]; // TODO
 };
 
@@ -48,7 +48,6 @@ export type SpaceState = {
   fleetsArrivedFromYou: FleetArrived[]; // TODO
   fleetsArrivedToYou: FleetArrived[]; // TODO
 };
-
 
 // TODO fleetArrivedEvents need to be capped from 7 days / latest acknowledged block number
 export class SpaceQueryStore implements QueryStore<SpaceState> {
@@ -157,7 +156,12 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     const accountAddress = $account.ownerAddress?.toLowerCase();
     if (this.queryStore.runtimeVariables.owner !== accountAddress) {
       this.queryStore.runtimeVariables.owner = accountAddress;
-      this.store.update(v => {if (v.data) {v.data.loading = true;} return v;} );
+      this.store.update((v) => {
+        if (v.data) {
+          v.data.loading = true;
+        }
+        return v;
+      });
       this.queryStore.fetch({blockNumber: chainTempo.chainInfo.lastBlockNumber});
     }
     // TODO
@@ -185,21 +189,25 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
         };
       }),
       space: {
-        x1: -parseInt(data.space?.minX || "16"), // TODO sync CONSTANTS with thegraph and contract
-        x2: parseInt(data.space?.maxX || "16"),
-        y1: -parseInt(data.space?.minY || "16"),
-        y2: parseInt(data.space?.maxY || "16"),
+        x1: -parseInt(data.space?.minX || '16'), // TODO sync CONSTANTS with thegraph and contract
+        x2: parseInt(data.space?.maxX || '16'),
+        y1: -parseInt(data.space?.minY || '16'),
+        y2: parseInt(data.space?.maxY || '16'),
       },
       chain: {
         blockHash: data.chain.blockHash,
         blockNumber: data.chain.blockNumber,
       },
-      fleetsArrivedFromYou: !data.fleetsArrivedFromYou ? [] :data.fleetsArrivedFromYou.map(v => {
-        return v; // TODO ?
-      }),
-      fleetsArrivedToYou: !data.fleetsArrivedToYou? [] : data.fleetsArrivedToYou.map(v => {
-        return v; // TODO ?
-      })
+      fleetsArrivedFromYou: !data.fleetsArrivedFromYou
+        ? []
+        : data.fleetsArrivedFromYou.map((v) => {
+            return v; // TODO ?
+          }),
+      fleetsArrivedToYou: !data.fleetsArrivedToYou
+        ? []
+        : data.fleetsArrivedToYou.map((v) => {
+            return v; // TODO ?
+          }),
     };
   }
 

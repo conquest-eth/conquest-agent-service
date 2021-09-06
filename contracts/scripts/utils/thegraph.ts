@@ -12,7 +12,11 @@ export class TheGraph {
 
   async query<T>(
     queryString: string,
-    options?: {field?: string; variables?: Record<string, unknown>; getLastId?: (entries: T[]) => string}
+    options?: {
+      field?: string;
+      variables?: Record<string, unknown>;
+      getLastId?: (entries: T[]) => string;
+    }
   ): Promise<T[]> {
     const fields = options?.field?.split('.');
     const first = 100;
@@ -20,7 +24,9 @@ export class TheGraph {
     let numEntries = first;
     let entries: T[] = [];
     while (numEntries === first) {
-      const result = await this.client.query(queryString, {first, lastId, ...options?.variables}).toPromise();
+      const result = await this.client
+        .query(queryString, {first, lastId, ...options?.variables})
+        .toPromise();
       if (result.error) {
         throw new Error(result.error.message);
       }
@@ -38,7 +44,10 @@ export class TheGraph {
 
       numEntries = newEntries.length;
       if (numEntries > 0) {
-        const newLastId = options?.getLastId !== undefined ? options.getLastId(entries) : newEntries[numEntries - 1].id;
+        const newLastId =
+          options?.getLastId !== undefined
+            ? options.getLastId(entries)
+            : newEntries[numEntries - 1].id;
         if (lastId === newLastId) {
           console.log('same query, stop');
           break;

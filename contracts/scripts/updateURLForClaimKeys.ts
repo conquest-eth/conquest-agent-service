@@ -30,7 +30,9 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     explorerLink = `https://${etherscanNetworkPrefix}etherscan.io/address/`;
   }
 
-  const claimKeys = JSON.parse(fs.readFileSync(`.${network.name}.claimKeys`).toString());
+  const claimKeys = JSON.parse(
+    fs.readFileSync(`.${network.name}.claimKeys`).toString()
+  );
   let csv = 'used,address,key,url,qrURL\n';
   for (const claimKey of claimKeys) {
     const url = `${mainURL}#tokenClaim=${claimKey}`;

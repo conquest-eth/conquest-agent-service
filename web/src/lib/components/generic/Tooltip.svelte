@@ -1,5 +1,5 @@
 <script lang="ts">
-  let class_names: string = '';
+  let class_names = '';
   export {class_names as class};
 
   import tippy from 'sveltejs-tippy';

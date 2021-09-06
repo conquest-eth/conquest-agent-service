@@ -29,7 +29,8 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {network, getChainId, ethers} = hre;
   const {execute, read} = hre.deployments;
 
-  let mnemonic = 'curious erupt response napkin sick ketchup hard estate comic club female sudden';
+  let mnemonic =
+    'curious erupt response napkin sick ketchup hard estate comic club female sudden';
   if (network.live) {
     mnemonic = Wallet.createRandom().mnemonic.phrase;
     const pastMnemonicsPath = `.${network.name}.claimKeys.mnemonics`;
@@ -67,8 +68,14 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     totalTokenAmount = totalTokenAmount.add(claimKeyTokenAmount);
   }
 
-  const claimKeyDistributorETHBalance = await ethers.provider.getBalance(claimKeyDistributor);
-  const claimKeyDistributorTokenBalance = await read('PlayToken_L2', 'balanceOf', claimKeyDistributor);
+  const claimKeyDistributorETHBalance = await ethers.provider.getBalance(
+    claimKeyDistributor
+  );
+  const claimKeyDistributorTokenBalance = await read(
+    'PlayToken_L2',
+    'balanceOf',
+    claimKeyDistributor
+  );
 
   console.log({
     claimKeyDistributor,
@@ -110,7 +117,10 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     try {
       previous = JSON.parse(fs.readFileSync(filename).toString());
     } catch (e) {}
-    fs.writeFileSync(filename, JSON.stringify(previous.concat(claimKeys), null, 2));
+    fs.writeFileSync(
+      filename,
+      JSON.stringify(previous.concat(claimKeys), null, 2)
+    );
   } else {
     fs.writeFileSync(filename, JSON.stringify(claimKeys, null, 2));
   }

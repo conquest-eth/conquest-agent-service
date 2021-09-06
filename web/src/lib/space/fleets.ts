@@ -1,17 +1,19 @@
-import { account } from '$lib/account/account';
-import type {
-  SpaceQueryWithPendingState, SyncedPendingAction
-} from '$lib/space/optimisticSpace';
-import {
-  spaceQueryWithPendingActions,
-} from '$lib/space/optimisticSpace';
+import {account} from '$lib/account/account';
+import type {SpaceQueryWithPendingState, SyncedPendingAction} from '$lib/space/optimisticSpace';
+import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
 import {now, time} from '$lib/time';
-import type { SpaceInfo, PlanetInfo } from 'conquest-eth-common';
-import type { Readable, Writable } from 'svelte/store';
-import { writable } from 'svelte/store';
+import type {SpaceInfo, PlanetInfo} from 'conquest-eth-common';
+import type {Readable, Writable} from 'svelte/store';
+import {writable} from 'svelte/store';
 import {spaceInfo} from './spaceInfo';
 
-export type FleetState = 'SEND_BROADCASTED' | 'TRAVELING' | 'READY_TO_RESOLVE' | 'TOO_LATE_TO_RESOLVE' | 'RESOLVE_BROADCASTED' | 'WAITING_ACKNOWLEDGMENT';
+export type FleetState =
+  | 'SEND_BROADCASTED'
+  | 'TRAVELING'
+  | 'READY_TO_RESOLVE'
+  | 'TOO_LATE_TO_RESOLVE'
+  | 'RESOLVE_BROADCASTED'
+  | 'WAITING_ACKNOWLEDGMENT';
 
 // object representing a fleet (publicly)
 export type Fleet = {
@@ -24,13 +26,20 @@ export type Fleet = {
   amountDestroyed: number;
   timeLeft: number; // not needed to store, except to not require computing stats from from planet
   timeToResolve: number;
-  sending: {id: string; status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT'; action: {nonce: number}}; // TODO use pendingaction type
-  resolution?: {id: string; status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT'; action: {nonce: number}}; // TODO use pendingaction type
+  sending: {
+    id: string;
+    status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
+    action: {nonce: number};
+  }; // TODO use pendingaction type
+  resolution?: {
+    id: string;
+    status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
+    action: {nonce: number};
+  }; // TODO use pendingaction type
   state: FleetState;
 };
 
-
-export class FleetsStore implements Readable<Fleet[]>{
+export class FleetsStore implements Readable<Fleet[]> {
   private readonly spaceInfo: SpaceInfo;
   private store: Writable<Fleet[]>;
   private fleets: Fleet[] = [];
@@ -49,7 +58,7 @@ export class FleetsStore implements Readable<Fleet[]>{
     for (const fleet of this.fleets) {
       fleet.timeLeft = Math.max(fleet.duration - (now() - fleet.launchTime), 0);
       if (fleet.timeLeft <= 0) {
-        fleet.timeToResolve =  Math.max((fleet.launchTime + fleet.duration + spaceInfo.resolveWindow) - now(), 0);
+        fleet.timeToResolve = Math.max(fleet.launchTime + fleet.duration + spaceInfo.resolveWindow - now(), 0);
       }
     }
     this.store.set(this.fleets);
@@ -74,19 +83,18 @@ export class FleetsStore implements Readable<Fleet[]>{
           const to = spaceInfo.getPlanetInfo(sendAction.to.x, sendAction.to.y);
           const duration = spaceInfo.timeToArrive(from, to);
           let launchTime = sendAction.timestamp;
-          if(sendAction.actualLaunchTime) {
+          if (sendAction.actualLaunchTime) {
             launchTime = sendAction.actualLaunchTime;
           } else if (pendingAction.txTimestamp) {
             launchTime = pendingAction.txTimestamp;
             account.recordFleetLaunchTime(pendingAction.id, launchTime);
           }
 
-
           const timeLeft = Math.max(duration - (now() - launchTime), 0);
           let timeToResolve = 0;
           if (timeLeft <= 0) {
             state = 'READY_TO_RESOLVE';
-            timeToResolve = Math.max((launchTime + duration + spaceInfo.resolveWindow) - now(), 0);
+            timeToResolve = Math.max(launchTime + duration + spaceInfo.resolveWindow - now(), 0);
             if (timeToResolve <= 0) {
               state = 'TOO_LATE_TO_RESOLVE';
             }
@@ -96,12 +104,13 @@ export class FleetsStore implements Readable<Fleet[]>{
           if (sendAction.resolution) {
             // console.log('RESOLUTION', sendAction.resolution);
             // TODO handle multiple resolution
-            const pendingResolution = update.pendingActions.find((v => v.id === sendAction.resolution[0]));
+            const pendingResolution = update.pendingActions.find((v) => v.id === sendAction.resolution[0]);
             if (pendingResolution) {
               resolution = pendingResolution;
               state = 'RESOLVE_BROADCASTED';
 
-              if (resolution.status === 'SUCCESS' && resolution.counted) { // TODO error
+              if (resolution.status === 'SUCCESS' && resolution.counted) {
+                // TODO error
                 state = 'WAITING_ACKNOWLEDGMENT';
               }
             } else {
@@ -110,7 +119,7 @@ export class FleetsStore implements Readable<Fleet[]>{
           }
           // console.log({state})
           if (!(resolution && resolution.action.acknowledged)) {
-              this.fleets.push({
+            this.fleets.push({
               txHash: pendingAction.id, // TODO better id
               from,
               to,
@@ -122,10 +131,9 @@ export class FleetsStore implements Readable<Fleet[]>{
               timeToResolve,
               sending: pendingAction,
               resolution,
-              state
+              state,
             });
           }
-
         }
       }
     }
@@ -136,7 +144,6 @@ export class FleetsStore implements Readable<Fleet[]>{
   subscribe(run: (value: Fleet[]) => void, invalidate?: (value?: Fleet[]) => void): () => void {
     return this.store.subscribe(run, invalidate);
   }
-
 }
 
 export const fleets = new FleetsStore(spaceInfo);
@@ -145,4 +152,3 @@ if (typeof window !== 'undefined') {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).fleets = fleets;
 }
-

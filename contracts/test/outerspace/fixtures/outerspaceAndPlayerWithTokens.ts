@@ -1,6 +1,11 @@
 import {parseEther} from '@ethersproject/units';
 import {SpaceInfo} from 'conquest-eth-common';
-import {ethers, getUnnamedAccounts, deployments, getNamedAccounts} from 'hardhat';
+import {
+  ethers,
+  getUnnamedAccounts,
+  deployments,
+  getNamedAccounts,
+} from 'hardhat';
 import {OuterSpace, PlayL2} from '../../../typechain';
 import {setupUsers} from '../../utils';
 

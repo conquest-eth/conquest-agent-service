@@ -1,7 +1,7 @@
 import {wallet} from '$lib/blockchain/wallet';
 import {xyToLocation} from 'conquest-eth-common';
 import {BaseStoreWithData} from '$lib/utils/stores/base';
-import { account } from '$lib/account/account';
+import {account} from '$lib/account/account';
 
 type Data = {
   txHash?: string;
@@ -58,7 +58,7 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
       return;
     }
 
-    account.recordExit(location, tx.hash,  latestBlock.timestamp, tx.nonce);
+    account.recordExit(location, tx.hash, latestBlock.timestamp, tx.nonce);
 
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
   }

@@ -7,12 +7,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {read, execute} = hre.deployments;
 
   const OuterSpace = await hre.deployments.get('OuterSpace');
-  const addressesToAuthorize = Object.values(namedAccounts).concat([OuterSpace.address]);
+  const addressesToAuthorize = Object.values(namedAccounts).concat([
+    OuterSpace.address,
+  ]);
 
   // ensure user cannot amass tokens on one address
-  const anyNotAuthorized = await read('PlayToken_L2', 'anyNotAuthorized', addressesToAuthorize);
+  const anyNotAuthorized = await read(
+    'PlayToken_L2',
+    'anyNotAuthorized',
+    addressesToAuthorize
+  );
   if (anyNotAuthorized) {
-    await execute('PlayToken_L2', {from: deployer, log: true}, 'enableRequireAuthorization', addressesToAuthorize);
+    await execute(
+      'PlayToken_L2',
+      {from: deployer, log: true},
+      'enableRequireAuthorization',
+      addressesToAuthorize
+    );
   }
 };
 export default func;

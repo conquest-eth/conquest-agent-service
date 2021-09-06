@@ -45,7 +45,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   for (const claimKey of claimKeys) {
     const url = 'https://conquest.eth.link/#tokenClaim=' + claimKey;
     const qrURL = await qrcode.toDataURL(url);
-    const address = (new Wallet(claimKey)).address;
+    const address = new Wallet(claimKey).address;
     csv += `false,${explorerLink}${address},${claimKey},${url},"${qrURL}"\n`;
   }
   fs.writeFileSync(`.${network.name}.claimKeys.csv.test`, csv);

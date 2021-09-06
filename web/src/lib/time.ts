@@ -40,7 +40,7 @@ export const time = readable(now(), function start(set) {
 
 if (typeof window !== 'undefined') {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ((window as unknown) as any).time = {
+  (window as unknown as any).time = {
     now,
     startTime,
     correctTime,

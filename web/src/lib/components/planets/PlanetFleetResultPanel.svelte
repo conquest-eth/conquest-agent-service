@@ -9,7 +9,7 @@
 
   // import {fetchFleetEvent} from '$lib/space/spaceInfo';
 
-  function acknowledge(force: boolean = false) {
+  function acknowledge(force = false) {
     if (!force && fleet.resolveTx && fleet.status === 'Error') {
       privateAccount.acknowledgeResolveFailure(fleet.id);
     } else {

@@ -167,11 +167,16 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     // const fullDistance = Math.floor(Math.sqrt(Math.pow(gToX - gFromX, 2) + Math.pow(gToY - gFromY, 2)));
     // const fleetDuration = fullDistance * ((spaceInfo.timePerDistance * 10000) / speed);
 
-    account.recordFleet({
-      to, // TODO handle it better
-      from,
-      fleetAmount,
-    }, tx.hash, latestBlock.timestamp, tx.nonce);
+    account.recordFleet(
+      {
+        to, // TODO handle it better
+        from,
+        fleetAmount,
+      },
+      tx.hash,
+      latestBlock.timestamp,
+      tx.nonce
+    );
 
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
 
@@ -210,7 +215,6 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 const store = new SendFlowStore();
 export default store;
 
-
 // TODO remove
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-if ("undefined" !== typeof window)(window as any).sendFlow = store;
+if ('undefined' !== typeof window) (window as any).sendFlow = store;

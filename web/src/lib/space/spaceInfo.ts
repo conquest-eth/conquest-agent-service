@@ -3,8 +3,8 @@ import type {CameraState} from '$lib/map/camera';
 import {camera, Camera} from '$lib/map/camera';
 import type {PlanetInfo} from 'conquest-eth-common';
 import {SpaceInfo} from 'conquest-eth-common';
-import type { Writable } from 'svelte/store';
-import { writable } from 'svelte/store';
+import type {Writable} from 'svelte/store';
+import {writable} from 'svelte/store';
 
 export class SpaceViewStore {
   private readonly spaceInfo: SpaceInfo;

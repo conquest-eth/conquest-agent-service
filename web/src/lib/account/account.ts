@@ -2,7 +2,7 @@ import {SYNC_DB_NAME, SYNC_URI} from '$lib/config';
 import {bitMaskMatch} from '$lib/utils';
 import type {SyncingState} from '$lib/utils/sync';
 import {AccountDB} from '$lib/utils/sync';
-import { xyToLocation } from 'conquest-eth-common';
+import {xyToLocation} from 'conquest-eth-common';
 import {writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import type {PrivateWalletState} from './privateWallet';
@@ -26,7 +26,6 @@ type PendingActionBase = {
   nonce: number;
   acknowledged?: 'ERROR' | 'SUCCESS';
 };
-
 
 export type PendingSend = PendingActionBase & {
   type: 'SEND';
@@ -135,7 +134,12 @@ class Account implements Readable<AccountState> {
     return {toHash, fleetId, secretHash};
   }
 
-  async recordFleet(fleet: {from: PlanetCoords, to: PlanetCoords, fleetAmount: number}, txHash: string, timestamp: number, nonce: number): Promise<void> {
+  async recordFleet(
+    fleet: {from: PlanetCoords; to: PlanetCoords; fleetAmount: number},
+    txHash: string,
+    timestamp: number,
+    nonce: number
+  ): Promise<void> {
     this.check();
     this.state.data.pendingActions[txHash] = {
       timestamp,
@@ -143,7 +147,7 @@ class Account implements Readable<AccountState> {
       type: 'SEND',
       from: {...fleet.from},
       to: {...fleet.to},
-      quantity: fleet.fleetAmount
+      quantity: fleet.fleetAmount,
     };
     await this.accountDB.save(this.state.data);
     this._notify();
@@ -152,7 +156,7 @@ class Account implements Readable<AccountState> {
   async recordFleetLaunchTime(txHash: string, launchTime: number): Promise<void> {
     this.check();
     const pendingAction = this.state.data.pendingActions[txHash] as PendingSend;
-    if (pendingAction && typeof pendingAction !== "number") {
+    if (pendingAction && typeof pendingAction !== 'number') {
       if (pendingAction.actualLaunchTime !== launchTime) {
         pendingAction.actualLaunchTime = launchTime;
         await this.accountDB.save(this.state.data);
@@ -161,26 +165,37 @@ class Account implements Readable<AccountState> {
     }
   }
 
-  async recordFleetResolvingTxhash(sendTxHash: string, txHash: string, timestamp: number, nonce: number, agent: boolean): Promise<void> {
+  async recordFleetResolvingTxhash(
+    sendTxHash: string,
+    txHash: string,
+    timestamp: number,
+    nonce: number,
+    agent: boolean
+  ): Promise<void> {
     this.check();
     (this.state.data.pendingActions[sendTxHash] as PendingSend).resolution = [txHash]; // TODO multiple in array
     this.state.data.pendingActions[txHash] = {
       type: 'RESOLUTION',
       timestamp,
-      nonce
+      nonce,
     };
     await this.accountDB.save(this.state.data);
     // TODO agent ?
     this._notify();
   }
 
-  async recordExit(planetCoords: {x: number; y: number;}, txHash: string, timestamp: number, nonce: number): Promise<void> {
+  async recordExit(
+    planetCoords: {x: number; y: number},
+    txHash: string,
+    timestamp: number,
+    nonce: number
+  ): Promise<void> {
     this.check();
     this.state.data.pendingActions[txHash] = {
       type: 'EXIT',
       timestamp,
       nonce,
-      planetCoords
+      planetCoords,
     };
     await this.accountDB.save(this.state.data);
     // TODO agent ?

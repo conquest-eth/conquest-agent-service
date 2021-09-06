@@ -1,6 +1,6 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import hre from 'hardhat';
-import {OuterSpace, PlayL2} from '../typechain';
+import {OuterSpace} from '../typechain';
 import {SpaceInfo, xyToLocation} from 'conquest-eth-common';
 import fs from 'fs';
 
@@ -57,12 +57,18 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     const state = await OuterSpace.callStatic.getPlanet(chosenPlanet.location);
 
     if (state.state.lastUpdated == 0) {
-      console.log(`${chosenPlanet.x},${chosenPlanet.y}`, JSON.stringify(chosenPlanet, null, 2));
+      console.log(
+        `${chosenPlanet.x},${chosenPlanet.y}`,
+        JSON.stringify(chosenPlanet, null, 2)
+      );
       planetsChosen.push(chosenPlanet);
     }
   }
 
-  fs.writeFileSync('planets-chosen.json', JSON.stringify(planetsChosen, null, 2));
+  fs.writeFileSync(
+    'planets-chosen.json',
+    JSON.stringify(planetsChosen, null, 2)
+  );
 
   for (const planet of planetsChosen) {
     console.log(`${planet.x},${planet.y}`);

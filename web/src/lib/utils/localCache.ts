@@ -1,13 +1,13 @@
 import {base} from '$app/paths';
 import {contractsInfos} from '$lib/blockchain/contractsInfos';
 import type {IDBPDatabase} from 'idb';
-import { openDB } from 'idb';
+import {openDB} from 'idb';
 
 class LocalCache {
   private _prefix: string;
   private _dbP: Promise<IDBPDatabase<unknown>>;
   constructor(version?: string) {
-    this._prefix = base && base.startsWith('/ipfs/') || base.startsWith('/ipns/') ? base.slice(6) : ''; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
+    this._prefix = (base && base.startsWith('/ipfs/')) || base.startsWith('/ipns/') ? base.slice(6) : ''; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
 
     (async () => {
       const lastVersion = await this.getItem('_version');
@@ -18,13 +18,12 @@ class LocalCache {
           await this.setItem('_version', version);
         }
       }
-    })()
-
+    })();
   }
   async setItem(key: string, value: string): Promise<void> {
     try {
       const db = await this._getDB();
-     await db.put('keyval', value, this._prefix + key);
+      await db.put('keyval', value, this._prefix + key);
     } catch (e) {
       //
     }
@@ -52,7 +51,7 @@ class LocalCache {
     try {
       const db = await this._getDB();
       const keys = await db.getAllKeys('keyval');
-      for(const key of keys) {
+      for (const key of keys) {
         if (typeof key === 'string' && key.startsWith(this._prefix)) {
           console.log(`removing ${key}...`);
           await this.removeItem(key);

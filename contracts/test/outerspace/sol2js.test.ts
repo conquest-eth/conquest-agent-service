@@ -8,7 +8,10 @@ describe('JS <-> Solidity equivalence', function () {
     const {players, spaceInfo} = await setup();
     const pointer = spaceInfo.findNextPlanet();
     const {location, stats} = pointer.data;
-    const planet = await players[0].OuterSpace.callStatic.getPlanet(location.id);
+    const planet = await players[0].OuterSpace.callStatic.getPlanet(
+      location.id
+    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete (stats as any).name; // TODO
     const statsFromContract = objMap(planet.stats, convertPlanetCallData);
     console.log({stats});

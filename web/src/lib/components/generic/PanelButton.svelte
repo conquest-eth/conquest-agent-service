@@ -1,11 +1,11 @@
 <script lang="ts">
-  let class_names: string = '';
+  let class_names = '';
   export {class_names as class};
   export let label: string;
   export let color: string | undefined = undefined;
   export let borderColor: string | undefined = undefined;
   export let cornerColor: string | undefined = undefined;
-  export let disabled: boolean = false;
+  export let disabled = false;
 
   $: actualColor = disabled ? 'text-gray-600' : color || 'text-cyan-300';
   $: actualCornerColor = disabled

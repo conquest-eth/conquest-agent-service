@@ -3,10 +3,15 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import {parseEther} from '@ethersproject/units';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const {deployer, claimKeyDistributor, stableTokenBeneficiary} = await hre.getNamedAccounts();
+  const {deployer, claimKeyDistributor, stableTokenBeneficiary} =
+    await hre.getNamedAccounts();
   const {read, execute} = hre.deployments;
 
-  const claimKeyDistributorBalance = await read('PlayToken_L2', 'balanceOf', claimKeyDistributor);
+  const claimKeyDistributorBalance = await read(
+    'PlayToken_L2',
+    'balanceOf',
+    claimKeyDistributor
+  );
   if (claimKeyDistributorBalance.eq(0)) {
     // -----------------------------------------------------------------------
     // FOR now mint as you wish, TODO l2 bridging

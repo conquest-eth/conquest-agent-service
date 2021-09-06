@@ -1,8 +1,8 @@
 <script lang="ts">
   export let value: number;
   export let name: string;
-  export let min: number = 0;
-  export let max: number = 100;
+  export let min = 0;
+  export let max = 100;
 </script>
 
 <!-- $: percent = Math.floor(((value - min) / div) / (div - min)); -->

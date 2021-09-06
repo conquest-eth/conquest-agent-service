@@ -4,7 +4,7 @@ import {contractsInfos} from '$lib/blockchain/contractsInfos';
 class LocalCache {
   private _prefix: string;
   constructor(version?: string) {
-    this._prefix = base && base.startsWith('/ipfs/') || base.startsWith('/ipns/') ? base.slice(6) : ''; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
+    this._prefix = (base && base.startsWith('/ipfs/')) || base.startsWith('/ipns/') ? base.slice(6) : ''; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
 
     (async () => {
       const lastVersion = await this.getItem('_version');
@@ -15,8 +15,7 @@ class LocalCache {
           await this.setItem('_version', version);
         }
       }
-    })()
-
+    })();
   }
   async setItem(key: string, value: string): Promise<void> {
     try {

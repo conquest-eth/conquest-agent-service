@@ -17,12 +17,17 @@ describe('OuterSpace Basic', function () {
     //   stake: pointer.data.stats.stake,
     //   stakeMultiplier: spaceInfo.stakeMultiplier.toString(),
     // });
-    const amount = BigNumber.from(pointer.data.stats.stake).mul('1000000000000000000');
+    const amount = BigNumber.from(pointer.data.stats.stake).mul(
+      '1000000000000000000'
+    );
     await waitFor(
       players[0].PlayToken_L2.transferAndCall(
         outerSpaceContract.address,
         amount,
-        defaultAbiCoder.encode(['address', 'uint256'], [players[0].address, pointer.data.location.id])
+        defaultAbiCoder.encode(
+          ['address', 'uint256'],
+          [players[0].address, pointer.data.location.id]
+        )
       )
     );
   });
@@ -30,43 +35,65 @@ describe('OuterSpace Basic', function () {
   it('user cannot acquire planet already onwed by another player', async function () {
     const {players, spaceInfo, outerSpaceContract} = await setupOuterSpace();
     const pointer = spaceInfo.findNextPlanet();
-    const amount = BigNumber.from(pointer.data.stats.stake).mul('1000000000000000000');
+    const amount = BigNumber.from(pointer.data.stats.stake).mul(
+      '1000000000000000000'
+    );
     await waitFor(
       players[0].PlayToken_L2.transferAndCall(
         outerSpaceContract.address,
         amount,
-        defaultAbiCoder.encode(['address', 'uint256'], [players[0].address, pointer.data.location.id])
+        defaultAbiCoder.encode(
+          ['address', 'uint256'],
+          [players[0].address, pointer.data.location.id]
+        )
       )
     );
     await expectRevert(
       players[1].PlayToken_L2.transferAndCall(
         outerSpaceContract.address,
         amount,
-        defaultAbiCoder.encode(['address', 'uint256'], [players[1].address, pointer.data.location.id])
+        defaultAbiCoder.encode(
+          ['address', 'uint256'],
+          [players[1].address, pointer.data.location.id]
+        )
       ),
       'STILL_ACTIVE'
     );
   });
 
   it("user can attack other player's planet", async function () {
-    const {players, spaceInfo, outerSpaceContract, increaseTime, provider} = await setupOuterSpace();
+    const {players, spaceInfo, outerSpaceContract, increaseTime, provider} =
+      await setupOuterSpace();
     const p0 = spaceInfo.findNextPlanet();
     let planet0 = await fetchPlanetState(outerSpaceContract, p0.data);
-    let planet1 = await fetchPlanetState(outerSpaceContract, spaceInfo.findNextPlanet(p0).data);
-    const amount0 = BigNumber.from(planet0.stats.stake).mul('1000000000000000000');
+    let planet1 = await fetchPlanetState(
+      outerSpaceContract,
+      spaceInfo.findNextPlanet(p0).data
+    );
+    const amount0 = BigNumber.from(planet0.stats.stake).mul(
+      '1000000000000000000'
+    );
     await waitFor(
       players[0].PlayToken_L2.transferAndCall(
         outerSpaceContract.address,
         amount0,
-        defaultAbiCoder.encode(['address', 'uint256'], [players[0].address, planet0.location.id])
+        defaultAbiCoder.encode(
+          ['address', 'uint256'],
+          [players[0].address, planet0.location.id]
+        )
       )
     );
-    const amount1 = BigNumber.from(planet1.stats.stake).mul('1000000000000000000');
+    const amount1 = BigNumber.from(planet1.stats.stake).mul(
+      '1000000000000000000'
+    );
     await waitFor(
       players[1].PlayToken_L2.transferAndCall(
         outerSpaceContract.address,
         amount1,
-        defaultAbiCoder.encode(['address', 'uint256'], [players[1].address, planet1.location.id])
+        defaultAbiCoder.encode(
+          ['address', 'uint256'],
+          [players[1].address, planet1.location.id]
+        )
       )
     );
     planet0 = await fetchPlanetState(outerSpaceContract, planet0);
@@ -85,18 +112,29 @@ describe('OuterSpace Basic', function () {
     }
     const {fleetId, secret, from, to, distance, timeRequired} = sent;
     await increaseTime(timeRequired);
-    await waitFor(players[1].OuterSpace.resolveFleet(fleetId, from, to, distance, secret));
+    await waitFor(
+      players[1].OuterSpace.resolveFleet(fleetId, from, to, distance, secret)
+    );
   });
 
   it('planet production matches estimates', async function () {
-    const {players, spaceInfo, outerSpaceContract, increaseTime} = await setupOuterSpace();
-    let planet = await fetchPlanetState(outerSpaceContract, spaceInfo.findNextPlanet().data);
-    const amount = BigNumber.from(planet.stats.stake).mul('1000000000000000000');
+    const {players, spaceInfo, outerSpaceContract, increaseTime} =
+      await setupOuterSpace();
+    let planet = await fetchPlanetState(
+      outerSpaceContract,
+      spaceInfo.findNextPlanet().data
+    );
+    const amount = BigNumber.from(planet.stats.stake).mul(
+      '1000000000000000000'
+    );
     await waitFor(
       players[0].PlayToken_L2.transferAndCall(
         outerSpaceContract.address,
         amount,
-        defaultAbiCoder.encode(['address', 'uint256'], [players[0].address, planet.location.id])
+        defaultAbiCoder.encode(
+          ['address', 'uint256'],
+          [players[0].address, planet.location.id]
+        )
       )
     );
     planet = await fetchPlanetState(outerSpaceContract, planet);
@@ -117,7 +155,8 @@ describe('OuterSpace Basic', function () {
       quantity,
       to: planet,
     });
-    const currentTimeAgain = (await ethers.provider.getBlock('latest')).timestamp;
+    const currentTimeAgain = (await ethers.provider.getBlock('latest'))
+      .timestamp;
     const new_planet_again = await fetchPlanetState(outerSpaceContract, planet);
     const quantityAgain = new_planet_again.getNumSpaceships(currentTimeAgain);
     console.log({quantityAgain, currentTimeAgain});

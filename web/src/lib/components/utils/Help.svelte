@@ -1,7 +1,7 @@
 <script lang="ts">
-  let class_names: string = '';
+  let class_names = '';
   export {class_names as class};
-  export let inverted: boolean = false;
+  export let inverted = false;
 
   import tippy from 'sveltejs-tippy';
 

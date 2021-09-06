@@ -4,10 +4,6 @@ import {defaultAbiCoder} from '@ethersproject/abi';
 import {getUnnamedAccounts, deployments, getNamedAccounts} from 'hardhat';
 import {SpaceInfo} from 'conquest-eth-common';
 
-// TODO move to util
-const waitFor = <T>(p: Promise<{wait: () => Promise<T>}>) =>
-  p.then((tx) => tx.wait());
-
 async function main() {
   const {stableTokenBeneficiary} = await getNamedAccounts();
   const players = await getUnnamedAccounts();

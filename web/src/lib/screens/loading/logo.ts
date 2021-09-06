@@ -32,7 +32,7 @@ class LogoStore extends BaseStore<{stage: number}> {
     if (diff > timeIn) {
       this.nextStage();
     } else {
-      this.timeout = (setTimeout(() => this.nextStage(), (timeIn - diff) * 1000) as unknown) as number;
+      this.timeout = setTimeout(() => this.nextStage(), (timeIn - diff) * 1000) as unknown as number;
     }
   }
 

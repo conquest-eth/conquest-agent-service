@@ -1,11 +1,11 @@
 <script lang="ts">
   import InnerButton from './InnerButton.svelte';
-  let class_names: string = '';
+  let class_names = '';
   export {class_names as class};
   export let label: string;
 
   export let href: string | undefined = undefined;
-  export let blank: boolean = false;
+  export let blank = false;
 </script>
 
 <div class="inline-block text-cyan-300 border-cyan-300 {class_names}">

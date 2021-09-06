@@ -13,22 +13,25 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {network, deployments} = hre;
   try {
     fs.mkdirSync('metadata');
-  } catch(e) {}
+  } catch (e) {}
 
   try {
     fs.mkdirSync(path.join('metadata', network.name));
-  } catch(e) {}
+  } catch (e) {}
 
   const deployment = await deployments.get(name);
   if (!deployment.metadata) {
     throw new Error(`no metadata for ${name}`);
   }
   fs.writeFileSync(
-    path.join('metadata', network.name, `${name}_at_${deployment.address}.json`),
+    path.join(
+      'metadata',
+      network.name,
+      `${name}_at_${deployment.address}.json`
+    ),
     deployment.metadata
   );
 }
 if (require.main === module) {
   func(hre);
 }
-

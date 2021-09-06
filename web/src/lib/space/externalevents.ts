@@ -1,27 +1,26 @@
-import type { SpaceInfo } from 'conquest-eth-common';
-import type { Writable } from 'svelte/store';
-import { writable } from 'svelte/store';
+import type {SpaceInfo} from 'conquest-eth-common';
+import type {Writable} from 'svelte/store';
+import {writable} from 'svelte/store';
 import {spaceInfo} from './spaceInfo';
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
-import type { EndPoint } from '$lib/utils/graphql/endpoint';
-import type { QueryState, QueryStore } from '$lib/utils/stores/graphql';
-import { HookedQueryStore } from '$lib/utils/stores/graphql';
-import type { FleetArrivedEvent } from './subgraphTypes';
-import { chainTempo } from '$lib/blockchain/chainTempo';
+import type {EndPoint} from '$lib/utils/graphql/endpoint';
+import type {QueryState, QueryStore} from '$lib/utils/stores/graphql';
+import {HookedQueryStore} from '$lib/utils/stores/graphql';
+import type {FleetArrivedEvent} from './subgraphTypes';
+import {chainTempo} from '$lib/blockchain/chainTempo';
 import type {Invalidator, Subscriber, Unsubscriber} from 'web3w/dist/esm/utils/internals';
 
 export type ExternalEventType = 'd' | '';
 
 export type ExternalEvent = {
   type: ExternalEventType;
-}
+};
 
 export type EventsQueryResult = {
   fleetArrivedEvents: FleetArrivedEvent[];
 };
 
-
-export class ExternalEventsStore implements QueryStore<ExternalEvent[]>  {
+export class ExternalEventsStore implements QueryStore<ExternalEvent[]> {
   private readonly spaceInfo: SpaceInfo;
   private store: Writable<QueryState<ExternalEvent[]>>;
   private queryStore: QueryStore<EventsQueryResult>;
@@ -43,7 +42,6 @@ export class ExternalEventsStore implements QueryStore<ExternalEvent[]>  {
 
     this.store = writable({step: 'IDLE'}, this.start.bind(this));
   }
-
 
   protected start(): () => void {
     this.unsubscribeFromQuery = this.queryStore.subscribe(this.update.bind(this));
@@ -70,9 +68,9 @@ export class ExternalEventsStore implements QueryStore<ExternalEvent[]>  {
     if (!data) {
       return [];
     }
-    return data.fleetArrivedEvents.map( (event) => {
+    return data.fleetArrivedEvents.map((event) => {
       return {
-        type: 'd' // TODO
+        type: 'd', // TODO
       };
     });
   }
@@ -87,8 +85,6 @@ export class ExternalEventsStore implements QueryStore<ExternalEvent[]>  {
   ): Unsubscriber {
     return this.store.subscribe(run, invalidate);
   }
-
-
 }
 
 export const externalEvents = new ExternalEventsStore(SUBGRAPH_ENDPOINT, spaceInfo);
@@ -97,4 +93,3 @@ if (typeof window !== 'undefined') {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).externalEvents = externalEvents;
 }
-

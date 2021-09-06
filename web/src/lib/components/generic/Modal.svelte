@@ -1,9 +1,9 @@
 <script lang="ts">
   import {createEventDispatcher, onDestroy} from 'svelte';
-  export let globalCloseButton: boolean = false;
-  export let closeButton: boolean = false;
-  export let title: string = '';
-  export let cancelable: boolean = true;
+  export let globalCloseButton = false;
+  export let closeButton = false;
+  export let title = '';
+  export let cancelable = true;
 
   const dispatch = createEventDispatcher();
   const close = () => cancelable && dispatch('close');

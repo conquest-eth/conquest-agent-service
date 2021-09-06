@@ -16,8 +16,8 @@
 
 
   // TODO maxSpaceshipsLoaded and invalid message if maxSpaceships == 0
-  let fleetAmountSet: boolean = false;
-  let fleetAmount: number = 1;
+  let fleetAmountSet = false;
+  let fleetAmount = 1;
   let maxSpaceships: number;
   $: {
     maxSpaceships = ($fromPlanetState && $fromPlanetState.numSpaceships) || 0;

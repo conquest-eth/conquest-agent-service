@@ -2,8 +2,8 @@ import {wallet} from '$lib/blockchain/wallet';
 import type {Fleet} from 'conquest-eth-common';
 import {xyToLocation} from 'conquest-eth-common';
 import {BaseStore} from '$lib/utils/stores/base';
-import { account } from '$lib/account/account';
-import { isCorrected, correctTime } from '$lib/time';
+import {account} from '$lib/account/account';
+import {isCorrected, correctTime} from '$lib/time';
 
 export type ResolveFlow = {
   type: 'RESOLVE';
