@@ -1,4 +1,6 @@
 <script lang="ts">
+  import Storereader from '$lib/components/storereader.svelte';
+
   import WalletAccess from '$lib/blockchain/WalletAccess.svelte';
   import MapScreen from '$lib/screens/map/MapScreen.svelte';
   import {fade} from 'svelte/transition';
@@ -13,6 +15,8 @@
     logo.start();
   });
 </script>
+
+<Storereader />
 
 <WalletAccess>
   <ClaimTokenScreen />
