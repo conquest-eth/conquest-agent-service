@@ -19,19 +19,6 @@
 
   // $: console.log({scale});
 
-  async function acknowledge() {
-    if (fleet.resolution) {
-      if (fleet.resolution.status === 'SUCCESS') {
-        account.acknowledgeSuccess(fleet.txHash);
-        account.acknowledgeSuccess(fleet.resolution.id);
-      } else if (fleet.resolution.status === 'FAILURE') {
-        account.acknowledgeActionFailure(fleet.resolution.id);
-      }
-    } else {
-      // TODO other failues ?
-    }
-  }
-
   let showLine = true;
   let color;
   $: if (fleet.state === 'SEND_BROADCASTED') {
@@ -52,10 +39,7 @@
   }
 </script>
 
-<svg
-  on:click={acknowledge}
-  style={`position: absolute; z-index: 51; overflow: visible; transform: translate(${x}px,${y}px)`}
->
+<svg style={`position: absolute; z-index: 51; overflow: visible; transform: translate(${x}px,${y}px)`}>
   <!-- <g style={`transform: scale(${scale});`} > -->
   <path style={`transform: rotate(${angle}rad);`} d="M -5 -2.5 L 0 0 L -5 2.5 z" fill={color} />
   <!-- </g> -->

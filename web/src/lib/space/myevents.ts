@@ -4,7 +4,7 @@ import {writable} from 'svelte/store';
 import {spaceInfo} from './spaceInfo';
 import type {SpaceQueryWithPendingState} from '$lib/space/optimisticSpace';
 import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
-import type {AccountState, Acknowledgements} from '$lib/account/account';
+import type {AccountState, Acknowledgements, PendingActions} from '$lib/account/account';
 import {account} from '$lib/account/account';
 import type {FleetArrived} from './spaceQuery';
 
@@ -24,6 +24,7 @@ export class MyEventsStore implements Readable<MyEvent[]> {
   private tmpEvents: MyEvent[] = [];
   private tmpPlayer: string;
   private acknowledgements: Acknowledgements;
+  private pendingActions: PendingActions;
 
   constructor(spaceInfo: SpaceInfo) {
     this.spaceInfo = spaceInfo;
@@ -67,7 +68,14 @@ export class MyEventsStore implements Readable<MyEvent[]> {
     for (const event of events) {
       const acknowledgment = this.acknowledgements && this.acknowledgements[event.event.fleet.id];
       if (!acknowledgment) {
-        event.acknowledged = 'NO';
+        const pendingAction = this.pendingActions && this.pendingActions[event.event.transaction.id];
+        if (!pendingAction || typeof pendingAction === 'number') {
+          event.acknowledged = 'YES';
+        } else if (pendingAction.acknowledged) {
+          event.acknowledged = 'YES';
+        } else {
+          event.acknowledged = 'NO';
+        }
       } else {
         const eventStateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won;
         if (acknowledgment.stateHash !== eventStateHash) {
@@ -83,6 +91,7 @@ export class MyEventsStore implements Readable<MyEvent[]> {
   private async _handleAccountChange($account: AccountState): Promise<void> {
     const newPlayer = $account.ownerAddress?.toLowerCase();
     this.acknowledgements = $account.data?.acknowledgements;
+    this.pendingActions = $account.data?.pendingActions;
 
     if (this.currentOwner === newPlayer) {
       this.events = this.addAcknowledgements(this.events);

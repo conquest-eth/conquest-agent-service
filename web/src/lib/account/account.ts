@@ -230,6 +230,10 @@ class Account implements Readable<AccountState> {
   }
 
   async acknowledgeEvent(event: MyEvent): Promise<void> {
+    if (event.type === 'internal_fleet') {
+      this.acknowledgeSuccess(event.event.transaction.id);
+      return;
+    }
     this.check();
     const id = event.event.fleet.id;
     const stateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won; // TODO ensure we use same stateHash across code paths
@@ -253,8 +257,28 @@ class Account implements Readable<AccountState> {
     this.check();
     const pendingAction = this.state.data.pendingActions[txHash];
     if (pendingAction && typeof pendingAction !== 'number') {
+      let sendAction: PendingSend;
+      let sendActionTxHash;
+      if (pendingAction.type === 'RESOLUTION') {
+        for (const txHashToCheck of Object.keys(this.state.data.pendingActions)) {
+          const p = this.state.data.pendingActions[txHashToCheck];
+          if (typeof p !== 'number' && p.type === 'SEND') {
+            if (p.resolution && p.resolution.indexOf(txHash) !== -1) {
+              sendAction = p;
+              sendActionTxHash = txHashToCheck;
+              break;
+            }
+          }
+        }
+      }
+      if (!sendAction) {
+        console.error(`cannot find send action for resolution`);
+      }
       if (final) {
         this.state.data.pendingActions[txHash] = final;
+        if (sendAction) {
+          this.state.data.pendingActions[sendActionTxHash] = final;
+        }
       } else {
         pendingAction.acknowledged = 'SUCCESS';
       }
@@ -268,6 +292,17 @@ class Account implements Readable<AccountState> {
     const action = this.state.data.pendingActions[txHash];
     if (action && typeof action !== 'number') {
       this.state.data.pendingActions[txHash] = timestamp;
+      if (action.type === 'RESOLUTION') {
+        for (const txHashToCheck of Object.keys(this.state.data.pendingActions)) {
+          const p = this.state.data.pendingActions[txHashToCheck];
+          if (typeof p !== 'number' && p.type === 'SEND') {
+            if (p.resolution && p.resolution.indexOf(txHash) !== -1) {
+              this.state.data.pendingActions[txHashToCheck] = timestamp;
+              break;
+            }
+          }
+        }
+      }
       await this.accountDB.save(this.state.data);
       this._notify();
     }
