@@ -63,7 +63,9 @@ width:100%; height: 100%;
 
     {#if $fleets}
       {#each $fleets as fleet}
-        <FleetElement {fleet} />
+        {#if fleet.state !== 'WAITING_ACKNOWLEDGMENT'}
+          <FleetElement {fleet} />
+        {/if}
       {/each}
     {/if}
 

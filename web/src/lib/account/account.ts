@@ -426,6 +426,45 @@ class Account implements Readable<AccountState> {
       newDataOnLocal = true;
     }
 
+    if (remoteData.acknowledgements) {
+      for (const id of Object.keys(remoteData.acknowledgements)) {
+        const remoteAcknowledgement = remoteData.acknowledgements[id];
+        const acknowledgement = newData.acknowledgements[id];
+
+        if (!acknowledgement) {
+          newData.acknowledgements[id] = remoteAcknowledgement;
+          newDataOnRemote = true;
+        } else {
+          if (typeof acknowledgement === 'number' && typeof remoteAcknowledgement !== 'number') {
+            newDataOnLocal = true;
+          } else if (typeof acknowledgement !== 'number' && typeof remoteAcknowledgement === 'number') {
+            newDataOnRemote = true;
+            newData.pendingActions[id] = remoteAcknowledgement;
+          } else if (typeof acknowledgement !== 'number' && typeof remoteAcknowledgement !== 'number') {
+            if (acknowledgement.timestamp !== remoteAcknowledgement.timestamp) {
+              if (acknowledgement.timestamp > remoteAcknowledgement.timestamp) {
+                newDataOnLocal = true;
+              } else {
+                newDataOnRemote = true;
+                acknowledgement.timestamp = remoteAcknowledgement.timestamp;
+                acknowledgement.stateHash = remoteAcknowledgement.stateHash;
+              }
+            }
+          }
+          // TODO more merge pendingAction
+          // newDataOnLocal = true;
+          // newDataOnRemote = true;
+        }
+      }
+      for (const id of Object.keys(newData.acknowledgements)) {
+        if (!remoteData.acknowledgements[id]) {
+          newDataOnLocal = true;
+        }
+      }
+    } else {
+      newDataOnLocal = true;
+    }
+
     return {
       newData,
       newDataOnLocal,

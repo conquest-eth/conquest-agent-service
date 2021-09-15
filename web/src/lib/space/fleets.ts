@@ -109,7 +109,7 @@ export class FleetsStore implements Readable<Fleet[]> {
               resolution = pendingResolution;
               state = 'RESOLVE_BROADCASTED';
 
-              if (resolution.status === 'SUCCESS' && resolution.counted) {
+              if (resolution.status === 'SUCCESS' || resolution.counted) {
                 // TODO error
                 state = 'WAITING_ACKNOWLEDGMENT';
               }

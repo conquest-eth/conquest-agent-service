@@ -46,6 +46,7 @@
     color = '#0000ff';
     showLine = false;
   } else if (fleet.state === 'WAITING_ACKNOWLEDGMENT') {
+    // fleet is not shown in that case, event take over, see myevents.ts
     color = '#00ff00';
     showLine = false;
   }
