@@ -1,4 +1,6 @@
 <script lang="ts">
+  import {account} from '$lib/account/account';
+
   import {camera} from '$lib/map/camera';
   import type {MyEvent} from '$lib/space/myevents';
   import {spaceInfo} from '$lib/space/spaceInfo';
@@ -33,7 +35,7 @@
 
   async function acknowledge() {
     console.log(event);
-    // account.acknowledgeEvent(event);
+    await account.acknowledgeEvent(event);
   }
 </script>
 

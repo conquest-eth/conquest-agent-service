@@ -8,6 +8,8 @@ import type {Readable, Writable} from 'svelte/store';
 import type {PrivateWalletState} from './privateWallet';
 import {privateWallet} from './privateWallet';
 import {keccak256} from '@ethersproject/solidity';
+import type {MyEvent} from '$lib/space/myevents';
+import {now, time} from '$lib/time';
 
 export type AccountState = {
   step: 'IDLE' | 'READY';
@@ -222,6 +224,26 @@ class Account implements Readable<AccountState> {
     const action = this.state.data.pendingActions[txHash];
     if (action && typeof action !== 'number') {
       action.acknowledged = undefined;
+      await this.accountDB.save(this.state.data);
+      this._notify();
+    }
+  }
+
+  async acknowledgeEvent(event: MyEvent): Promise<void> {
+    this.check();
+    const id = event.event.fleet.id;
+    const stateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won; // TODO ensure we use same stateHash across code paths
+    const acknowledgement = this.state.data?.acknowledgements[id];
+    if (!acknowledgement) {
+      this.state.data.acknowledgements[id] = {
+        timestamp: now(),
+        stateHash,
+      };
+      await this.accountDB.save(this.state.data);
+      this._notify();
+    } else if (acknowledgement.stateHash !== stateHash) {
+      acknowledgement.timestamp = now();
+      acknowledgement.stateHash = stateHash;
       await this.accountDB.save(this.state.data);
       this._notify();
     }

@@ -69,7 +69,9 @@ width:100%; height: 100%;
 
     {#if $myevents}
       {#each $myevents as event}
-        <EventElement {event} />
+        {#if event.acknowledged === 'NO'}
+          <EventElement {event} />
+        {/if}
       {/each}
     {/if}
 
@@ -86,7 +88,7 @@ width:100%; height: 100%;
       <rect x={x1-1000} y={y1} width={1000} height={y2-y1} fill="black" fill-opacity="0.5"/>
     </svg> -->
 
-    <svg style={`/*pointer-events: none;*/ position: absolute; z-index: 50; overflow: visible;`}>
+    <svg style={`pointer-events: none; position: absolute; z-index: 50; overflow: visible;`}>
       <defs>
         <clipPath id="space">
           <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} />
@@ -109,7 +111,7 @@ width:100%; height: 100%;
       />
     </svg>
 
-    <svg style={`/*pointer-events: none;*/ position: absolute; z-index: 50; overflow: visible;`}>
+    <svg style={`pointer-events: none; position: absolute; z-index: 50; overflow: visible;`}>
       <rect
         x={x1}
         y={y1}
@@ -138,7 +140,7 @@ width:100%; height: 100%;
 
   <div
     style={`
-    /*pointer-events: none;*/
+    pointer-events: none;
   position: absolute;
   width:150%; height: 150%;
   top: -25%;

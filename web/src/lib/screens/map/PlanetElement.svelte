@@ -181,6 +181,7 @@ animation-timing-function: linear;
       /> -->
       <SharedBlockie
         style={`
+        pointer-events: none;
         z-index: 1;
         position: absolute;
         transform:
