@@ -35,6 +35,7 @@ export type FleetArrived = FleetArrivedEvent; // TODO ?
 export type SpaceQueryResult = {
   otherplanets: PlanetQueryState[];
   myplanets?: PlanetQueryState[];
+  owner?: {id: string};
   space?: {minX: string; maxX: string; minY: string; maxY: string};
   chain: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou?: FleetArrivedEvent[]; // TODO
@@ -42,6 +43,7 @@ export type SpaceQueryResult = {
 };
 
 export type SpaceState = {
+  player: string;
   planets: PlanetContractState[];
   loading: boolean;
   space: {x1: number; x2: number; y1: number; y2: number};
@@ -86,6 +88,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     maxY
   }
   ?$owner?
+  owner(id: $owner) {id}
   myplanets: planets(where: {owner: $owner}) {
     id
     owner {
@@ -191,6 +194,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     const planets = (data.myplanets || []).concat(data.otherplanets);
     return {
       loading: false,
+      player: data.owner?.id,
       planets: planets.map((v) => {
         return {
           id: v.id,

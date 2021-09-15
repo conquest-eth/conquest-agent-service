@@ -4,18 +4,18 @@
   import {camera} from '$lib/map/camera';
   import spaceBackground from '../../../assets/Red3.png';
   import {base} from '$app/paths';
-  import { fleets } from '$lib/space/fleets';
+  import {fleets} from '$lib/space/fleets';
   import FleetElement from './FleetElement.svelte';
-  import { spaceQueryWithPendingActions } from '$lib/space/optimisticSpace';
+  import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
   import {myevents} from '$lib/space/myevents';
+  import EventElement from './EventElement.svelte';
 
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
 
   $: x1 = ($spaceQueryWithPendingActions.queryState.data?.space.x1 || -16) * 4 - 2; // TODO sync CONSTANTS with thegraph and contract
   $: x2 = ($spaceQueryWithPendingActions.queryState.data?.space.x2 || 16) * 4 + 2;
-  $: y1 = ($spaceQueryWithPendingActions.queryState.data?.space.y1 || -16) * 4 -2;
+  $: y1 = ($spaceQueryWithPendingActions.queryState.data?.space.y1 || -16) * 4 - 2;
   $: y2 = ($spaceQueryWithPendingActions.queryState.data?.space.y2 || 16) * 4 + 2;
-
 </script>
 
 <div
@@ -48,24 +48,30 @@ width:100%; height: 100%;
 >
   <div
     style={`
-    pointer-events: none;
+    /*pointer-events: none;*/
     position: absolute;
     transform:
     translate(${$camera ? $camera.renderX : 1}px,${$camera ? $camera.renderY : 1}px);
     width:100%; height: 100%;
     `}
   >
-    {#each $spaceView as planetInfo (planetInfo.location.id)}
-      <PlanetElement {planetInfo} />
-    {/each}
+    {#if $spaceView}
+      {#each $spaceView as planetInfo (planetInfo.location.id)}
+        <PlanetElement {planetInfo} />
+      {/each}
+    {/if}
 
-    {#each $fleets as fleet}
-      <FleetElement {fleet} />
-    {/each}
+    {#if $fleets}
+      {#each $fleets as fleet}
+        <FleetElement {fleet} />
+      {/each}
+    {/if}
 
-    {#each $myevents as event}
-      <!-- <FleetElement {event} /> -->
-    {/each}
+    {#if $myevents}
+      {#each $myevents as event}
+        <EventElement {event} />
+      {/each}
+    {/if}
 
     <!-- <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
       <rect x={x1-500} y={y2} width={1000} height={1000} fill="black" fill-opacity="0.5"/>
@@ -80,26 +86,40 @@ width:100%; height: 100%;
       <rect x={x1-1000} y={y1} width={1000} height={y2-y1} fill="black" fill-opacity="0.5"/>
     </svg> -->
 
-
-    <svg style={`pointer-events: none; position: absolute; z-index: 50; overflow: visible;`}>
+    <svg style={`/*pointer-events: none;*/ position: absolute; z-index: 50; overflow: visible;`}>
       <defs>
         <clipPath id="space">
-          <rect x={x1} y={y1} width={x2-x1} height={y2-y1} />
+          <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} />
         </clipPath>
         <mask id="myMask">
-          <rect x={x1-1000000} y={y1-1000000} width={(x2-x1) + 2000000} height={(y2-y1) + 2000000} fill="white" />
-          <rect x={x1} y={y1} width={x2-x1} height={y2-y1} fill="black"/>
+          <rect x={x1 - 1000000} y={y1 - 1000000} width={x2 - x1 + 2000000} height={y2 - y1 + 2000000} fill="white" />
+          <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} fill="black" />
         </mask>
       </defs>
 
-
       <!-- <rect x={x1-1000} y={y1-1000} width={(x2-x1) + 2000} height={(y2-y1) + 2000} fill="black" fill-opacity="0.6" clip-path="url(#space)" /> -->
-      <rect x={x1-1000000} y={y1-1000000} width={(x2-x1) + 2000000} height={(y2-y1) + 2000000} fill="black" fill-opacity="0.4" mask="url(#myMask)" />
+      <rect
+        x={x1 - 1000000}
+        y={y1 - 1000000}
+        width={x2 - x1 + 2000000}
+        height={y2 - y1 + 2000000}
+        fill="black"
+        fill-opacity="0.4"
+        mask="url(#myMask)"
+      />
     </svg>
 
-
-    <svg style={`pointer-events: none; position: absolute; z-index: 50; overflow: visible;`}>
-      <rect x={x1} y={y1} width={x2-x1} height={y2-y1} stroke="white" stroke-opacity="0.5" fill="none" stroke-dasharray="2 10" />
+    <svg style={`/*pointer-events: none;*/ position: absolute; z-index: 50; overflow: visible;`}>
+      <rect
+        x={x1}
+        y={y1}
+        width={x2 - x1}
+        height={y2 - y1}
+        stroke="white"
+        stroke-opacity="0.5"
+        fill="none"
+        stroke-dasharray="2 10"
+      />
     </svg>
 
     <!-- <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
@@ -116,10 +136,9 @@ width:100%; height: 100%;
     </svg> -->
   </div>
 
-
   <div
     style={`
-    pointer-events: none;
+    /*pointer-events: none;*/
   position: absolute;
   width:150%; height: 150%;
   top: -25%;
@@ -130,3 +149,23 @@ width:100%; height: 100%;
   `}
   />
 </div>
+
+<style>
+  @keyframes -global-rotate-s-loader {
+    from {
+      transform: rotate(0);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes -global-event-scale-up-down {
+    from {
+      transform: scale(0.8);
+    }
+    to {
+      transform: scale(2);
+    }
+  }
+</style>

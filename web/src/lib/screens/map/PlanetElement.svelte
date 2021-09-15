@@ -207,14 +207,3 @@ animation-timing-function: linear;
     {/if}
   {/if}
 </div>
-
-<style>
-  @keyframes -global-rotate-s-loader {
-    from {
-      transform: rotate(0);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-</style>

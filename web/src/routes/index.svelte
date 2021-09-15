@@ -23,7 +23,7 @@
   <MapScreen />
 </WalletAccess>
 
-{#if $logo.stage === 1}
+{#if $logo && $logo.stage === 1}
   <div class="fixed z-50 inset-0 overflow-y-auto bg-black" out:fade on:click={() => logo.nextStage()}>
     <div class="justify-center mt-32 text-center">
       <img
@@ -40,7 +40,7 @@
   </div>
 {/if}
 
-{#if $logo.stage === 0}
+{#if $logo && $logo.stage === 0}
   <div class="fixed z-50 inset-0 overflow-y-auto bg-black h-full" out:fade on:click={() => logo.nextStage()}>
     <div class="justify-center text-center h-full flex items-center">
       {#if browser}

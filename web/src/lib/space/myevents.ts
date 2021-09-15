@@ -4,7 +4,7 @@ import {writable} from 'svelte/store';
 import {spaceInfo} from './spaceInfo';
 import type {SpaceQueryWithPendingState} from '$lib/space/optimisticSpace';
 import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
-import type {AccountState} from '$lib/account/account';
+import type {AccountState, Acknowledgements} from '$lib/account/account';
 import {account} from '$lib/account/account';
 import type {FleetArrived} from './spaceQuery';
 
@@ -13,12 +13,17 @@ export type MyEventType = 'external_fleet' | 'internal_fleet';
 export type MyEvent = {
   type: MyEventType;
   event: FleetArrived;
+  acknowledged?: 'NO' | 'YES' | 'UPDATED_SINCE';
 };
 
 export class MyEventsStore implements Readable<MyEvent[]> {
   private readonly spaceInfo: SpaceInfo;
   private store: Writable<MyEvent[]>;
   private events: MyEvent[] = [];
+  private currentOwner: string;
+  private tmpEvents: MyEvent[] = [];
+  private tmpPlayer: string;
+  private acknowledgements: Acknowledgements;
 
   constructor(spaceInfo: SpaceInfo) {
     this.spaceInfo = spaceInfo;
@@ -28,28 +33,69 @@ export class MyEventsStore implements Readable<MyEvent[]> {
   }
 
   private onSpaceUpdate(update: SpaceQueryWithPendingState): void {
-    this.events.length = 0;
+    const newEvents = [];
     // TODO get access to update.accountAddress
     if (update.queryState.data?.fleetsArrivedFromYou) {
       for (const fleetArrived of update.queryState.data.fleetsArrivedFromYou) {
-        this.events.push({
+        newEvents.push({
           type: 'internal_fleet',
           event: fleetArrived,
         });
       }
       for (const fleetArrived of update.queryState.data.fleetsArrivedToYou) {
-        this.events.push({
+        newEvents.push({
           type: 'external_fleet',
           event: fleetArrived,
         });
       }
     }
 
+    const newPlayer = update.queryState.data?.player;
+    if (this.currentOwner !== newPlayer) {
+      this.tmpPlayer = newPlayer;
+      this.tmpEvents = newEvents;
+      this.events.length = 0;
+      // TODO loading ?
+    } else {
+      this.events = this.addAcknowledgements(newEvents);
+    }
+
     this.store.set(this.events);
   }
 
+  private addAcknowledgements(events: MyEvent[]): MyEvent[] {
+    for (const event of events) {
+      const acknowledgment = this.acknowledgements && this.acknowledgements[event.event.fleet.id];
+      if (!acknowledgment) {
+        event.acknowledged = 'NO';
+      } else {
+        const eventStateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won;
+        if (acknowledgment.stateHash !== eventStateHash) {
+          event.acknowledged = 'UPDATED_SINCE';
+        } else {
+          event.acknowledged = 'YES';
+        }
+      }
+    }
+    return events;
+  }
+
   private async _handleAccountChange($account: AccountState): Promise<void> {
-    // TODO $account.data.acknowledgements
+    const newPlayer = $account.ownerAddress?.toLowerCase();
+    this.acknowledgements = $account.data?.acknowledgements;
+
+    if (this.currentOwner === newPlayer) {
+      this.events = this.addAcknowledgements(this.events);
+    } else if (newPlayer === this.tmpPlayer) {
+      this.currentOwner = newPlayer;
+      this.events = this.addAcknowledgements(this.tmpEvents);
+    } else {
+      this.currentOwner = newPlayer;
+      this.events = [];
+      // TODO loading
+    }
+
+    this.store.set(this.events);
   }
 
   subscribe(run: (value: MyEvent[]) => void, invalidate?: (value?: MyEvent[]) => void): () => void {

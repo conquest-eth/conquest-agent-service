@@ -59,9 +59,14 @@ export type PendingAction = PendingSend | PendingExit | PendingCapture | Pending
 
 export type PendingActions = {[txHash: string]: PendingAction | number};
 
+export type Acknowledgement = {timestamp: number; stateHash: string};
+
+export type Acknowledgements = {[id: string]: Acknowledgement};
+
 export type AccountData = {
   pendingActions: PendingActions;
   welcomingStep: number;
+  acknowledgements: Acknowledgements;
 };
 
 class Account implements Readable<AccountState> {
@@ -332,6 +337,7 @@ class Account implements Readable<AccountState> {
       newData = {
         pendingActions: {},
         welcomingStep: 0,
+        acknowledgements: {},
       };
     }
 
@@ -339,6 +345,7 @@ class Account implements Readable<AccountState> {
       remoteData = {
         pendingActions: {},
         welcomingStep: 0,
+        acknowledgements: {},
       };
     }
 
