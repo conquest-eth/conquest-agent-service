@@ -68,11 +68,15 @@ export class MyEventsStore implements Readable<MyEvent[]> {
     for (const event of events) {
       const acknowledgment = this.acknowledgements && this.acknowledgements[event.event.fleet.id];
       if (!acknowledgment) {
-        const pendingAction = this.pendingActions && this.pendingActions[event.event.transaction.id];
-        if (!pendingAction || typeof pendingAction === 'number') {
-          event.acknowledged = 'YES';
-        } else if (pendingAction.acknowledged) {
-          event.acknowledged = 'YES';
+        if (event.type === 'internal_fleet') {
+          const pendingAction = this.pendingActions && this.pendingActions[event.event.transaction.id];
+          if (!pendingAction || typeof pendingAction === 'number') {
+            event.acknowledged = 'YES';
+          } else if (pendingAction.acknowledged) {
+            event.acknowledged = 'YES';
+          } else {
+            event.acknowledged = 'NO';
+          }
         } else {
           event.acknowledged = 'NO';
         }

@@ -6,14 +6,14 @@
   import {spaceInfo} from '$lib/space/spaceInfo';
   export let event: MyEvent;
 
-  let planetInfo = spaceInfo.getPlanetInfoViaId(event.event.planet.id);
-  let x = planetInfo.location.globalX - 48 / 2;
-  let y = planetInfo.location.globalY - 48 / 2;
+  $: planetInfo = spaceInfo.getPlanetInfoViaId(event.event.planet.id);
+  $: x = planetInfo.location.globalX - 48 / 2;
+  $: y = planetInfo.location.globalY - 48 / 2;
 
-  const multiplier = planetInfo.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
-  const scale = 0.025 * multiplier;
+  $: multiplier = planetInfo.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
+  $: scale = 0.025 * multiplier;
 
-  const color = event.type === 'external_fleet' ? 'red' : ' #10B981'; // TODO
+  $: color = event.type === 'external_fleet' ? 'red' : ' #10B981'; // TODO
 
   $: renderScale = $camera ? $camera.renderScale : 1;
 
