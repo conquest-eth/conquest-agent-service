@@ -22,7 +22,7 @@
   let showLine = true;
   let color;
   $: if (fleet.state === 'SEND_BROADCASTED') {
-    color = '#00FF00';
+    color = 'orange';
   } else if (fleet.state === 'TRAVELING') {
     color = '#00FF00';
   } else if (fleet.state === 'READY_TO_RESOLVE') {

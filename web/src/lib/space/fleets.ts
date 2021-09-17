@@ -82,11 +82,11 @@ export class FleetsStore implements Readable<Fleet[]> {
           const from = spaceInfo.getPlanetInfo(sendAction.from.x, sendAction.from.y);
           const to = spaceInfo.getPlanetInfo(sendAction.to.x, sendAction.to.y);
           const duration = spaceInfo.timeToArrive(from, to);
-          let launchTime = sendAction.timestamp;
+          let launchTime = update.queryState.data?.chain.timestamp || now();
           if (sendAction.actualLaunchTime) {
             launchTime = sendAction.actualLaunchTime;
           } else if (pendingAction.txTimestamp) {
-            launchTime = pendingAction.txTimestamp;
+            launchTime = update.queryState.data?.chain.timestamp || now();
             account.recordFleetLaunchTime(pendingAction.id, launchTime);
           }
 

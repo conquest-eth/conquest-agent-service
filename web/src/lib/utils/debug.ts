@@ -36,7 +36,7 @@ async function dropAllTransactionsIfPossible() {
             body: JSON.stringify({
               id: Math.floor(Math.random() * 99999999),
               jsonrpc: '2.0',
-              method: 'hardhat_dropTransaction',
+              method: 'hardhat_ignoreTransaction',
               params: [txHash],
             }),
           });
