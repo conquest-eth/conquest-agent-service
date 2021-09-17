@@ -11,11 +11,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deploy} = hre.deployments;
 
   const chainId = await hre.getChainId();
+  const localTesting = chainId === '1337' || chainId === '31337'; // TODO use network tags ?
 
   const playToken_l2 = await hre.deployments.get('PlayToken_L2');
 
   let chainGenesisHash = '';
-  if (chainId === '1337' || chainId === '31337') {
+  if (localTesting) {
     const earliestBlock = await ethers.provider.getBlock('earliest');
     chainGenesisHash = earliestBlock.hash;
   }
@@ -28,7 +29,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let productionSpeedUp = 1;
 
   // use a command to increase time in 1337
-  if (chainId === '1337') {
+  if (localTesting) {
     timePerDistance /= 180;
     exitDuration /= 180;
     productionSpeedUp = 1; // give more time to attack

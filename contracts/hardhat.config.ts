@@ -44,12 +44,14 @@ const config: HardhatUserConfig = {
     stableTokenBeneficiary: {
       hardhat: 9,
       1337: 9,
+      31337: 9,
       4: 1,
       5: 1,
     },
     claimKeyDistributor: {
       hardhat: 0,
       1337: 0,
+      31337: 0,
       4: 2,
       5: 2,
     },
@@ -74,6 +76,14 @@ const config: HardhatUserConfig = {
         l2_deploy,
         l2_dev_seed,
       ],
+      mining: process.env.MINING_INTERVAL
+        ? {
+            auto: false,
+            interval: process.env.MINING_INTERVAL.split(',').map((v) =>
+              parseInt(v)
+            ) as [number, number],
+          }
+        : undefined,
     },
     localhost: {
       url: node_url('localhost'),
