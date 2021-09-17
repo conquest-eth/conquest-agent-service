@@ -86,7 +86,7 @@ export class FleetsStore implements Readable<Fleet[]> {
           if (sendAction.actualLaunchTime) {
             launchTime = sendAction.actualLaunchTime;
           } else if (pendingAction.txTimestamp) {
-            launchTime = update.queryState.data?.chain.timestamp || now();
+            launchTime = pendingAction.txTimestamp;
             account.recordFleetLaunchTime(pendingAction.id, launchTime);
           }
 

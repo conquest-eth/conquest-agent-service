@@ -4,11 +4,11 @@
   import type {Fleet} from '$lib/space/fleets';
   export let fleet: Fleet;
 
-  const x1 = fleet.from.location.globalX;
-  const y1 = fleet.from.location.globalY;
-  const x2 = fleet.to.location.globalX;
-  const y2 = fleet.to.location.globalY;
-  const angle = Math.atan2(y2 - y1, x2 - x1);
+  $: x1 = fleet.from.location.globalX;
+  $: y1 = fleet.from.location.globalY;
+  $: x2 = fleet.to.location.globalX;
+  $: y2 = fleet.to.location.globalY;
+  $: angle = Math.atan2(y2 - y1, x2 - x1);
 
   $: ratio = Math.max(0, (fleet.duration - fleet.timeLeft) / fleet.duration);
 
