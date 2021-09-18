@@ -8,6 +8,8 @@ import type {Readable, Writable} from 'svelte/store';
 import type {PrivateWalletState} from './privateWallet';
 import {privateWallet} from './privateWallet';
 import {keccak256} from '@ethersproject/solidity';
+import type {MyEvent} from '$lib/space/myevents';
+import {now, time} from '$lib/time';
 
 export type AccountState = {
   step: 'IDLE' | 'READY';
@@ -59,9 +61,14 @@ export type PendingAction = PendingSend | PendingExit | PendingCapture | Pending
 
 export type PendingActions = {[txHash: string]: PendingAction | number};
 
+export type Acknowledgement = {timestamp: number; stateHash: string};
+
+export type Acknowledgements = {[id: string]: Acknowledgement};
+
 export type AccountData = {
   pendingActions: PendingActions;
   welcomingStep: number;
+  acknowledgements: Acknowledgements;
 };
 
 class Account implements Readable<AccountState> {
@@ -222,12 +229,56 @@ class Account implements Readable<AccountState> {
     }
   }
 
+  async acknowledgeEvent(event: MyEvent): Promise<void> {
+    if (event.type === 'internal_fleet') {
+      this.acknowledgeSuccess(event.event.transaction.id);
+      return;
+    }
+    this.check();
+    const id = event.event.fleet.id;
+    const stateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won; // TODO ensure we use same stateHash across code paths
+    const acknowledgement = this.state.data?.acknowledgements[id];
+    if (!acknowledgement) {
+      this.state.data.acknowledgements[id] = {
+        timestamp: now(),
+        stateHash,
+      };
+      await this.accountDB.save(this.state.data);
+      this._notify();
+    } else if (acknowledgement.stateHash !== stateHash) {
+      acknowledgement.timestamp = now();
+      acknowledgement.stateHash = stateHash;
+      await this.accountDB.save(this.state.data);
+      this._notify();
+    }
+  }
+
   async acknowledgeSuccess(txHash: string, final?: number): Promise<void> {
     this.check();
     const pendingAction = this.state.data.pendingActions[txHash];
     if (pendingAction && typeof pendingAction !== 'number') {
+      let sendAction: PendingSend;
+      let sendActionTxHash;
+      if (pendingAction.type === 'RESOLUTION') {
+        for (const txHashToCheck of Object.keys(this.state.data.pendingActions)) {
+          const p = this.state.data.pendingActions[txHashToCheck];
+          if (typeof p !== 'number' && p.type === 'SEND') {
+            if (p.resolution && p.resolution.indexOf(txHash) !== -1) {
+              sendAction = p;
+              sendActionTxHash = txHashToCheck;
+              break;
+            }
+          }
+        }
+      }
+      if (!sendAction) {
+        console.error(`cannot find send action for resolution`);
+      }
       if (final) {
         this.state.data.pendingActions[txHash] = final;
+        if (sendAction) {
+          this.state.data.pendingActions[sendActionTxHash] = final;
+        }
       } else {
         pendingAction.acknowledged = 'SUCCESS';
       }
@@ -241,6 +292,17 @@ class Account implements Readable<AccountState> {
     const action = this.state.data.pendingActions[txHash];
     if (action && typeof action !== 'number') {
       this.state.data.pendingActions[txHash] = timestamp;
+      if (action.type === 'RESOLUTION') {
+        for (const txHashToCheck of Object.keys(this.state.data.pendingActions)) {
+          const p = this.state.data.pendingActions[txHashToCheck];
+          if (typeof p !== 'number' && p.type === 'SEND') {
+            if (p.resolution && p.resolution.indexOf(txHash) !== -1) {
+              this.state.data.pendingActions[txHashToCheck] = timestamp;
+              break;
+            }
+          }
+        }
+      }
       await this.accountDB.save(this.state.data);
       this._notify();
     }
@@ -332,6 +394,7 @@ class Account implements Readable<AccountState> {
       newData = {
         pendingActions: {},
         welcomingStep: 0,
+        acknowledgements: {},
       };
     }
 
@@ -339,6 +402,7 @@ class Account implements Readable<AccountState> {
       remoteData = {
         pendingActions: {},
         welcomingStep: 0,
+        acknowledgements: {},
       };
     }
 
@@ -390,6 +454,45 @@ class Account implements Readable<AccountState> {
       }
       for (const txHash of Object.keys(newData.pendingActions)) {
         if (!remoteData.pendingActions[txHash]) {
+          newDataOnLocal = true;
+        }
+      }
+    } else {
+      newDataOnLocal = true;
+    }
+
+    if (remoteData.acknowledgements) {
+      for (const id of Object.keys(remoteData.acknowledgements)) {
+        const remoteAcknowledgement = remoteData.acknowledgements[id];
+        const acknowledgement = newData.acknowledgements[id];
+
+        if (!acknowledgement) {
+          newData.acknowledgements[id] = remoteAcknowledgement;
+          newDataOnRemote = true;
+        } else {
+          if (typeof acknowledgement === 'number' && typeof remoteAcknowledgement !== 'number') {
+            newDataOnLocal = true;
+          } else if (typeof acknowledgement !== 'number' && typeof remoteAcknowledgement === 'number') {
+            newDataOnRemote = true;
+            newData.pendingActions[id] = remoteAcknowledgement;
+          } else if (typeof acknowledgement !== 'number' && typeof remoteAcknowledgement !== 'number') {
+            if (acknowledgement.timestamp !== remoteAcknowledgement.timestamp) {
+              if (acknowledgement.timestamp > remoteAcknowledgement.timestamp) {
+                newDataOnLocal = true;
+              } else {
+                newDataOnRemote = true;
+                acknowledgement.timestamp = remoteAcknowledgement.timestamp;
+                acknowledgement.stateHash = remoteAcknowledgement.stateHash;
+              }
+            }
+          }
+          // TODO more merge pendingAction
+          // newDataOnLocal = true;
+          // newDataOnRemote = true;
+        }
+      }
+      for (const id of Object.keys(newData.acknowledgements)) {
+        if (!remoteData.acknowledgements[id]) {
           newDataOnLocal = true;
         }
       }

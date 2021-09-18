@@ -82,7 +82,7 @@ export class FleetsStore implements Readable<Fleet[]> {
           const from = spaceInfo.getPlanetInfo(sendAction.from.x, sendAction.from.y);
           const to = spaceInfo.getPlanetInfo(sendAction.to.x, sendAction.to.y);
           const duration = spaceInfo.timeToArrive(from, to);
-          let launchTime = sendAction.timestamp;
+          let launchTime = update.queryState.data?.chain.timestamp || now();
           if (sendAction.actualLaunchTime) {
             launchTime = sendAction.actualLaunchTime;
           } else if (pendingAction.txTimestamp) {
@@ -109,7 +109,7 @@ export class FleetsStore implements Readable<Fleet[]> {
               resolution = pendingResolution;
               state = 'RESOLVE_BROADCASTED';
 
-              if (resolution.status === 'SUCCESS' && resolution.counted) {
+              if (resolution.status === 'SUCCESS' || resolution.counted) {
                 // TODO error
                 state = 'WAITING_ACKNOWLEDGMENT';
               }

@@ -4,11 +4,11 @@
   import type {Fleet} from '$lib/space/fleets';
   export let fleet: Fleet;
 
-  const x1 = fleet.from.location.globalX;
-  const y1 = fleet.from.location.globalY;
-  const x2 = fleet.to.location.globalX;
-  const y2 = fleet.to.location.globalY;
-  const angle = Math.atan2(y2 - y1, x2 - x1);
+  $: x1 = fleet.from.location.globalX;
+  $: y1 = fleet.from.location.globalY;
+  $: x2 = fleet.to.location.globalX;
+  $: y2 = fleet.to.location.globalY;
+  $: angle = Math.atan2(y2 - y1, x2 - x1);
 
   $: ratio = Math.max(0, (fleet.duration - fleet.timeLeft) / fleet.duration);
 
@@ -19,23 +19,10 @@
 
   // $: console.log({scale});
 
-  async function acknowledge() {
-    if (fleet.resolution) {
-      if (fleet.resolution.status === 'SUCCESS') {
-        account.acknowledgeSuccess(fleet.txHash);
-        account.acknowledgeSuccess(fleet.resolution.id);
-      } else if (fleet.resolution.status === 'FAILURE') {
-        account.acknowledgeActionFailure(fleet.resolution.id);
-      }
-    } else {
-      // TODO other failues ?
-    }
-  }
-
   let showLine = true;
   let color;
   $: if (fleet.state === 'SEND_BROADCASTED') {
-    color = '#00FF00';
+    color = 'orange';
   } else if (fleet.state === 'TRAVELING') {
     color = '#00FF00';
   } else if (fleet.state === 'READY_TO_RESOLVE') {
@@ -46,15 +33,13 @@
     color = '#0000ff';
     showLine = false;
   } else if (fleet.state === 'WAITING_ACKNOWLEDGMENT') {
+    // fleet is not shown in that case, event take over, see myevents.ts
     color = '#00ff00';
     showLine = false;
   }
 </script>
 
-<svg
-  on:click={acknowledge}
-  style={`position: absolute; z-index: 51; overflow: visible; transform: translate(${x}px,${y}px)`}
->
+<svg style={`position: absolute; z-index: 51; overflow: visible; transform: translate(${x}px,${y}px)`}>
   <!-- <g style={`transform: scale(${scale});`} > -->
   <path style={`transform: rotate(${angle}rad);`} d="M -5 -2.5 L 0 0 L -5 2.5 z" fill={color} />
   <!-- </g> -->

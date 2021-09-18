@@ -14,6 +14,7 @@
     "@ethersproject/contracts": "^5.4.1",
     "@ethersproject/providers": "^5.4.5",
     "@ethersproject/solidity": "^5.4.0",
+    "@ethersproject/transactions": "^5.4.0",
     "@ethersproject/units": "^5.4.0",
     "@ethersproject/wallet": "^5.4.0",
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@0.3.0-beta.10",
@@ -65,7 +66,8 @@
     "test": "cross-env HARDHAT_DEPLOY_FIXTURE=true HARDHAT_COMPILE=true mocha --bail --recursive test",
     "gas": "cross-env REPORT_GAS=true hardhat test",
     "coverage": "cross-env HARDHAT_DEPLOY_FIXTURE=true hardhat coverage",
-    "dev": "hardhat node --watch --export contractsInfo.json",
+    "dev:zero": "cross-env MINING_INTERVAL=\"3000,5000\" hardhat node --hostname 0.0.0.0 --no-deploy",
+    "dev": "hardhat node --hostname 0.0.0.0 --watch",
     "local:dev": "hardhat --network localhost deploy --watch",
     "execute": "node ./_scripts.js run",
     "deploy": "node ./_scripts.js deploy",
@@ -73,6 +75,7 @@
     "fork:execute": "node ./_scripts.js fork:run",
     "fork:deploy": "node ./_scripts.js fork:deploy",
     "fork:dev": "node ./_scripts.js fork:dev",
+    "fork:node": "node ./_scripts.js fork:node",
     "fork:test": "node ./_scripts.js fork:test"
   },
   "volta": {

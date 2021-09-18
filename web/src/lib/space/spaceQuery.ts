@@ -33,14 +33,17 @@ export type PlanetContractState = {
 export type FleetArrived = FleetArrivedEvent; // TODO ?
 
 export type SpaceQueryResult = {
-  planets: PlanetQueryState[];
+  otherplanets: PlanetQueryState[];
+  myplanets?: PlanetQueryState[];
+  owner?: {id: string};
   space?: {minX: string; maxX: string; minY: string; maxY: string};
   chain: {blockHash: string; blockNumber: string};
-  fleetsArrivedFromYou: FleetArrivedEvent[]; // TODO
-  fleetsArrivedToYou: FleetArrivedEvent[]; // TODO
+  fleetsArrivedFromYou?: FleetArrivedEvent[]; // TODO
+  fleetsArrivedToYou?: FleetArrivedEvent[]; // TODO
 };
 
 export type SpaceState = {
+  player: string;
   planets: PlanetContractState[];
   loading: boolean;
   space: {x1: number; x2: number; y1: number; y2: number};
@@ -63,7 +66,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     this.queryStore = new HookedQueryStore( // TODO full list
       endpoint,
       `query($first: Int! $lastId: ID! $owner: String) {
-  planets(first: $first where: {id_gt: $lastId}) {
+  otherplanets: planets(first: $first where: {id_gt: $lastId ?$owner?owner_not: $owner?}) {
     id
     owner {
       id
@@ -85,6 +88,18 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     maxY
   }
   ?$owner?
+  owner(id: $owner) {id}
+  myplanets: planets(where: {owner: $owner}) {
+    id
+    owner {
+      id
+    }
+    numSpaceships
+    lastUpdated
+    exitTime
+    active
+    reward
+  }
   fleetsArrivedFromYou: fleetArrivedEvents(where: {owner: $owner destinationOwner_not: $owner}) {
     id
     blockNumber
@@ -126,7 +141,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
 }`,
       chainTempo, // replayTempo, //
       {
-        list: {path: 'planets'},
+        list: {path: 'otherplanets'},
       }
     );
 
@@ -175,9 +190,12 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     if (!data) {
       return undefined;
     }
+
+    const planets = (data.myplanets || []).concat(data.otherplanets);
     return {
       loading: false,
-      planets: data.planets.map((v) => {
+      player: data.owner?.id,
+      planets: planets.map((v) => {
         return {
           id: v.id,
           owner: v.owner ? v.owner.id : undefined,

@@ -72,6 +72,15 @@ const SYNC_DB_NAME =
   contractsInfos.contracts.OuterSpace.address +
   (contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash || '');
 
+let _dropTransactions = false;
+function dropTransactions(yes: boolean): void {
+  _dropTransactions = yes;
+}
+
+function shouldDropTransactions(): boolean {
+  return _dropTransactions;
+}
+
 export {
   finality,
   fallbackProviderOrUrl,
@@ -88,4 +97,6 @@ export {
   SYNC_URI,
   SYNC_DB_NAME,
   deletionDelay,
+  shouldDropTransactions,
+  dropTransactions,
 };
