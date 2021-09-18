@@ -9,6 +9,7 @@
   import {spaceInfo} from '$lib/space/spaceInfo';
   import selection from '$lib/map/selection';
   import PlanetInfoPanel from '$lib/components/planets/PlanetInfoPanel.svelte';
+  import PlanetsListPanel from '$lib/components/planets/PlanetsListPanel.svelte';
 
   import claimFlow from '$lib/flows/claim';
   import ClaimFlow from '$lib/flows/ClaimFlow.svelte';
@@ -21,8 +22,7 @@
   import resolveFlow from '$lib/flows/resolve';
   import ResolveFlow from '$lib/flows/ResolveFlow.svelte';
   import FleetsToResolve from '$lib/components/fleets/FleetsToResolve.svelte';
-  import { spaceQueryWithPendingActions } from '$lib/space/optimisticSpace';
-
+  import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
 
   // import messageFlow from '$lib/flows/message';
   // import MessageFlow from '$lib/flows/MessageFlow.svelte';
@@ -38,11 +38,9 @@
 <Map />
 
 {#if $spaceQueryWithPendingActions.queryState.data?.loading}
-<div class="w-full flex items-center justify-center fixed top-0 pointer-events-none" style="z-index: 5;">
-  <p class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-blue-500 p-1">
-    Loading
-  </p>
-</div>
+  <div class="w-full flex items-center justify-center fixed top-0 pointer-events-none" style="z-index: 5;">
+    <p class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-blue-500 p-1">Loading</p>
+  </div>
 {/if}
 
 <ConnectPanel />
@@ -141,3 +139,4 @@
 {:else}
   <!-- <Search /> -->
 {/if}
+<PlanetsListPanel />
