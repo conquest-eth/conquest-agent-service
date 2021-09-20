@@ -7,7 +7,7 @@ import '@typechain/hardhat';
 import 'solidity-coverage';
 import 'hardhat-contract-sizer';
 import {node_url, accounts} from './utils/network';
-import './utils/tx-handler';
+/* import './utils/tx-handler'; */
 
 const l1_pre_deploy_missing_contracts =
   'deploy_l1/00_pre_deploy_missing_contracts';

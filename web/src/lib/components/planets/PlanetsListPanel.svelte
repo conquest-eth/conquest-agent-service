@@ -1,13 +1,15 @@
-<script>
-  import {spaceView} from '$lib/space/spaceInfo';
-  import {wallet} from '$lib/blockchain/wallet';
-  import {onMount} from 'svelte';
-  let planets = [];
+<script lang="ts">
+  import {myplanetInfos} from '$lib/space/myplanets';
+  import {camera} from '$lib/map/camera';
+  import selection from '$lib/map/selection';
+  import type {PlanetInfo} from 'conquest-eth-common';
+
   let isToggled = false;
-  onMount(() => {
-    planets = $spaceView.filter((planet) => planet.owner?.toLowerCase() === $wallet.address?.toLowerCase());
-    console.log($wallet);
-  });
+
+  function onPlanetSelect(planet: PlanetInfo) {
+    selection.select(planet.location.x, planet.location.y);
+    camera.navigate(planet.location.x, planet.location.y);
+  }
 </script>
 
 <div
@@ -15,9 +17,11 @@
 >
   <button on:click={() => (isToggled = !isToggled)} class="text-white">My Planets</button>
   {#if isToggled}
-    <ul>
-      {#each planets as planet}
-        <li class="text-yellow-300" on:click={() => console.log(planet)}>{planet.stats.name}</li>
+    <ul class="overflow-auto max-h-32">
+      {#each $myplanetInfos as planet}
+        <li class="text-yellow-300" on:click={() => onPlanetSelect(planet)}>
+          {planet.stats.name}
+        </li>
       {/each}
     </ul>
   {/if}
