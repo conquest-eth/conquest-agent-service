@@ -139,4 +139,4 @@
 {:else}
   <!-- <Search /> -->
 {/if}
-<PlanetsListPanel />
+<PlanetsListPanel coords={$selection} />
