@@ -237,9 +237,10 @@ export class Camera extends BasicObjectStore<CameraState> {
     this._update();
   }
 
-  navigate(x: number, y: number): void {
+  navigate(x: number, y: number, zoom: number): void {
     this.$store.x = x;
     this.$store.y = y;
+    this.$store.zoom = zoom;
     this._update();
   }
 

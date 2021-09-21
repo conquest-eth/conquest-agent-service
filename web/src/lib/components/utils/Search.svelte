@@ -13,7 +13,7 @@
       const x = parseInt(split[0]);
       const y = parseInt(split[1]);
       if (!isNaN(x) && !isNaN(y)) {
-        (window as any).camera.navigate(x * 48 * 2 * 4, y * 48 * 2 * 4);
+        (window as any).camera.navigate(x * 48 * 2 * 4, y * 48 * 2 * 4, 20);
         const planet = spaceInfo.getPlanetInfo(x, y);
         if (planet) {
           selection.select(planet.location.id);
