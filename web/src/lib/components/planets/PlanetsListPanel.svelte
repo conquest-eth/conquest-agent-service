@@ -8,7 +8,7 @@
 
   function onPlanetSelect(planet: PlanetInfo) {
     selection.select(planet.location.x, planet.location.y);
-    camera.navigate(planet.location.x * 2, planet.location.y * 2, 10);
+    camera.navigate(planet.location.globalX, planet.location.globalY, 10);
   }
 </script>
 
