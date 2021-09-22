@@ -75,14 +75,15 @@ export class FleetsStore implements Readable<Fleet[]> {
         } else if (pendingAction.status === 'TIMEOUT') {
         } else {
           let state: FleetState = 'SEND_BROADCASTED';
-          if (pendingAction.status == 'SUCCESS') {
+          if (pendingAction.status == 'SUCCESS' || pendingAction.status == 'LOADING') {
+            // consider 'LOADING' as success, we assume we got it (maybe we should show loading overall)
             state = 'TRAVELING';
           }
 
           const from = spaceInfo.getPlanetInfo(sendAction.from.x, sendAction.from.y);
           const to = spaceInfo.getPlanetInfo(sendAction.to.x, sendAction.to.y);
           const duration = spaceInfo.timeToArrive(from, to);
-          let launchTime = update.queryState.data?.chain.timestamp || now();
+          let launchTime = now(); // TODO  update.queryState.data?.chain.timestamp ?
           if (sendAction.actualLaunchTime) {
             launchTime = sendAction.actualLaunchTime;
           } else if (pendingAction.txTimestamp) {

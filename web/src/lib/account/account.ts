@@ -71,6 +71,36 @@ export type AccountData = {
   acknowledgements: Acknowledgements;
 };
 
+function mergeStringArrays(
+  localArray?: string[],
+  remoteArray?: string[]
+): {newOnLocal: boolean; newOnRemote: boolean; newArray?: string[]} {
+  let newOnLocal = false;
+  let newOnRemote = false;
+  const hasLocalArray = typeof localArray !== 'undefined';
+  const hasRemoteArray = typeof remoteArray !== 'undefined';
+  if (!hasLocalArray && !hasRemoteArray) {
+  } else if (hasLocalArray && !hasRemoteArray) {
+    newOnLocal = true;
+  } else if (!hasLocalArray && hasRemoteArray) {
+    newOnRemote = true;
+    localArray = remoteArray;
+  } else {
+    for (let i = 0; i < localArray.length; i++) {
+      if (remoteArray.indexOf(localArray[i]) === -1) {
+        newOnLocal = true;
+      }
+    }
+    for (let i = 0; i < remoteArray.length; i++) {
+      if (localArray.indexOf(remoteArray[i]) === -1) {
+        newOnRemote = true;
+        localArray.push(remoteArray[i]);
+      }
+    }
+  }
+  return {newOnLocal, newOnRemote, newArray: localArray};
+}
+
 class Account implements Readable<AccountState> {
   private state: AccountState;
   private store: Writable<AccountState>;
@@ -444,6 +474,26 @@ class Account implements Readable<AccountState> {
               } else {
                 newDataOnRemote = true;
                 pendingAction.acknowledged = remotePendingAction.acknowledged;
+              }
+            }
+            if (pendingAction.type === 'SEND' && remotePendingAction.type === 'SEND') {
+              const {newOnLocal, newOnRemote, newArray} = mergeStringArrays(
+                pendingAction.resolution,
+                remotePendingAction.resolution
+              );
+              if (newOnLocal) {
+                newDataOnLocal = true;
+              }
+              if (newOnRemote) {
+                pendingAction.resolution = newArray;
+                newDataOnRemote = true;
+              }
+
+              if (pendingAction.actualLaunchTime && !remotePendingAction.actualLaunchTime) {
+                newDataOnLocal = true;
+              } else if (!pendingAction.actualLaunchTime && remotePendingAction.actualLaunchTime) {
+                newDataOnRemote = true;
+                pendingAction.actualLaunchTime = remotePendingAction.actualLaunchTime;
               }
             }
           }

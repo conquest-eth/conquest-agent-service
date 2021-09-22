@@ -33,12 +33,12 @@ import {deletionDelay, finality} from '$lib/config';
 //   | CheckedPendingCapture
 //   | CheckedPendingWithdrawal
 
-export type CheckedPendingAction = {
+export type CheckedPendingAction<T extends PendingAction = PendingAction> = {
   id: string;
   final?: number;
   txTimestamp?: number;
   status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
-  action: PendingAction;
+  action: T;
 };
 
 export type CheckedPendingActions = CheckedPendingAction[];

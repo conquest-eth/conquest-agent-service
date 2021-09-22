@@ -178,6 +178,9 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       tx.nonce
     );
 
+    // TODO if agent enabled and fund present for covering all pending tx
+    // create the resolve Tx with high gas enough , multiple for non-EIP1559 networks?
+
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
 
     // TODO REMOVE DEBUG :
