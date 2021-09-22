@@ -1,1 +1,2 @@
 - [ ] error report tool
+- [ ] implement the sign message with blockhash of last 255 block to perform a sneak attack/gifting before reveal time is open to everyone (allowing plausible deniability until that point : I reveal my secret to my so called "allies" so they know I am sending them gift, but just before reveal of gifting is allowed by anyone, I send a signed message making the attack, 10 minute before)
