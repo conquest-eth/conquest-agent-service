@@ -7,7 +7,6 @@
   import {planetStates} from '$lib/space/planetStates';
   import selection from '$lib/map/selection';
   import {spaceInfo} from '$lib/space/spaceInfo';
-import { fleets } from '$lib/space/fleets';
 
   let surface: HTMLElement;
   let renderView: RenderView;
@@ -58,7 +57,6 @@ import { fleets } from '$lib/space/fleets';
     camera.start(surface, renderView);
     cancelRenderViewUpdate = window.requestAnimationFrame(update);
     planetStates.start(); // this trigger the queries (but not in the dev server)
-    fleets.start();
     camera.onClick = onClick;
   });
 

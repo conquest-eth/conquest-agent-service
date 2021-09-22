@@ -46,10 +46,10 @@ export class FleetsStore implements Readable<Fleet[]> {
 
   constructor(spaceInfo: SpaceInfo) {
     this.spaceInfo = spaceInfo;
-    this.store = writable(this.fleets);
+    this.store = writable(this.fleets, this._start.bind(this));
   }
 
-  start(): void {
+  _start(): void {
     time.subscribe(this.onTime.bind(this));
     spaceQueryWithPendingActions.subscribe(this.onSpaceUpdate.bind(this));
   }
