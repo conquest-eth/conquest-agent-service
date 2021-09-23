@@ -64,13 +64,15 @@ const lowFrequencyFetch = blockTime * 8;
 const mediumFrequencyFetch = blockTime * 4;
 const highFrequencyFetch = blockTime * 2;
 
-const globalQueryParams = ['debug', 'log', 'subgraph', 'ethnode', '_d_eruda'];
+const globalQueryParams = ['debug', 'log', 'subgraph', 'ethnode', '_d_eruda', 'sync', 'agent-service'];
 
 const SYNC_URI = params.sync || (import.meta.env.VITE_SYNC_URI as string); //  'http://invalid.io'; // to emulate connection loss :)
 const SYNC_DB_NAME =
   'conquest-' +
   contractsInfos.contracts.OuterSpace.address +
   (contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash || '');
+
+const AGENT_SERVICE_URL = params['agent-service'] || (import.meta.env.VITE_AGENT_SERVICE_URL as string); //  'http://invalid.io'; // to emulate connection loss :)
 
 let _dropTransactions = false;
 function dropTransactions(yes: boolean): void {
@@ -96,6 +98,7 @@ export {
   globalQueryParams,
   SYNC_URI,
   SYNC_DB_NAME,
+  AGENT_SERVICE_URL,
   deletionDelay,
   shouldDropTransactions,
   dropTransactions,

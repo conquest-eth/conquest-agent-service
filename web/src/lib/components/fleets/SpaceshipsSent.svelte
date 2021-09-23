@@ -6,7 +6,7 @@
   import {timeToText} from '$lib/utils';
   import {now} from '$lib/time';
   import {base} from '$app/paths';
-  import { spaceInfo } from '$lib/space/spaceInfo';
+  import {spaceInfo} from '$lib/space/spaceInfo';
 
   $: fromPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
   // $: fromPlanetState = planets.planetStateFor(fromPlanetInfo);
@@ -35,7 +35,7 @@
     </p>
     <p class="mb-4">
       Or as always if you can have a computer running permanently, you can setup an agent
-      <a class="underline" href={`${base}/agent/`} target="_blank">here</a>
+      <a class="underline" href={`${base}/agent-service/`} target="_blank">here</a>
     </p>
 
     <p class="mb-4">You can also create a reminder here</p>

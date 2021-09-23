@@ -14,7 +14,6 @@
 
   $: duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
   $: arrival = duration + now();
-
 </script>
 
 <Modal>
@@ -29,7 +28,7 @@
   <p class="my-2">
     You can also setup an agent that will run on its own and resolve your fleets automatically. You just need to leave
     the agent running. See
-    <a href={`agent/`} target="_blank" class="underline">here</a>
+    <a href={`agent-service/`} target="_blank" class="underline">here</a>
   </p>
   <div class="text-center">
     <PanelButton label="OK" class="mt-4" on:click={() => sendFlow.acknowledgeWelcomingStep2()}>OK</PanelButton>

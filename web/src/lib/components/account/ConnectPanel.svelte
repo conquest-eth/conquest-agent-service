@@ -93,8 +93,9 @@
           you earned after exiting your planets.
         </Help>
       </NavButton>
-      <NavButton class="m-1" label="agent" href={url('agent/')} blank={true}>
-        Agent
+      <NavButton class="m-1" label="agent-service" href={url('agent-service/')}>
+        <!-- blank={true} -->
+        Agent Service
         <Help class="w-4 h-4">The agent can help you ensure you resolve your fleets in time.</Help>
       </NavButton>
       <NavButton class="m-1" label="help" href={url('help/')}>
