@@ -1,7 +1,10 @@
 <script lang="ts">
   import {account} from '$lib/account/account';
   import {camera} from '$lib/map/camera';
+  import {timeToText} from '$lib/utils';
+  import {clickOutside} from '$lib/utils/clickOutside';
   import type {Fleet} from '$lib/space/fleets';
+  import {onMount} from 'svelte';
   export let fleet: Fleet;
 
   $: x1 = fleet.from.location.globalX;
@@ -21,6 +24,7 @@
 
   let showLine = true;
   let color;
+  let isShow = false;
   $: if (fleet.state === 'SEND_BROADCASTED') {
     color = 'orange';
   } else if (fleet.state === 'TRAVELING') {
@@ -41,9 +45,37 @@
 
 <svg style={`position: absolute; z-index: 51; overflow: visible; transform: translate(${x}px,${y}px)`}>
   <!-- <g style={`transform: scale(${scale});`} > -->
-  <path style={`transform: rotate(${angle}rad);`} d="M -5 -2.5 L 0 0 L -5 2.5 z" fill={color} />
+  <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+  <path
+    on:click={() => (isShow = !isShow)}
+    style={`transform: rotate(${angle}rad); cursor: pointer`}
+    d="M -5 -2.5 L 0 0 L -5 2.5 z"
+    fill={color}
+  />
+
   <!-- </g> -->
 </svg>
+{#if isShow}
+  <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+  <div
+    use:clickOutside
+    on:click_outside={() => (isShow = false)}
+    class="w-24 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300"
+    style={`font-size: 9px;
+      transform-origin: top left;
+       position: absolute; z-index: 99; overflow: visible; transform: translate(${x}px,${y}px) scale(${2 / scale})`}
+  >
+    <ul class="text-white">
+      <li><span class="text-yellow-300">from:</span> {fleet.from.stats.name}</li>
+      <li><span class="text-yellow-300">to:</span> {fleet.to.stats.name}</li>
+      <li>
+        <span class="text-yellow-300">Duration:</span>
+        {timeToText(fleet.duration)}
+      </li>
+      <li><span class="text-yellow-300">Time left:</span> {timeToText(fleet.timeLeft)}</li>
+    </ul>
+  </div>
+{/if}
 
 {#if showLine}
   <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
