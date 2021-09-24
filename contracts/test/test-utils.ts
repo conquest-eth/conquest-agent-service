@@ -8,9 +8,11 @@ export async function expectRevert(
   let receipt;
   try {
     receipt = await promise;
-  } catch (error) {
+  } catch (e) {
+    const error = e as {message?: string};
     const isExpectedMessagePresent =
-      !expectedMessage || error.message.search(expectedMessage) >= 0;
+      error.message &&
+      (!expectedMessage || error.message.search(expectedMessage) >= 0);
     if (!isExpectedMessagePresent) {
       throw new Error(
         `Revert message : "${expectedMessage}" not present, instead got : "${error.message}"`

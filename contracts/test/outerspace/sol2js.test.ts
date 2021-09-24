@@ -1,7 +1,7 @@
 import {expect} from '../chai-setup';
 import {objMap} from '../test-utils';
 import {convertPlanetCallData} from './utils';
-import {setup} from './fixtures/outerspaceAndPlayerWithTokens';
+import {setup} from '../fixtures/outerspaceAndPlayerWithTokens';
 
 describe('JS <-> Solidity equivalence', function () {
   it('planet stats computed from js equal stats from the contract', async function () {

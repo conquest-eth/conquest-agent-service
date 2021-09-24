@@ -6,8 +6,8 @@ import {
   deployments,
   getNamedAccounts,
 } from 'hardhat';
-import {OuterSpace, PlayL2} from '../../../typechain';
-import {setupUsers} from '../../utils';
+import {OuterSpace, PlayL2} from '../../typechain';
+import {setupUsers} from '../utils';
 
 export const setup = deployments.createFixture(async () => {
   await deployments.fixture(); // TODO only OuterSpace

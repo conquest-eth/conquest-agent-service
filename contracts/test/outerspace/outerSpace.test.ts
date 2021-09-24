@@ -1,6 +1,6 @@
 // import {expect} from '../chai-setup';
 import {acquire} from './utils';
-import {setup} from './fixtures/outerspaceAndPlayerWithTokens';
+import {setup} from '../fixtures/outerspaceAndPlayerWithTokens';
 
 describe('OuterSpace', function () {
   it('user can acquire virgin planet', async function () {
