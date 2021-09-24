@@ -70,7 +70,9 @@ const SYNC_URI = params.sync || (import.meta.env.VITE_SYNC_URI as string); //  '
 const SYNC_DB_NAME =
   'conquest-' +
   contractsInfos.contracts.OuterSpace.address +
-  (contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash || '');
+  (contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+    ? ':' + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+    : '');
 
 let _dropTransactions = false;
 function dropTransactions(yes: boolean): void {
