@@ -3,10 +3,10 @@ pragma solidity 0.7.5;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract Payment {
+contract PaymentGateway {
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-    event PaymentEvent(address indexed payer, uint256 amount, bool refund);
+    event Payment(address indexed payer, uint256 amount, bool refund);
 
     address public owner;
 
@@ -17,7 +17,7 @@ contract Payment {
 
     receive() external payable {
         if (msg.value > 0) {
-            emit PaymentEvent(msg.sender, msg.value, false);
+            emit Payment(msg.sender, msg.value, false);
         }
     }
 
@@ -30,7 +30,7 @@ contract Payment {
     function withdrawForRefund(address payable to, uint256 amount) external {
         require(msg.sender == owner, "NOT_ALLOWED");
         to.transfer(amount);
-        emit PaymentEvent(to, amount, true);
+        emit Payment(to, amount, true);
     }
 
     function withdraw(address payable to, uint256 amount) external {
