@@ -309,6 +309,15 @@ export class RevealQueue extends DO {
     return new Response(JSON.stringify({success: true}));
   }
 
+  async account(path: string[]): Promise<Response> {
+    const accountID = `account_${path[0]?.toLowerCase()}`;
+    const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
+    if (accountData) {
+        return new Response(JSON.stringify({account:accountData}));
+    }
+    return new Response(JSON.stringify({account: null}));
+  }
+
   async getTransactionInfo(path: string[]): Promise<Response> {
     const revealID = `l_${path[0]}`;
     const listData = await this.state.storage.get<ListData | undefined>(revealID);
@@ -332,6 +341,8 @@ export class RevealQueue extends DO {
         lastSync = {blockNumber: 0, blockHash: ""};
     }
 
+    // console.log({lastSync});
+
     // if there is no new block, no point processing, this will just handle reorg for no benefit
     if (toBlockNumber <= lastSync.blockNumber) {
         return  new Response("no new block to fetch"); // TODO ?
@@ -340,8 +351,14 @@ export class RevealQueue extends DO {
 
     const accountsToUpdate: {[account: string]: {balanceUpdate: BigNumber}} = {};
     const events = await this.paymentContract.queryFilter(this.paymentContract.filters.Payment(), fromBlock, toBlockNumber);
+
+    // console.log({events});
     for (const event of events) {
+      if (event.removed) {
+        continue; //ignore removed
+      }
         if (event.args) {
+          // console.log(event.args);
             const payer = event.args.payer.toLowerCase();
             const accountUpdate = accountsToUpdate[payer] = accountsToUpdate[payer] || {balanceUpdate: BigNumber.from(0)};
             if (event.args.refund) {
@@ -354,8 +371,12 @@ export class RevealQueue extends DO {
             }
         }
     }
-    const lastSyncRefetched = await this.state.storage.get<SyncData | undefined>('sync');
+    let lastSyncRefetched = await this.state.storage.get<SyncData | undefined>('sync');
+    if (!lastSyncRefetched) {
+      lastSyncRefetched = {blockHash: '', blockNumber: 0};
+    }
     if (lastSyncRefetched.blockHash !== lastSync.blockHash) {
+      // console.log(`got already updated ?`)
         return new Response(`got already updated ?`)
     }
 
@@ -374,10 +395,13 @@ export class RevealQueue extends DO {
                 delegate: currentAccountState.delegate
             }
         );
+        console.log(`${accountAddress} updated...`)
     }
     lastSyncRefetched.blockHash = toBlockObject.hash;
     lastSyncRefetched.blockNumber = toBlockNumber;
     this.state.storage.put<SyncData>('sync', lastSyncRefetched);
+
+    // console.log({lastSyncRefetched});
     return new Response(JSON.stringify({success: true}));
   }
 
