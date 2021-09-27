@@ -6,8 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract Payment {
 
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-    event PaymentReceived(address indexed sender, address indexed paymentFor, uint256 amount);
-    event PaymentRefunded(address indexed recipient, address indexed refundFor, uint256 amount);
+    event PaymentEvent(address indexed payer, uint256 amount, bool refund);
 
     address public owner;
 
@@ -18,13 +17,7 @@ contract Payment {
 
     receive() external payable {
         if (msg.value > 0) {
-            emit PaymentReceived(msg.sender, msg.sender, msg.value);
-        }
-    }
-
-    function sendETH(address paymentFor) external payable {
-        if (msg.value > 0) {
-            emit PaymentReceived(msg.sender, paymentFor, msg.value);
+            emit PaymentEvent(msg.sender, msg.value, false);
         }
     }
 
@@ -37,7 +30,7 @@ contract Payment {
     function withdrawForRefund(address payable to, address refundFor, uint256 amount) external {
         require(msg.sender == owner, "NOT_ALLOWED");
         to.transfer(amount);
-        emit PaymentRefunded(to, refundFor, amount);
+        emit PaymentEvent(to, amount, true);
     }
 
     function withdraw(address payable to, uint256 amount) external {
