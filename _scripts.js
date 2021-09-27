@@ -81,29 +81,35 @@ async function performAction(rawArgs) {
   if (firstArg == 'contracts:dev') {
     const {fixedArgs, extra, options} = parseArgs(args, 0, {reset: 'boolean'});
     if (options.reset) {
-      await execute('rimraf contracts/deployments/localhost && rimraf web/src/lib/contracts.json');
+      await execute(
+        'rimraf contracts/deployments/localhost && rimraf web/src/lib/contracts.json && rimraf agent-service/src/contracts.json'
+      );
     }
     await execute(
-      `dotenv -e .env -e contracts/.env -- npm --prefix contracts run dev -- --export ../web/src/lib/contracts.json`
+      `dotenv -e .env -e contracts/.env -- npm --prefix contracts run dev -- --export ../web/src/lib/contracts.json,../agent-service/src/contracts.json`
     );
   } else if (firstArg == 'contracts:node') {
     await execute(`dotenv -e .env -e contracts/.env -- npm --prefix contracts run dev:zero`);
   } else if (firstArg == 'contracts:local:dev') {
     const {fixedArgs, extra, options} = parseArgs(args, 0, {reset: 'boolean'});
     if (options.reset) {
-      await execute('rimraf contracts/deployments/localhost && rimraf web/src/lib/contracts.json');
+      await execute(
+        'rimraf contracts/deployments/localhost && rimraf web/src/lib/contracts.json && rimraf agent-service/src/contracts.json'
+      );
     }
     await execute(`wait-on tcp:localhost:8545`);
     await wait(1); // slight delay to ensure ethereum node is actually ready
     await execute(
-      `dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:dev -- --export ../web/src/lib/contracts.json`
+      `dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:dev -- --export ../web/src/lib/contracts.json,../agent-service/src/contracts.json`
     );
   } else if (firstArg === 'contracts:deploy') {
     const {fixedArgs, extra} = parseArgs(args, 1, {});
     const network = fixedArgs[0] || 'localhost';
     const env = getEnv(network);
     await execute(
-      `${env}npm --prefix contracts run deploy ${network} -- --export ../web/src/lib/contracts.json ${extra.join(' ')}`
+      `${env}npm --prefix contracts run deploy ${network} -- --export ../web/src/lib/contracts.json,../agent-service/src/contracts.json ${extra.join(
+        ' '
+      )}`
     );
   } else if (firstArg === 'contracts:export') {
     const {fixedArgs, extra} = parseArgs(args, 1, {});
@@ -113,7 +119,9 @@ async function performAction(rawArgs) {
       return;
     }
     const env = getEnv(network);
-    await execute(`${env}npm --prefix contracts run export ${network} -- ../web/src/lib/contracts.json`);
+    await execute(
+      `${env}npm --prefix contracts run export ${network} -- ../web/src/lib/contracts.json,../agent-service/src/contracts.json`
+    );
   } else if (firstArg === 'contracts:seed') {
     const {fixedArgs, extra, options} = parseArgs(args, 1, {waitContracts: 'boolean'});
     const network = fixedArgs[0] || 'localhost';

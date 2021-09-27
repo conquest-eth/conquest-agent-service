@@ -16,10 +16,12 @@ contract PaymentGateway {
     }
 
     receive() external payable {
-        if (msg.value > 0) {
-            emit Payment(msg.sender, msg.value, false);
-        }
+        emit Payment(msg.sender, msg.value, false);
     }
+
+    // sendETHandRegisterDelegate(address delegate) external payable {
+    //     emit Payment(msg.sender, delegate, msg.value, false);
+    // }
 
     function transferOwnership(address newOwner) external {
         require(msg.sender == owner, "NOT_ALLOWED");
