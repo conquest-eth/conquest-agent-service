@@ -20,9 +20,16 @@ export abstract class DO {
     const self = this as unknown as {[funcName: string]: (path: string[], data: Object | string | number) => Promise<Response>};
     if (self[fnc]) {
         try {
-            const json = await request.json();
+          let json: any | undefined;
+            if (request.method != 'GET') {
+              try {
+                json = await request.json();
+              } catch(e) {
+
+              }
+            }
+            // console.log(path.slice(1), json, url, path);
             const response = await self[fnc](path.slice(1), json);
-            console.log(response);
             return response;
         } catch(e: unknown) {
             const error = e as {message?: string}
@@ -32,12 +39,12 @@ export abstract class DO {
             } else {
                 message = message + '  :  ' + e;
             }
-            return new Response(message, {status: 501});    
+            return new Response(message, {status: 501});
         }
-        
+
     } else {
         return new Response("Not found", {status: 404});
     }
   }
-  
+
 }

@@ -18,17 +18,17 @@ export default {
       } else {
         return new Response(e as string);
       }
-      
+
     }
   },
 
   async scheduled(trigger: CronTrigger, env: Env) {
-    // TODO 
+    // TODO
     // - /checkPendingTransactions
     console.log(trigger);
     const id = env.REVEAL_QUEUE.idFromName('A');
     const obj = env.REVEAL_QUEUE.get(id);
-    await obj.fetch(`${BASE_URL}/execute`);
+    await obj.fetch(`${BASE_URL}/syncAccountBalances`);
   },
 }
 
@@ -44,19 +44,25 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     if (method !== 'GET') {
       return InvalidMethod();
     }
-    let resp = await obj.fetch(`${BASE_URL}/getTransactionInfo`, request)
+    let resp = await obj.fetch(url.toString(), request)
     return resp;
   } else if (fnc === 'queueReveal') {
     if (method !== 'POST') {
       return InvalidMethod();
     }
-    let resp = await obj.fetch(`${BASE_URL}/queueReveal`, request)
+    let resp = await obj.fetch(url.toString(), request)
     return resp;
-  }  else if (fnc === 'register') {
+  } else if (fnc === 'register') {
     if (method !== 'POST') {
       return InvalidMethod();
     }
-    let resp = await obj.fetch(`${BASE_URL}/register`, request)
+    let resp = await obj.fetch(url.toString(), request)
+    return resp;
+  } else if (fnc === 'account') {
+    if (method !== 'GET') {
+      return InvalidMethod();
+    }
+    let resp = await obj.fetch(url.toString(), request)
     return resp;
   }
   return UnknownRequestType();
