@@ -27,7 +27,7 @@ contract Payment {
         emit OwnershipTransferred(msg.sender, newOwner);
     }
 
-    function withdrawForRefund(address payable to, address refundFor, uint256 amount) external {
+    function withdrawForRefund(address payable to, uint256 amount) external {
         require(msg.sender == owner, "NOT_ALLOWED");
         to.transfer(amount);
         emit PaymentEvent(to, amount, true);
