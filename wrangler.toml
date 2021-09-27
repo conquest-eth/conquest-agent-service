@@ -1,0 +1,46 @@
+name = "agent-service-dev"
+type = "javascript"
+account_id = ""
+workers_dev = true
+route = ""
+zone_id = ""
+compatibility_date = "2021-09-21"
+usage_model= "bundled"
+
+[vars]
+ENVIRONMENT = "dev"
+
+# ------------------ STAGING ---------------------------------
+[env.staging]
+name = "agent-service-staging"
+workers_dev = false
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+# --------------------------------------------------------------
+
+
+# ------------------ PRODUCTION ---------------------------------
+[env.production]
+name = "agent-service"
+workers_dev = false
+
+[env.production.vars]
+ENVIRONMENT = "production"
+# --------------------------------------------------------------
+
+[build]
+command = "npm run build"
+[build.upload]
+format = "modules"
+main = "./index.mjs"
+
+[durable_objects]
+bindings = [{name = "REVEAL_QUEUE", class_name = "RevealQueue"}]
+
+[triggers]
+crons = ["*/1 * * * *"]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["RevealQueue"]
