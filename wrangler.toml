@@ -39,7 +39,7 @@ main = "./index.mjs"
 bindings = [{name = "REVEAL_QUEUE", class_name = "RevealQueue"}]
 
 [triggers]
-crons = ["*/1 * * * *"]
+crons = ["* * * * *", "*/1 * * * *", "*/2 * * * *"]
 
 [[migrations]]
 tag = "v1"

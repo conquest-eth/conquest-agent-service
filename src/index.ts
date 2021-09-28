@@ -12,6 +12,7 @@ export default {
     try {
       return await handleRequest(request, env)
     } catch (e: unknown) {
+      // console.error('ERROR', e);
       const message = (e as {message: string}).message;
       if (message) {
         return new Response(message);
@@ -22,13 +23,20 @@ export default {
     }
   },
 
-  async scheduled(trigger: CronTrigger, env: Env) {
-    // TODO
-    // - /checkPendingTransactions
-    console.log(trigger);
+  async scheduled(trigger: CronTrigger, env: Env, event: ScheduledEvent) {
+
     const id = env.REVEAL_QUEUE.idFromName('A');
     const obj = env.REVEAL_QUEUE.get(id);
-    await obj.fetch(`${BASE_URL}/syncAccountBalances`);
+    if (trigger.cron === '* * * * *') {
+      console.log('execute...');
+      event.waitUntil(obj.fetch(`${BASE_URL}/execute`));
+    } else if (trigger.cron === '*/1 * * * *') {
+      console.log('checkPendingTransactions...');
+      event.waitUntil(obj.fetch(`${BASE_URL}/checkPendingTransactions`));
+    } else if (trigger.cron === '*/2 * * * *') {
+      console.log('syncAccountBalances...');
+      event.waitUntil(obj.fetch(`${BASE_URL}/syncAccountBalances`));
+    }
   },
 }
 
