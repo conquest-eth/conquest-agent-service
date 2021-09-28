@@ -89,7 +89,8 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         if (!found) {
           this.state.push({
             id: txHash,
-            status: 'LOADING',
+            status: action.external ? action.external.status : 'LOADING',
+            final: action.external ? action.external.final : undefined,
             action,
           });
         }
@@ -181,16 +182,14 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     ownerAddress: string,
     checkedAction: CheckedPendingAction<PendingSend>,
     blockNumber: number
-  ): Promise<boolean> {
+  ): Promise<void> {
     if (!wallet.provider) {
-      return false;
+      return;
     }
 
     if (typeof checkedAction.action === 'number') {
-      return false;
+      return;
     }
-
-    const changes = false;
 
     if (checkedAction.status === 'SUCCESS' && checkedAction.final) {
       const fleet = await wallet.contracts.OuterSpace.getFleet(checkedAction.action.fleetId, '0');
@@ -204,28 +203,16 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         if (finalizedFleet.owner != '0x0000000000000000000000000000000000000000' && finalizedFleet.quantity == 0) {
           final = true;
         }
+        if (this.ownerAddress !== ownerAddress) {
+          return;
+        }
         await account.recordExternalResolution(
           checkedAction.id,
           checkedAction.action.fleetId,
           final ? finalisedBlock.timestamp : undefined
         );
-        // TODO resolution success ?
-        // checkedAction.status = 'SUCCESS';
-        // checkedAction.txTimestamp = now(); // TODO now is not accurate
-        // checkedAction.final = final ? finalisedBlock.timestamp : undefined;
-        // changes = true;
-      }
-
-      if (this.ownerAddress !== ownerAddress) {
-        return false;
-      }
-
-      if (changes) {
-        this._notify();
       }
     }
-
-    return changes;
   }
 
   private async _checkAction(ownerAddress: string, checkedAction: CheckedPendingAction, blockNumber: number) {
@@ -240,7 +227,10 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
       return;
     }
 
-    if (checkedAction.final && checkedAction.status !== 'PENDING' && checkedAction.status !== 'LOADING') {
+    if (
+      checkedAction.final &&
+      (checkedAction.action.external || (checkedAction.status !== 'PENDING' && checkedAction.status !== 'LOADING'))
+    ) {
       const status = checkedAction.status === 'SUCCESS' ? 'SUCCESS' : 'ERROR';
       this._handleFinalAcknowledgement(checkedAction, checkedAction.final, status);
       return;

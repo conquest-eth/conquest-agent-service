@@ -241,17 +241,28 @@ class Account implements Readable<AccountState> {
 
   async recordExternalResolution(sendTxHash: string, fleetId: string, final?: number): Promise<void> {
     this.check();
-    const sendAction = this.state.data.pendingActions[sendTxHash] as PendingSend;
-    sendAction.resolution = [fleetId]; // TODO multiple in array
-    const resolutionAction: PendingResolution = {
-      type: 'RESOLUTION',
-      external: {status: 'SUCCESS', final},
-      timestamp: final,
-      nonce: 0,
-    };
-    this.state.data.pendingActions[fleetId] = resolutionAction;
+    const sendAction = this.state.data.pendingActions[sendTxHash] as PendingSend | number;
+    if (typeof sendAction === 'number') {
+      return;
+    }
+    if (sendAction.resolution) {
+      if (sendAction.resolution.indexOf(fleetId) !== -1) {
+        return;
+      }
+      sendAction.resolution.push(fleetId);
+    } else {
+      sendAction.resolution = [fleetId];
+    }
+    if (!this.state.data.pendingActions[fleetId]) {
+      const resolutionAction: PendingResolution = {
+        type: 'RESOLUTION',
+        external: {status: 'SUCCESS', final},
+        timestamp: final,
+        nonce: 0,
+      };
+      this.state.data.pendingActions[fleetId] = resolutionAction;
+    }
     await this.accountDB.save(this.state.data);
-    // TODO agent ?
     this._notify();
   }
 
@@ -348,9 +359,25 @@ class Account implements Readable<AccountState> {
         this.state.data.pendingActions[idUsed] = final;
         if (sendAction) {
           this.state.data.pendingActions[sendActionTxHash] = final;
+          if (sendAction.resolution) {
+            for (const resolution of sendAction.resolution) {
+              this.state.data.pendingActions[resolution] = final;
+            }
+          }
         }
       } else {
         pendingAction.acknowledged = 'SUCCESS';
+        if (sendAction) {
+          sendAction.acknowledged = 'SUCCESS';
+          if (sendAction.resolution) {
+            for (const resolutionId of sendAction.resolution) {
+              const resolution = this.state.data.pendingActions[resolutionId];
+              if (resolution && typeof resolution !== 'number') {
+                resolution.acknowledged = 'SUCCESS';
+              }
+            }
+          }
+        }
       }
     }
     await this.accountDB.save(this.state.data);

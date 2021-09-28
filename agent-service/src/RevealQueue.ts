@@ -453,7 +453,12 @@ export class RevealQueue extends DO {
 
             let transactionsCounter = await this.state.storage.get<TransactionsCounter | undefined>(`pending`);
             if (!transactionsCounter) {
-                transactionsCounter = {nextIndex: 0}; // ensure no duplicate id in the bucket even if exact same boradcastingTime
+                const transactionCount = await this.wallet.getTransactionCount();
+                transactionsCounter = await this.state.storage.get<TransactionsCounter | undefined>(`pending`);
+                if (!transactionsCounter) {
+                  transactionsCounter = {nextIndex: transactionCount}; // ensure no duplicate id in the bucket even if exact same boradcastingTime
+                  await this.state.storage.put<TransactionsCounter>('pending', transactionsCounter);
+                }
             }
 
             const {tx, error} = await this._submitTransaction(reveal, {expectedNonce: transactionsCounter.nextIndex}); // first save before broadcast ? // or catch "tx already submitted error"

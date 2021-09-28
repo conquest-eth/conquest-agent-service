@@ -110,9 +110,14 @@ export class FleetsStore implements Readable<Fleet[]> {
               resolution = pendingResolution;
               state = 'RESOLVE_BROADCASTED';
 
+              if (pendingResolution.action.acknowledged) {
+                continue; // alterady acknowledged
+              }
+
               if (resolution.status === 'SUCCESS' || resolution.counted) {
                 // TODO error
                 state = 'WAITING_ACKNOWLEDGMENT';
+                // continue; // acknowledgement go through events // TODO enable even though but should be required
               }
             } else {
               // TODO error ?

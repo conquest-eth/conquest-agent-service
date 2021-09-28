@@ -66,8 +66,8 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
     }
     for (const pendingAction of this.rawPendingActions) {
       if (
-        (!dict[pendingAction.id] && pendingAction.action.timestamp >= this.lastQueryTime) ||
-        pendingAction.action.external
+        !dict[pendingAction.id] &&
+        (pendingAction.action.timestamp >= this.lastQueryTime || pendingAction.action.external)
       ) {
         // not full proof (a second resolution) but sufficient
         this.state.pendingActions.push({...pendingAction, counted: false});
