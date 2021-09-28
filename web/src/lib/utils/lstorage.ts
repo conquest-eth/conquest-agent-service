@@ -53,4 +53,8 @@ class LStorage {
   }
 }
 
-export default new LStorage(contractsInfos.contracts.OuterSpace.address);
+export default new LStorage(
+  contractsInfos.contracts.OuterSpace.address + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+    ? ':' + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+    : ''
+);

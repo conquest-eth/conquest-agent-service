@@ -10,6 +10,7 @@
   import selection from '$lib/map/selection';
   import PlanetInfoPanel from '$lib/components/planets/PlanetInfoPanel.svelte';
   import PlanetsListPanel from '$lib/components/planets/PlanetsListPanel.svelte';
+  import FleetsList from '$lib/components/fleets/FleetsList.svelte';
 
   import claimFlow from '$lib/flows/claim';
   import ClaimFlow from '$lib/flows/ClaimFlow.svelte';
@@ -140,3 +141,4 @@
   <!-- <Search /> -->
 {/if}
 <PlanetsListPanel />
+<FleetsList />

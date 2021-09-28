@@ -70,7 +70,9 @@ const SYNC_URI = params.sync || (import.meta.env.VITE_SYNC_URI as string); //  '
 const SYNC_DB_NAME =
   'conquest-' +
   contractsInfos.contracts.OuterSpace.address +
-  (contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash || '');
+  (contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+    ? ':' + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+    : '');
 
 const AGENT_SERVICE_URL = params['agent-service'] || (import.meta.env.VITE_AGENT_SERVICE_URL as string); //  'http://invalid.io'; // to emulate connection loss :)
 

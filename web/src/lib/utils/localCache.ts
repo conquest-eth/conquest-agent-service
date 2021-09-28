@@ -72,4 +72,8 @@ class LocalCache {
   }
 }
 
-export default new LocalCache(contractsInfos.contracts.OuterSpace.address);
+export default new LocalCache(
+  contractsInfos.contracts.OuterSpace.address + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+    ? ':' + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+    : ''
+);
