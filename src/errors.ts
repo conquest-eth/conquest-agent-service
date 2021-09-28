@@ -1,6 +1,8 @@
 
 // export enum ErrorCode {
 
+import { createResponse } from "./utils";
+
 // }
 
 export type ResponseError = {
@@ -33,5 +35,5 @@ export const InvalidDelegate = () => errorResponse({code: 4401, message: 'Delega
 export const UnknownRequestType = () => errorResponse({code: 4401, message: "Unknown request type"}); // TODO parametrise to print request type
 
 function errorResponse(responseError: ResponseError, status: number = 400): Response {
-    return new Response(JSON.stringify(responseError), {status});
+    return createResponse(responseError, {status});
 }

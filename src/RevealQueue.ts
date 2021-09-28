@@ -3,7 +3,7 @@ import type {Env} from './types';
 import {contracts, chainId} from './contracts.json';
 import { DO } from "./DO";
 import { TransactionInvalidMissingFields, NoReveal, AlreadyPending, NotEnoughBalance, NotRegistered, NotAuthorized, InvalidNonce, NoDelegateRegistered, InvalidDelegate } from "./errors";
-import {xyToLocation} from './utils';
+import {xyToLocation, createResponse} from './utils';
 
 const { parseEther, verifyMessage } = utils;
 
@@ -13,6 +13,7 @@ if (chainId === "1337") {
 } else if (chainId === "31337") {
   defaultFinality = 2;
 }
+
 
 function isAuthorized(
     address: string,
@@ -179,7 +180,7 @@ export class RevealQueue extends DO {
     account.nonceMsTimestamp = registrationSubmission.nonceMsTimestamp;
     this.state.storage.put<AccountData>(accountID, account);
 
-    return new Response(JSON.stringify({success: true}));
+    return createResponse({success: true});
   }
 
   async queueReveal(path: string[], revealSubmission: RevealSubmission): Promise<Response> {
@@ -274,7 +275,7 @@ export class RevealQueue extends DO {
 
     this.state.storage.put<RevealData>(queueID, reveal);
     this.state.storage.put<ListData>(revealID, {queueID});
-    return new Response(JSON.stringify({queueID}));
+    return createResponse({queueID});
   }
 
   async execute(path: string[]): Promise<Response> {
@@ -286,11 +287,11 @@ export class RevealQueue extends DO {
         const reveal = revealEntry[1];
         const queueID = revealEntry[0];
         if (reveal.startTime + reveal.duration <= timestamp) {
-            await this._executeReveal(queueID, reveal);
+          await this._executeReveal(queueID, reveal);
         }
     }
 
-    return new Response(JSON.stringify({success: true}));
+    return createResponse({success: true});
   }
 
 
@@ -306,16 +307,16 @@ export class RevealQueue extends DO {
         // nonce can be rebalanced too if needed ?
     }
 
-    return new Response(JSON.stringify({success: true}));
+    return createResponse({success: true});
   }
 
   async account(path: string[]): Promise<Response> {
     const accountID = `account_${path[0]?.toLowerCase()}`;
     const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
     if (accountData) {
-        return new Response(JSON.stringify({account:accountData}));
+        return createResponse({account:accountData});
     }
-    return new Response(JSON.stringify({account: null}));
+    return createResponse({account: null});
   }
 
   async getTransactionInfo(path: string[]): Promise<Response> {
@@ -324,10 +325,10 @@ export class RevealQueue extends DO {
     if (listData && listData.pendingID) {
         const pendingTransaction = await this.state.storage.get<PendingTransactionData | undefined>(listData.pendingID);
         if (pendingTransaction) {
-            return new Response(JSON.stringify({tx: pendingTransaction.tx}))
+            return createResponse({tx: pendingTransaction.tx});
         }
     }
-    return new Response(JSON.stringify({tx: null}))
+    return createResponse({tx: null});
   }
 
   async syncAccountBalances(path: string[]): Promise<Response> {
@@ -345,7 +346,7 @@ export class RevealQueue extends DO {
 
     // if there is no new block, no point processing, this will just handle reorg for no benefit
     if (toBlockNumber <= lastSync.blockNumber) {
-        return  new Response("no new block to fetch"); // TODO ?
+        return  createResponse("no new block to fetch"); // TODO ?
     }
     const fromBlock = lastSync.blockNumber + 1;
 
@@ -377,7 +378,7 @@ export class RevealQueue extends DO {
     }
     if (lastSyncRefetched.blockHash !== lastSync.blockHash) {
       // console.log(`got already updated ?`)
-        return new Response(`got already updated ?`)
+        return createResponse(`got already updated ?`); // TODO ?
     }
 
     const accountAddresses = Object.keys(accountsToUpdate);
@@ -402,13 +403,20 @@ export class RevealQueue extends DO {
     this.state.storage.put<SyncData>('sync', lastSyncRefetched);
 
     // console.log({lastSyncRefetched});
-    return new Response(JSON.stringify({success: true}));
+    return createResponse({success: true});
   }
 
 
   private async _executeReveal(queueID: string, reveal: RevealData) {
-    const account = await this.state.storage.get<AccountData | undefined>(`account_`);
+    const account = await this.state.storage.get<AccountData | undefined>(`account_${reveal.player}`);
     if (!account || BigNumber.from(account.balance).lt(minimumBalance)) {
+
+        if(!account) {
+          console.log(`no account registered for ${reveal.player}`);
+        } else {
+          console.log(`not enough fund for ${reveal.player}`);
+        }
+
         return;
         // TODO delete ? or push it and increase retries count
     }
@@ -566,7 +574,7 @@ export class RevealQueue extends DO {
     // }
     const block = await this.provider.getBlock("latest");
     const lastestBlockFinalized = Math.max(0, block.number - 12);
-    const fleet = await this.outerspaceContract.getFleet(reveal.fleetID, "0", {block: lastestBlockFinalized});
+    const fleet = await this.outerspaceContract.getFleet(reveal.fleetID, "0", {blockTag: lastestBlockFinalized});
     if (fleet.quantity > 0) {
         return fleet.launchTime;
     } else {
