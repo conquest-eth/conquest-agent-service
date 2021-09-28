@@ -131,3 +131,29 @@ export class BaseStoreWithData<T extends DataType<U>, U> extends BaseStore<T> {
     return this.$store;
   }
 }
+
+export abstract class AutoStartBaseStore<T extends Record<string, unknown>> extends BaseStore<T> {
+  private _listenerCount = 0;
+  private _stopUpdates?: () => void;
+  subscribe(run: (value: T) => void, invalidate?: (value?: T) => void): () => void {
+    this._listenerCount++;
+    if (this._listenerCount === 1) {
+      console.info(`starting...`);
+      this._stopUpdates = this._onStart();
+    }
+    const unsubscribe = this.store.subscribe(run, invalidate);
+    return () => {
+      this._listenerCount--;
+      if (this._listenerCount === 0) {
+        console.info(`stopping`);
+        if (this._stopUpdates) {
+          this._stopUpdates();
+          this._stopUpdates = undefined;
+        }
+      }
+      unsubscribe();
+    };
+  }
+
+  abstract _onStart(): (() => void) | undefined;
+}

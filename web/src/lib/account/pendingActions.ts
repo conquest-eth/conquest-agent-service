@@ -1,6 +1,6 @@
 import {writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
-import type {AccountState, PendingAction} from './account';
+import type {AccountState, PendingAction, PendingSend} from './account';
 import {account} from './account';
 import type {ChainTempoInfo} from '$lib/blockchain/chainTempo';
 import {chainTempo} from '$lib/blockchain/chainTempo';
@@ -121,8 +121,28 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     const ownerAddress = this.ownerAddress;
     this.checkingInProgress = true;
     for (const item of this.state) {
+      if (item.action.external) {
+        item.final = item.action.external.final;
+        item.status = item.action.external.status;
+        if (item.final) {
+          this._handleFinalAcknowledgement(item, item.final, 'SUCCESS');
+        }
+        continue;
+      }
       try {
         await this._checkAction(ownerAddress, item, $chainTempoInfo.lastBlockNumber);
+
+        if (this.ownerAddress !== ownerAddress) {
+          this.checkingInProgress = false;
+          return;
+        }
+        if (item.action.type === 'SEND') {
+          await this._checkResolutionViaSend(
+            ownerAddress,
+            item as CheckedPendingAction<PendingSend>,
+            $chainTempoInfo.lastBlockNumber
+          );
+        }
       } catch (e) {
         console.error(e);
       }
@@ -155,6 +175,57 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         console.log(`not acknowledged yet`);
       }
     }
+  }
+
+  private async _checkResolutionViaSend(
+    ownerAddress: string,
+    checkedAction: CheckedPendingAction<PendingSend>,
+    blockNumber: number
+  ): Promise<boolean> {
+    if (!wallet.provider) {
+      return false;
+    }
+
+    if (typeof checkedAction.action === 'number') {
+      return false;
+    }
+
+    const changes = false;
+
+    if (checkedAction.status === 'SUCCESS' && checkedAction.final) {
+      const fleet = await wallet.contracts.OuterSpace.getFleet(checkedAction.action.fleetId, '0');
+      if (fleet.owner != '0x0000000000000000000000000000000000000000' && fleet.quantity == 0) {
+        let final = false;
+        const finalisedBlockNumber = Math.max(0, blockNumber - finality);
+        const finalisedBlock = await wallet.provider.getBlock(finalisedBlockNumber);
+        const finalizedFleet = await wallet.contracts.OuterSpace.getFleet(checkedAction.action.fleetId, '0', {
+          blockTag: finalisedBlockNumber,
+        });
+        if (finalizedFleet.owner != '0x0000000000000000000000000000000000000000' && finalizedFleet.quantity == 0) {
+          final = true;
+        }
+        await account.recordExternalResolution(
+          checkedAction.id,
+          checkedAction.action.fleetId,
+          final ? finalisedBlock.timestamp : undefined
+        );
+        // TODO resolution success ?
+        // checkedAction.status = 'SUCCESS';
+        // checkedAction.txTimestamp = now(); // TODO now is not accurate
+        // checkedAction.final = final ? finalisedBlock.timestamp : undefined;
+        // changes = true;
+      }
+
+      if (this.ownerAddress !== ownerAddress) {
+        return false;
+      }
+
+      if (changes) {
+        this._notify();
+      }
+    }
+
+    return changes;
   }
 
   private async _checkAction(ownerAddress: string, checkedAction: CheckedPendingAction, blockNumber: number) {

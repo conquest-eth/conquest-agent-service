@@ -65,7 +65,10 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
       dict[pendingAction.id] = true;
     }
     for (const pendingAction of this.rawPendingActions) {
-      if (!dict[pendingAction.id] && pendingAction.action.timestamp >= this.lastQueryTime) {
+      if (
+        (!dict[pendingAction.id] && pendingAction.action.timestamp >= this.lastQueryTime) ||
+        pendingAction.action.external
+      ) {
         // not full proof (a second resolution) but sufficient
         this.state.pendingActions.push({...pendingAction, counted: false});
       }
@@ -75,7 +78,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
 
   private _updateAndNotify() {
     this.state.pendingActions = this.rawPendingActions.map((v) => {
-      return {...v, counted: this.includedTx[v.id]};
+      return {...v, counted: !!v.action.external || this.includedTx[v.id]};
     });
     this._notify();
   }
@@ -88,6 +91,9 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
     }
     const txsToCheck: string[] = [];
     for (const pendingAction of this.rawPendingActions) {
+      if (pendingAction.action.external) {
+        continue;
+      }
       // TODO filter out aknowledged one, => auto acknowledge
       txsToCheck.push(pendingAction.id); // TODO SEND + RESOLVE
     }

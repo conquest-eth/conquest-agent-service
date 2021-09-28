@@ -1,5 +1,6 @@
 import { InvalidMethod, UnknownRequestType } from './errors';
 import type {Env, CronTrigger} from './types';
+import {corsHeaders} from './utils';
 
 const BASE_URL = 'http://127.0.0.1';
 
@@ -7,10 +8,33 @@ const BASE_URL = 'http://127.0.0.1';
 // our Durable Object namespace, we must export it from the root module.
 export { RevealQueue } from './RevealQueue'
 
+function handleOptions(request: Request) {
+  if (request.headers.get("Origin") !== null &&
+      request.headers.get("Access-Control-Request-Method") !== null &&
+      request.headers.get("Access-Control-Request-Headers") !== null) {
+    // Handle CORS pre-flight request.
+    return new Response(null, {
+      headers: corsHeaders
+    })
+  } else {
+    // Handle standard OPTIONS request.
+    return new Response(null, {
+      headers: {
+        "Allow": "GET, HEAD, POST, OPTIONS",
+      }
+    })
+  }
+}
+
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    if (request.method === 'OPTIONS') {
+      return handleOptions(request);
+    }
     try {
-      return await handleRequest(request, env)
+      const response = await handleRequest(request, env)
+      return response;
     } catch (e: unknown) {
       // console.error('ERROR', e);
       const message = (e as {message: string}).message;

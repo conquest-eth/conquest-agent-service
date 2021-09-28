@@ -66,6 +66,10 @@ class PrivateWallet implements Readable<PrivateWalletState> {
     this.store = writable(this.state, this._start.bind(this));
   }
 
+  public get signer(): Wallet | undefined {
+    return this.state.signer;
+  }
+
   subscribe(run: (value: PrivateWalletState) => void, invalidate?: (value?: PrivateWalletState) => void): () => void {
     return this.store.subscribe(run, invalidate);
   }

@@ -6,6 +6,7 @@ import {spaceInfo} from '$lib/space/spaceInfo';
 import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {now, correctTime, isCorrected} from '$lib/time';
 import {TutorialSteps} from '$lib/account/constants';
+import {agentService} from '$lib/account/agentService';
 
 type Data = {
   txHash?: string;
@@ -132,7 +133,9 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
     const nonce = await wallet.provider.getTransactionCount(wallet.address);
 
-    const {toHash} = await account.hashFleet(from, to, nonce);
+    const distance = spaceInfo.distance(fromPlanetInfo, toPlanetInfo);
+    const duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
+    const {toHash, fleetId, secretHash} = await account.hashFleet(from, to, nonce);
 
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 
@@ -169,6 +172,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
     account.recordFleet(
       {
+        id: fleetId,
         to, // TODO handle it better
         from,
         fleetAmount,
@@ -178,8 +182,10 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       tx.nonce
     );
 
-    // TODO if agent enabled and fund present for covering all pending tx
-    // create the resolve Tx with high gas enough , multiple for non-EIP1559 networks?
+    // TODO add checkbox in flow to activate/deactivate for that particular fleet
+    if (account.isAgentServiceActivatedByDefault()) {
+      await agentService.submitReveal(fleetId, secretHash, from, to, distance, latestBlock.timestamp, duration);
+    }
 
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
 

@@ -10,6 +10,7 @@ import {privateWallet} from './privateWallet';
 import {keccak256} from '@ethersproject/solidity';
 import type {MyEvent} from '$lib/space/myevents';
 import {now, time} from '$lib/time';
+import {BigNumber} from '@ethersproject/bignumber';
 
 export type AccountState = {
   step: 'IDLE' | 'READY';
@@ -27,10 +28,12 @@ type PendingActionBase = {
   timestamp: number;
   nonce: number;
   acknowledged?: 'ERROR' | 'SUCCESS';
+  external?: {status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT'; final?: number};
 };
 
 export type PendingSend = PendingActionBase & {
   type: 'SEND';
+  fleetId: string;
   from: PlanetCoords;
   to: PlanetCoords;
   quantity: number;
@@ -69,6 +72,7 @@ export type AccountData = {
   pendingActions: PendingActions;
   welcomingStep: number;
   acknowledgements: Acknowledgements;
+  agentServiceDefault?: {activated: boolean; timestamp: number};
 };
 
 function mergeStringArrays(
@@ -138,6 +142,19 @@ class Account implements Readable<AccountState> {
     return bitMaskMatch(this.state.data?.welcomingStep, bit);
   }
 
+  async recordAgentServiceDefault(activated: boolean): Promise<void> {
+    this.check();
+    this.state.data.agentServiceDefault = this.state.data.agentServiceDefault || {activated: false, timestamp: 0};
+    this.state.data.agentServiceDefault.activated = activated;
+    this.state.data.agentServiceDefault.timestamp = now();
+    await this.accountDB.save(this.state.data);
+    this._notify();
+  }
+
+  isAgentServiceActivatedByDefault(): boolean {
+    return this.state.data?.agentServiceDefault?.activated;
+  }
+
   async recordCapture(planetCoords: PlanetCoords, txHash: string, timestamp: number, nonce: number): Promise<void> {
     this.check();
     this.state.data.pendingActions[txHash] = {
@@ -172,13 +189,14 @@ class Account implements Readable<AccountState> {
   }
 
   async recordFleet(
-    fleet: {from: PlanetCoords; to: PlanetCoords; fleetAmount: number},
+    fleet: {id: string; from: PlanetCoords; to: PlanetCoords; fleetAmount: number},
     txHash: string,
     timestamp: number,
     nonce: number
   ): Promise<void> {
     this.check();
     this.state.data.pendingActions[txHash] = {
+      fleetId: fleet.id,
       timestamp,
       nonce,
       type: 'SEND',
@@ -216,6 +234,22 @@ class Account implements Readable<AccountState> {
       timestamp,
       nonce,
     };
+    await this.accountDB.save(this.state.data);
+    // TODO agent ?
+    this._notify();
+  }
+
+  async recordExternalResolution(sendTxHash: string, fleetId: string, final?: number): Promise<void> {
+    this.check();
+    const sendAction = this.state.data.pendingActions[sendTxHash] as PendingSend;
+    sendAction.resolution = [fleetId]; // TODO multiple in array
+    const resolutionAction: PendingResolution = {
+      type: 'RESOLUTION',
+      external: {status: 'SUCCESS', final},
+      timestamp: final,
+      nonce: 0,
+    };
+    this.state.data.pendingActions[fleetId] = resolutionAction;
     await this.accountDB.save(this.state.data);
     // TODO agent ?
     this._notify();
@@ -260,12 +294,13 @@ class Account implements Readable<AccountState> {
   }
 
   async acknowledgeEvent(event: MyEvent): Promise<void> {
+    const fleetId = BigNumber.from(event.event.fleet.id).toHexString(); // TODO remove BigNumber conversion by makign fleetId bytes32 on OuterSPace.sol
     if (event.type === 'internal_fleet') {
-      this.acknowledgeSuccess(event.event.transaction.id);
+      this.acknowledgeSuccess(event.event.transaction.id, fleetId);
       return;
     }
     this.check();
-    const id = event.event.fleet.id;
+    const id = fleetId;
     const stateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won; // TODO ensure we use same stateHash across code paths
     const acknowledgement = this.state.data?.acknowledgements[id];
     if (!acknowledgement) {
@@ -283,17 +318,22 @@ class Account implements Readable<AccountState> {
     }
   }
 
-  async acknowledgeSuccess(txHash: string, final?: number): Promise<void> {
+  async acknowledgeSuccess(txHash: string, fleetId: string | null, final?: number): Promise<void> {
     this.check();
-    const pendingAction = this.state.data.pendingActions[txHash];
+    let idUsed = txHash;
+    let pendingAction = this.state.data.pendingActions[txHash];
+    if (!pendingAction) {
+      pendingAction = this.state.data.pendingActions[fleetId];
+      idUsed = fleetId;
+    }
     if (pendingAction && typeof pendingAction !== 'number') {
       let sendAction: PendingSend;
-      let sendActionTxHash;
+      let sendActionTxHash: string;
       if (pendingAction.type === 'RESOLUTION') {
         for (const txHashToCheck of Object.keys(this.state.data.pendingActions)) {
           const p = this.state.data.pendingActions[txHashToCheck];
           if (typeof p !== 'number' && p.type === 'SEND') {
-            if (p.resolution && p.resolution.indexOf(txHash) !== -1) {
+            if (p.resolution && p.resolution.indexOf(idUsed) !== -1) {
               sendAction = p;
               sendActionTxHash = txHashToCheck;
               break;
@@ -301,11 +341,11 @@ class Account implements Readable<AccountState> {
           }
         }
       }
-      if (!sendAction) {
+      if (!sendAction || !sendActionTxHash) {
         console.error(`cannot find send action for resolution`);
       }
       if (final) {
-        this.state.data.pendingActions[txHash] = final;
+        this.state.data.pendingActions[idUsed] = final;
         if (sendAction) {
           this.state.data.pendingActions[sendActionTxHash] = final;
         }
@@ -453,6 +493,21 @@ class Account implements Readable<AccountState> {
     } else if (!remoteData.welcomingStep || newData.welcomingStep > remoteData.welcomingStep) {
       newDataOnLocal = true;
     }
+
+    if (remoteData.agentServiceDefault && !newData.agentServiceDefault) {
+      newDataOnRemote = true;
+      newData.agentServiceDefault = remoteData.agentServiceDefault;
+    } else if (!remoteData.agentServiceDefault && newData.agentServiceDefault) {
+      newDataOnLocal = true;
+    } else if (remoteData.agentServiceDefault && newData.agentServiceDefault) {
+      if (remoteData.agentServiceDefault.timestamp > newData.agentServiceDefault.timestamp) {
+        newDataOnRemote = true;
+        newData.agentServiceDefault = remoteData.agentServiceDefault;
+      } else if (remoteData.agentServiceDefault.timestamp < newData.agentServiceDefault.timestamp) {
+        newDataOnLocal = true;
+      }
+    }
+
     if (remoteData.pendingActions) {
       for (const txHash of Object.keys(remoteData.pendingActions)) {
         const remotePendingAction = remoteData.pendingActions[txHash];

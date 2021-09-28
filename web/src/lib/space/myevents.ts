@@ -7,6 +7,7 @@ import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
 import type {AccountState, Acknowledgements, PendingActions} from '$lib/account/account';
 import {account} from '$lib/account/account';
 import type {FleetArrived} from './spaceQuery';
+import {BigNumber} from '@ethersproject/bignumber';
 
 export type MyEventType = 'external_fleet' | 'internal_fleet';
 
@@ -66,11 +67,28 @@ export class MyEventsStore implements Readable<MyEvent[]> {
 
   private addAcknowledgements(events: MyEvent[]): MyEvent[] {
     for (const event of events) {
-      const acknowledgment = this.acknowledgements && this.acknowledgements[event.event.fleet.id];
+      const fleetId = BigNumber.from(event.event.fleet.id).toHexString(); // TODO remove BigNumber conversion by makign fleetId bytes32 on OuterSPace.sol
+      const acknowledgment = this.acknowledgements && this.acknowledgements[fleetId];
       if (!acknowledgment) {
         if (event.type === 'internal_fleet') {
-          const pendingAction = this.pendingActions && this.pendingActions[event.event.transaction.id];
-          if (!pendingAction || typeof pendingAction === 'number') {
+          const pendingAction =
+            this.pendingActions && (this.pendingActions[event.event.transaction.id] || this.pendingActions[fleetId]);
+          if (!pendingAction) {
+            event.acknowledged = 'YES';
+            // const pendingAction = this.pendingActions && this.pendingActions[event.event.transaction.id];
+            // if (!pendingAction) {
+            //   event.acknowledged = 'YES';
+            //   for (const txId of Object.keys(this.pendingActions)) {
+            //     const pendingAction = this.pendingActions[txId];
+            //     if (typeof pendingAction !== 'number') {
+            //       if (pendingAction.type === 'SEND' && !pendingAction.resolution) {
+            //         if (pendingAction.fleetId === fleetId) {
+            //           event.acknowledged = 'NO';
+            //         }
+            //       }
+            //     }
+            //   }
+          } else if (typeof pendingAction === 'number') {
             event.acknowledged = 'YES';
           } else if (pendingAction.acknowledged) {
             event.acknowledged = 'YES';

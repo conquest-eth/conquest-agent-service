@@ -29,7 +29,7 @@
   }
 
   function acknowledgeClaim(txHash: string) {
-    account.acknowledgeSuccess(txHash);
+    account.acknowledgeSuccess(txHash, null);
   }
 
   $: planetInfo = spaceInfo.getPlanetInfo(coords.x, coords.y);

@@ -7,13 +7,9 @@
   import PendingFleetElement from '$lib/components/fleets/PendingFleetElement.svelte';
   import {base} from '$app/paths';
   import {privateWallet} from '$lib/account/privateWallet';
-  import {contractsInfos} from '$lib/blockchain/contractsInfos';
-  import {agentService} from '$lib/account/agentService';
-  import {nativeTokenSymbol} from '$lib/config';
-  import agentService_register from '$lib/flows/agentService_register';
-  import agentService_topup from '$lib/flows/agentService_topup';
-  import {BigNumber} from '@ethersproject/bignumber';
-  import {account} from '$lib/account/account';
+  import {pendingActions} from '$lib/account/pendingActions';
+
+  $: loading = $pendingActions.reduce((prev: boolean, curr) => prev || curr.status === 'LOADING', false);
 </script>
 
 <div class="w-full h-full bg-black">
@@ -27,7 +23,7 @@
         conquest.eth agent service
         <Help class="w-4 h-4">
           The agent service is provided by Etherplay to help your fleets being resolved in time. In order to work, the
-          service need to be paid for. Please top-up to ensure your fleet are resolved.
+          agent wallet (See below) neet to be topped up.
         </Help>
       </h1>
     </div>
@@ -35,7 +31,7 @@
       <div class="flex flex-col text-center justify-center text-red-500 mb-8">
         <p>
           The agent service is provided by Etherplay to help your fleets being resolved in time. In order to work, the
-          service need to be paid for. Please top-up to ensure your fleet are resolved.
+          agent wallet (See below) neet to be topped up.
         </p>
         <p>
           Note that we cannot guarantee that fleets will be resolved and this service is purely optional. You can always
@@ -64,74 +60,44 @@
           {/if}
           <!-- {:else if $agent.state === 'Loading' || !$agent.balance}
           <p>Loading...</p> -->
-        {:else if $agentService.state === 'Loading'}
-          Loading...
         {:else}
-          <p>Agent Service Payment Address: {contractsInfos.contracts.PaymentGateway.address}</p>
+          <!-- <p>Agent Address: {$agent.wallet?.address}</p>
+          <p>
+            Agent Balance:
+            {$agent.balance.div('100000000000000').toNumber() / 10000}
+            ${nativeTokenSymbol}
+            (arround
+            {$agent.balance.div($agent?.cost || 0)}
+            fleet)
 
-          {#if !$account.data?.agentServiceDefault?.activated}
-            <p>Agent is not active by default, it will require manual submission</p>
-            <Button class="w-max-content m-4" label="activate" on:click={() => account.recordAgentServiceDefault(true)}
-              >Activate?</Button
-            >
-          {:else}
-            <p>Agent service is active by default</p>
-            <Button class="w-max-content m-4" label="activate" on:click={() => account.recordAgentServiceDefault(false)}
-              >Deactivate?</Button
-            >
-          {/if}
+            <Button class="w-max-content m-4" label="Top Up" on:click={() => agent.topup()}>
+              Top Up (for 10 fleets)
+            </Button>
+          </p>
 
-          {#if !$agentService.account || !$agentService.account.delegate}
-            You need to register
+          {#if $agent.lowETH}
+            <p class="text-red-500">The agent need to be topped up to perform the fleet resolution</p>
             <Button
               class="w-max-content m-4"
-              label="register"
-              on:click={() => agentService_register.register($privateWallet.signer.address)}>Register</Button
-            >
+              label="Top Up"
+              on:click={() => agent.topup()}>
+              Top Up
+            </Button>
+          {:else if $pendingActions && $pendingActions.length > 0} -->
+          {#if loading}
+            Loading...
+          {:else if $pendingActions && $pendingActions.length > 0}
+            Here is a list of the fleets
+            <ul class="list-disc text-yellow-600">
+              {#each $pendingActions as pendingAction}
+                {#if pendingAction.action.type === 'SEND' && pendingAction.status !== 'FAILURE' && pendingAction.status !== 'LOADING' && pendingAction.status !== 'CANCELED' && pendingAction.status !== 'TIMEOUT'}
+                  <li><PendingFleetElement {pendingAction} /></li>
+                {/if}
+              {/each}
+            </ul>
+          {:else}
+            <p>No Fleet yet</p>
           {/if}
-          {#if $agentService.account}
-            <p>
-              Your Balance:
-              {$agentService.account.balance.div('100000000000000').toNumber() / 10000}
-              ${nativeTokenSymbol}
-              <!-- (arround
-                {$agent.balance.div($agent?.cost || 0)}
-                fleet) -->
-
-              <Button
-                class="w-max-content m-4"
-                label="Top Up"
-                on:click={() => agentService_topup.topup(BigNumber.from('100000000000000000'))}
-              >
-                Top Up
-                <!-- Top Up (for 10 fleets) -->
-              </Button>
-            </p>
-          {/if}
-
-          <!-- {#if $agentService.lowETH}
-                <p class="text-red-500">The agent need to be topped up to perform the fleet resolution</p>
-                <Button
-                  class="w-max-content m-4"
-                  label="Top Up"
-                  on:click={() => agentService.topup()}>
-                  Top Up
-                </Button>
-              {:else if $pendingActions && $pendingActions.length > 0}
-              {#if loading}
-                Loading...
-              {:else if $pendingActions && $pendingActions.length > 0}
-                Here is a list of the fleets
-                <ul class="list-disc text-yellow-600">
-                  {#each $pendingActions as pendingAction}
-                    {#if pendingAction.action.type === 'SEND' && pendingAction.status !== 'FAILURE' && pendingAction.status !== 'LOADING' && pendingAction.status !== 'CANCELED' && pendingAction.status !== 'TIMEOUT'}
-                      <li><PendingFleetElement {pendingAction} /></li>
-                    {/if}
-                  {/each}
-                </ul>
-              {:else}
-                <p>No Fleet yet</p>
-              {/if} -->
         {/if}
       </div>
     </div>
