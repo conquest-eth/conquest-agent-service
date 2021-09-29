@@ -7,6 +7,7 @@ import {chainTempo} from '$lib/blockchain/chainTempo';
 import {wallet} from '$lib/blockchain/wallet';
 import {now} from '$lib/time';
 import {deletionDelay, finality} from '$lib/config';
+import {spaceInfo} from '$lib/space/spaceInfo';
 
 // type CheckedStatus = {
 //   failedAtBlock?: number;
@@ -198,25 +199,33 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     }
 
     if (checkedAction.status === 'SUCCESS' && checkedAction.final) {
-      const fleet = await wallet.contracts.OuterSpace.getFleet(checkedAction.action.fleetId, '0');
-      if (fleet.owner != '0x0000000000000000000000000000000000000000' && fleet.quantity == 0) {
-        let final = false;
-        const finalisedBlockNumber = Math.max(0, blockNumber - finality);
-        const finalisedBlock = await wallet.provider.getBlock(finalisedBlockNumber);
-        const finalizedFleet = await wallet.contracts.OuterSpace.getFleet(checkedAction.action.fleetId, '0', {
-          blockTag: finalisedBlockNumber,
-        });
-        if (finalizedFleet.owner != '0x0000000000000000000000000000000000000000' && finalizedFleet.quantity == 0) {
-          final = true;
+      if (checkedAction.action.actualLaunchTime) {
+        // TODO store duration in the pendingAction (PendingSend) so as not to need to compute it here?
+        const fromPlanetInfo = spaceInfo.getPlanetInfo(checkedAction.action.from.x, checkedAction.action.from.y);
+        const toPlanetInfo = spaceInfo.getPlanetInfo(checkedAction.action.to.x, checkedAction.action.to.y);
+        const duration = spaceInfo.timeLeft(0, fromPlanetInfo, toPlanetInfo, 0).fullTime;
+        if (checkedAction.action.actualLaunchTime + duration > now()) {
+          const fleet = await wallet.contracts.OuterSpace.getFleet(checkedAction.action.fleetId, '0');
+          if (fleet.owner != '0x0000000000000000000000000000000000000000' && fleet.quantity == 0) {
+            let final = false;
+            const finalisedBlockNumber = Math.max(0, blockNumber - finality);
+            const finalisedBlock = await wallet.provider.getBlock(finalisedBlockNumber);
+            const finalizedFleet = await wallet.contracts.OuterSpace.getFleet(checkedAction.action.fleetId, '0', {
+              blockTag: finalisedBlockNumber,
+            });
+            if (finalizedFleet.owner != '0x0000000000000000000000000000000000000000' && finalizedFleet.quantity == 0) {
+              final = true;
+            }
+            if (this.ownerAddress !== ownerAddress) {
+              return;
+            }
+            await account.recordExternalResolution(
+              checkedAction.id,
+              checkedAction.action.fleetId,
+              final ? finalisedBlock.timestamp : undefined
+            );
+          }
         }
-        if (this.ownerAddress !== ownerAddress) {
-          return;
-        }
-        await account.recordExternalResolution(
-          checkedAction.id,
-          checkedAction.action.fleetId,
-          final ? finalisedBlock.timestamp : undefined
-        );
       }
     }
   }

@@ -48,7 +48,10 @@ export default {
   },
 
   async scheduled(trigger: CronTrigger, env: Env, event: ScheduledEvent) {
-
+    if (!env.PRIVATE_KEY) {
+      console.error('no key setup');
+      return;
+    }
     const id = env.REVEAL_QUEUE.idFromName('A');
     const obj = env.REVEAL_QUEUE.get(id);
     if (trigger.cron === '* * * * *') {
@@ -65,6 +68,11 @@ export default {
 }
 
 async function handleRequest(request: Request, env: Env): Promise<Response> {
+  if (!env.PRIVATE_KEY) {
+    console.error('no key setup');
+    return new Response(JSON.stringify({error: 'No Key Setup'}),{status: 500});
+  }
+
   const id = env.REVEAL_QUEUE.idFromName('A')
   const obj = env.REVEAL_QUEUE.get(id)
 
