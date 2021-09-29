@@ -31,7 +31,7 @@ class RegisterFlowStore extends BaseStoreWithData<RegisterFlow, undefined> {
       })`;
       const registerSignature = await wallet.provider.getSigner().signMessage(messageString);
 
-      const response = await fetch(`${AGENT_SERVICE_URL}//egister`, {
+      const response = await fetch(`${AGENT_SERVICE_URL}/register`, {
         method: 'POST',
         body: JSON.stringify({
           ...registrationSubmission,
