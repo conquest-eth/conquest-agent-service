@@ -68,7 +68,7 @@
         {:else if $agentService.state === 'Loading'}
           Loading...
         {:else}
-          <p>Agent Service Payment Address: {contractsInfos.contracts.PaymentGateway.address}</p>
+          <!-- <p>Agent Service Payment Address: {contractsInfos.contracts.PaymentGateway.address}</p> -->
 
           {#if !$account.data?.agentServiceDefault?.activated}
             <p>Agent is not active by default, it will require manual submission</p>
@@ -83,6 +83,7 @@
           {/if}
 
           {#if !$agentService.account || !$agentService.account.delegate}
+            <!-- {JSON.stringify($agentService.account)} -->
             You need to register
             <Button
               class="w-max-content m-4"

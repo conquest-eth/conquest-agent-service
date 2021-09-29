@@ -56,10 +56,7 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
   }
 
   triggerUpdate() {
-    if (this._timeout) {
-      clearTimeout(this._timeout);
-      this._timeout = undefined;
-    }
+    this._clearTimeoutIfAny();
     this._check();
   }
 
