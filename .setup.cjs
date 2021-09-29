@@ -9,6 +9,6 @@ function copyFromDefault(p) {
   }
 }
 
-['.env'].map(
+['.env', 'wrangler.toml'].map(
   copyFromDefault
 );
