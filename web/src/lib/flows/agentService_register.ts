@@ -3,6 +3,7 @@ import {wallet} from '$lib/blockchain/wallet';
 import {now} from '$lib/time';
 import {account} from '$lib/account/account';
 import {AGENT_SERVICE_URL} from '$lib/config';
+import {agentService} from '$lib/account/agentService';
 
 export type RegisterFlow = {
   type: 'REGISTER_AGENT_SERVICE';
@@ -41,6 +42,7 @@ class RegisterFlowStore extends BaseStoreWithData<RegisterFlow, undefined> {
       const json = await response.json();
       if (json.success) {
         account.recordAgentServiceDefault(true);
+        agentService.triggerUpdate();
       } else {
         // TODO
       }

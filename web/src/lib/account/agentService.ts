@@ -55,6 +55,14 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
     super({state: 'Idle'});
   }
 
+  triggerUpdate() {
+    if (this._timeout) {
+      clearTimeout(this._timeout);
+      this._timeout = undefined;
+    }
+    this._check();
+  }
+
   acknowledgeError(): void {
     this.setPartial({error: undefined});
   }

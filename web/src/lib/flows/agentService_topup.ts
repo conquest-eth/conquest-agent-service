@@ -2,6 +2,7 @@ import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {wallet} from '$lib/blockchain/wallet';
 import type {BigNumber} from '@ethersproject/bignumber';
 import type {TransactionResponse} from '@ethersproject/abstract-provider';
+import {agentService} from '$lib/account/agentService';
 
 export type AgentServiceTopUpFlow = {
   type: 'TOPUP_AGENT_SERVICE';
@@ -39,6 +40,7 @@ class AgentServiceTopUpFlowStore extends BaseStoreWithData<AgentServiceTopUpFlow
     }
     if (tx) {
       await tx.wait();
+      agentService.triggerUpdate();
       this.setPartial({step: 'MINED'});
     }
   }
