@@ -44,7 +44,7 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
     const queueMessageString = `queue:${revealSubmission.player}:${fleetID}:${secret}:${from.x}:${from.y}:${to.x}:${to.y}:${distance}:${startTime}:${duration}:${revealSubmission.nonceMsTimestamp}`;
     const queueSignature = await privateWallet.signer.signMessage(queueMessageString);
     const data = {...revealSubmission, signature: queueSignature, delegate: privateWallet.signer.address.toLowerCase()};
-    const response = await fetch('http://localhost:8787/queueReveal', {
+    const response = await fetch(`${AGENT_SERVICE_URL}/queueReveal}`, {
       method: 'POST',
       body: JSON.stringify(data),
     });

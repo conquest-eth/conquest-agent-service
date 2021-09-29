@@ -2,6 +2,7 @@ import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {wallet} from '$lib/blockchain/wallet';
 import {now} from '$lib/time';
 import {account} from '$lib/account/account';
+import {AGENT_SERVICE_URL} from '$lib/config';
 
 export type RegisterFlow = {
   type: 'REGISTER_AGENT_SERVICE';
@@ -30,7 +31,7 @@ class RegisterFlowStore extends BaseStoreWithData<RegisterFlow, undefined> {
       })`;
       const registerSignature = await wallet.provider.getSigner().signMessage(messageString);
 
-      const response = await fetch('http://localhost:8787/register', {
+      const response = await fetch(`${AGENT_SERVICE_URL}//egister`, {
         method: 'POST',
         body: JSON.stringify({
           ...registrationSubmission,

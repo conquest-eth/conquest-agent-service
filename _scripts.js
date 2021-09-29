@@ -155,6 +155,17 @@ async function performAction(rawArgs) {
     await execute(`wait-on web/src/lib/contracts.json`);
     console.log({env});
     await execute(`${env}npm --prefix subgraph run ${deployCommand} ../contracts/deployments/${network}`);
+    // TODO
+    // } else if (firstArg === 'agent-service:dev') {
+    //   await execute(`wait-on web/src/lib/contracts.json`);
+    //   await execute(`dotenv -- npm --prefix agent-service run dev ../contracts/deployments/localhost`);
+    // } else if (firstArg === 'agent-service:deploy') {
+    //   const {fixedArgs, extra} = parseArgs(args, 1, {});
+    //   const network = fixedArgs[0] || 'localhost';
+    //   const env = getEnv(network);
+    //   await execute(`wait-on web/src/lib/contracts.json`);
+    //   console.log({env});
+    //   await execute(`${env}npm --prefix agent-service run deploy ../contracts/deployments/${network}`);
   } else if (firstArg === 'web:dev') {
     const {fixedArgs, options} = parseArgs(args, 1, {skipContracts: 'boolean'});
     const network = fixedArgs[0] || 'localhost';
