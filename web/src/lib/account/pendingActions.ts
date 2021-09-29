@@ -75,6 +75,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
   }
 
   private async _handleAccountChange($account: AccountState): Promise<void> {
+    console.log(`update from account`);
     if ($account.data) {
       const txHashes = Object.keys($account.data.pendingActions);
       for (const txHash of txHashes) {
@@ -87,6 +88,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         // }
         const found = this.state.find((v) => v.id === txHash);
         if (!found) {
+          console.log(`new pending tx ${txHash}`);
           this.state.push({
             id: txHash,
             status: action.external ? action.external.status : 'LOADING',
@@ -126,7 +128,11 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         item.final = item.action.external.final;
         item.status = item.action.external.status;
         if (item.final) {
-          this._handleFinalAcknowledgement(item, item.final, 'SUCCESS');
+          try {
+            this._handleFinalAcknowledgement(item, item.final, 'SUCCESS');
+          } catch (e) {
+            console.error(e);
+          }
         }
         continue;
       }
@@ -173,7 +179,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
           account.markAsFullyAcknwledged(checkedAction.id, timestamp);
         }
       } else {
-        console.log(`not acknowledged yet`);
+        // console.log(`not acknowledged yet`);
       }
     }
   }

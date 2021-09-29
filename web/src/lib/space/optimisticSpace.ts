@@ -43,6 +43,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
   }
 
   private _handlePendingActions(pendingActions: CheckedPendingActions): void {
+    console.log('checked pending actions updated');
     this.rawPendingActions = pendingActions;
     // this._updateAndNotify();
     // TODO consider loading
@@ -57,6 +58,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
     // fix : use lastQueryTimestamp vs pendingAction timestamp
 
     if (!this.lastQueryTime) {
+      console.log(`no query yet, just get the pending actions`);
       return this._updateAndNotify();
     }
 
@@ -65,12 +67,16 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
       dict[pendingAction.id] = true;
     }
     for (const pendingAction of this.rawPendingActions) {
-      if (
-        !dict[pendingAction.id] &&
-        (pendingAction.action.timestamp >= this.lastQueryTime || pendingAction.action.external)
-      ) {
+      if (dict[pendingAction.id]) {
+        continue;
+      }
+      if (pendingAction.action.timestamp >= this.lastQueryTime || pendingAction.action.external) {
         // not full proof (a second resolution) but sufficient
-        this.state.pendingActions.push({...pendingAction, counted: false});
+        this.state.pendingActions.push({...pendingAction, counted: !!pendingAction.action.external});
+      } else {
+        if (pendingAction.action.timestamp < this.lastQueryTime) {
+          console.log(`pendingAction was submitted before lastQueryTime, ignore? ${pendingAction.id}`);
+        }
       }
     }
     this._notify();

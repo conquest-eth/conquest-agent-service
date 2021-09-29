@@ -35,6 +35,7 @@ export class MyEventsStore implements Readable<MyEvent[]> {
   }
 
   private onSpaceUpdate(update: SpaceQueryWithPendingState): void {
+    console.log(`update from space...`);
     const newEvents = [];
     // TODO get access to update.accountAddress
     if (update.queryState.data?.fleetsArrivedFromYou) {

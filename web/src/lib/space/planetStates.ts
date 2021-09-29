@@ -67,7 +67,9 @@ export class PlanetStates {
   }
 
   private onSpaceUpdate(update: SpaceQueryWithPendingState): void {
+    console.log(`on space update for planets`);
     if (!update.queryState.data) {
+      console.log('hmmm, no data...');
       // TODO error
       return;
     }
@@ -76,6 +78,10 @@ export class PlanetStates {
     for (const pendingAction of update.pendingActions) {
       if (pendingAction.action.type === 'CAPTURE') {
         const location = xyToLocation(pendingAction.action.planetCoords.x, pendingAction.action.planetCoords.y);
+        const currentlist = (this.pendingActionsPerPlanet[location] = this.pendingActionsPerPlanet[location] || []);
+        currentlist.push(pendingAction);
+      } else if (pendingAction.action.type === 'SEND') {
+        const location = xyToLocation(pendingAction.action.from.x, pendingAction.action.from.y);
         const currentlist = (this.pendingActionsPerPlanet[location] = this.pendingActionsPerPlanet[location] || []);
         currentlist.push(pendingAction);
       }
@@ -176,6 +182,8 @@ export class PlanetStates {
           // should we ensure that if counted, status becomes SUCCESS ? see pendingActions.ts
           if (pendingAction.action.type === 'CAPTURE') {
             capturing = true;
+          } else if (pendingAction.action.type === 'SEND') {
+            numSpaceships -= pendingAction.action.quantity;
           }
         } else if (!pendingAction.action.acknowledged) {
           if (pendingAction.action.type === 'CAPTURE') {

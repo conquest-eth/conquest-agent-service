@@ -100,7 +100,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     active
     reward
   }
-  fleetsArrivedFromYou: fleetArrivedEvents(where: {owner: $owner destinationOwner_not: $owner}) {
+  fleetsArrivedFromYou: fleetArrivedEvents(where: {owner: $owner}) {
     id
     blockNumber
     timestamp
