@@ -14,6 +14,7 @@
   import agentService_topup from '$lib/flows/agentService_topup';
   import {BigNumber} from '@ethersproject/bignumber';
   import {account} from '$lib/account/account';
+  import {fleets} from '$lib/space/fleets';
 </script>
 
 <div class="w-full h-full bg-black">
@@ -132,6 +133,14 @@
               {:else}
                 <p>No Fleet yet</p>
               {/if} -->
+
+          <ul class="list-disc text-yellow-600">
+            {#each $fleets as fleet (fleet.txHash)}
+              <li><PendingFleetElement {fleet} /></li>
+            {:else}
+              No Fleets
+            {/each}
+          </ul>
         {/if}
       </div>
     </div>

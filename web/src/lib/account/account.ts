@@ -39,6 +39,7 @@ export type PendingSend = PendingActionBase & {
   quantity: number;
   actualLaunchTime?: number;
   resolution?: string[];
+  queueID?: string;
 };
 
 export type PendingResolution = PendingActionBase & {
@@ -405,6 +406,18 @@ class Account implements Readable<AccountState> {
     }
   }
 
+  async recordQueueID(txHash: string, queueID: string) {
+    this.check();
+    const pendingAction = this.state.data.pendingActions[txHash] as PendingSend;
+    if (pendingAction && typeof pendingAction !== 'number') {
+      if (pendingAction.queueID !== queueID) {
+        pendingAction.queueID = queueID;
+        await this.accountDB.save(this.state.data);
+        this._notify();
+      }
+    }
+  }
+
   async acknowledgeActionFailure(txHash: string, final?: number): Promise<void> {
     this.check();
     const pendingAction = this.state.data.pendingActions[txHash];
@@ -576,6 +589,13 @@ class Account implements Readable<AccountState> {
               } else if (!pendingAction.actualLaunchTime && remotePendingAction.actualLaunchTime) {
                 newDataOnRemote = true;
                 pendingAction.actualLaunchTime = remotePendingAction.actualLaunchTime;
+              }
+
+              if (pendingAction.queueID && !remotePendingAction.queueID) {
+                newDataOnLocal = true;
+              } else if (!pendingAction.queueID && remotePendingAction.queueID) {
+                newDataOnRemote = true;
+                pendingAction.queueID = remotePendingAction.queueID;
               }
             }
           }

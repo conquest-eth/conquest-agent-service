@@ -184,7 +184,16 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
     // TODO add checkbox in flow to activate/deactivate for that particular fleet
     if (account.isAgentServiceActivatedByDefault()) {
-      await agentService.submitReveal(fleetId, secretHash, from, to, distance, latestBlock.timestamp, duration);
+      const {queueID} = await agentService.submitReveal(
+        fleetId,
+        secretHash,
+        from,
+        to,
+        distance,
+        latestBlock.timestamp,
+        duration
+      );
+      account.recordQueueID(tx.hash, queueID);
     }
 
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});

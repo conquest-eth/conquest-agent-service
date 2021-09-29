@@ -8,6 +8,7 @@ import {writable} from 'svelte/store';
 import {spaceInfo} from './spaceInfo';
 
 export type FleetState =
+  | 'LOADING'
   | 'SEND_BROADCASTED'
   | 'TRAVELING'
   | 'READY_TO_RESOLVE'
@@ -29,12 +30,12 @@ export type Fleet = {
   sending: {
     id: string;
     status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
-    action: {nonce: number};
+    action: {nonce: number; timestamp: number; queueID?: string};
   }; // TODO use pendingaction type
   resolution?: {
     id: string;
     status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
-    action: {nonce: number};
+    action: {nonce: number; timestamp: number};
   }; // TODO use pendingaction type
   state: FleetState;
 };
@@ -74,12 +75,6 @@ export class FleetsStore implements Readable<Fleet[]> {
         } else if (pendingAction.status === 'CANCELED') {
         } else if (pendingAction.status === 'TIMEOUT') {
         } else {
-          let state: FleetState = 'SEND_BROADCASTED';
-          if (pendingAction.status == 'SUCCESS' || pendingAction.status == 'LOADING') {
-            // consider 'LOADING' as success, we assume we got it (maybe we should show loading overall)
-            state = 'TRAVELING';
-          }
-
           const from = spaceInfo.getPlanetInfo(sendAction.from.x, sendAction.from.y);
           const to = spaceInfo.getPlanetInfo(sendAction.to.x, sendAction.to.y);
           const duration = spaceInfo.timeToArrive(from, to);
@@ -93,12 +88,19 @@ export class FleetsStore implements Readable<Fleet[]> {
 
           const timeLeft = Math.max(duration - (now() - launchTime), 0);
           let timeToResolve = 0;
-          if (timeLeft <= 0) {
-            state = 'READY_TO_RESOLVE';
-            timeToResolve = Math.max(launchTime + duration + spaceInfo.resolveWindow - now(), 0);
-            if (timeToResolve <= 0) {
-              state = 'TOO_LATE_TO_RESOLVE';
+
+          let state: FleetState = 'SEND_BROADCASTED';
+          if (pendingAction.status === 'SUCCESS') {
+            state = 'TRAVELING';
+            if (timeLeft <= 0) {
+              state = 'READY_TO_RESOLVE';
+              timeToResolve = Math.max(launchTime + duration + spaceInfo.resolveWindow - now(), 0);
+              if (timeToResolve <= 0) {
+                state = 'TOO_LATE_TO_RESOLVE';
+              }
             }
+          } else if (pendingAction.status === 'LOADING') {
+            state = 'LOADING';
           }
 
           let resolution: SyncedPendingAction | undefined;

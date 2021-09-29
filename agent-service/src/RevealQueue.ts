@@ -286,8 +286,12 @@ export class RevealQueue extends DO {
     for (const revealEntry of reveals.entries()) {
         const reveal = revealEntry[1];
         const queueID = revealEntry[0];
-        if (reveal.startTime + reveal.duration <= timestamp) {
+        const revealTime = reveal.startTime + reveal.duration;
+        if (revealTime <= timestamp) {
+          console.log(`executing ${queueID}...`)
           await this._executeReveal(queueID, reveal);
+        } else {
+          console.log(`skip reveal (${queueID}) because not yet time (${reveal.startTime} + ${reveal.duration} = ${revealTime}) > ${timestamp}`)
         }
     }
 
@@ -329,6 +333,30 @@ export class RevealQueue extends DO {
         }
     }
     return createResponse({tx: null});
+  }
+
+  async getPendingTransactions(path: string[]): Promise<Response> {
+    const limit = 1000;
+    const txEntries = (await this.state.storage.list({prefix: `pending_`, limit})) as Map<string, PendingTransactionData>;
+    const txs = {};
+    for (const txEntry of txEntries.entries()) {
+      const tx = txEntry[1];
+      const txID = txEntry[0];
+      txs[txID] = tx;
+    }
+    return createResponse({txs, success: true});
+  }
+
+  async getQueue(path: string[]): Promise<Response> {
+    const limit = 1000;
+    const reveals = (await this.state.storage.list({prefix: `q_`, limit})) as Map<string, RevealData>;
+    const queue = {};
+    for (const revealEntry of reveals.entries()) {
+      const reveal = revealEntry[1];
+      const queueID = revealEntry[0];
+      queue[queueID] = {fleetID: reveal.fleetID, from: reveal.from, player: reveal.player, retries: reveal.retries, startTime: reveal.startTime, sendConfirmed: reveal.sendConfirmed};
+    }
+    return createResponse({queue});
   }
 
   async syncAccountBalances(path: string[]): Promise<Response> {
@@ -578,12 +606,13 @@ export class RevealQueue extends DO {
     //     const nonce = await this.provider.getTransactionCount(reveal.sendTxSender);
     // }
     const block = await this.provider.getBlock("latest");
-    const lastestBlockFinalized = Math.max(0, block.number - 12);
+    const lastestBlockFinalized = Math.max(0, block.number - this.finality);
     const fleet = await this.outerspaceContract.getFleet(reveal.fleetID, "0", {blockTag: lastestBlockFinalized});
-    if (fleet.quantity > 0) {
+    if (fleet.owner !== "0x0000000000000000000000000000000000000000") { // quantity >0 means already submitted , should remove them ?
         return fleet.launchTime;
     } else {
-        return undefined;
+      // console.log(`cannot get startTIme for fleet ${reveal.fleetID} ${fleet.launchTime} ${fleet.quantity} ${lastestBlockFinalized} ${block.number}`)
+      return undefined;
     }
   }
 

@@ -204,7 +204,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         const fromPlanetInfo = spaceInfo.getPlanetInfo(checkedAction.action.from.x, checkedAction.action.from.y);
         const toPlanetInfo = spaceInfo.getPlanetInfo(checkedAction.action.to.x, checkedAction.action.to.y);
         const duration = spaceInfo.timeLeft(0, fromPlanetInfo, toPlanetInfo, 0).fullTime;
-        if (checkedAction.action.actualLaunchTime + duration > now()) {
+        if (now() > checkedAction.action.actualLaunchTime + duration) {
           const fleet = await wallet.contracts.OuterSpace.getFleet(checkedAction.action.fleetId, '0');
           if (fleet.owner != '0x0000000000000000000000000000000000000000' && fleet.quantity == 0) {
             let final = false;
