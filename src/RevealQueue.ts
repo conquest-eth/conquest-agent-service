@@ -194,10 +194,7 @@ export class RevealQueue extends DO {
     const reveal = {...revealData, retries: 0, sendConfirmed: false};
 
     const timestampMs = Math.floor(Date.now());
-    let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
-    if (!lastSync) {
-        lastSync = {blockNumber: 0, blockHash: "0x0000000000000000000000000000000000000000000000000000000000000000"};
-    }
+
     let account = await this.state.storage.get<AccountData | undefined>(`account_${revealSubmission.player.toLowerCase()}`);
     if (!account) {
         account = {balance: "0", nonceMsTimestamp: 0};
@@ -231,28 +228,11 @@ export class RevealQueue extends DO {
 
     let balance = BigNumber.from(account.balance);
     if (balance.lt(minimumBalance) ) { //|| !account.delegate) {
-
-        // fetch latest events; (not finalized)
-        const filter = this.paymentContract.filters.Payment(revealSubmission.player);
-        const recentEvents = await this.paymentContract.queryFilter(filter, lastSync.blockNumber, "latest");
-        for (const event of recentEvents) {
-            if (event.args) {
-                if (event.args.refund) {
-                    balance = balance.sub(event.args.amount);
-                } else {
-                    // if (event.args.setDelegate.toLowerCase() !== "0x0000000000000000000000000000000000000000") {
-                    //     account.delegate = event.args.setDelegate.toLowerCase();
-                    // }
-                    balance = balance.add(event.args.amount);
-                }
-            }
-        }
-        if (balance.lt(minimumBalance)) {
-            return NotEnoughBalance();
-        }
+      balance = await this._fetchExtraBalanceFromLogs(balance, player.toLowerCase());
+      if (balance.lt(minimumBalance)) {
+        return NotEnoughBalance();
+      }
     }
-
-
 
     const revealID = `l_${reveal.fleetID}`;
     const broadcastingTime = reveal.startTime + reveal.duration;
@@ -315,10 +295,16 @@ export class RevealQueue extends DO {
   }
 
   async account(path: string[]): Promise<Response> {
-    const accountID = `account_${path[0]?.toLowerCase()}`;
+    const player = path[0]?.toLowerCase();
+    const accountID = `account_${player}`;
     const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
     if (accountData) {
-        return createResponse({account:accountData});
+      let balance = BigNumber.from(accountData.balance);
+      if (balance.lt(minimumBalance) ) {
+        balance = await this._fetchExtraBalanceFromLogs(balance, player);
+      }
+      accountData.balance = balance.toString();
+      return createResponse({account:accountData});
     }
     return createResponse({account: null});
   }
@@ -434,6 +420,26 @@ export class RevealQueue extends DO {
     return createResponse({success: true});
   }
 
+  private async _fetchExtraBalanceFromLogs(balance: BigNumber, player: string): Promise<BigNumber> {
+    let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
+    if (!lastSync) {
+        lastSync = {blockNumber: 0, blockHash: "0x0000000000000000000000000000000000000000000000000000000000000000"};
+    }
+
+    // fetch latest events; (not finalized)
+    const filter = this.paymentContract.filters.Payment(player);
+    const recentEvents = await this.paymentContract.queryFilter(filter, lastSync.blockNumber, "latest");
+    for (const event of recentEvents) {
+      if (event.args) {
+        if (event.args.refund) {
+          balance = balance.sub(event.args.amount);
+        } else {
+          balance = balance.add(event.args.amount);
+        }
+      }
+    }
+    return balance;
+  }
 
   private async _executeReveal(queueID: string, reveal: RevealData) {
     const account = await this.state.storage.get<AccountData | undefined>(`account_${reveal.player}`);
