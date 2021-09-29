@@ -104,6 +104,18 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     }
     let resp = await obj.fetch(url.toString(), request)
     return resp;
+  } else if (fnc === 'getPendingTransactions') {
+    if (method !== 'GET') {
+      return InvalidMethod();
+    }
+    let resp = await obj.fetch(url.toString(), request)
+    return resp;
+  } else if (fnc === 'getQueue') { // TODO remove unless admin
+    if (method !== 'GET') {
+      return InvalidMethod();
+    }
+    let resp = await obj.fetch(url.toString(), request)
+    return resp;
   }
   return UnknownRequestType();
 }
