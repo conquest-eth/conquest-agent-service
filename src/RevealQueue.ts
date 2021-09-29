@@ -57,7 +57,8 @@ type RevealSubmission = Reveal & {delegate?: string; signature: string; nonceMsT
 
 type AccountData = {
     nonceMsTimestamp: number;
-    balance: string;
+    paid: string;
+    spending: string;
     delegate?: string; // TODO array or reverse lookup ?
 } // TODO add balanceUsedUntilMined ?
 
@@ -159,10 +160,11 @@ export class RevealQueue extends DO {
     const accountID = `account_${player}`;
     let account = await this.state.storage.get<AccountData | undefined>(accountID);
     if (!account) {
-        account = {
-            balance: "0",
-            nonceMsTimestamp: 0
-        }
+      account = {
+        spending: "0",
+        paid: "0",
+        nonceMsTimestamp: 0
+      }
     }
     if (registrationSubmission.nonceMsTimestamp <= account.nonceMsTimestamp || registrationSubmission.nonceMsTimestamp > timestampMs) {
         return InvalidNonce();
@@ -197,7 +199,7 @@ export class RevealQueue extends DO {
 
     let account = await this.state.storage.get<AccountData | undefined>(`account_${revealSubmission.player.toLowerCase()}`);
     if (!account) {
-        account = {balance: "0", nonceMsTimestamp: 0};
+        account = {paid: "0", spending: "0", nonceMsTimestamp: 0};
     }
 
     if (revealSubmission.nonceMsTimestamp <= account.nonceMsTimestamp || revealSubmission.nonceMsTimestamp > timestampMs) {
@@ -226,7 +228,7 @@ export class RevealQueue extends DO {
         return NotAuthorized();
     }
 
-    let balance = BigNumber.from(account.balance);
+    let balance = BigNumber.from(account.paid).sub(account.spending);
     if (balance.lt(minimumBalance) ) { //|| !account.delegate) {
       balance = await this._fetchExtraBalanceFromLogs(balance, player.toLowerCase());
       if (balance.lt(minimumBalance)) {
@@ -299,12 +301,11 @@ export class RevealQueue extends DO {
     const accountID = `account_${player}`;
     const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
     if (accountData) {
-      let balance = BigNumber.from(accountData.balance);
+      let balance = BigNumber.from(accountData.paid).sub(accountData.spending);
       if (balance.lt(minimumBalance) ) {
         balance = await this._fetchExtraBalanceFromLogs(balance, player);
       }
-      accountData.balance = balance.toString();
-      return createResponse({account:accountData});
+      return createResponse({account: {...accountData, balance: balance.toString()}});
     }
     return createResponse({account: null});
   }
@@ -400,14 +401,15 @@ export class RevealQueue extends DO {
         const accountUpdate = accountsToUpdate[accountAddress];
         let currentAccountState = await this.state.storage.get<AccountData | undefined>(`account_${accountAddress}`);
         if (!currentAccountState) {
-            currentAccountState = {balance: "0", nonceMsTimestamp: 0}
+            currentAccountState = {paid: "0", spending: "0", nonceMsTimestamp: 0}
         }
         this.state.storage.put<AccountData>(
             `account_${accountAddress}`,
             {
-                balance: accountUpdate.balanceUpdate.add(currentAccountState.balance).toString(),
-                nonceMsTimestamp: currentAccountState.nonceMsTimestamp,
-                delegate: currentAccountState.delegate
+              paid: accountUpdate.balanceUpdate.add(currentAccountState.paid).toString(),
+              spending: currentAccountState.spending,
+              nonceMsTimestamp: currentAccountState.nonceMsTimestamp,
+              delegate: currentAccountState.delegate
             }
         );
         console.log(`${accountAddress} updated...`)
@@ -443,7 +445,7 @@ export class RevealQueue extends DO {
 
   private async _executeReveal(queueID: string, reveal: RevealData) {
     const account = await this.state.storage.get<AccountData | undefined>(`account_${reveal.player}`);
-    if (!account || BigNumber.from(account.balance).lt(minimumBalance)) {
+    if (!account || BigNumber.from(account.paid).lt(minimumBalance)) {
 
         if(!account) {
           console.log(`no account registered for ${reveal.player}`);
