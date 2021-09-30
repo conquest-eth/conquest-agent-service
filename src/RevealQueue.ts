@@ -352,7 +352,7 @@ export class RevealQueue extends DO {
     if (!accountRefected) {
       accountRefected = {paid: "0", spending: "0", nonceMsTimestamp: 0, maxFeesSchedule: defaultMaxFeesSchedule};
     }
-    const spending = BigNumber.from(accountRefected.spending).add(maxFeeAllowed);
+    const spending = BigNumber.from(accountRefected.spending).add(minimumBalance);
     accountRefected.spending = spending.toString();
 
     this.state.storage.put<AccountData>(accountID, accountRefected);
@@ -680,19 +680,74 @@ export class RevealQueue extends DO {
             }
         }
 
-        const tx = await this.outerspaceContract.resolveFleet(
-            reveal.fleetID,
-            xyToLocation(reveal.from.x, reveal.from.y),
-            xyToLocation(reveal.to.x, reveal.to.y),
-            reveal.distance,
-            reveal.secret,
-            {
-                nonce,
-                maxFeePerGas: options.maxFeePerGas
-            }
-        );
+        let maxPriorityFeePerGas = undefined;
+        // let feeHistory:
+        // | {
+        //     baseFeePerGas: string[];
+        //     gasUsedRatio?: number[]; // not documented on https://playground.open-rpc.org/?schemaUrl=https://raw.githubusercontent.com/ethereum/eth1.0-apis/assembled-spec/openrpc.json&uiSchema%5BappBar%5D%5Bui:splitView%5D=false&uiSchema%5BappBar%5D%5Bui:input%5D=false&uiSchema%5BappBar%5D%5Bui:examplesDropdown%5D=false
+        //     oldestBlock: number;
+        //     reward: string[][];
+        //   }
+        // | undefined = undefined;
+        // try {
+        //   // TODO check what best to do to ensure we do not unecessarely high maxPriorityFeePerGas
+        //   // in worst case, we could continue and try catch like below catching specific error message
+        //   feeHistory = await this.provider.send('eth_feeHistory', [
+        //     1,
+        //     'latest',
+        //     [100],
+        //   ]);
+        // } catch (e) {}
+        // if (feeHistory) {
+        //   if (options.maxFeePerGas.lt(feeHistory.reward[0][0])) {
+        //     maxPriorityFeePerGas = options.maxFeePerGas;
+        //   }
+        //   console.log(feeHistory.reward);
+        // } else {
+        //   console.log('no feeHistory')
+        // }
+
+        let tx;
+        try {
+          tx = await this.outerspaceContract.resolveFleet(
+              reveal.fleetID,
+              xyToLocation(reveal.from.x, reveal.from.y),
+              xyToLocation(reveal.to.x, reveal.to.y),
+              reveal.distance,
+              reveal.secret,
+              {
+                  nonce,
+                  maxFeePerGas: options.maxFeePerGas,
+                  maxPriorityFeePerGas
+              }
+          );
+        } catch(e) {
+          // TODO investigate error code for it ?
+          if (e.message && e.message.indexOf && e.message.indexOf(" is bigger than maxFeePerGas ") !== -1) {
+            console.log('RETRYING with maxPriorityFeePerGas = maxFeePerGas')
+            tx = await this.outerspaceContract.resolveFleet(
+              reveal.fleetID,
+              xyToLocation(reveal.from.x, reveal.from.y),
+              xyToLocation(reveal.to.x, reveal.to.y),
+              reveal.distance,
+              reveal.secret,
+              {
+                  nonce,
+                  maxFeePerGas: options.maxFeePerGas,
+                  maxPriorityFeePerGas: options.maxFeePerGas
+              }
+            );
+          } else {
+            throw e;
+          }
+        }
         return {tx: {hash:tx.hash, nonce: tx.nonce, broadcastTime: getTimestamp(), maxFeePerGasUsed: options.maxFeePerGas.toString()}};
       } catch(e) {
+        if (e.message && e.message.indexOf && e.message.indexOf(`is less than the block's baseFeePerGas`) !== -1) {
+          // TODO ? push down the queue to not bother others...
+        }
+        console.error(e.message);
+        // console.error(e);
         const error = e as {message?: string}
         return {error: {message: error.message || "error caught: " + e, code: 5502}};
       }
@@ -724,12 +779,13 @@ export class RevealQueue extends DO {
         const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
         if (accountData) {
           const maxFeeAllowed = getMaxFeeAllowed(pendingReveal.maxFeesSchedule);
-          let gasCost = maxFeeAllowed;
+          const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
+          let gasCost = minimumBalance;
           if (txReceipt.gasUsed && txReceipt.effectiveGasPrice) {
             gasCost = txReceipt.gasUsed?.mul(txReceipt.effectiveGasPrice);
           }
           const paid = BigNumber.from((await accountData).paid).sub(gasCost);
-          const spending = BigNumber.from((await accountData).spending).sub(maxFeeAllowed);
+          const spending = BigNumber.from((await accountData).spending).sub(minimumBalance);
           accountData.paid = paid.toString();
           accountData.spending = spending.toString();
           this.state.storage.put<AccountData>(accountID, accountData);
