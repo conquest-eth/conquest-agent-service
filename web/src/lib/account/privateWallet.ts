@@ -1,5 +1,6 @@
 import {chain, flow, wallet} from '$lib/blockchain/wallet';
-import localCache from '$lib/utils/localCache';
+// import localCache from '$lib/utils/localCache';
+import lstorage from '$lib/utils/lstorage'; // need sync see below
 import {nameForChainId} from '$lib/utils/networks';
 import type {Contract} from '@ethersproject/contracts';
 import {keccak256} from '@ethersproject/solidity';
@@ -156,7 +157,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
         signature: storeSignatureLocally ? signature : undefined,
         syncEnabled: syncRemotely,
       });
-      await localCache.setItem(LOCAL_ONLY_STORAGE_KEY(walletAddressLC, chainId), toStorage);
+      lstorage.setItem(LOCAL_ONLY_STORAGE_KEY(walletAddressLC, chainId), toStorage);
 
       this.state.step = 'READY';
       this.state.syncEnabled = syncRemotely;
@@ -229,10 +230,10 @@ class PrivateWallet implements Readable<PrivateWalletState> {
     const walletAddressLC = walletAddress.toLowerCase();
     const ownerAddressLC = this.state.ownerAddress ? this.state.ownerAddress.toLowerCase() : undefined;
     if (walletAddressLC !== ownerAddressLC || this.state.chainId !== chainId) {
-      this._clear();
+      this._clear(true, false);
       let inCache = this.cache[walletAddressLC + '_' + chainId];
       if (!inCache) {
-        const fromStorage = await localCache.getItem(LOCAL_ONLY_STORAGE_KEY(walletAddressLC, chainId));
+        const fromStorage = lstorage.getItem(LOCAL_ONLY_STORAGE_KEY(walletAddressLC, chainId)); // NEED TO BE SYNCHRONOUS
         if (fromStorage) {
           let storage: {syncEnabled: boolean; signature?: string} | undefined;
           try {
@@ -268,12 +269,19 @@ class PrivateWallet implements Readable<PrivateWalletState> {
         this.state.messagingKey = inCache.messagingKey;
         this.state.ownerAddress = walletAddress;
         this.state.chainId = chainId;
+
+        this._resolve && this._resolve();
+        this._resolve = undefined;
+        this._reject = undefined;
+        this._promise = undefined;
+        this._contracts = undefined;
+
         this._notify();
       }
     }
   }
 
-  private _clear(all = true): void {
+  private _clear(all = true, notify = true): void {
     this.state.step = 'IDLE';
     if (all) {
       this.state.syncEnabled = true;
@@ -283,7 +291,9 @@ class PrivateWallet implements Readable<PrivateWalletState> {
     this.state.messagingKey = undefined;
     this.state.ownerAddress = undefined;
     this.state.chainId = undefined;
-    this._notify();
+    if (notify) {
+      this._notify();
+    }
   }
 
   private _stop(): void {
@@ -333,3 +343,8 @@ class PrivateWallet implements Readable<PrivateWalletState> {
 }
 
 export const privateWallet = new PrivateWallet();
+
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).privateWallet = privateWallet;
+}
