@@ -2,10 +2,10 @@ import { BigNumber, Contract, ethers, Wallet, utils } from "ethers";
 import type {Env} from './types';
 import {contracts, chainId} from './contracts.json';
 import { DO } from "./DO";
-import { TransactionInvalidMissingFields, NoReveal, AlreadyPending, NotEnoughBalance, NotRegistered, NotAuthorized, InvalidNonce, NoDelegateRegistered, InvalidDelegate } from "./errors";
+import { TransactionInvalidMissingFields, NoReveal, AlreadyPending, NotEnoughBalance, NotRegistered, NotAuthorized, InvalidNonce, NoDelegateRegistered, InvalidDelegate, InvalidFeesScheduleSubmission } from "./errors";
 import {xyToLocation, createResponse} from './utils';
 
-const { parseEther, verifyMessage } = utils;
+const { verifyMessage } = utils;
 
 let defaultFinality = 12;
 if (chainId === "1337") {
@@ -34,7 +34,7 @@ function isAuthorized(
 type State = DurableObjectState & {blockConcurrencyWhile: (func: () => Promise<void>) => void};
 
 
-type TransactionInfo = {hash: string; nonce: number;};
+type TransactionInfo = {hash: string; nonce: number; broadcastTime: number; maxFeePerGasUsed: string;};
 
 // Data sent by frontend to request a reveal transaction to be broadcasted at reveal time (startTime + duration)
 // startTime is the expected startTime, could be off if the send transaction is still pending.
@@ -55,11 +55,14 @@ type Reveal = {
 
 type RevealSubmission = Reveal & {delegate?: string; signature: string; nonceMsTimestamp: number};
 
+type MaxFeesSchedule = [{maxFeePerGas: string; delay: number},{maxFeePerGas: string; delay: number}, {maxFeePerGas: string; delay: number}];
+
 type AccountData = {
     nonceMsTimestamp: number;
     paid: string;
     spending: string;
     delegate?: string; // TODO array or reverse lookup ?
+    maxFeesSchedule: MaxFeesSchedule;
 } // TODO add balanceUsedUntilMined ?
 
 // Data stored in the DO (Durable Object)
@@ -67,7 +70,7 @@ type AccountData = {
 type RevealData = RevealSubmission & {
     sendConfirmed: boolean;
     retries: number;
-    expectedFee: string;
+    maxFeesSchedule: MaxFeesSchedule;
 };
 
 // Data stored when a transaction is broadcasted
@@ -85,6 +88,15 @@ type RegistrationSubmission = {
     signature: string;
 }
 
+
+type FeeScheduleSubmission = {
+  player: string;
+  delegate?: string;
+  maxFeesSchedule: MaxFeesSchedule;
+  nonceMsTimestamp: number;
+  signature: string;
+}
+
 // Data stored for fleetID to ensure only one fleetID is being queued across the queue.
 // it also store the tx info
 type ListData = {
@@ -97,10 +109,11 @@ type SyncData = {
     blockNumber: number;
 }
 
-const minimumBalance = parseEther('0.02'); // TODO ? // 100 gwei for 200,000 gas
-const flatFee = minimumBalance;
+const gwei = BigNumber.from("1000000000");
+const defaultMaxFeePerGas = gwei.mul(100);
+const defaultMaxFeesSchedule: MaxFeesSchedule = [{maxFeePerGas: defaultMaxFeePerGas.toString(), delay: 0}, {maxFeePerGas: defaultMaxFeePerGas.toString(), delay: 0}, {maxFeePerGas: defaultMaxFeePerGas.toString(), delay: 0}];
 
-const nonceAtStart = 0;
+const revealMaxGasEstimate = BigNumber.from(200000);
 
 const RETRY_MAX_PERIOD =  1 * 60 * 60; // 1 hour?
 function retryPeriod(duration: number): number {
@@ -117,6 +130,21 @@ function lexicographicNumber8(num: number): string {
 
 function getTimestamp(): number {
     return Math.floor(Date.now() / 1000);
+}
+
+function getMaxFeeAllowed(maxFees: MaxFeesSchedule): BigNumber {
+  return maxFees.reduce((prev, curr) =>  prev.gt(curr.maxFeePerGas) ? prev : BigNumber.from(curr.maxFeePerGas), BigNumber.from(0));
+}
+
+function getMaxFeeFromArray(array: MaxFeesSchedule, delay: number): BigNumber {
+  let maxFeePerGas = BigNumber.from(array[0].maxFeePerGas);
+  for (let i = 0; i < array.length; i++) {
+    const elem = array[array.length - i - 1];
+    if (elem.delay <= delay) {
+      return BigNumber.from(elem.maxFeePerGas);
+    }
+  }
+  return maxFeePerGas;
 }
 
 function checkSubmission(data: RevealSubmission): {errorResponse?: Response, revealData?: RevealSubmission} {
@@ -138,6 +166,16 @@ function checkSubmission(data: RevealSubmission): {errorResponse?: Response, rev
         return {errorResponse: TransactionInvalidMissingFields()};
     }
 }
+
+function checkFeeScheduleSubmission(data: FeeScheduleSubmission): {errorResponse?: Response} {
+  if (data.maxFeesSchedule.length === 3 && data.maxFeesSchedule[0].delay === 0)
+  {
+      return {};
+  } else {
+      return {errorResponse: InvalidFeesScheduleSubmission()};
+  }
+}
+
 
 export class RevealQueue extends DO {
   provider: ethers.providers.JsonRpcProvider;
@@ -164,7 +202,8 @@ export class RevealQueue extends DO {
       account = {
         spending: "0",
         paid: "0",
-        nonceMsTimestamp: 0
+        nonceMsTimestamp: 0,
+        maxFeesSchedule: defaultMaxFeesSchedule,
       }
     }
     if (registrationSubmission.nonceMsTimestamp <= account.nonceMsTimestamp || registrationSubmission.nonceMsTimestamp > timestampMs) {
@@ -186,6 +225,56 @@ export class RevealQueue extends DO {
     return createResponse({success: true});
   }
 
+  async setMaxFeePerGasSchedule(path: string, feeScheduleSubmission: FeeScheduleSubmission): Promise<Response> {
+
+    const {errorResponse} = checkFeeScheduleSubmission(feeScheduleSubmission);
+    if (errorResponse) {
+        return errorResponse;
+    }
+
+    const timestampMs = Math.floor(Date.now());
+    const player = feeScheduleSubmission.player.toLowerCase();
+    const accountID = `account_${player}`;
+    let account = await this.state.storage.get<AccountData | undefined>(accountID);
+    if (!account) {
+      account = {
+        spending: "0",
+        paid: "0",
+        nonceMsTimestamp: 0,
+        maxFeesSchedule: defaultMaxFeesSchedule,
+      }
+    }
+    if (feeScheduleSubmission.nonceMsTimestamp <= account.nonceMsTimestamp || feeScheduleSubmission.nonceMsTimestamp > timestampMs) {
+        return InvalidNonce();
+    }
+
+    if (feeScheduleSubmission.delegate) {
+      if (!account.delegate) {
+          return NoDelegateRegistered();
+      }
+      if (feeScheduleSubmission.delegate.toLowerCase() !== account.delegate.toLowerCase()) {
+          return InvalidDelegate();
+      }
+    }
+
+    const feesScheduleString = feeScheduleSubmission.maxFeesSchedule.map(v => ''+v.delay+':'+v.maxFeePerGas+':').join(',');
+    const scheduleMessageString = `setMaxFeePerGasSchedule:${player}:${feesScheduleString}:${feeScheduleSubmission.nonceMsTimestamp}`;
+    const authorized = isAuthorized(
+      feeScheduleSubmission.delegate ? account.delegate : player,
+      scheduleMessageString,
+      feeScheduleSubmission.signature
+    )
+    console.log({scheduleMessageString, player, delegate: account.delegate, authorized, signature: feeScheduleSubmission.signature});
+    if (!authorized) {
+        return NotAuthorized();
+    }
+
+    account.maxFeesSchedule = feeScheduleSubmission.maxFeesSchedule;
+    this.state.storage.put<AccountData>(accountID, account);
+
+    return createResponse({success: true});
+  }
+
   async queueReveal(path: string[], revealSubmission: RevealSubmission): Promise<Response> {
 
     const {errorResponse, revealData} = checkSubmission(revealSubmission);
@@ -194,15 +283,17 @@ export class RevealQueue extends DO {
     } else if (!revealData) {
         return NoReveal();
     }
-    const reveal = {...revealData, retries: 0, sendConfirmed: false, expectedFee: flatFee.toString()};
 
     const timestampMs = Math.floor(Date.now());
 
     const accountID = `account_${revealSubmission.player.toLowerCase()}`;
     let account = await this.state.storage.get<AccountData | undefined>(accountID);
     if (!account) {
-        account = {paid: "0", spending: "0", nonceMsTimestamp: 0};
+        account = {paid: "0", spending: "0", nonceMsTimestamp: 0, maxFeesSchedule: defaultMaxFeesSchedule};
     }
+    const maxFeeAllowed = getMaxFeeAllowed(account.maxFeesSchedule);
+    const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
+    const reveal = {...revealData, retries: 0, sendConfirmed: false, maxFeesSchedule: account.maxFeesSchedule};
 
     if (revealSubmission.nonceMsTimestamp <= account.nonceMsTimestamp || revealSubmission.nonceMsTimestamp > timestampMs) {
         return InvalidNonce();
@@ -259,9 +350,9 @@ export class RevealQueue extends DO {
 
     let accountRefected = await this.state.storage.get<AccountData | undefined>(accountID);
     if (!accountRefected) {
-      accountRefected = {paid: "0", spending: "0", nonceMsTimestamp: 0};
+      accountRefected = {paid: "0", spending: "0", nonceMsTimestamp: 0, maxFeesSchedule: defaultMaxFeesSchedule};
     }
-    const spending = BigNumber.from(accountRefected.spending).add(reveal.expectedFee);
+    const spending = BigNumber.from(accountRefected.spending).add(maxFeeAllowed);
     accountRefected.spending = spending.toString();
 
     this.state.storage.put<AccountData>(accountID, accountRefected);
@@ -311,11 +402,20 @@ export class RevealQueue extends DO {
     const accountID = `account_${player}`;
     const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
     if (accountData) {
+      const maxFeeAllowed = getMaxFeeAllowed(accountData.maxFeesSchedule);
+      const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
       let balance = BigNumber.from(accountData.paid).sub(accountData.spending);
       if (balance.lt(minimumBalance) ) {
         balance = await this._fetchExtraBalanceFromLogs(balance, player);
       }
-      return createResponse({account: {...accountData, balance: balance.toString(), requireTopUp: balance.lt(minimumBalance)}});
+      return createResponse({
+        account: {
+          ...accountData,
+          balance: balance.toString(),
+          requireTopUp: balance.lt(minimumBalance),
+          minimumBalance: minimumBalance.toString()
+        }
+      });
     }
     return createResponse({account: null});
   }
@@ -411,7 +511,7 @@ export class RevealQueue extends DO {
         const accountUpdate = accountsToUpdate[accountAddress];
         let currentAccountState = await this.state.storage.get<AccountData | undefined>(`account_${accountAddress}`);
         if (!currentAccountState) {
-            currentAccountState = {paid: "0", spending: "0", nonceMsTimestamp: 0}
+            currentAccountState = {paid: "0", spending: "0", nonceMsTimestamp: 0, maxFeesSchedule: defaultMaxFeesSchedule,}
         }
         this.state.storage.put<AccountData>(
             `account_${accountAddress}`,
@@ -419,7 +519,8 @@ export class RevealQueue extends DO {
               paid: accountUpdate.balanceUpdate.add(currentAccountState.paid).toString(),
               spending: currentAccountState.spending,
               nonceMsTimestamp: currentAccountState.nonceMsTimestamp,
-              delegate: currentAccountState.delegate
+              delegate: currentAccountState.delegate,
+              maxFeesSchedule: currentAccountState.maxFeesSchedule
             }
         );
         console.log(`${accountAddress} updated...`)
@@ -454,6 +555,8 @@ export class RevealQueue extends DO {
   }
 
   private async _executeReveal(queueID: string, reveal: RevealData) {
+    const maxFeeAllowed = getMaxFeeAllowed(reveal.maxFeesSchedule);
+    const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
     const account = await this.state.storage.get<AccountData | undefined>(`account_${reveal.player}`);
     if (!account || BigNumber.from(account.paid).lt(minimumBalance)) {
 
@@ -507,7 +610,9 @@ export class RevealQueue extends DO {
                 }
             }
 
-            const {tx, error} = await this._submitTransaction(reveal, {expectedNonce: transactionsCounter.nextIndex}); // first save before broadcast ? // or catch "tx already submitted error"
+            const currentMaxFee = getMaxFeeFromArray(reveal.maxFeesSchedule, timestamp - newBroadcastingTime);
+
+            const {tx, error} = await this._submitTransaction(reveal, {expectedNonce: transactionsCounter.nextIndex, maxFeePerGas: currentMaxFee}); // first save before broadcast ? // or catch "tx already submitted error"
             if (error) {
                 // TODO
                 return;
@@ -560,7 +665,7 @@ export class RevealQueue extends DO {
     }
   }
 
-  async _submitTransaction(reveal: RevealData, options: {expectedNonce? : number, forceNonce?: number}): Promise<{tx?: {hash: string; nonce: number;}; error?: {message: string, code: number}}> {
+  async _submitTransaction(reveal: RevealData, options: {expectedNonce? : number, forceNonce?: number, maxFeePerGas: BigNumber}): Promise<{tx?: {hash: string; nonce: number; broadcastTime: number; maxFeePerGasUsed: string;}; error?: {message: string, code: number}}> {
       try {
         let nonce: number | undefined;
         if (options.forceNonce) {
@@ -582,10 +687,11 @@ export class RevealQueue extends DO {
             reveal.distance,
             reveal.secret,
             {
-                nonce
+                nonce,
+                maxFeePerGas: options.maxFeePerGas
             }
         );
-        return {tx: {hash:tx.hash, nonce: tx.nonce}};
+        return {tx: {hash:tx.hash, nonce: tx.nonce, broadcastTime: getTimestamp(), maxFeePerGasUsed: options.maxFeePerGas.toString()}};
       } catch(e) {
         const error = e as {message?: string}
         return {error: {message: error.message || "error caught: " + e, code: 5502}};
@@ -594,10 +700,14 @@ export class RevealQueue extends DO {
   }
 
   async _checkPendingTransaction(pendingID: string, pendingReveal: PendingTransactionData): Promise<void> {
-    const transaction = await this.provider.getTransactionReceipt(pendingReveal.tx.hash);
-    if (!transaction) {
-        console.log(`broadcast reveal tx for fleet: ${pendingReveal.fleetID} again...`);
-        const {error, tx} = await this._submitTransaction(pendingReveal, {forceNonce: pendingReveal.tx.nonce});
+    const transaction = await this.provider.getTransaction(pendingReveal.tx.hash);
+    if (!transaction || transaction.confirmations === 0) {
+      const lastMaxFeeUsed = pendingReveal.tx.maxFeePerGasUsed;
+      const broadcastingTime = pendingReveal.startTime + pendingReveal.duration;
+      const currentMaxFee = getMaxFeeFromArray(pendingReveal.maxFeesSchedule, getTimestamp() - broadcastingTime);
+      if (!transaction || currentMaxFee.gt(lastMaxFeeUsed)) {
+        console.log(`broadcast reveal tx for fleet: ${pendingReveal.fleetID} ${transaction ? 'with new fee' : 'again as it was lost'} ... `);
+        const {error, tx} = await this._submitTransaction(pendingReveal, {forceNonce: pendingReveal.tx.nonce, maxFeePerGas: currentMaxFee});
         if (error) {
             // TODO
             return;
@@ -607,17 +717,19 @@ export class RevealQueue extends DO {
         }
         pendingReveal.tx = tx;
         this.state.storage.put<PendingTransactionData>(pendingID, pendingReveal);
+      }
     } else if (transaction.confirmations >= 12) {
+        const txReceipt = await this.provider.getTransactionReceipt(pendingReveal.tx.hash);
         const accountID = `account_${pendingReveal.player.toLowerCase()}`;
         const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
         if (accountData) {
-          const expectedFee = BigNumber.from(pendingReveal.expectedFee);
-          let gasCost = expectedFee;
-          if (transaction.gasUsed && transaction.effectiveGasPrice) {
-            gasCost = transaction.gasUsed?.mul(transaction.effectiveGasPrice);
+          const maxFeeAllowed = getMaxFeeAllowed(pendingReveal.maxFeesSchedule);
+          let gasCost = maxFeeAllowed;
+          if (txReceipt.gasUsed && txReceipt.effectiveGasPrice) {
+            gasCost = txReceipt.gasUsed?.mul(txReceipt.effectiveGasPrice);
           }
           const paid = BigNumber.from((await accountData).paid).sub(gasCost);
-          const spending = BigNumber.from((await accountData).spending).sub(expectedFee);
+          const spending = BigNumber.from((await accountData).spending).sub(maxFeeAllowed);
           accountData.paid = paid.toString();
           accountData.spending = spending.toString();
           this.state.storage.put<AccountData>(accountID, accountData);
@@ -627,9 +739,6 @@ export class RevealQueue extends DO {
         this.state.storage.delete(pendingID);
         const revealID = `l_${pendingReveal.fleetID}`;
         this.state.storage.delete(revealID);
-    } else {
-        // TODO check timestamp
-        // check expiry too
     }
 
   }

@@ -22,6 +22,8 @@ export const NoncesNotInOrder = () => errorResponse({code: 4103, message: "nonce
 export const NoReveal = () => errorResponse({code: 5000, message: 'UNEXPECTED ERROR: No Reveal'}, 500);
 export const AlreadyPending = () => errorResponse({code: 4005,message: 'Transaction for that reveal is already underway'}) // TODO parametrise to print tx info (hash, nonce)
 
+export const InvalidFeesScheduleSubmission = () => errorResponse({code: 4008, message: 'Invalid submission for fee schedule, need to be an array of 3 elements with delay in increasing order'})
+
 export const InvalidMethod = () => errorResponse({code: 4444, message: 'Invalid Method'});
 
 export const NotAuthorized = () => errorResponse({code: 4202, message: 'Not authorized'});
