@@ -67,6 +67,7 @@ type AccountData = {
 type RevealData = RevealSubmission & {
     sendConfirmed: boolean;
     retries: number;
+    expectedFee: string;
 };
 
 // Data stored when a transaction is broadcasted
@@ -193,11 +194,12 @@ export class RevealQueue extends DO {
     } else if (!revealData) {
         return NoReveal();
     }
-    const reveal = {...revealData, retries: 0, sendConfirmed: false};
+    const reveal = {...revealData, retries: 0, sendConfirmed: false, expectedFee: flatFee.toString()};
 
     const timestampMs = Math.floor(Date.now());
 
-    let account = await this.state.storage.get<AccountData | undefined>(`account_${revealSubmission.player.toLowerCase()}`);
+    const accountID = `account_${revealSubmission.player.toLowerCase()}`;
+    let account = await this.state.storage.get<AccountData | undefined>(accountID);
     if (!account) {
         account = {paid: "0", spending: "0", nonceMsTimestamp: 0};
     }
@@ -255,6 +257,14 @@ export class RevealQueue extends DO {
         }
     }
 
+    let accountRefected = await this.state.storage.get<AccountData | undefined>(accountID);
+    if (!accountRefected) {
+      accountRefected = {paid: "0", spending: "0", nonceMsTimestamp: 0};
+    }
+    const spending = BigNumber.from(accountRefected.spending).add(reveal.expectedFee);
+    accountRefected.spending = spending.toString();
+
+    this.state.storage.put<AccountData>(accountID, accountRefected);
     this.state.storage.put<RevealData>(queueID, reveal);
     this.state.storage.put<ListData>(revealID, {queueID});
     return createResponse({queueID});
@@ -305,7 +315,7 @@ export class RevealQueue extends DO {
       if (balance.lt(minimumBalance) ) {
         balance = await this._fetchExtraBalanceFromLogs(balance, player);
       }
-      return createResponse({account: {...accountData, balance: balance.toString()}});
+      return createResponse({account: {...accountData, balance: balance.toString(), requireTopUp: balance.lt(minimumBalance)}});
     }
     return createResponse({account: null});
   }
@@ -598,6 +608,22 @@ export class RevealQueue extends DO {
         pendingReveal.tx = tx;
         this.state.storage.put<PendingTransactionData>(pendingID, pendingReveal);
     } else if (transaction.confirmations >= 12) {
+        const accountID = `account_${pendingReveal.player.toLowerCase()}`;
+        const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
+        if (accountData) {
+          const expectedFee = BigNumber.from(pendingReveal.expectedFee);
+          let gasCost = expectedFee;
+          if (transaction.gasUsed && transaction.effectiveGasPrice) {
+            gasCost = transaction.gasUsed?.mul(transaction.effectiveGasPrice);
+          }
+          const paid = BigNumber.from((await accountData).paid).sub(gasCost);
+          const spending = BigNumber.from((await accountData).spending).sub(expectedFee);
+          accountData.paid = paid.toString();
+          accountData.spending = spending.toString();
+          this.state.storage.put<AccountData>(accountID, accountData);
+        } else {
+          console.error(`weird, accountData do not exist anymore`); // TODO handle it
+        }
         this.state.storage.delete(pendingID);
         const revealID = `l_${pendingReveal.fleetID}`;
         this.state.storage.delete(revealID);
