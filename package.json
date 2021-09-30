@@ -32,6 +32,7 @@
     "contracts:execute": "node ./_scripts.js contracts:execute",
     "---------------------- agent-service ----------------------": "deploy agent-service",
     "agent-service:dev": "node ./_scripts.js agent-service:dev",
+    "agent-service:build": "node ./_scripts.js agent-service:build",
     "agent-service:deploy": "node ./_scripts.js agent-service:deploy",
     "---------------------- subgraphs ----------------------": "generate and deploy local subgraph",
     "subgraph:dev": "node ./_scripts.js subgraph:dev",

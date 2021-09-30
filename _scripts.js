@@ -155,17 +155,30 @@ async function performAction(rawArgs) {
     await execute(`wait-on web/src/lib/contracts.json`);
     console.log({env});
     await execute(`${env}npm --prefix subgraph run ${deployCommand} ../contracts/deployments/${network}`);
-    // TODO
-    // } else if (firstArg === 'agent-service:dev') {
-    //   await execute(`wait-on web/src/lib/contracts.json`);
-    //   await execute(`dotenv -- npm --prefix agent-service run dev ../contracts/deployments/localhost`);
-    // } else if (firstArg === 'agent-service:deploy') {
-    //   const {fixedArgs, extra} = parseArgs(args, 1, {});
-    //   const network = fixedArgs[0] || 'localhost';
-    //   const env = getEnv(network);
-    //   await execute(`wait-on web/src/lib/contracts.json`);
-    //   console.log({env});
-    //   await execute(`${env}npm --prefix agent-service run deploy ../contracts/deployments/${network}`);
+  } else if (firstArg === 'agent-service:dev') {
+    const {fixedArgs, options} = parseArgs(args, 1, {skipContracts: 'boolean'});
+    const network = fixedArgs[0] || 'localhost';
+    if (!options.skipContracts) {
+      await performAction(['contracts:export', network]);
+    }
+    const env = getEnv(network);
+    await execute(`${env}npm --prefix agent-service run dev`);
+  } else if (firstArg === 'agent-service:build') {
+    const {fixedArgs, extra} = parseArgs(args, 1, {});
+    const network = fixedArgs[0] || process.env.NETWORK_NAME || 'localhost';
+    const env = getEnv(network);
+    await performAction(['contracts:export', network || 'localhost']);
+    await execute(`${env}npm --prefix agent-service run build`);
+  } else if (firstArg === 'agent-service:deploy') {
+    const {fixedArgs, extra} = parseArgs(args, 1, {});
+    const network = fixedArgs[0];
+    if (!network) {
+      console.error(`need to specify the network as first argument`);
+      return;
+    }
+    const env = getEnv(network);
+    await performAction(['agent-service:build', network]);
+    await execute(`${env}npm --prefix agent-service run deploy`);
   } else if (firstArg === 'web:dev') {
     const {fixedArgs, options} = parseArgs(args, 1, {skipContracts: 'boolean'});
     const network = fixedArgs[0] || 'localhost';
@@ -213,6 +226,7 @@ async function performAction(rawArgs) {
     await performAction(['contracts:deploy', network]);
     await performAction(['subgraph:deploy', network]);
     await performAction(['web:deploy', network]);
+    await performAction(['agent-service:deploy', network]);
   } else if (firstArg === 'stop') {
     await execute(`docker-compose down -v`);
   } else if (firstArg === 'externals') {
@@ -221,6 +235,7 @@ async function performAction(rawArgs) {
   } else if (firstArg === 'dev') {
     execute(`newsh "npm run common:dev"`);
     execute(`newsh "npm run web:dev -- --skipContracts"`);
+    execute(`newsh "npm run agent-service:dev -- --skipContracts"`);
     execute(`newsh "npm run contracts:node"`);
     execute(`newsh "npm run contracts:local:dev -- --reset"`);
     execute(`newsh "npm run subgraph:dev"`);
@@ -231,6 +246,7 @@ async function performAction(rawArgs) {
     execute(`newsh "npm run externals"`);
     execute(`newsh "npm run common:dev"`);
     execute(`newsh "npm run web:dev -- --skipContracts"`);
+    execute(`newsh "npm run agent-service:dev -- --skipContracts"`);
     execute(`newsh "npm run contracts:node"`);
     execute(`newsh "npm run contracts:local:dev -- --reset"`);
     execute(`newsh "npm run subgraph:dev"`);
