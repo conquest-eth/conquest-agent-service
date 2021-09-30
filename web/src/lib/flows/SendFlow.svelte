@@ -7,6 +7,7 @@
   import SpaceshipsSent from '$lib/components/fleets/SpaceshipsSent.svelte';
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import SendPreTransactionMessage from '$lib/components/fleets/SendPreTransactionMessage.svelte';
+  import {url} from '$lib/utils/url';
 
   $: pickNeeded =
     $sendFlow.step === 'PICK_DESTINATION' ? 'destination' : $sendFlow.step === 'PICK_ORIGIN' ? 'origin' : undefined;
@@ -45,11 +46,13 @@
       fleet to perform its duties. You'll need to make sure the fleet action is resolved once it reaches the
       destination. This 2-step process is to ensure your action remains secret to all other players.
     </p>
-    <!-- <p class="mb-3">
-      To help you, we will offer you to create an event on your calendar. But we
-      also provide a mechanism to automatically perform that second action. See
-      here.
-    </p> -->
+    <p class="mb-3">
+      To help you, we will offer you to create an event on your calendar. But we also provide a mechanism to
+      automatically perform that second action on your behalf assuming you trust us and our infrastructure, See <a
+        class="underline font-black"
+        href={url('agent-service/')}>Agent Service</a
+      >
+    </p>
     <div class="text-center">
       <PanelButton label="OK" class="mt-4" on:click={() => sendFlow.acknowledgeWelcomingStep1()}>OK</PanelButton>
     </div>

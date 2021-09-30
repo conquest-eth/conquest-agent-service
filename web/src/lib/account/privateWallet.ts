@@ -223,6 +223,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
   }
 
   private async _handleWalletAndChainChange(walletAddress?: string, chainId?: string): Promise<void> {
+    console.log(`_handleWalletAndChainChange(${walletAddress}, ${chainId})`);
     if (!walletAddress || !chainId) {
       this._clear();
       return;
@@ -230,7 +231,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
     const walletAddressLC = walletAddress.toLowerCase();
     const ownerAddressLC = this.state.ownerAddress ? this.state.ownerAddress.toLowerCase() : undefined;
     if (walletAddressLC !== ownerAddressLC || this.state.chainId !== chainId) {
-      this._clear(true, false);
+      this._clear(true);
       let inCache = this.cache[walletAddressLC + '_' + chainId];
       if (!inCache) {
         const fromStorage = lstorage.getItem(LOCAL_ONLY_STORAGE_KEY(walletAddressLC, chainId)); // NEED TO BE SYNCHRONOUS
@@ -255,6 +256,8 @@ class PrivateWallet implements Readable<PrivateWalletState> {
               };
             } else {
               this.state.syncEnabled = storage.syncEnabled;
+              this.state.ownerAddress = walletAddress;
+              this.state.chainId = chainId;
               this._notify();
             }
           }

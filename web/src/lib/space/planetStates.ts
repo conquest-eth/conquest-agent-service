@@ -137,7 +137,7 @@ export class PlanetStates {
     let exiting = false;
     let exitTimeLeft = 0; // this.spaceInfo.exitDuration - (time - planet.exitTime);
     let natives = true;
-    let capturing = false;
+    let capturing = false; // TODO object with pendignAction
 
     if (contractState) {
       owner = contractState.owner;
@@ -174,8 +174,11 @@ export class PlanetStates {
       for (const pendingAction of pendingActions) {
         // TODO
         if (pendingAction.status === 'FAILURE') {
+          continue;
         } else if (pendingAction.status === 'CANCELED') {
+          continue;
         } else if (pendingAction.status === 'TIMEOUT') {
+          continue;
         }
 
         if (!pendingAction.counted) {

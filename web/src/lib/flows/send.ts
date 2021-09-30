@@ -13,6 +13,7 @@ type Data = {
   to: {x: number; y: number};
   from: {x: number; y: number};
   fleetAmount: number;
+  useAgentService: boolean;
   error?: unknown;
 };
 
@@ -88,12 +89,12 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     this._chooseFleetAmount();
   }
 
-  confirm(fleetAmount: number) {
-    this.setData({fleetAmount});
+  confirm(fleetAmount: number, useAgentService: boolean) {
+    this.setData({fleetAmount, useAgentService});
     if (!account.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION)) {
       this.setPartial({step: 'TUTORIAL_PRE_TRANSACTION'});
     } else {
-      this._confirm(fleetAmount);
+      this._confirm(fleetAmount, useAgentService);
     }
   }
 
@@ -102,10 +103,10 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       throw new Error(`not fleetAmount recorded`);
     }
     account.recordWelcomingStep(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION);
-    this.confirm(this.$store.data?.fleetAmount);
+    this.confirm(this.$store.data?.fleetAmount, this.$store.data?.useAgentService);
   }
 
-  async _confirm(fleetAmount: number): Promise<void> {
+  async _confirm(fleetAmount: number, useAgentService: boolean): Promise<void> {
     const flow = this.setPartial({step: 'CREATING_TX'});
     if (!flow.data) {
       throw new Error(`no data for send flow`);
@@ -182,8 +183,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       tx.nonce
     );
 
-    // TODO add checkbox in flow to activate/deactivate for that particular fleet
-    if (account.isAgentServiceActivatedByDefault()) {
+    if (useAgentService) {
       const {queueID} = await agentService.submitReveal(
         fleetId,
         secretHash,

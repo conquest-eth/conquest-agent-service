@@ -17,19 +17,28 @@
 </script>
 
 <Modal>
-  <p class="mb-3">
-    You are about to confirm the launch of your fleet. Remember that you'll need to ensure an extra transaction is
-    performed once the fleet reaches destination (around
-    {new Date(arrival * 1000).toString()}). You'll have a
-    {timeToText(spaceInfo.resolveWindow, {verbose: true})}
-    time window to execute it.
-  </p>
-  <p>Once the first transaction is submitted, we will help you create a reminder.</p>
-  <p class="my-2">
-    You can also setup an agent that will run on its own and resolve your fleets automatically. You just need to leave
-    the agent running. See
-    <a href={`agent-service/`} target="_blank" class="underline">here</a>
-  </p>
+  {#if $sendFlow.data?.useAgentService}
+    <p class="mb-3">
+      You are about to confirm the launch of your fleet. While you set it up to use the agent-service, note that there
+      is no 100% guarantee it will resolve in time. The service will do its best to ensure the fleet is resolved around
+      {new Date(arrival * 1000).toString()}). If it does not, you'll have a
+      {timeToText(spaceInfo.resolveWindow, {verbose: true})}
+      time window to execute it.
+    </p>
+  {:else}
+    <p class="mb-3">
+      You are about to confirm the launch of your fleet. Remember that you'll need to ensure an extra transaction is
+      performed once the fleet reaches destination (around
+      {new Date(arrival * 1000).toString()}). You'll have a
+      {timeToText(spaceInfo.resolveWindow, {verbose: true})}
+      time window to execute it.
+    </p>
+    <p>Once the first transaction is submitted, we will help you create a reminder.</p>
+    <p class="my-2">
+      You can also setup the agent-service so that it will resolve your fleets automatically. See
+      <a href={`agent-service/`} target="_blank" class="underline font-black">Agent Service</a>
+    </p>
+  {/if}
   <div class="text-center">
     <PanelButton label="OK" class="mt-4" on:click={() => sendFlow.acknowledgeWelcomingStep2()}>OK</PanelButton>
   </div>

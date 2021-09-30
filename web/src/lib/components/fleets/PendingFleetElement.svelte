@@ -51,6 +51,6 @@
   {#if fleet.state === 'TRAVELING' && !fleet.sending.action.queueID}
     <Button label="submit" on:click={submit}>submit</Button>
   {:else if fleet.state === 'SEND_BROADCASTED' && $time - fleet.sending.action.timestamp > 30}
-    <Button label="forget" on:click={forget}>forget</Button>
+    <!-- <Button label="forget" on:click={forget}>forget</Button> -->
   {/if}
 </p>

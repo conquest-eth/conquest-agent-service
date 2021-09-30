@@ -9,13 +9,16 @@
 
   import {timeToText} from '$lib/utils';
   import {time} from '$lib/time';
+  import {url} from '$lib/utils/url';
+  import Help from '../utils/Help.svelte';
+  import {agentService} from '$lib/account/agentService';
+  import {account} from '$lib/account/account';
 
   $: fromPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
   $: fromPlanetState = planets.planetStateFor(fromPlanetInfo);
 
   $: toPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.to.x, $sendFlow.data?.to.y);
   $: toPlanetState = planets.planetStateFor(toPlanetInfo);
-
 
   // TODO maxSpaceshipsLoaded and invalid message if maxSpaceships == 0
   let fleetAmountSet = false;
@@ -29,6 +32,8 @@
       fleetAmountSet = true;
     }
   }
+
+  $: agentServiceAccount = $agentService.account;
 
   let prediction:
     | {
@@ -58,13 +63,16 @@
     }
   }
 
+  let useAgentService = false;
+
   onMount(() => {
+    useAgentService = account.isAgentServiceActivatedByDefault();
     fleetAmount = 1;
     fleetAmountSet = false;
   });
 </script>
 
-<Modal on:close={() => sendFlow.cancel()} on:confirm={() => sendFlow.confirm(fleetAmount)}>
+<Modal on:close={() => sendFlow.cancel()} on:confirm={() => sendFlow.confirm(fleetAmount, useAgentService)}>
   <!-- <h2 slot="header">Capture Planet {location.x},{location.y}</h2> -->
 
   <div class="text-center">
@@ -103,8 +111,7 @@
           <span>Spaceships</span><span class="text-right">Spaceships</span>
         </div>
         <div class="flex flex-row justify-between">
-          <span>{$fromPlanetState.numSpaceships}</span><span class="text-right">{$toPlanetState.numSpaceships}</span
-          >
+          <span>{$fromPlanetState.numSpaceships}</span><span class="text-right">{$toPlanetState.numSpaceships}</span>
         </div>
 
         {#if $fromPlanetState.owner !== $toPlanetState.owner}
@@ -155,12 +162,35 @@
         {/if}
       </div>
       <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
+
+      <label class="flex items-center">
+        <input
+          type="checkbox"
+          class="form-checkbox"
+          bind:checked={useAgentService}
+          disabled={!agentServiceAccount || agentServiceAccount.requireTopUp}
+        />
+
+        <span class={`ml-2${!agentServiceAccount || agentServiceAccount.requireTopUp ? ' opacity-25' : ''}`}
+          >submit to agent-service</span
+        >
+        {#if !agentServiceAccount || agentServiceAccount.requireTopUp}
+          <span class="ml-2 text-xs"
+            >( Enable <a class="underline" href={url('agent-service/')}>Agent-Service</a>
+            <Help class="w-4"
+              >The agent-service can resolve the second tx for you. You need to register and top it up first though.</Help
+            >)</span
+          >
+        {/if}
+      </label>
+
+      <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
       <div class="text-center">
         <PanelButton
           class="mt-5"
           label="Fleet Amount"
           disabled={confirmDisabled}
-          on:click={() => sendFlow.confirm(fleetAmount)}
+          on:click={() => sendFlow.confirm(fleetAmount, useAgentService)}
         >
           <p>Confirm</p>
           {#if confirmDisabled}(need higher attack){/if}

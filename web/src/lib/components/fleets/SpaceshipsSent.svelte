@@ -7,6 +7,7 @@
   import {now} from '$lib/time';
   import {base} from '$app/paths';
   import {spaceInfo} from '$lib/space/spaceInfo';
+  import {url} from '$lib/utils/url';
 
   $: fromPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
   // $: fromPlanetState = planets.planetStateFor(fromPlanetInfo);
@@ -28,27 +29,45 @@
       {new Date(arrival * 1000).toString()}.
     </p>
 
-    <p class="mb-4">
-      Remember you need to ensure to execute the "resolution" transaction at that time. See
-      <a class="underline" href={`${base}/help/`} target="_blank">Help</a>
-      for more details.
-    </p>
-    <p class="mb-4">
-      Or as always if you can have a computer running permanently, you can setup an agent
-      <a class="underline" href={`${base}/agent-service/`} target="_blank">here</a>
-    </p>
+    {#if $sendFlow.data?.useAgentService}
+      <p class="mb-4">
+        You submitted your fleet to the <a class="underline font-black" href={url('agent-service/')}>Agent Service</a>.
+        If all is good, you do not need to do anything else.
+      </p>
+      <p class="mb-4">But there is always a risk something goes wrong. You might want to setup a reminder:</p>
 
-    <p class="mb-4">You can also create a reminder here</p>
+      <AddToCalendar
+        title="conquest.eth: Come Back To Resolve Fleet in Time!"
+        description="Come back to conquest.eth and resolve your fleet."
+        timestamp={arrival}
+        url={window.location.toString()}
+        location={window.location.toString()}
+        duration={105}
+      />
+      <!-- 1h45min event duration -->
+    {:else}
+      <p class="mb-4">
+        Remember you need to ensure to execute the "resolution" transaction at that time. See
+        <a class="underline" href={`${base}/help/`} target="_blank">Help</a>
+        for more details.
+      </p>
+      <p class="mb-4">
+        Or as always if you can have a computer running permanently, you can setup an agent
+        <a class="underline" href={`${base}/agent-service/`} target="_blank">here</a>
+      </p>
 
-    <AddToCalendar
-      title="conquest.eth: Come Back To Resolve Fleet in Time!"
-      description="Come back to conquest.eth and resolve your fleet."
-      timestamp={arrival}
-      url={window.location.toString()}
-      location={window.location.toString()}
-      duration={105}
-    />
-    <!-- 1h45min event duration -->
+      <p class="mb-4">You can also create a reminder here</p>
+
+      <AddToCalendar
+        title="conquest.eth: Come Back To Resolve Fleet in Time!"
+        description="Come back to conquest.eth and resolve your fleet."
+        timestamp={arrival}
+        url={window.location.toString()}
+        location={window.location.toString()}
+        duration={105}
+      />
+      <!-- 1h45min event duration -->
+    {/if}
 
     <PanelButton label="OK" class="mt-4" on:click={() => sendFlow.acknownledgeSuccess()}>OK</PanelButton>
   </div>

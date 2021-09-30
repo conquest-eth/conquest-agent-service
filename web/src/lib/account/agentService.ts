@@ -7,7 +7,7 @@ import {privateWallet} from './privateWallet';
 
 type Position = {x: number; y: number};
 
-type AgentServiceAccountData = {balance: BigNumber; delegate?: string; nonceMsTimestamp: number};
+type AgentServiceAccountData = {balance: BigNumber; delegate?: string; nonceMsTimestamp: number; requireTopUp: boolean};
 
 type AgentServiceState = {
   state: 'Idle' | 'Loading' | 'Ready';
@@ -101,7 +101,7 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
       if (this._lastWallet) {
         const response = await fetch(`${AGENT_SERVICE_URL}/account/${this._lastWallet}`);
         const {account} = (await response.json()) as {
-          account?: {balance: string; delegate?: string; nonceMsTimestamp: number};
+          account?: {balance: string; delegate?: string; nonceMsTimestamp: number; requireTopUp: boolean};
         };
         this.setPartial({
           state: 'Ready',
@@ -110,6 +110,7 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
                 balance: BigNumber.from(account.balance),
                 delegate: account.delegate,
                 nonceMsTimestamp: account.nonceMsTimestamp,
+                requireTopUp: account.requireTopUp,
               }
             : undefined,
         });
