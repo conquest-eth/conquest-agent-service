@@ -1,4 +1,4 @@
-import { InvalidMethod, UnknownRequestType } from './errors';
+import {InvalidMethod, UnknownRequestType} from './errors';
 import type {Env, CronTrigger} from './types';
 import {corsHeaders} from './utils';
 
@@ -6,26 +6,27 @@ const BASE_URL = 'http://127.0.0.1';
 
 // In order for the workers runtime to find the class that implements
 // our Durable Object namespace, we must export it from the root module.
-export { RevealQueue } from './RevealQueue'
+export {RevealQueue} from './RevealQueue';
 
 function handleOptions(request: Request) {
-  if (request.headers.get("Origin") !== null &&
-      request.headers.get("Access-Control-Request-Method") !== null &&
-      request.headers.get("Access-Control-Request-Headers") !== null) {
+  if (
+    request.headers.get('Origin') !== null &&
+    request.headers.get('Access-Control-Request-Method') !== null &&
+    request.headers.get('Access-Control-Request-Headers') !== null
+  ) {
     // Handle CORS pre-flight request.
     return new Response(null, {
-      headers: corsHeaders
-    })
+      headers: corsHeaders,
+    });
   } else {
     // Handle standard OPTIONS request.
     return new Response(null, {
       headers: {
-        "Allow": "GET, HEAD, POST, OPTIONS",
-      }
-    })
+        Allow: 'GET, HEAD, POST, OPTIONS',
+      },
+    });
   }
 }
-
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -33,7 +34,7 @@ export default {
       return handleOptions(request);
     }
     try {
-      const response = await handleRequest(request, env)
+      const response = await handleRequest(request, env);
       return response;
     } catch (e: unknown) {
       // console.error('ERROR', e);
@@ -43,7 +44,6 @@ export default {
       } else {
         return new Response(e as string);
       }
-
     }
   },
 
@@ -65,16 +65,16 @@ export default {
       event.waitUntil(obj.fetch(`${BASE_URL}/syncAccountBalances`));
     }
   },
-}
+};
 
 async function handleRequest(request: Request, env: Env): Promise<Response> {
   if (!env.PRIVATE_KEY) {
     console.error('no key setup');
-    return new Response(JSON.stringify({error: 'No Key Setup'}),{status: 500});
+    return new Response(JSON.stringify({error: 'No Key Setup'}), {status: 500});
   }
 
-  const id = env.REVEAL_QUEUE.idFromName('A')
-  const obj = env.REVEAL_QUEUE.get(id)
+  const id = env.REVEAL_QUEUE.idFromName('A');
+  const obj = env.REVEAL_QUEUE.get(id);
 
   const url = new URL(request.url);
   const method = request.method;
@@ -84,51 +84,52 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     if (method !== 'GET') {
       return InvalidMethod();
     }
-    let resp = await obj.fetch(url.toString(), request)
+    let resp = await obj.fetch(url.toString(), request);
     return resp;
   } else if (fnc === 'queueReveal') {
     if (method !== 'POST') {
       return InvalidMethod();
     }
-    let resp = await obj.fetch(url.toString(), request)
+    let resp = await obj.fetch(url.toString(), request);
     return resp;
   } else if (fnc === 'register') {
     if (method !== 'POST') {
       return InvalidMethod();
     }
-    let resp = await obj.fetch(url.toString(), request)
+    let resp = await obj.fetch(url.toString(), request);
     return resp;
   } else if (fnc === 'account') {
     if (method !== 'GET') {
       return InvalidMethod();
     }
-    let resp = await obj.fetch(url.toString(), request)
+    let resp = await obj.fetch(url.toString(), request);
     return resp;
   } else if (fnc === 'getPendingTransactions') {
     if (method !== 'GET') {
       return InvalidMethod();
     }
-    let resp = await obj.fetch(url.toString(), request)
+    let resp = await obj.fetch(url.toString(), request);
     return resp;
-  } else if (fnc === 'getQueue') { // TODO remove unless admin
+  } else if (fnc === 'getQueue') {
+    // TODO remove unless admin
     if (method !== 'GET') {
       return InvalidMethod();
     }
-    let resp = await obj.fetch(url.toString(), request)
+    let resp = await obj.fetch(url.toString(), request);
     return resp;
   } else if (fnc === 'setMaxFeePerGasSchedule') {
     if (method !== 'POST') {
       return InvalidMethod();
     }
-    let resp = await obj.fetch(url.toString(), request)
+    let resp = await obj.fetch(url.toString(), request);
     return resp;
-  } else if (fnc === 'deleteAll') { // TODO remove unless admin
+  } else if (fnc === 'deleteAll') {
+    // TODO remove unless admin
     if (method !== 'GET') {
       return InvalidMethod();
     }
-    let resp = await obj.fetch(url.toString(), request)
+    let resp = await obj.fetch(url.toString(), request);
     return resp;
   }
   return UnknownRequestType();
 }
-
