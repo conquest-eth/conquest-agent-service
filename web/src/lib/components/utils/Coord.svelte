@@ -1,5 +1,6 @@
 <script lang="ts">
   export let location: string;
+  import {url} from '$lib/utils/url';
   import {locationToXY} from 'conquest-eth-common';
 
   function coord(location: string): string {
@@ -19,4 +20,4 @@
   }
 </script>
 
-<span on:click={select} class="border">{coord(location)}</span>
+<a href={url(`?x=${locationToXY(location).x}&y=${locationToXY(location).y}`)} class="border">{coord(location)}</a>

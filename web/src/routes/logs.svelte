@@ -43,7 +43,7 @@
               <Coord location={event.planet.id} />
               <!-- {timeToText(now() - event.timestamp)} -->
               <!-- ago -->
-              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`} class="underline"
+              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transaction.id}`} class="underline"
                 >(see tx)</a
               >
             {:else if event.__typename === 'FleetArrivedEvent'}
@@ -79,7 +79,7 @@
 
               <!-- {timeToText(now() - event.timestamp)} -->
               <!-- ago -->
-              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`} class="underline"
+              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transaction.id}`} class="underline"
                 >(see tx)</a
               >
             {:else if event.__typename === 'PlanetExitEvent'}
@@ -95,7 +95,7 @@
               {timeToText($time - (parseInt(event.exitTime) + spaceInfo.exitDuration))} -->
               <!-- {timeToText(now() - event.timestamp)} -->
               <!-- ago -->
-              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`} class="underline"
+              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transaction.id}`} class="underline"
                 >(see tx)</a
               >
             {:else if event.__typename === 'PlanetStakeEvent'}
@@ -109,7 +109,7 @@
               <PlayCoin class="w-4 h-4 inline" />
               <!-- {timeToText(now() - event.timestamp)} -->
               <!-- ago -->
-              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`} class="underline"
+              <a href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transaction.id}`} class="underline"
                 >(see tx)</a
               >
               <!-- {:else if event.__typename === 'StakeToWithdrawEvent'} -->
@@ -122,7 +122,7 @@
               <!-- unknown event -->
               <!-- <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
               <a
-                href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transactionID}`}
+                href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transaction.id}`}
                 class="underline">(see tx)</a> -->
             {/if}
           </li>

@@ -10,9 +10,45 @@
 
   import {onMount} from 'svelte';
   import {browser} from '$app/env';
+  import {camera} from '$lib/map/camera';
+  import {page} from '$app/stores';
+  import {spaceInfo} from '$lib/space/spaceInfo';
+  import selection from '$lib/map/selection';
 
   onMount(() => {
     logo.start();
+
+    let x = parseInt($page.query.get('x'));
+    let y = parseInt($page.query.get('y'));
+    window.history.replaceState(
+      '',
+      document.title,
+      window.location.pathname // TODO keep other query
+    );
+    if (!isNaN(x) && !isNaN(y)) {
+      // const locX = Math.floor((Math.round(x) + 2) / 4);
+      // const locY = Math.floor((Math.round(y) + 2) / 4);
+      // const planetInfo = spaceInfo.getPlanetInfo(locX, locY);
+      // // let planetInfo;
+      // // for (let i = 0; i < 9; i++) {
+      // //   const offsetX = i % 3;
+      // //   const offsetY = Math.floor(i / 3);
+      // //   planetInfo = spaceInfo.getPlanetInfo(
+      // //     locX + (offsetX == 2 ? -1 : offsetX),
+      // //     locY + (offsetY == 2 ? -1 : offsetY)
+      // //   );
+      // // }
+      // if (planetInfo) {
+      //   selection.select(planetInfo.location.x, planetInfo.location.y);
+      // }
+      // camera.navigate(x, y, 20);
+
+      const planetInfo = spaceInfo.getPlanetInfo(x, y);
+      if (planetInfo) {
+        selection.select(x, y);
+        camera.navigate(planetInfo.location.globalX, planetInfo.location.globalY, 20);
+      }
+    }
   });
 </script>
 

@@ -29,7 +29,7 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericEvent[]> {
 ownerEvents(orderDirection: desc orderBy: blockNumber where: {timestamp_gt: $timestamp} first: 1000) {
   id
    __typename
-   transaction
+   transaction {id}
    timestamp
    owner {id}
    ... on  PlanetEvent{
