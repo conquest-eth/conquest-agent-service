@@ -36,6 +36,6 @@ export const InvalidDelegate = () => errorResponse({code: 4401, message: 'Delega
 
 export const UnknownRequestType = () => errorResponse({code: 4401, message: "Unknown request type"}); // TODO parametrise to print request type
 
-function errorResponse(responseError: ResponseError, status: number = 400): Response {
+export function errorResponse(responseError: ResponseError, status: number = 400): Response {
     return createResponse(responseError, {status});
 }
