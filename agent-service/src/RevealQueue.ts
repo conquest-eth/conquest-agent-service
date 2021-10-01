@@ -65,20 +65,20 @@ type MaxFeesSchedule = [
   {maxFeePerGas: string; delay: number}
 ];
 
+// Data for each account
 type AccountData = {
   nonceMsTimestamp: number;
-  paid: string;
-  spending: string;
+  paid: string; // amount of ETH deposited minus amout used (by mined transactions)
+  spending: string; // amount reserved for pending reveals
   delegate?: string; // TODO array or reverse lookup ?
-  maxFeesSchedule: MaxFeesSchedule;
-}; // TODO add balanceUsedUntilMined ?
+  maxFeesSchedule: MaxFeesSchedule; // an array for of maxFeePerGas to use depending on delay for new reveals
+};
 
-// Data stored in the DO (Durable Object)
-// sendConfirmed is a flag indicating whether the send transaction has been confirmed and startTime is now validated
+// The data store per reveal requested
 type RevealData = RevealSubmission & {
-  sendConfirmed: boolean;
-  retries: number;
-  maxFeesSchedule: MaxFeesSchedule;
+  sendConfirmed: boolean; // flag indicating whether the send transaction has been confirmed and startTime is now validated
+  retries: number; // whenever the tx is pushed back for later because it cannot be sent (cannot fetch startTime for example, meaning the fleet do not exist)
+  maxFeesSchedule: MaxFeesSchedule; // an array for of maxFeePerGas to use depending on delay for this reveal
 };
 
 // Data stored when a transaction is broadcasted
@@ -90,18 +90,18 @@ type TransactionsCounter = {
 };
 
 type RegistrationSubmission = {
-  player: string;
-  delegate: string;
-  nonceMsTimestamp: number;
-  signature: string;
+  player: string; // player to register
+  delegate: string; // delegate allowed to perform submission on behalf of the player
+  nonceMsTimestamp: number; // handy mechanism to push update without the need to fetch nonce first
+  signature: string; // signature for the registration data
 };
 
 type FeeScheduleSubmission = {
-  player: string;
-  delegate?: string;
-  maxFeesSchedule: MaxFeesSchedule;
-  nonceMsTimestamp: number;
-  signature: string;
+  player: string; // player for which we want to update the feeSchedule
+  delegate?: string; // submitted by delegate
+  maxFeesSchedule: MaxFeesSchedule; // an array for of maxFeePerGas to use depending on delay for new reveals
+  nonceMsTimestamp: number; // handy mechanism to push update without the need to fetch nonce first
+  signature: string; // signature for the new feeschedule data
 };
 
 // Data stored for fleetID to ensure only one fleetID is being queued across the queue.
@@ -118,12 +118,15 @@ type SyncData = {
 
 const gwei = BigNumber.from('1000000000');
 const defaultMaxFeePerGas = gwei.mul(100);
+// the default fee schedule for new user registration
 const defaultMaxFeesSchedule: MaxFeesSchedule = [
   {maxFeePerGas: defaultMaxFeePerGas.toString(), delay: 0},
   {maxFeePerGas: defaultMaxFeePerGas.toString(), delay: 0},
   {maxFeePerGas: defaultMaxFeePerGas.toString(), delay: 0},
 ];
 
+// maximum gas consumed for the reveal tx // TODO check its actual value, as we modify the contract
+// TODO specify it as part of the reveal submission (if the system was fully generic, then it make sense to add it)
 const revealMaxGasEstimate = BigNumber.from(200000);
 
 const RETRY_MAX_PERIOD = 1 * 60 * 60; // 1 hour?
