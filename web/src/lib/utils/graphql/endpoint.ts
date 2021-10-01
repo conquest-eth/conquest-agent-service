@@ -69,7 +69,7 @@ export class EndPoint {
     let numEntries = first;
     let entries: T[] = [];
     while (numEntries === first) {
-      const result = await this.client.query(query, {first, lastId, ...args?.variables}, context).toPromise();
+      const result = await this.client.query(query, {first, lastId, ...args?.variables}, args?.context).toPromise();
       if (result.error) {
         throw new Error(result.error.message);
       }

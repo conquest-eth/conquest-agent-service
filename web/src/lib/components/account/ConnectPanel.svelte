@@ -98,6 +98,14 @@
         Agent Service
         <Help class="w-4 h-4">The agent can help you ensure you resolve your fleets in time.</Help>
       </NavButton>
+      <NavButton class="m-1" label="help" href={url('logs/')}>
+        Logs
+        <Help class="w-4 h-4">See Global Logs</Help>
+      </NavButton>
+      <NavButton class="m-1" label="help" href={url('highscores/')}>
+        Highscores
+        <Help class="w-4 h-4">See Highscores for current alpha</Help>
+      </NavButton>
       <NavButton class="m-1" label="help" href={url('help/')}>
         Help
         <Help class="w-4 h-4">See some Help on the game.</Help>

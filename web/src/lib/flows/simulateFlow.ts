@@ -3,14 +3,13 @@ import {BaseStoreWithData} from '$lib/utils/stores/base';
 type Data = {
   to: {x: number; y: number};
   from: {x: number; y: number};
-  error?: unknown;
 };
 
 export type SimulateFlow = {
   type: 'SEND';
   step: 'IDLE' | 'PICK_DESTINATION' | 'SIMULATE';
   data?: Data;
-  error?: unknown;
+  error?: {message?: string};
 };
 
 class SimulateFlowStore extends BaseStoreWithData<SimulateFlow, Data> {

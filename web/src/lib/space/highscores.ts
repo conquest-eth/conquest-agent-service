@@ -1,6 +1,6 @@
 import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {blockTime, finality, logPeriod, lowFrequencyFetch} from '$lib/config';
-import {SUBGRAPH_ENDPOINT} from '$lib/graphql';
+import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
 import {BigNumber} from '@ethersproject/bignumber';
 
 type Highscore = {
@@ -40,7 +40,7 @@ class HighscoresStore extends BaseStoreWithData<Highscores, Highscore[]> {
   async fetch() {
     const query = `
 query($first: Int! $lastId: ID!) {
-  owners(first: $first block: {number:4830319} where: {
+  owners(first: $first where: {
     totalStaked_gt: 0
     id_gt: $lastId
   }) {
@@ -63,6 +63,7 @@ query($first: Int! $lastId: ID!) {
           },
         });
       } catch (e) {
+        console.error(e);
         this.setPartial({error: `cannot fetch from thegraph node`});
         throw new Error(`cannot fetch from thegraph node`);
       }

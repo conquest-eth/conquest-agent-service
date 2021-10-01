@@ -1,21 +1,18 @@
 <script lang="ts">
-  // import {base} from '$app/paths';
+  import {base} from '$app/paths';
 
-  // import Blockie from '$lib/components/account/Blockie.svelte';
-  // import NavButton from '$lib/components/navigation/NavButton.svelte';
-  // import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
+  import Blockie from '$lib/components/account/Blockie.svelte';
+  import NavButton from '$lib/components/navigation/NavButton.svelte';
+  import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
 
-  // import {highscores} from '$lib/stores/highscores';
-  // import {BigNumber} from '@ethersproject/bignumber';
-  // import {onMount} from 'svelte';
-  // onMount(() => {
-  //   highscores.start();
-  // });
+  import {highscores} from '$lib/space/highscores';
+  import {onMount} from 'svelte';
+  onMount(() => {
+    highscores.start();
+  });
 </script>
 
-WORK IN PROGRESS
-
-<!-- <div class="w-full h-full bg-black text-white">
+<div class="w-full h-full bg-black text-white">
   <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
   <div class="markdown text-white p-3">
     <h1 class="text-cyan-400"><span class="font-black">Highscores</span></h1>
@@ -55,4 +52,4 @@ WORK IN PROGRESS
       </ul>
     {/if}
   </div>
-</div> -->
+</div>

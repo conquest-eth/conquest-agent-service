@@ -14,7 +14,6 @@ type Data = {
   from: {x: number; y: number};
   fleetAmount: number;
   useAgentService: boolean;
-  error?: unknown;
 };
 
 export type SendFlow = {
@@ -31,7 +30,7 @@ export type SendFlow = {
     | 'WAITING_TX'
     | 'SUCCESS';
   data?: Data;
-  error?: unknown;
+  error?: {message?: string};
 };
 
 class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {

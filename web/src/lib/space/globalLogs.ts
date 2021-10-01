@@ -29,7 +29,7 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericEvent[]> {
 ownerEvents(orderDirection: desc orderBy: blockNumber where: {timestamp_gt: $timestamp} first: 1000) {
   id
    __typename
-   transactionID
+   transaction
    timestamp
    owner {id}
    ... on  PlanetEvent{
@@ -69,8 +69,7 @@ ownerEvents(orderDirection: desc orderBy: blockNumber where: {timestamp_gt: $tim
         {
           timestamp: string;
         }
-      >({
-        query,
+      >(query, {
         variables: {timestamp},
         context: {
           requestPolicy: 'network-only', // required as cache-first will not try to get new data
@@ -78,6 +77,7 @@ ownerEvents(orderDirection: desc orderBy: blockNumber where: {timestamp_gt: $tim
       });
 
       if (!result.data) {
+        console.error(result);
         this.setPartial({error: `cannot fetch from thegraph node`});
         throw new Error(`cannot fetch from thegraph node`);
       }
