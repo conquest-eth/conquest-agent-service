@@ -397,6 +397,16 @@ export class RevealQueue extends DO {
     return createResponse({success: true});
   }
 
+  async deleteAll(path: string[]): Promise<Response> {
+    if (path[0] === 'fall-sunshine-autumn-tree') {
+      this.state.storage.deleteAll();
+      return createResponse({success: true});
+    } else {
+      this.state.storage.deleteAll();
+      return createResponse({success: false});
+    }
+  }
+
   async account(path: string[]): Promise<Response> {
     const player = path[0]?.toLowerCase();
     const accountID = `account_${player}`;
