@@ -446,6 +446,9 @@ class Account implements Readable<AccountState> {
   }
 
   private async _handlePrivateWalletChange($privateWallet: PrivateWalletState): Promise<void> {
+    if ($privateWallet.step !== 'READY') {
+      return;
+    }
     if (
       !this.accountDB ||
       $privateWallet.ownerAddress !== this.accountDB.ownerAddress ||
