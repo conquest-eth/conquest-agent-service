@@ -4,3 +4,7 @@
 - [ ] when revealTIme come check agent-service for registered queueID and show broadcast status
 - [ ] Optimistic agent-serve registration and topups (later we could use pendingAction system)
 - [ ] SHow list of fleets on agent-service page and allow to register them each or all
+
+# ISSUES
+
+- [ ] when not signed in, cannot acknowledge error or event: need to either force sign-in to see (same as fleets) orat least bring a popup to sign-in
