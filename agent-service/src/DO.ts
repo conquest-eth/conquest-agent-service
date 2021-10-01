@@ -34,7 +34,7 @@ export abstract class DO {
           return response;
         } catch(e: unknown) {
             const error = e as {message?: string}
-            let message = `Error happen while calling ${fnc}`;
+            let message = error.message || `Error happen while calling ${fnc}`;
             return errorResponse({code: 5555, message});
             // console.log(message);
             // throw e;
