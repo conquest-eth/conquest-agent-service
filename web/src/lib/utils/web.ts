@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export function getParamsFromURL(url: string): Record<string, string> {
+export function getParamsFromURL(url: string): {params: Record<string, string>; pathname?: string} {
   if (!url) {
-    return {};
+    return {params: {}};
   }
   const obj: Record<string, string> = {};
   const hash = url.lastIndexOf('#');
@@ -21,13 +21,13 @@ export function getParamsFromURL(url: string): Record<string, string> {
         obj[decodeURIComponent(key)] = decodeURIComponent(val);
       });
   }
-  return obj;
+  return {params: obj, pathname: cleanedUrl.slice(0, question)};
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-export function getParamsFromLocation(): Record<string, string> {
+export function getParamsFromLocation(): {params: Record<string, string>; pathname?: string} {
   if (typeof window === 'undefined') {
-    return {};
+    return {params: {}};
   }
   return getParamsFromURL(window.location.href);
 }
