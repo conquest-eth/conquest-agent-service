@@ -44,6 +44,7 @@ export type PendingSend = PendingActionBase & {
 
 export type PendingResolution = PendingActionBase & {
   type: 'RESOLUTION';
+  to: PlanetCoords;
 };
 
 export type PendingExit = PendingActionBase & {
@@ -224,6 +225,7 @@ class Account implements Readable<AccountState> {
   async recordFleetResolvingTxhash(
     sendTxHash: string,
     txHash: string,
+    to: {x: number; y: number},
     timestamp: number,
     nonce: number,
     agent: boolean
@@ -234,13 +236,19 @@ class Account implements Readable<AccountState> {
       type: 'RESOLUTION',
       timestamp,
       nonce,
+      to,
     };
     await this.accountDB.save(this.state.data);
     // TODO agent ?
     this._notify();
   }
 
-  async recordExternalResolution(sendTxHash: string, fleetId: string, final?: number): Promise<void> {
+  async recordExternalResolution(
+    sendTxHash: string,
+    to: {x: number; y: number},
+    fleetId: string,
+    final?: number
+  ): Promise<void> {
     this.check();
     const sendAction = this.state.data.pendingActions[sendTxHash] as PendingSend | number;
     if (typeof sendAction === 'number') {
@@ -259,6 +267,7 @@ class Account implements Readable<AccountState> {
         type: 'RESOLUTION',
         external: {status: 'SUCCESS', final},
         timestamp: final,
+        to,
         nonce: 0,
       };
       this.state.data.pendingActions[fleetId] = resolutionAction;
@@ -331,6 +340,19 @@ class Account implements Readable<AccountState> {
   }
 
   async acknowledgeSuccess(txHash: string, fleetId: string | null, final?: number): Promise<void> {
+    return this.acknowledgeAction('SUCCESS', txHash, fleetId, final);
+  }
+
+  async acknowledgeError(txHash: string, fleetId: string | null, final?: number): Promise<void> {
+    return this.acknowledgeAction('ERROR', txHash, fleetId, final);
+  }
+
+  async acknowledgeAction(
+    statusType: 'SUCCESS' | 'ERROR',
+    txHash: string,
+    fleetId: string | null,
+    final?: number
+  ): Promise<void> {
     this.check();
     let idUsed = txHash;
     let pendingAction = this.state.data.pendingActions[txHash];
@@ -341,7 +363,7 @@ class Account implements Readable<AccountState> {
     if (pendingAction && typeof pendingAction !== 'number') {
       let sendAction: PendingSend;
       let sendActionTxHash: string;
-      if (pendingAction.type === 'RESOLUTION') {
+      if (statusType === 'SUCCESS' && pendingAction.type === 'RESOLUTION') {
         for (const txHashToCheck of Object.keys(this.state.data.pendingActions)) {
           const p = this.state.data.pendingActions[txHashToCheck];
           if (typeof p !== 'number' && p.type === 'SEND') {
@@ -353,9 +375,9 @@ class Account implements Readable<AccountState> {
           }
         }
       }
-      if (!sendAction || !sendActionTxHash) {
-        console.error(`cannot find send action for resolution`);
-      }
+      // if (!sendAction || !sendActionTxHash) {
+      //   console.error(`cannot find send action for resolution`);
+      // }
       if (final) {
         this.state.data.pendingActions[idUsed] = final;
         if (sendAction) {
@@ -367,14 +389,14 @@ class Account implements Readable<AccountState> {
           }
         }
       } else {
-        pendingAction.acknowledged = 'SUCCESS';
+        pendingAction.acknowledged = statusType;
         if (sendAction) {
-          sendAction.acknowledged = 'SUCCESS';
+          sendAction.acknowledged = statusType;
           if (sendAction.resolution) {
             for (const resolutionId of sendAction.resolution) {
               const resolution = this.state.data.pendingActions[resolutionId];
               if (resolution && typeof resolution !== 'number') {
-                resolution.acknowledged = 'SUCCESS';
+                resolution.acknowledged = statusType;
               }
             }
           }
@@ -447,6 +469,14 @@ class Account implements Readable<AccountState> {
 
   private async _handlePrivateWalletChange($privateWallet: PrivateWalletState): Promise<void> {
     if ($privateWallet.step !== 'READY') {
+      if (this.unsubscribeFromSync) {
+        this.unsubscribeFromSync();
+        this.unsubscribeFromSync = undefined;
+      }
+      this.state.step = 'IDLE';
+      this.state.data = undefined;
+      this.state.ownerAddress = $privateWallet.ownerAddress;
+      this._notify();
       return;
     }
     if (

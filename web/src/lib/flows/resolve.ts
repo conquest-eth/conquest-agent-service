@@ -48,7 +48,14 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
         secretHash,
         {gasPrice}
       );
-      account.recordFleetResolvingTxhash(fleet.txHash, tx.hash, latestBlock.timestamp, tx.nonce, false);
+      account.recordFleetResolvingTxhash(
+        fleet.txHash,
+        tx.hash,
+        fleet.to.location,
+        latestBlock.timestamp,
+        tx.nonce,
+        false
+      );
       this.setPartial({step: 'SUCCESS'}); // TODO IDLE ?
     } catch (e) {
       console.error(e);

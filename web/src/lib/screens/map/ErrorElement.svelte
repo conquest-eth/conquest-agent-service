@@ -2,18 +2,18 @@
   import {account} from '$lib/account/account';
 
   import {camera} from '$lib/map/camera';
-  import type {MyEvent} from '$lib/space/myevents';
+  import type {SpaceError} from '$lib/space/errors';
   import {spaceInfo} from '$lib/space/spaceInfo';
-  export let event: MyEvent;
+  export let error: SpaceError;
 
-  $: planetInfo = spaceInfo.getPlanetInfoViaId(event.event.planet.id);
+  $: planetInfo = spaceInfo.getPlanetInfo(error.location.x, error.location.y);
   $: x = planetInfo.location.globalX - 48 / 2;
   $: y = planetInfo.location.globalY - 48 / 2;
 
   $: multiplier = planetInfo.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
   $: scale = 0.025 * multiplier;
 
-  $: color = event.type === 'external_fleet' ? 'blue' : ' #10B981'; // TODO
+  $: color = 'red';
 
   $: renderScale = $camera ? $camera.renderScale : 1;
 
@@ -34,13 +34,13 @@
   }
 
   async function acknowledge() {
-    console.log(event);
-    await account.acknowledgeEvent(event);
+    console.log(error);
+    await account.acknowledgeError(error.txHash, null);
   }
 </script>
 
 <div
-  id={event.event.fleet.id}
+  id={error.txHash}
   on:click={acknowledge}
   style={`z-index: 5; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
     blockieScale * 3

@@ -76,7 +76,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
   }
 
   private async _handleAccountChange($account: AccountState): Promise<void> {
-    console.log(`update from account`);
+    console.log(`PENDING ACTION, update from account`);
     if ($account.data) {
       const txHashes = Object.keys($account.data.pendingActions);
       for (const txHash of txHashes) {
@@ -112,14 +112,19 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
 
     this.ownerAddress = $account.ownerAddress;
 
+    this._handleChainTempo(chainTempo.chainInfo);
+
     this._notify();
   }
 
   private async _handleChainTempo($chainTempoInfo: ChainTempoInfo): Promise<void> {
+    console.log(`PENDING ACTIONS (${this.state.length} items) chain tempo : ${chainTempo.chainInfo.lastBlockNumber}`);
     if (!$chainTempoInfo.lastBlockNumber) {
+      console.log(`no block number, skip...`);
       return; // TODO ?
     }
     if (this.checkingInProgress) {
+      console.log(`check in progress, skip...`);
       return;
     }
     const ownerAddress = this.ownerAddress;
@@ -221,6 +226,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
             }
             await account.recordExternalResolution(
               checkedAction.id,
+              checkedAction.action.to,
               checkedAction.action.fleetId,
               final ? finalisedBlock.timestamp : undefined
             );
@@ -232,6 +238,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
 
   private async _checkAction(ownerAddress: string, checkedAction: CheckedPendingAction, blockNumber: number) {
     if (!wallet.provider) {
+      console.log('provider not available....');
       return;
     }
 

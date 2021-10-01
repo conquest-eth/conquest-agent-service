@@ -9,6 +9,8 @@
   import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
   import {myevents} from '$lib/space/myevents';
   import EventElement from './EventElement.svelte';
+  import {errors} from '$lib/space/errors';
+  import ErrorElement from './ErrorElement.svelte';
 
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
 
@@ -73,6 +75,14 @@ width:100%; height: 100%;
       {#each $myevents as event}
         {#if event.acknowledged === 'NO'}
           <EventElement {event} />
+        {/if}
+      {/each}
+    {/if}
+
+    {#if $errors}
+      {#each $errors as error}
+        {#if !error.acknowledged}
+          <ErrorElement {error} />
         {/if}
       {/each}
     {/if}
