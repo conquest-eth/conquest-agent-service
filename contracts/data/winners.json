@@ -56,7 +56,10 @@
     "numTokens": 10,
     "addressToSendTo": "0x90bF1e866A1b4681E1A82c377b4839859F97DaB7",
     "signature": "0xa5515742e15c13100ca61c36b7c029ab85638bafddf97d974a4a5d41e24b919b490a7c8dcb653489989f5199eccdef06b5fccea12da36f29671fddddf8e28f931b",
-    "signedMessage": "I agree to have my alpha.conquest.eth reward sent to the following address: 0x90bF1e866A1b4681E1A82c377b4839859F97DaB7"
+    "signedMessage": "I agree to have my alpha.conquest.eth reward sent to the following address: 0x90bF1e866A1b4681E1A82c377b4839859F97DaB7",
+    "near_address": "tyrnis.near",
+    "near_signature": "0x7a6ceda6dd0f01a03926b0e1d6f27042b177448a6544fab7487e078316bb08602b3a088a28f3e2729d6d27a642801ab335d96e929e302a6115e481d2a6468f6e1c",
+    "near_signedMessage": "I agree to have my alpha.conquest.eth reward sent to the following address: tyrnis.near"
   },
   {
     "address": "0xfbe849ea94aa5acd53c83776449620b1b51976db",
