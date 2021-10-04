@@ -8,10 +8,14 @@
   import FleetElement from './FleetElement.svelte';
   import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
   import {myevents} from '$lib/space/myevents';
+  import type {MyEvent} from '$lib/space/myevents';
   import EventElement from './EventElement.svelte';
   import {errors} from '$lib/space/errors';
   import ErrorElement from './ErrorElement.svelte';
+  import EventInfo from '$lib/components/events/EventInfo.svelte';
 
+  let selectedEvent: MyEvent;
+  let isShow = false;
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
 
   $: x1 = ($spaceQueryWithPendingActions.queryState.data?.space.x1 || -16) * 4 - 2; // TODO sync CONSTANTS with thegraph and contract
@@ -20,6 +24,9 @@
   $: y2 = ($spaceQueryWithPendingActions.queryState.data?.space.y2 || 16) * 4 + 2;
 </script>
 
+{#if isShow}
+  <EventInfo event={selectedEvent} bind:isShow />
+{/if}
 <div
   style={`
   /* pointer-events: none; */
@@ -74,7 +81,7 @@ width:100%; height: 100%;
     {#if $myevents}
       {#each $myevents as event}
         {#if event.acknowledged === 'NO'}
-          <EventElement {event} />
+          <EventElement bind:selectedEvent bind:isShow {event} />
         {/if}
       {/each}
     {/if}
