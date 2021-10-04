@@ -1,9 +1,10 @@
+<!-- TODO delete ?-->
 <script lang="ts">
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
-  import privateAccount from '$lib/account/privateAccount';
+  // import privateAccount from '$lib/account/privateAccount';
   export let exit: {txHash: string; location: string};
   function deleteExit() {
-    privateAccount.deleteExit(exit.location);
+    // privateAccount.deleteExit(exit.location);
   }
 </script>
 
