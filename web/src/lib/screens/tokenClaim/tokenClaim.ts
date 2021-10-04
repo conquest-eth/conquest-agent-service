@@ -5,6 +5,7 @@ import {BaseStore} from '$lib/utils/stores/base';
 import {Wallet} from '@ethersproject/wallet';
 import {rebuildLocationHash} from '$lib/utils/web';
 import {hashParams} from '$lib/config';
+import {BigNumber} from '@ethersproject/bignumber';
 
 type TokenClaim = {
   inUrl: boolean;
@@ -92,18 +93,25 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       // TODO
     }
 
-    const nonce = wallet.provider.getTransactionCount(claimWallet.address, 'latest');
+    const nonce = await wallet.provider.getTransactionCount(claimWallet.address, 'latest');
 
     const estimate = await playToken_l2.estimateGas.transferAlongWithETH(wallet.address, tokenBalance, {
       value: 1,
       nonce,
     });
-    const gasPrice = await wallet.provider.getGasPrice();
+
+    const gwei = BigNumber.from('1000000000');
+    const maxPriorityFeeToUSe = gwei.mul(5);
+    const maxGasPriceToUse = ethBalance.div(8).div(100000);
+
+    const gasPrice = maxGasPriceToUse.gte(maxPriorityFeeToUSe) ? maxGasPriceToUse : maxPriorityFeeToUSe; //gwei.mul(500); //await wallet.provider.getGasPrice();
 
     const ethLeft = ethBalance.sub(estimate.mul(gasPrice));
     const tx = await playToken_l2.transferAlongWithETH(wallet.address, tokenBalance, {
       value: ethLeft,
       nonce,
+      maxFeePerGas: gasPrice, // TODO won't sweep it all
+      maxPriorityFeePerGas: maxPriorityFeeToUSe,
     });
     this.setPartial({state: 'Claiming'});
     await tx.wait();
