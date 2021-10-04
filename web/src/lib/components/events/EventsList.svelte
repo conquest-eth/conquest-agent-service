@@ -37,11 +37,11 @@
           {#each $myevents as event}
             {#if event.event.won}
               <li class="text-yellow-300" on:click={() => onEventSelect(event)}>
-                You captured {event.event.planet.id}
+                You captured {spaceInfo.getPlanetInfoViaId(event.event.planet.id).stats.name}
               </li>
             {:else}
               <li class="text-yellow-300" on:click={() => onEventSelect(event)}>
-                You didn't capture {event.event.planet}
+                You didn't capture {spaceInfo.getPlanetInfoViaId(event.event.planet.id).stats.name}
               </li>
             {/if}
           {/each}
