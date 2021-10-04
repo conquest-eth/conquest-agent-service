@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-1.0
-pragma solidity 0.7.5;
+pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -7,7 +7,7 @@ import "../Interfaces/ITokenManager.sol";
 import "./Base.sol";
 import "./WithPermitAndFixedDomain.sol";
 import "./CompoundAdapter.sol";
-import "hardhat-deploy/solc_0.7/proxy/Proxied.sol";
+import "hardhat-deploy/solc_0.8/proxy/Proxied.sol";
 
 contract Play is Base, WithPermitAndFixedDomain, CompoundAdapter, Proxied {
     using Address for address;

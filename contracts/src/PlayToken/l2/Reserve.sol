@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-1.0
-pragma solidity 0.7.5;
+pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../Play.sol";
-import "ethereum-transfer-gateway/src/solc_0.7/BaseERC20TransferRecipient.sol";
+import "ethereum-transfer-gateway/src/solc_0.8/BaseERC20TransferRecipient.sol";
 
 contract Reserve is BaseERC20TransferRecipient {
     using SafeERC20 for IERC20;

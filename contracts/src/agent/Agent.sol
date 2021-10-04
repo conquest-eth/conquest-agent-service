@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-1.0
-pragma solidity 0.7.5;
+pragma solidity 0.8.9;
 
 import "../OuterSpace.sol";
-import "@openzeppelin/contracts/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract Agent {
     using ECDSA for bytes32;
@@ -24,7 +24,7 @@ contract Agent {
         address signer = digest.recover(signature);
         require(signer == _signer);
         _outerspace.resolveFleet(fleetID, from, to, distance, secret);
-        msg.sender.transfer(tx.gasprice * ((gasleft() - startgas) + 30000));
+        payable(msg.sender).transfer(tx.gasprice * ((gasleft() - startgas) + 30000));
     }
 
     function resolveFleetWithSignerAssumingFailureCost(uint256 fleetID, uint256 from, uint256 to, uint256 distance, bytes32 secret, bytes calldata signature) external {
@@ -39,7 +39,7 @@ contract Agent {
         // } catch {
 
         // }
-        msg.sender.transfer(tx.gasprice * ((gasleft() - startgas) + 30000));
+        payable(msg.sender).transfer(tx.gasprice * ((gasleft() - startgas) + 30000));
     }
 
 }

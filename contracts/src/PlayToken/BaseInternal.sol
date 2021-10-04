@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-1.0
-pragma solidity 0.7.5;
+pragma solidity 0.8.9;
 
 abstract contract BaseInternal {
     function _approveFor(

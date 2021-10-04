@@ -21,13 +21,13 @@ const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
-        version: '0.7.5',
-        // settings: {
-        //   optimizer: {
-        //     enabled: true,
-        //     runs: 2000,
-        //   },
-        // },
+        version: '0.8.9',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 2000,
+          },
+        },
       },
       {
         version: '0.5.12', // For Dai.sol

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-1.0
 
-pragma solidity 0.7.5;
+pragma solidity 0.8.9;
 
 import "./BaseERC20.sol";
 import "../Interfaces/IDai.sol";
@@ -58,7 +58,7 @@ contract DAIWithInitialBalance is BaseERC20, IDai {
         require(holder == ecrecover(digest, v, r, s), "Dai/invalid-permit");
         require(expiry == 0 || block.timestamp <= expiry, "Dai/permit-expired");
         require(nonce == _nonces[holder]++, "Dai/invalid-nonce");
-        uint256 wad = allowed ? uint256(-1) : 0;
+        uint256 wad = allowed ? type(uint256).max : 0;
         _allowances[holder][spender] = wad;
         emit Approval(holder, spender, wad);
     }

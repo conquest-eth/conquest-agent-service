@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AGPL-1.0
 
-pragma solidity 0.7.5;
+pragma solidity 0.8.9;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Libraries/Extraction.sol";
 import "./Libraries/Math.sol";
-import "hardhat-deploy/solc_0.7/proxy/Proxied.sol";
+import "hardhat-deploy/solc_0.8/proxy/Proxied.sol";
 
 contract OuterSpace is Proxied {
     using Extraction for bytes32;
@@ -512,49 +512,51 @@ contract OuterSpace is Proxied {
     // solhint-disable-next-line code-complexity
     function _handleDiscovery(uint256 location) internal {
         Discovered memory discovered = _discovered;
-        int256 x = int256(int128(location & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF));
-        int256 y = int256(int128(location >> 128));
+
+        int256 x = int256(int128(int256(location & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)));
+        int256 y = int256(int128(int256(location >> 128)));
+
         bool changes = false;
         if (x < 0) {
-            require(-x <= discovered.minX, "NOT_REACHABLE_YET_MINX");
+            require(-x <= int256(uint256(discovered.minX)), "NOT_REACHABLE_YET_MINX");
             x = -x + EXPANSION;
             if (x > UINT32_MAX) {
                 x = UINT32_MAX;
             }
-            if (discovered.minX < uint32(x)) {
-                discovered.minX = uint32(x);
+            if (int256(uint256(discovered.minX)) < x) {
+                discovered.minX = uint32(uint256(x));
                 changes = true;
             }
         } else {
-            require(x <= discovered.maxX, "NOT_REACHABLE_YET_MAXX");
+            require(x <= int256(uint256(discovered.maxX)), "NOT_REACHABLE_YET_MAXX");
             x = x + EXPANSION;
             if (x > UINT32_MAX) {
                 x = UINT32_MAX;
             }
-            if (discovered.maxX < uint32(x)) {
-                discovered.maxX = uint32(x);
+            if (discovered.maxX < uint32(uint256(x))) {
+                discovered.maxX = uint32(uint256(x));
                 changes = true;
             }
         }
 
         if (y < 0) {
-            require(-y <= discovered.minY, "NOT_REACHABLE_YET_MINY");
+            require(-y <= int256(uint256(discovered.minY)), "NOT_REACHABLE_YET_MINY");
             y = -y + EXPANSION;
             if (y > UINT32_MAX) {
                 y = UINT32_MAX;
             }
-            if (discovered.minY < uint32(y)) {
-                discovered.minY = uint32(y);
+            if (int256(uint256(discovered.minY)) < y) {
+                discovered.minY = uint32(uint256(y));
                 changes = true;
             }
         } else {
-            require(y <= discovered.maxY, "NOT_REACHABLE_YET_MAXY");
+            require(y <= int256(uint256(discovered.maxY)), "NOT_REACHABLE_YET_MAXY");
             y = y + EXPANSION;
             if (y > UINT32_MAX) {
                 y = UINT32_MAX;
             }
-            if (discovered.maxY < uint32(y)) {
-                discovered.maxY = uint32(y);
+            if (int256(uint256(discovered.maxY)) < y) {
+                discovered.maxY = uint32(uint256(y));
                 changes = true;
             }
         }
@@ -1090,12 +1092,13 @@ contract OuterSpace is Proxied {
         (int8 fromSubX, int8 fromSubY) = _subLocation(_planetData(from));
         (int8 toSubX, int8 toSubY) = _subLocation(_planetData(to));
         // check input instead of compute sqrt
-        uint256 distanceSquared = uint256( // check input instead of compute sqrt
-            ((int128(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) * 4 + toSubX) -
-                (int128(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF) * 4 + fromSubX)) **
+
+        uint256 distanceSquared = uint256(int256( // check input instead of compute sqrt
+            ((int128(int256(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) * 4 + toSubX) -
+                (int128(int256(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) * 4 + fromSubX)) **
                 2 +
-                ((int128(to >> 128) * 4 + toSubY) - (int128(from >> 128) * 4 + fromSubY))**2
-        );
+                ((int128(int256(to >> 128)) * 4 + toSubY) - (int128(int256(from >> 128)) * 4 + fromSubY))**2
+        ));
         require(distance**2 <= distanceSquared && distanceSquared < (distance + 1)**2, "wrong distance");
     }
 
