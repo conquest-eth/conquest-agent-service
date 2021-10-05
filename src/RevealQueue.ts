@@ -55,6 +55,8 @@ type Reveal = {
   distance: number;
   startTime: number; // this is the expected startTime, needed as sendTx could be pending
   duration: number; // could technically recompute it from spaceInfo // TODO ? if so move duration in RevealData type
+  gift: boolean;
+  potentialAlliances?: string[];
 };
 
 type RevealSubmission = Reveal & {delegate?: string; signature: string; nonceMsTimestamp: number};
@@ -177,6 +179,7 @@ function checkSubmission(data: RevealSubmission): {errorResponse?: Response; rev
     data.from &&
     data.from.x !== undefined &&
     data.from.y !== undefined &&
+    data.gift !== undefined &&
     data.signature &&
     data.nonceMsTimestamp
   ) {
@@ -198,6 +201,7 @@ export class RevealQueue extends DO {
   provider: ethers.providers.JsonRpcProvider;
   wallet: ethers.Wallet;
   outerspaceContract: ethers.Contract;
+  allianceRegistryContract: ethers.Contract;
   paymentContract: ethers.Contract;
   finality: number;
 
@@ -206,6 +210,11 @@ export class RevealQueue extends DO {
     this.provider = new ethers.providers.JsonRpcProvider(env.ETHEREUM_NODE);
     this.wallet = new Wallet(this.env.PRIVATE_KEY, this.provider);
     this.outerspaceContract = new Contract(contracts.OuterSpace.address, contracts.OuterSpace.abi, this.wallet);
+    this.allianceRegistryContract = new Contract(
+      contracts.AllianceRegistry.address,
+      contracts.AllianceRegistry.abi,
+      this.wallet
+    );
     this.paymentContract = new Contract(contracts.PaymentGateway.address, contracts.PaymentGateway.abi, this.wallet);
     this.finality = env.FINALITY ? parseInt(env.FINALITY) : defaultFinality;
   }
@@ -343,9 +352,14 @@ export class RevealQueue extends DO {
       }
     }
 
-    const {player, fleetID, secret, from, to, distance, startTime, duration} = revealSubmission;
+    const {player, fleetID, secret, from, to, distance, startTime, duration, gift, potentialAlliances} =
+      revealSubmission;
 
-    const queueMessageString = `queue:${player}:${fleetID}:${secret}:${from.x}:${from.y}:${to.x}:${to.y}:${distance}:${startTime}:${duration}:${revealSubmission.nonceMsTimestamp}`;
+    const queueMessageString = `queue:${player}:${fleetID}:${secret}:${from.x}:${from.y}:${to.x}:${
+      to.y
+    }:${distance}:${gift}:${potentialAlliances ? potentialAlliances.join(',') : ''}:${startTime}:${duration}:${
+      revealSubmission.nonceMsTimestamp
+    }`;
     const authorized = isAuthorized(
       revealSubmission.delegate ? account.delegate : player,
       queueMessageString,
@@ -779,14 +793,19 @@ export class RevealQueue extends DO {
       //   console.log('no feeHistory')
       // }
 
+      const alliance = await this._getAlliance(reveal);
+
       let tx;
       try {
         tx = await this.outerspaceContract.resolveFleet(
           reveal.fleetID,
-          xyToLocation(reveal.from.x, reveal.from.y),
-          xyToLocation(reveal.to.x, reveal.to.y),
-          reveal.distance,
-          reveal.secret,
+          {
+            from: xyToLocation(reveal.from.x, reveal.from.y),
+            to: xyToLocation(reveal.to.x, reveal.to.y),
+            distance: reveal.distance,
+            secret: reveal.secret,
+            alliance,
+          },
           {
             nonce,
             maxFeePerGas: options.maxFeePerGas,
@@ -799,10 +818,13 @@ export class RevealQueue extends DO {
           console.log('RETRYING with maxPriorityFeePerGas = maxFeePerGas');
           tx = await this.outerspaceContract.resolveFleet(
             reveal.fleetID,
-            xyToLocation(reveal.from.x, reveal.from.y),
-            xyToLocation(reveal.to.x, reveal.to.y),
-            reveal.distance,
-            reveal.secret,
+            {
+              from: xyToLocation(reveal.from.x, reveal.from.y),
+              to: xyToLocation(reveal.to.x, reveal.to.y),
+              distance: reveal.distance,
+              secret: reveal.secret,
+              alliance,
+            },
             {
               nonce,
               maxFeePerGas: options.maxFeePerGas,
@@ -830,6 +852,32 @@ export class RevealQueue extends DO {
       const error = e as {message?: string};
       return {error: {message: error.message || 'error caught: ' + e, code: 5502}};
     }
+  }
+
+  async _getAlliance(reveal: RevealData): Promise<string> {
+    let alliance = '0x0000000000000000000000000000000000000000';
+    if (reveal.gift) {
+      alliance = '0x0000000000000000000000000000000000000001';
+      if (reveal.potentialAlliances) {
+        const planet = await this.outerspaceContract.getPlanet(xyToLocation(reveal.to.x, reveal.to.y));
+        const planetOwner = planet.state.owner;
+        if (planetOwner !== '0x0000000000000000000000000000000000000000') {
+          for (const allianceToTest of reveal.potentialAlliances) {
+            const allies = await this.allianceRegistryContract.arePlayersAllies(
+              alliance,
+              reveal.player,
+              planetOwner,
+              getTimestamp()
+            );
+            if (allies) {
+              alliance = allianceToTest;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return alliance;
   }
 
   async _checkPendingTransaction(pendingID: string, pendingReveal: PendingTransactionData): Promise<void> {
