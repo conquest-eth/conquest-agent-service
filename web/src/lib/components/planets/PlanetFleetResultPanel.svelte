@@ -1,26 +1,28 @@
+<!-- TODO delete ?-->
 <script lang="ts">
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
-  import privateAccount from '$lib/account/privateAccount';
-  import type {OwnFleet} from 'conquest-eth-common';
-  export let fleet: {
-    id: string;
-    status: 'Error' | 'Success' | 'Expired';
-  } & OwnFleet;
+  // import privateAccount from '$lib/account/privateAccount';
+  // import type {OwnFleet} from 'conquest-eth-common';
+  // export let fleet: {
+  //   id: string;
+  //   status: 'Error' | 'Success' | 'Expired';
+  // } & OwnFleet;
 
   // import {fetchFleetEvent} from '$lib/space/spaceInfo';
 
   function acknowledge(force = false) {
     if (!force && fleet.resolveTx && fleet.status === 'Error') {
-      privateAccount.acknowledgeResolveFailure(fleet.id);
+      // privateAccount.acknowledgeResolveFailure(fleet.id);
     } else {
-      privateAccount.requestFleetDeletion(fleet.id);
+      // privateAccount.requestFleetDeletion(fleet.id);
     }
   }
 </script>
 
+<!--
 {#if fleet.status === 'Error'}
   <p class="p-2">The Fleet Transaction Failed</p>
-  <!-- TODO discern between resolution and sending-->
+  TODO discern between resolution and sending
   <p class="p-2">
     See
     <a
@@ -88,4 +90,4 @@
   <PanelButton label="Connect your wallet" class="m-2" on:click={() => acknowledge()}>
     <div class="w-20">OK</div>
   </PanelButton>
-{/if}
+{/if} -->

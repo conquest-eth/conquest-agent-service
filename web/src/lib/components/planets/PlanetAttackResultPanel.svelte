@@ -1,6 +1,7 @@
+<!-- TODO delete ?-->
 <script lang="ts">
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
-  import privateAccount from '$lib/account/privateAccount';
+  // import privateAccount from '$lib/account/privateAccount';
   import Blockie from '$lib/components/account/Blockie.svelte';
   import type {AttackEvent} from '$lib/space/planetLogs';
   import {wallet} from '$lib/blockchain/wallet';
@@ -9,7 +10,7 @@
 
   async function acknowledge() {
     const block = await wallet.provider.getBlock(attack.blockNumber);
-    privateAccount.acknowledgeAttack(attack.fleet, block.timestamp);
+    // privateAccount.acknowledgeAttack(attack.fleet, block.timestamp);
   }
 </script>
 

@@ -3,7 +3,7 @@ import {WalletConnectModuleLoader} from 'web3w-walletconnect-loader';
 import {PortisModuleLoader} from 'web3w-portis-loader';
 import {contractsInfos} from './contractsInfos';
 import {notifications} from '../web/notifications';
-import {finality, fallbackProviderOrUrl, chainId} from '$lib/config';
+import {finality, fallbackProviderOrUrl, chainId, localDev} from '$lib/config';
 import {isCorrected, correctTime} from '../time';
 import {base} from '$app/paths';
 import {chainTempo} from '$lib/blockchain/chainTempo';
@@ -36,6 +36,7 @@ const walletStores = ((WalletStores as any).default || WalletStores)({
     }),
   ],
   fallbackNode: fallbackProviderOrUrl,
+  checkGenesis: localDev,
 });
 
 export const {wallet, transactions, builtin, chain, balance, flow, fallback} = walletStores;

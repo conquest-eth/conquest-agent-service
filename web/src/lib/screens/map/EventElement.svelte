@@ -1,10 +1,11 @@
 <script lang="ts">
   import {account} from '$lib/account/account';
-
   import {camera} from '$lib/map/camera';
   import type {MyEvent} from '$lib/space/myevents';
   import {spaceInfo} from '$lib/space/spaceInfo';
   export let event: MyEvent;
+  export let selectedEvent: MyEvent;
+  export let isShow = false;
 
   $: planetInfo = spaceInfo.getPlanetInfoViaId(event.event.planet.id);
   $: x = planetInfo.location.globalX - 48 / 2;
@@ -33,15 +34,15 @@
     adjustedRenderScale = 1;
   }
 
-  async function acknowledge() {
-    console.log(event);
-    await account.acknowledgeEvent(event);
-  }
+  const handleClick = () => {
+    selectedEvent = event;
+    isShow = true;
+  };
 </script>
 
 <div
   id={event.event.fleet.id}
-  on:click={acknowledge}
+  on:click={handleClick}
   style={`z-index: 5; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
     blockieScale * 3
   }); width: 48px; height: 48px;`}

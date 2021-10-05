@@ -2,7 +2,7 @@
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
   import {wallet, builtin, flow} from '$lib/blockchain/wallet';
-  import privateAccount from '$lib/account/privateAccount';
+  // import privateAccount from '$lib/account/privateAccount';
   import myprofile from '$lib/flows/myprofile';
   import {BigNumber} from '@ethersproject/bignumber';
   import WalletAccess from '$lib/blockchain/WalletAccess.svelte';
@@ -47,30 +47,30 @@
     return {counter, currentData: parsedData};
   }
 
-  async function setProfile(e: Event) {
-    const walletAddress = $wallet.address;
-    const {counter, currentData} = await getProfile(walletAddress);
-    currentData.name = name;
-    currentData.contact = contact;
-    const {publicKey} = $privateAccount.messagingKey;
-    var publicKeyString = base64.bytesToBase64(publicKey);
-    currentData.publicKey = publicKeyString;
-    const data = JSON.stringify(currentData);
+  // async function setProfile(e: Event) {
+  //   const walletAddress = $wallet.address;
+  //   const {counter, currentData} = await getProfile(walletAddress);
+  //   currentData.name = name;
+  //   currentData.contact = contact;
+  //   const {publicKey} = $privateAccount.messagingKey;
+  //   var publicKeyString = base64.bytesToBase64(publicKey);
+  //   currentData.publicKey = publicKeyString;
+  //   const data = JSON.stringify(currentData);
 
-    const signature = await wallet.provider.getSigner().signMessage('put:' + DB_NAME + ':' + counter + ':' + data);
-    await fetch(PROFILE_URI, {
-      method: 'POST',
-      body: JSON.stringify({
-        method: 'wallet_putString',
-        params: [walletAddress, DB_NAME, counter, data, signature],
-        jsonrpc: '2.0',
-        id: 99999999, // TODO ?
-      }),
-      headers: {
-        'Content-type': 'application/json; charset=UTF-8',
-      },
-    });
-  }
+  //   const signature = await wallet.provider.getSigner().signMessage('put:' + DB_NAME + ':' + counter + ':' + data);
+  //   await fetch(PROFILE_URI, {
+  //     method: 'POST',
+  //     body: JSON.stringify({
+  //       method: 'wallet_putString',
+  //       params: [walletAddress, DB_NAME, counter, data, signature],
+  //       jsonrpc: '2.0',
+  //       id: 99999999, // TODO ?
+  //     }),
+  //     headers: {
+  //       'Content-type': 'application/json; charset=UTF-8',
+  //     },
+  //   });
+  // }
 
   let name: string | undefined;
   let contact: string | undefined;
@@ -86,7 +86,7 @@
 </script>
 
 WORK IN PROGRESS
-<div class="w-full h-full bg-black">
+<!-- <div class="w-full h-full bg-black">
   <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
 
   <WalletAccess>
@@ -97,7 +97,6 @@ WORK IN PROGRESS
         disabled={$privateAccount.step !== 'IDLE'}
         on:click={() => privateAccount.login()}
       >
-        <!-- TODO privateAccount so we can get access to the public key-->
         Connect
       </Button>
     {:else}
@@ -144,11 +143,7 @@ WORK IN PROGRESS
       </form>
       <div class="pt-5">
         <div class="flex justify-end">
-          <!-- <button
-          type="button"
-          class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-          Cancel
-        </button> -->
+
           <button
             on:click={setProfile}
             class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -159,4 +154,4 @@ WORK IN PROGRESS
       </div>
     {/if}
   </WalletAccess>
-</div>
+</div> -->

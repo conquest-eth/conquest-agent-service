@@ -20,10 +20,11 @@
 
     let x = parseInt($page.query.get('x'));
     let y = parseInt($page.query.get('y'));
+
     window.history.replaceState(
       '',
       document.title,
-      window.location.pathname // TODO keep other query
+      window.location.pathname + window.location.hash // TODO keep other query
     );
     if (!isNaN(x) && !isNaN(y)) {
       // const locX = Math.floor((Math.round(x) + 2) / 4);

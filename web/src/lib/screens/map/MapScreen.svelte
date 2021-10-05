@@ -11,6 +11,7 @@
   import PlanetInfoPanel from '$lib/components/planets/PlanetInfoPanel.svelte';
   import PlanetsListPanel from '$lib/components/planets/PlanetsListPanel.svelte';
   import FleetsList from '$lib/components/fleets/FleetsList.svelte';
+  import EventsList from '$lib/components/events/EventsList.svelte';
 
   import claimFlow from '$lib/flows/claim';
   import ClaimFlow from '$lib/flows/ClaimFlow.svelte';
@@ -140,5 +141,8 @@
 {:else}
   <!-- <Search /> -->
 {/if}
-<PlanetsListPanel />
-<FleetsList />
+<div class="flex right-1/4 absolute">
+  <PlanetsListPanel />
+  <FleetsList />
+  <EventsList />
+</div>
