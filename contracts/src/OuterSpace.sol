@@ -1121,8 +1121,8 @@ contract OuterSpace is Proxied {
     }
 
     function _subLocation(bytes32 data) internal pure returns (int8 subX, int8 subY) {
-        subX = int8(1 - data.value8Mod(0, 3));
-        subY = int8(1 - data.value8Mod(2, 3));
+        subX = 1 - int8(data.value8Mod(0, 3));
+        subY = 1 - int8(data.value8Mod(2, 3));
     }
 
     // 4,5,5,10,10,15,15, 20, 20, 30,30,40,40,80,80,100
