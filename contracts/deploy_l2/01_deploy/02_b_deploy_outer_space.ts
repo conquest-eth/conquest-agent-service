@@ -15,6 +15,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const playToken_l2 = await hre.deployments.get('PlayToken_L2');
 
+  const allianceRegistry = await hre.deployments.get('AllianceRegistry');
+
   let chainGenesisHash = '';
   if (localTesting) {
     const earliestBlock = await ethers.provider.getBlock('earliest');
@@ -63,6 +65,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     },
     args: [
       playToken_l2.address,
+      allianceRegistry.address,
       genesisHash,
       resolveWindow,
       timePerDistance,
