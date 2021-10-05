@@ -22,7 +22,12 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
   async resolve(fleet: Fleet): Promise<void> {
     this.setPartial({step: 'CONNECTING'});
     this.setPartial({step: 'CREATING_TX'});
-    const fleetData = await account.hashFleet(fleet.from.location, fleet.to.location, fleet.sending.action.nonce);
+    const fleetData = await account.hashFleet(
+      fleet.from.location,
+      fleet.to.location,
+      fleet.gift,
+      fleet.sending.action.nonce
+    );
     const latestBlock = await wallet.provider.getBlock('latest');
     if (!isCorrected) {
       // TODO extreact or remove (assume time will be corrected by then)
@@ -38,14 +43,27 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
 
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 
+    let alliance = '0x0000000000000000000000000000000000000000';
+    if (fleet.gift) {
+      if (fleet.potentialAlliances) {
+        // TODO
+        alliance = '0x0000000000000000000000000000000000000001';
+      } else {
+        alliance = '0x0000000000000000000000000000000000000001';
+      }
+    }
+
     this.setPartial({step: 'WAITING_TX'});
     try {
       const tx = await wallet.contracts?.OuterSpace.resolveFleet(
         fleetData.fleetId,
-        xyToLocation(fleet.from.location.x, fleet.from.location.y),
-        xyToLocation(fleet.to.location.x, fleet.to.location.y),
-        distance,
-        secretHash,
+        {
+          from: xyToLocation(fleet.from.location.x, fleet.from.location.y),
+          to: xyToLocation(fleet.to.location.x, fleet.to.location.y),
+          distance,
+          secret: secretHash,
+          alliance,
+        },
         {gasPrice}
       );
       account.recordFleetResolvingTxhash(

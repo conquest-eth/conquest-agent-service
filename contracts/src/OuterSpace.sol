@@ -1085,12 +1085,13 @@ contract OuterSpace is Proxied {
             if (uint160(alliance) > 1) {
                 // uint256 allianceStart = _alliances[sender][IAlliance(alliance)];
                 // taxed = allianceStart == 0 || allianceStart > launchTime; + toPlanet.owner
-                taxed = !allianceRegistry.arePlayersAllied(IAlliance(alliance), sender, toPlanet.owner, block.timestamp);
+                taxed = !allianceRegistry.arePlayersAllies(IAlliance(alliance), sender, toPlanet.owner, block.timestamp);
             } else if (sender == toPlanet.owner) {
                 taxed = false;
             }
             if (taxed) {
-                quantity = uint32(uint256(quantity) * 10000 / GIFT_TAX_PER_10000);
+                // quantity = uint32(uint256(quantity) * 10000 / GIFT_TAX_PER_10000);
+                quantity = uint32(uint256(quantity) - (uint256(quantity) * GIFT_TAX_PER_10000) / 10000);
             }
             bytes32 toPlanetData = _planetData(to);
             uint16 production = _production(toPlanetData);

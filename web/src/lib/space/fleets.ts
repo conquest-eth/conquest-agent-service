@@ -27,6 +27,8 @@ export type Fleet = {
   amountDestroyed: number;
   timeLeft: number; // not needed to store, except to not require computing stats from from planet
   timeToResolve: number;
+  gift: boolean;
+  potentialAlliances?: string[];
   sending: {
     id: string;
     status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
@@ -140,6 +142,8 @@ export class FleetsStore implements Readable<Fleet[]> {
               sending: pendingAction,
               resolution,
               state,
+              gift: sendAction.gift,
+              potentialAlliances: sendAction.potentialAlliances,
             });
           }
         }

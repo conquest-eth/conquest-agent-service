@@ -36,6 +36,8 @@ export type PendingSend = PendingActionBase & {
   fleetId: string;
   from: PlanetCoords;
   to: PlanetCoords;
+  gift: boolean;
+  potentialAlliances?: string[];
   quantity: number;
   actualLaunchTime?: number;
   resolution?: string[];
@@ -172,6 +174,7 @@ class Account implements Readable<AccountState> {
   async hashFleet(
     from: {x: number; y: number},
     to: {x: number; y: number},
+    gift: boolean,
     nonce: number
   ): Promise<{toHash: string; fleetId: string; secretHash: string}> {
     // TODO use timestamp to allow user to retrieve a lost secret by knowing `to` and approximate time of launch
@@ -185,13 +188,20 @@ class Account implements Readable<AccountState> {
     // console.log({randomNonce, toString, fromString});
     const secretHash = keccak256(['bytes32', 'uint256', 'uint256'], [privateWallet.hashString(), fromString, nonce]);
     // console.log({secretHash});
-    const toHash = keccak256(['bytes32', 'uint256'], [secretHash, toString]);
+    const toHash = keccak256(['bytes32', 'uint256', 'bool'], [secretHash, toString, gift]);
     const fleetId = keccak256(['bytes32', 'uint256'], [toHash, fromString]);
     return {toHash, fleetId, secretHash};
   }
 
   async recordFleet(
-    fleet: {id: string; from: PlanetCoords; to: PlanetCoords; fleetAmount: number},
+    fleet: {
+      id: string;
+      from: PlanetCoords;
+      to: PlanetCoords;
+      gift: boolean;
+      potentialAlliances?: string[];
+      fleetAmount: number;
+    },
     txHash: string,
     timestamp: number,
     nonce: number
@@ -204,6 +214,8 @@ class Account implements Readable<AccountState> {
       type: 'SEND',
       from: {...fleet.from},
       to: {...fleet.to},
+      gift: fleet.gift,
+      potentialAlliances: fleet.potentialAlliances ? [...fleet.potentialAlliances] : undefined,
       quantity: fleet.fleetAmount,
     };
     await this.accountDB.save(this.state.data);

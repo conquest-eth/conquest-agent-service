@@ -27,7 +27,7 @@ contract AllianceRegistry is Proxied {
         return _alliances[player][alliance];
     }
 
-    function arePlayersAllied(IAlliance alliance, address player1, address player2, uint256 timestamp) external view returns(bool allied) {
+    function arePlayersAllies(IAlliance alliance, address player1, address player2, uint256 timestamp) external view returns(bool allied) {
         uint256 p1Time = _alliances[player1][alliance];
         if (p1Time == 0 || p1Time > timestamp) {
             return false;
@@ -35,7 +35,6 @@ contract AllianceRegistry is Proxied {
         uint256 p2Time = _alliances[player2][alliance];
         return (p2Time > 0 && p2Time < timestamp);
     }
-
 
     // -----------------------------------------------------------------------------------------------------
     // FROM PLAYER

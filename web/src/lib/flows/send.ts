@@ -11,6 +11,7 @@ import {agentService} from '$lib/account/agentService';
 type Data = {
   txHash?: string;
   to: {x: number; y: number};
+  gift: boolean;
   from: {x: number; y: number};
   fleetAmount: number;
   useAgentService: boolean;
@@ -88,12 +89,12 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     this._chooseFleetAmount();
   }
 
-  confirm(fleetAmount: number, useAgentService: boolean) {
-    this.setData({fleetAmount, useAgentService});
+  confirm(fleetAmount: number, gift: boolean, useAgentService: boolean) {
+    this.setData({fleetAmount, gift, useAgentService});
     if (!account.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION)) {
       this.setPartial({step: 'TUTORIAL_PRE_TRANSACTION'});
     } else {
-      this._confirm(fleetAmount, useAgentService);
+      this._confirm(fleetAmount, gift, useAgentService);
     }
   }
 
@@ -101,11 +102,14 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     if (!this.$store.data?.fleetAmount) {
       throw new Error(`not fleetAmount recorded`);
     }
+    if (!this.$store.data?.gift) {
+      throw new Error(`not gift recorded`);
+    }
     account.recordWelcomingStep(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION);
-    this.confirm(this.$store.data?.fleetAmount, this.$store.data?.useAgentService);
+    this.confirm(this.$store.data?.fleetAmount, this.$store.data?.gift, this.$store.data?.useAgentService);
   }
 
-  async _confirm(fleetAmount: number, useAgentService: boolean): Promise<void> {
+  async _confirm(fleetAmount: number, gift: boolean, useAgentService: boolean): Promise<void> {
     const flow = this.setPartial({step: 'CREATING_TX'});
     if (!flow.data) {
       throw new Error(`no data for send flow`);
@@ -135,9 +139,15 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
     const distance = spaceInfo.distance(fromPlanetInfo, toPlanetInfo);
     const duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
-    const {toHash, fleetId, secretHash} = await account.hashFleet(from, to, nonce);
+    const {toHash, fleetId, secretHash} = await account.hashFleet(from, to, gift, nonce);
 
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
+
+    let potentialAlliances: string[] | undefined;
+    if (gift) {
+      // TODO
+      // potentialAlliances = ['0x0000000000000000000000000000000000000001'];
+    }
 
     this.setPartial({step: 'WAITING_TX'});
 
@@ -176,6 +186,8 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         to, // TODO handle it better
         from,
         fleetAmount,
+        gift,
+        potentialAlliances,
       },
       tx.hash,
       latestBlock.timestamp,
@@ -189,6 +201,8 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         from,
         to,
         distance,
+        gift,
+        potentialAlliances,
         latestBlock.timestamp,
         duration
       );

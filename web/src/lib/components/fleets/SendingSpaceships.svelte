@@ -64,6 +64,7 @@
   }
 
   let useAgentService = false;
+  let gift = false;
 
   onMount(() => {
     useAgentService = account.isAgentServiceActivatedByDefault();
@@ -72,7 +73,8 @@
   });
 </script>
 
-<Modal on:close={() => sendFlow.cancel()} on:confirm={() => sendFlow.confirm(fleetAmount, useAgentService)}>
+<!-- TODO Remove on:confirm, see button below -->
+<Modal on:close={() => sendFlow.cancel()} on:confirm={() => sendFlow.confirm(fleetAmount, gift, useAgentService)}>
   <!-- <h2 slot="header">Capture Planet {location.x},{location.y}</h2> -->
 
   <div class="text-center">
@@ -82,6 +84,7 @@
 
   <div>
     <div class="text-center">
+      <input type="checkbox" bind:checked={gift} /> gift
       <!-- TODO show Token balance and warn when cannot buy // Token balance could be shown in navbar (once connected)-->
       <input
         class="text-cyan-300 bg-cyan-300"
@@ -190,7 +193,7 @@
           class="mt-5"
           label="Fleet Amount"
           disabled={confirmDisabled}
-          on:click={() => sendFlow.confirm(fleetAmount, useAgentService)}
+          on:click={() => sendFlow.confirm(fleetAmount, gift, useAgentService)}
         >
           <p>Confirm</p>
           {#if confirmDisabled}(need higher attack){/if}
