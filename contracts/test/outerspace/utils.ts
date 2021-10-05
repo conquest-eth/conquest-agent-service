@@ -7,7 +7,7 @@ import {SpaceInfo} from 'conquest-eth-common';
 import type {PlanetInfo} from 'conquest-eth-common/';
 import {Contract, ContractReceipt} from '@ethersproject/contracts';
 import {defaultAbiCoder} from '@ethersproject/abi';
-import {User} from '../utils';
+import {User} from '../../utils';
 import {OuterSpace} from '../../typechain';
 
 export type Player = User<{PlayToken_L2: Contract; OuterSpace: Contract}>;

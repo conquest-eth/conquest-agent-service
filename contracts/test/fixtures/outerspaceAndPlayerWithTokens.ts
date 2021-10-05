@@ -6,8 +6,13 @@ import {
   deployments,
   getNamedAccounts,
 } from 'hardhat';
-import {OuterSpace, PlayL2} from '../../typechain';
-import {setupUsers} from '../utils';
+import {
+  AllianceRegistry,
+  BasicAlliance,
+  OuterSpace,
+  PlayL2,
+} from '../../typechain';
+import {setupUsers} from '../../utils';
 
 export const setup = deployments.createFixture(async () => {
   await deployments.fixture(); // TODO only OuterSpace
@@ -28,6 +33,12 @@ export const setup = deployments.createFixture(async () => {
   }
 
   const contracts = {
+    BasicAllianceFactory: <BasicAlliance>(
+      await ethers.getContract('BasicAllianceFactory')
+    ),
+    AllianceRegistry: <AllianceRegistry>(
+      await ethers.getContract('AllianceRegistry')
+    ),
     OuterSpace: <OuterSpace>await ethers.getContract('OuterSpace'),
     PlayToken_L2: <PlayL2>await ethers.getContract('PlayToken_L2'),
   };

@@ -111,14 +111,26 @@ describe('OuterSpace Basic', function () {
     if (!sent) {
       throw new Error('no fleet found');
     }
-    const {fleetId, secret, from, to, distance, timeRequired, gift} = sent;
+    const {
+      fleetId,
+      secret,
+      from,
+      to,
+      distance,
+      timeRequired,
+      gift,
+      // potentialAlliances,
+    } = sent;
     await increaseTime(timeRequired);
+
     await waitFor(
       players[1].OuterSpace.resolveFleet(fleetId, {
         from,
         to,
         distance,
-        gift,
+        alliance: gift
+          ? '0x0000000000000000000000000000000000000001'
+          : '0x0000000000000000000000000000000000000000',
         secret,
       })
     );

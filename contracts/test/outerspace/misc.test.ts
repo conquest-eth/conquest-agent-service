@@ -2,7 +2,7 @@ import {deployments, ethers, getUnnamedAccounts} from 'hardhat';
 import {TestConversion} from '../../typechain/TestConversion';
 import {expect} from '../chai-setup';
 import {objMap} from '../test-utils';
-import {setupUsers} from '../utils';
+import {setupUsers} from '../../utils';
 import {convertPlanetCallData} from './utils';
 
 const setup = deployments.createFixture(async () => {

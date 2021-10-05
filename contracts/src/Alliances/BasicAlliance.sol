@@ -43,6 +43,11 @@ contract BasicAlliance {
         BasicAlliance(newAlliance).setAdminAndAddMembers(initialAdmin, playerSubmissions);
     }
 
+    function getAddress(bytes32 salt) external view returns(address) {
+        require(_original, "CANNOT_INSTANTIATE_FROM_CLONES");
+        return Clones.predictDeterministicAddress(address(this), keccak256(abi.encodePacked(salt, msg.sender)), address(this));
+    }
+
 
     // function requestToJoin(address player, bytes calldata data) external view returns (bool) {
     //     if (player == _initialMember) {

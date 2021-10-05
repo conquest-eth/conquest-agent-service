@@ -79,5 +79,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 };
 export default func;
-func.dependencies = ['PlayToken_deploy'];
+func.dependencies = ['PlayToken_deploy', 'AllianceRegistry_deploy'];
 func.tags = ['OuterSpace', 'OuterSpace_deploy'];
