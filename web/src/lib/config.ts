@@ -18,7 +18,9 @@ if (chainId !== '1') {
   nativeTokenSymbol = 'ETH'; // TODO
 }
 
+let localDev = false;
 if (chainId === '1337' || chainId === '31337') {
+  localDev = true;
   fallbackProviderOrUrl = import.meta.env.VITE_ETH_NODE_URI_LOCALHOST as string;
   // const localEthNode = import.meta.env.VITE_ETH_NODE_URI_LOCALHOST as string;
   // if (localEthNode && localEthNode !== '') {
@@ -104,4 +106,5 @@ export {
   deletionDelay,
   shouldDropTransactions,
   dropTransactions,
+  localDev,
 };
