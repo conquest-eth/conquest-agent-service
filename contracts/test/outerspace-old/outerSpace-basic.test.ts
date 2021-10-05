@@ -106,14 +106,21 @@ describe('OuterSpace Basic', function () {
       from: planet1,
       quantity,
       to: planet0,
+      gift: false,
     });
     if (!sent) {
       throw new Error('no fleet found');
     }
-    const {fleetId, secret, from, to, distance, timeRequired} = sent;
+    const {fleetId, secret, from, to, distance, timeRequired, gift} = sent;
     await increaseTime(timeRequired);
     await waitFor(
-      players[1].OuterSpace.resolveFleet(fleetId, from, to, distance, secret)
+      players[1].OuterSpace.resolveFleet(fleetId, {
+        from,
+        to,
+        distance,
+        gift,
+        secret,
+      })
     );
   });
 
@@ -144,6 +151,7 @@ describe('OuterSpace Basic', function () {
       from: planet,
       quantity: planet.getNumSpaceships(fistTime),
       to: planet,
+      gift: false,
     });
     await increaseTime(1000);
     const currentTime = (await ethers.provider.getBlock('latest')).timestamp;
@@ -154,6 +162,7 @@ describe('OuterSpace Basic', function () {
       from: planet,
       quantity,
       to: planet,
+      gift: false,
     });
     const currentTimeAgain = (await ethers.provider.getBlock('latest'))
       .timestamp;
@@ -165,6 +174,7 @@ describe('OuterSpace Basic', function () {
         from: planet,
         quantity: quantityAgain + 2,
         to: planet,
+        gift: false,
       })
     );
   });

@@ -4,11 +4,11 @@ pragma solidity 0.8.9;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./Libraries/Extraction.sol";
-import "./Libraries/Math.sol";
+import "../Libraries/Extraction.sol";
+import "../Libraries/Math.sol";
 import "hardhat-deploy/solc_0.8/proxy/Proxied.sol";
 
-contract OuterSpace is Proxied {
+contract OuterSpaceTmp is Proxied {
     using Extraction for bytes32;
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -637,7 +637,7 @@ contract OuterSpace is Proxied {
         uint32 quantity,
         bytes32 toHash
     ) internal {
-        Planet storage planet = _getPlanet(from);
+        Planet memory planet = _getPlanet(from);
 
         require(planet.exitTime == 0, "PLANET_EXIT");
         require(owner == planet.owner, "NOT_OWNER");
@@ -652,7 +652,22 @@ contract OuterSpace is Proxied {
         );
         require(currentNumSpaceships >= quantity, "SPACESHIPS_NOT_ENOUGH");
 
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        (uint32 launchTime, uint32 numSpaceships) = _computeSpaceshipBeforeSending(currentNumSpaceships, active, from, quantity);
+
+        uint256 fleetId = uint256(keccak256(abi.encodePacked(toHash, from)));
+        _fleets[fleetId] = Fleet({launchTime: launchTime, owner: owner, quantity: quantity});
+
+        emit FleetSent(owner, from, fleetId, quantity, numSpaceships);
+    }
+
+    function _computeSpaceshipBeforeSending(
+        uint32 currentNumSpaceships,
+        bool active,
+        uint256 from,
+        uint32 quantity
+    ) internal returns( uint32 launchTime, uint32 numSpaceships) {
+        Planet storage planet = _getPlanet(from);
+         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         // record flying fleets (to prevent front-running, see resolution)
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         uint256 timeSlot = block.timestamp / (FRONT_RUNNING_DELAY / 2);
@@ -662,15 +677,11 @@ contract OuterSpace is Proxied {
         _inFlight[from][timeSlot].flying = flying;
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        uint32 launchTime = uint32(block.timestamp); // TODO allow delay : launchTime in future
-        uint32 numSpaceships = currentNumSpaceships - quantity;
+        launchTime = uint32(block.timestamp); // TODO allow delay : launchTime in future
+        numSpaceships = currentNumSpaceships - quantity;
         planet.numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
         planet.lastUpdated = launchTime;
 
-        uint256 fleetId = uint256(keccak256(abi.encodePacked(toHash, from)));
-        _fleets[fleetId] = Fleet({launchTime: launchTime, owner: owner, quantity: quantity});
-
-        emit FleetSent(owner, from, fleetId, quantity, numSpaceships);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
