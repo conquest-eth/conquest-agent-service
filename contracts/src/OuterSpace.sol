@@ -374,7 +374,7 @@ contract OuterSpace is Proxied {
         if (sender != owner) {
             require(_operators[owner][sender], "NOT_AUTHORIZED");
         }
-        _sendFor(_msgSender(), from, quantity, toHash);
+        _sendFor(owner, from, quantity, toHash);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
