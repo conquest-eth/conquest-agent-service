@@ -694,7 +694,11 @@ export class RevealQueue extends DO {
           maxFeePerGas: currentMaxFee,
         }); // first save before broadcast ? // or catch "tx already submitted error"
         if (error) {
-          // TODO
+          if (error.code === 5502) {
+            console.log('deleting....');
+            this.state.storage.delete(queueID);
+            this.state.storage.delete(revealID);
+          }
           return;
         } else if (!tx) {
           // impossible
@@ -722,7 +726,7 @@ export class RevealQueue extends DO {
         this.state.storage.put<ListData>(revealID, {pendingID});
         this.state.storage.put<PendingTransactionData>(pendingID, {...reveal, tx});
 
-        transactionsCounter.nextIndex++;
+        transactionsCounter.nextIndex = tx.nonce + 1;
         this.state.storage.put<TransactionsCounter>(`pending`, transactionsCounter);
         this.state.storage.delete(queueID);
       } else {
@@ -748,11 +752,15 @@ export class RevealQueue extends DO {
   async _submitTransaction(
     reveal: RevealData,
     options: {expectedNonce?: number; forceNonce?: number; maxFeePerGas: BigNumber}
-  ): Promise<{
-    tx?: {hash: string; nonce: number; broadcastTime: number; maxFeePerGasUsed: string};
-    error?: {message: string; code: number};
-  }> {
+  ): Promise<
+    | {
+        tx?: {hash: string; nonce: number; broadcastTime: number; maxFeePerGasUsed: string};
+        error?: {message: string; code: number};
+      }
+    | undefined
+  > {
     try {
+      let nonceIncreased = false;
       let nonce: number | undefined;
       if (options.forceNonce) {
         nonce = options.forceNonce;
@@ -762,7 +770,16 @@ export class RevealQueue extends DO {
           nonce = await this.wallet.getTransactionCount();
         }
         if (nonce !== options.expectedNonce) {
-          return {error: {message: `nonce not matching, expected ${options.expectedNonce}, got ${nonce}`, code: 5501}};
+          if (nonce > options.expectedNonce) {
+            const message = `nonce not matching, expected ${options.expectedNonce}, got ${nonce}, increasing...`;
+            console.error(message);
+            nonceIncreased = true;
+            // return {error: {message, code: 5501}};
+          } else {
+            const message = `nonce not matching, expected ${options.expectedNonce}, got ${nonce}`;
+            console.error(message);
+            return {error: {message, code: 5501}};
+          }
         }
       }
 
@@ -793,7 +810,35 @@ export class RevealQueue extends DO {
       //   console.log('no feeHistory')
       // }
 
+      console.log('getting mathcing alliance...');
       const alliance = await this._getAlliance(reveal);
+      console.log({alliance});
+
+      console.log('checcking if fleet still alive....');
+      const {quantity} = await this.outerspaceContract.getFleet(reveal.fleetID, '0');
+      console.log({quantity});
+      if (quantity === 0) {
+        if (nonceIncreased) {
+          return {error: {message: 'nonce increased but fleet already resolved', code: 5502}};
+        } else {
+          console.log('already done');
+          const tx = await this.wallet.sendTransaction({
+            to: this.wallet.address,
+            value: 0,
+            nonce,
+            maxFeePerGas: options.maxFeePerGas,
+            maxPriorityFeePerGas,
+          });
+          return {
+            tx: {
+              hash: tx.hash,
+              nonce: tx.nonce,
+              broadcastTime: getTimestamp(),
+              maxFeePerGasUsed: options.maxFeePerGas.toString(),
+            },
+          };
+        }
+      }
 
       let tx;
       try {
@@ -832,6 +877,9 @@ export class RevealQueue extends DO {
             }
           );
         } else {
+          // TODO make dummy tx
+          // or even better resign all tx queued with lower nonce, to skip it
+          // but note in that "better" case, we should not do it if a tx has been broadcasted as we cannot guarantee the broadcasted tx will not be included in the end
           throw e;
         }
       }
@@ -864,11 +912,12 @@ export class RevealQueue extends DO {
         if (planetOwner !== '0x0000000000000000000000000000000000000000') {
           for (const allianceToTest of reveal.potentialAlliances) {
             const allies = await this.allianceRegistryContract.arePlayersAllies(
-              alliance,
+              allianceToTest,
               reveal.player,
               planetOwner,
-              getTimestamp()
+              reveal.startTime
             );
+            console.log({allies, allianceToTest, player: reveal.player, planetOwner});
             if (allies) {
               alliance = allianceToTest;
               break;
