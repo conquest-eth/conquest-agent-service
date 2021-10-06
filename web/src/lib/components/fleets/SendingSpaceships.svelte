@@ -13,12 +13,21 @@
   import Help from '../utils/Help.svelte';
   import {agentService} from '$lib/account/agentService';
   import {account} from '$lib/account/account';
+  import AttackSendTabButton from './AttackSendTabButton.svelte';
+  import {playersQuery} from '$lib/space/playersQuery';
+  import {min} from 'bn.js';
+
+  let useAgentService = false;
+  let gift = false;
 
   $: fromPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
   $: fromPlanetState = planets.planetStateFor(fromPlanetInfo);
 
   $: toPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.to.x, $sendFlow.data?.to.y);
   $: toPlanetState = planets.planetStateFor(toPlanetInfo);
+
+  $: toPlayer = $playersQuery.data?.players[$toPlanetState.owner];
+  $: fromPlayer = $playersQuery.data?.players[$fromPlanetState.owner];
 
   // TODO maxSpaceshipsLoaded and invalid message if maxSpaceships == 0
   let fleetAmountSet = false;
@@ -42,6 +51,7 @@
         outcome: {
           min: {captured: boolean; numSpaceshipsLeft: number};
           max: {captured: boolean; numSpaceshipsLeft: number};
+          giving?: {tax: number; loss: number};
           timeUntilFails: number;
         };
       }
@@ -51,7 +61,17 @@
       prediction = {
         arrivalTime: timeToText(spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo)),
         numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(fromPlanetInfo, toPlanetInfo, $toPlanetState),
-        outcome: spaceInfo.outcome(fromPlanetInfo, $fromPlanetState, toPlanetInfo, $toPlanetState, fleetAmount, $time),
+        outcome: spaceInfo.outcome(
+          fromPlanetInfo,
+          $fromPlanetState,
+          toPlanetInfo,
+          $toPlanetState,
+          fleetAmount,
+          $time,
+          gift,
+          fromPlayer,
+          toPlayer
+        ),
       };
     }
   }
@@ -63,20 +83,30 @@
     }
   }
 
-  let useAgentService = false;
-  let gift = false;
-
   onMount(() => {
     useAgentService = account.isAgentServiceActivatedByDefault();
     fleetAmount = 1;
     fleetAmountSet = false;
   });
+
+  function useSend() {
+    gift = true;
+  }
+
+  function useAttack() {
+    gift = false;
+  }
 </script>
 
 <!-- TODO Remove on:confirm, see button below -->
 <Modal on:close={() => sendFlow.cancel()} on:confirm={() => sendFlow.confirm(fleetAmount, gift, useAgentService)}>
   <!-- <h2 slot="header">Capture Planet {location.x},{location.y}</h2> -->
 
+  <nav class="relative z-0 mb-5 rounded-lg shadow flex divide-x divide-gray-700" aria-label="Tabs">
+    <!-- Current: "text-gray-900", Default: "text-gray-500 hover:text-gray-700" -->
+    <AttackSendTabButton active={!gift} on:click={useAttack}>Attack</AttackSendTabButton>
+    <AttackSendTabButton active={gift} on:click={useSend}>Give</AttackSendTabButton>
+  </nav>
   <div class="text-center">
     <p class="font-bold">How many spaceships?</p>
   </div>
@@ -84,7 +114,6 @@
 
   <div>
     <div class="text-center">
-      <input type="checkbox" bind:checked={gift} /> gift
       <!-- TODO show Token balance and warn when cannot buy // Token balance could be shown in navbar (once connected)-->
       <input
         class="text-cyan-300 bg-cyan-300"
@@ -117,7 +146,7 @@
           <span>{$fromPlanetState.numSpaceships}</span><span class="text-right">{$toPlanetState.numSpaceships}</span>
         </div>
 
-        {#if $fromPlanetState.owner !== $toPlanetState.owner}
+        {#if !gift}
           <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
             <span>Attack</span><span class="text-right">Defense</span>
           </div>
@@ -154,12 +183,25 @@
             </div>
           {/if}
         {:else}
+          <div class="flex flex-row justify-center">
+            <span
+              >will receive {fleetAmount - prediction?.outcome.giving?.loss}
+              {#if prediction?.outcome.giving?.loss > 0}
+                <span class="text-red-500"
+                  >{`( ${fleetAmount} - ${prediction?.outcome.giving?.loss} (${
+                    prediction?.outcome.giving?.tax / 100
+                  }% tax))`}</span
+                >
+              {/if}
+            </span>
+          </div>
+
           <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
             <span>Arrives in</span><span class="text-right">Spaceships Then</span>
           </div>
           <div class="flex flex-row justify-between">
             <span>{prediction?.arrivalTime}</span><span class="text-right"
-              >{(prediction?.numSpaceshipsAtArrival.min || 0) + fleetAmount}</span
+              >{prediction?.outcome.min.numSpaceshipsLeft || 0}</span
             >
           </div>
         {/if}
