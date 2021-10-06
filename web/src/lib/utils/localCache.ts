@@ -7,7 +7,7 @@ class LocalCache {
   private _prefix: string;
   private _dbP: Promise<IDBPDatabase<unknown>>;
   constructor(version?: string) {
-    this._prefix = (base && base.startsWith('/ipfs/')) || base.startsWith('/ipns/') ? base.slice(6) : ''; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
+    this._prefix = (base && base.startsWith('/ipfs/')) || base.startsWith('/ipns/') ? base.slice(6) : '_c_'; // ensure local storage is not conflicting across web3w-based apps on ipfs gateways (require encryption for sensitive data)
 
     (async () => {
       const lastVersion = await this.getItem('_version');
