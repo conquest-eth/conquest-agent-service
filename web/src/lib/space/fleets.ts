@@ -29,6 +29,9 @@ export type Fleet = {
   timeToResolve: number;
   gift: boolean;
   potentialAlliances?: string[];
+  owner: string;
+  fleetSender?: string;
+  operator?: string;
   sending: {
     id: string;
     status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
@@ -144,6 +147,9 @@ export class FleetsStore implements Readable<Fleet[]> {
               state,
               gift: sendAction.gift,
               potentialAlliances: sendAction.potentialAlliances,
+              owner: sendAction.fleetOwner,
+              fleetSender: sendAction.fleetSender,
+              operator: sendAction.operator,
             });
           }
         }

@@ -42,6 +42,9 @@ export type PendingSend = PendingActionBase & {
   actualLaunchTime?: number;
   resolution?: string[];
   queueID?: string;
+  fleetOwner: string;
+  fleetSender?: string;
+  operator?: string;
 };
 
 export type PendingResolution = PendingActionBase & {
@@ -175,7 +178,10 @@ class Account implements Readable<AccountState> {
     from: {x: number; y: number},
     to: {x: number; y: number},
     gift: boolean,
-    nonce: number
+    nonce: number,
+    fleetOwner: string,
+    fleetSender?: string,
+    operator?: string
   ): Promise<{toHash: string; fleetId: string; secretHash: string}> {
     // TODO use timestamp to allow user to retrieve a lost secret by knowing `to` and approximate time of launch
     // const randomNonce =
@@ -189,18 +195,24 @@ class Account implements Readable<AccountState> {
     const secretHash = keccak256(['bytes32', 'uint256', 'uint256'], [privateWallet.hashString(), fromString, nonce]);
     // console.log({secretHash});
     const toHash = keccak256(['bytes32', 'uint256', 'bool'], [secretHash, toString, gift]);
-    const fleetId = keccak256(['bytes32', 'uint256'], [toHash, fromString]);
+    const fleetId = keccak256(
+      ['bytes32', 'uint256', 'address', 'address'],
+      [toHash, fromString, fleetSender || fleetOwner, operator || fleetOwner]
+    );
     return {toHash, fleetId, secretHash};
   }
 
   async recordFleet(
     fleet: {
+      owner: string;
       id: string;
       from: PlanetCoords;
       to: PlanetCoords;
       gift: boolean;
       potentialAlliances?: string[];
       fleetAmount: number;
+      fleetSender?: string;
+      operator?: string;
     },
     txHash: string,
     timestamp: number,
@@ -217,6 +229,9 @@ class Account implements Readable<AccountState> {
       gift: fleet.gift,
       potentialAlliances: fleet.potentialAlliances ? [...fleet.potentialAlliances] : undefined,
       quantity: fleet.fleetAmount,
+      fleetSender: fleet.fleetSender,
+      operator: fleet.operator,
+      fleetOwner: fleet.owner,
     };
     await this.accountDB.save(this.state.data);
     this._notify();

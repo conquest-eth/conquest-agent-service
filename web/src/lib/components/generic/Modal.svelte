@@ -5,6 +5,8 @@
   export let title = '';
   export let cancelable = true;
 
+  export let border_color = 'border-cyan-300';
+
   const dispatch = createEventDispatcher();
   const close = () => cancelable && dispatch('close');
 
@@ -37,14 +39,12 @@
       index += tabbable.length + (evt.shiftKey ? -1 : 1);
       index %= tabbable.length;
 
-      (tabbable[index] as HTMLElement).focus &&
-        (tabbable[index] as HTMLElement).focus();
+      (tabbable[index] as HTMLElement).focus && (tabbable[index] as HTMLElement).focus();
       evt.preventDefault();
     }
   }
 
-  const previously_focused =
-    typeof document !== 'undefined' && document.activeElement;
+  const previously_focused = typeof document !== 'undefined' && document.activeElement;
 
   if (previously_focused) {
     onDestroy(() => {
@@ -59,26 +59,29 @@
 <svelte:window on:keydown={handle_keydown} />
 
 <!-- container -->
-<div
-  class="z-50 fixed w-full h-full top-0 left-0 flex items-center justify-center">
+<div class="z-50 fixed w-full h-full top-0 left-0 flex items-center justify-center">
   <!-- clickable dark overlay -->
   <div on:click={close} class="absolute w-full h-full bg-gray-900 opacity-80" />
 
   <!--modal-->
   <div
-    class="absolute border-2 w-11/12 md:max-w-md mx-auto overflow-y-auto text-cyan-300 border-cyan-300 bg-gray-900  max-h-screen">
+    class={`absolute border-2 w-11/12 md:max-w-md mx-auto overflow-y-auto bg-gray-900 max-h-screen text-cyan-300 ${border_color}`}
+  >
     {#if globalCloseButton}
       <div
         on:click={close}
-        class="modal-close absolute top-0 right-0 cursor-pointer flex flex-col items-center mt-4 mr-4 text-sm">
+        class="modal-close absolute top-0 right-0 cursor-pointer flex flex-col items-center mt-4 mr-4 text-sm"
+      >
         <svg
           class="fill-current text-white"
           xmlns="http://www.w3.org/2000/svg"
           width="18"
           height="18"
-          viewBox="0 0 18 18">
+          viewBox="0 0 18 18"
+        >
           <path
-            d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z" />
+            d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"
+          />
         </svg>
         <span class="text-sm">(Esc)</span>
       </div>
@@ -98,9 +101,11 @@
               xmlns="http://www.w3.org/2000/svg"
               width="18"
               height="18"
-              viewBox="0 0 18 18">
+              viewBox="0 0 18 18"
+            >
               <path
-                d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z" />
+                d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"
+              />
             </svg>
           </div>
         {/if}

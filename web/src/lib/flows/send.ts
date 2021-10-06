@@ -55,6 +55,10 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     });
   }
 
+  isGift(): boolean {
+    return this.$store.data?.gift || false;
+  }
+
   async sendFrom(from: {x: number; y: number}): Promise<void> {
     if (this.$store.step == 'PICK_ORIGIN') {
       this.pickOrigin(from);
@@ -89,7 +93,32 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     this._chooseFleetAmount();
   }
 
-  _chooseFleetAmount() {
+  async _chooseFleetAmount() {
+    const flow = this.setPartial({step: 'CREATING_TX'});
+    if (flow.data) {
+      const to = flow.data.to;
+      const toPlanetInfo = spaceInfo.getPlanetInfo(to.x, to.y);
+      const destinationPlanetState = get(planets.planetStateFor(toPlanetInfo));
+      if (destinationPlanetState.owner) {
+        if (destinationPlanetState.owner === wallet.address.toLowerCase()) {
+          this.setData({gift: true});
+        } else {
+          await playersQuery.triggerUpdate();
+          const me = playersQuery.getPlayer(wallet.address.toLowerCase());
+          const destinationOwner = playersQuery.getPlayer(destinationPlanetState.owner);
+          if (me && me.alliances.length > 0 && destinationOwner && destinationOwner.alliances.length > 0) {
+            const potentialAlliances = findCommonAlliances(
+              me.alliances.map((v) => v.address),
+              destinationOwner.alliances.map((v) => v.address)
+            );
+            if (potentialAlliances.length > 0) {
+              this.setData({gift: true});
+            }
+          }
+        }
+      }
+    }
+
     if (!account.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_AMOUNT)) {
       this.setPartial({step: 'TUTORIAL_PRE_FLEET_AMOUNT'});
     } else {
@@ -115,7 +144,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     if (!this.$store.data?.fleetAmount) {
       throw new Error(`not fleetAmount recorded`);
     }
-    if (!this.$store.data?.gift) {
+    if (this.$store.data?.gift === undefined) {
       throw new Error(`not gift recorded`);
     }
     account.recordWelcomingStep(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION);
@@ -142,17 +171,19 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       throw new Error(`no provider`);
     }
 
+    const playerAddress = wallet.address.toLowerCase();
+
     const latestBlock = await wallet.provider.getBlock('latest');
     if (!isCorrected) {
       // TODO extreact or remove (assume time will be corrected by then)
       correctTime(latestBlock.timestamp);
     }
 
-    const nonce = await wallet.provider.getTransactionCount(wallet.address);
+    const nonce = await wallet.provider.getTransactionCount(playerAddress);
 
     const distance = spaceInfo.distance(fromPlanetInfo, toPlanetInfo);
     const duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
-    const {toHash, fleetId, secretHash} = await account.hashFleet(from, to, gift, nonce);
+    const {toHash, fleetId, secretHash} = await account.hashFleet(from, to, gift, nonce, playerAddress);
 
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 
@@ -215,6 +246,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         fleetAmount,
         gift,
         potentialAlliances,
+        owner: playerAddress,
       },
       tx.hash,
       latestBlock.timestamp,

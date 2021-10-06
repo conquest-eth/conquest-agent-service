@@ -96,45 +96,31 @@
         <p class="m-3">Pick a Different Planet than Itself</p>
       {:else if !$planetState.owner}
         <!-- SEND TO CONQUERE -->
-        <PanelButton label="Attack!" class="m-2" color="text-red-500" borderColor="border-red-500" on:click={sendTo}>
+        <PanelButton label="Confirm" class="m-2" color="text-blue-500" borderColor="border-blue-500" on:click={sendTo}>
           <div class="w-20">
-            Attack!
-            <Help class="inline w-4 h-4">
-              You can attack other planets by sending spaceships to them. Once it reaches destination, you ll have to
-              resolve the attack.
-            </Help>
+            Confirm
+            <Help class="inline w-4 h-4"
+              >You can send out spaceships in the form of fleets to either attack or send reinforcement.</Help
+            >
           </div>
         </PanelButton>
       {:else if walletIsOwner && !$planetState.active}
         <!-- SEND MORE -->
-        <PanelButton
-          label="Send Reinforcment"
-          class="m-2"
-          color="text-green-500"
-          borderColor="border-green-500"
-          on:click={sendTo}
-        >
-          <div class="w-20">Send Reinforcment</div>
+        <PanelButton label="Confirm" class="m-2" color="text-blue-500" borderColor="border-blue-500" on:click={sendTo}>
+          <div class="w-20">Confirm</div>
         </PanelButton>
       {:else if walletIsOwner}
         <!-- SEND PROTECTION -->
-        <PanelButton
-          label="Send Reinforcment"
-          class="m-2"
-          color="text-green-500"
-          borderColor="border-green-500"
-          on:click={sendTo}
-        >
-          <div class="w-20">Send Reinforcment</div>
+        <PanelButton label="Confirm" class="m-2" color="text-blue-500" borderColor="border-blue-500" on:click={sendTo}>
+          <div class="w-20">Confirm</div>
         </PanelButton>
       {:else}
         <!-- ATTACK -->
-        <PanelButton label="Attack!" class="m-2" color="text-red-500" borderColor="border-red-500" on:click={sendTo}>
+        <PanelButton label="Confirm" class="m-2" color="text-blue-500" borderColor="border-blue-500" on:click={sendTo}>
           <div class="w-20">
-            Attack!
+            Confirm
             <Help class="inline w-4 h-4">
-              You can attack other planets by sending spaceships to them. Once it reaches destination, you ll have to
-              resolve the attack.
+              You can send out spaceships in the form of fleets to either attack or send reinforcement.
             </Help>
           </div>
         </PanelButton>
@@ -158,29 +144,28 @@
           <!-- SEND MORE -->
           {#if attacking}
             <PanelButton
-              label="Send Attack!"
+              label="Confirm"
               class="m-2"
-              color="text-red-500"
-              borderColor="border-red-500"
+              color="text-blue-500"
+              borderColor="border-blue-500"
               on:click={sendFrom}
             >
               <div class="w-20">
-                Send Attack!
+                Confirm
                 <Help class="inline w-4 h-4">
-                  You can attack other planets by sending spaceships to them. Once it reaches destination, you ll have
-                  to resolve the attack.
+                  You can send out spaceships in the form of fleets to either attack or send reinforcement.
                 </Help>
               </div>
             </PanelButton>
           {:else}
             <PanelButton
-              label="Send Reinforcment"
+              label="Confirm"
               class="m-2"
-              color="text-green-500"
-              borderColor="border-green-500"
+              color="text-blue-500"
+              borderColor="border-blue-500"
               on:click={sendFrom}
             >
-              <div class="w-20">Send Reinforcment</div>
+              <div class="w-20">Confirm</div>
             </PanelButton>
           {/if}
         {/if}
@@ -188,17 +173,16 @@
         <!-- SEND PROTECTION -->
         {#if attacking}
           <PanelButton
-            label="Send Attack!"
+            label="Confirm"
             class="m-2"
-            color="text-red-500"
-            borderColor="border-red-500"
+            color="text-blue-500"
+            borderColor="border-blue-500"
             on:click={sendFrom}
           >
             <div class="w-20">
-              Send Attack!
+              Confirm
               <Help class="inline w-4 h-4">
-                You can attack other planets by sending spaceships to them. Once it reaches destination, you ll have to
-                resolve the attack.
+                You can send out spaceships in the form of fleets to either attack or send reinforcement.
               </Help>
             </div>
           </PanelButton>
@@ -268,24 +252,23 @@
         </div>
       </PanelButton>
       {#if $planetState.natives}
-        <PanelButton label="Attack" class="m-2" color="text-red-500" borderColor="border-red-500" on:click={sendTo}>
+        <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
           <div class="w-20">
-            Attack
+            Send Here
             <Help class="inline w-4 h-4">
-              You can attack other planets by sending spaceships to them. Once it reaches destination, you ll have to
-              resolve the attack.
+              You can send out spaceships in the form of fleets to either attack or send reinforcement.
             </Help>
           </div>
         </PanelButton>
       {:else}
         <!-- unreachable ? -->
-        <PanelButton label="Send Spaceships Here" class="m-2" on:click={sendTo}>
-          <div class="w-20">Send Spaceships Here</div>
+        <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+          <div class="w-20">Send Here</div>
         </PanelButton>
       {/if}
     {:else if walletIsOwner && $planetState.exiting}
-      <PanelButton label="Request Reinforcment" class="m-2" on:click={sendTo}>
-        <div class="w-20">Request Reinforcment</div>
+      <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+        <div class="w-20">Send Here</div>
       </PanelButton>
     {:else if walletIsOwner && !$planetState.active}
       <PanelButton
@@ -308,31 +291,30 @@
           >
         </div>
       </PanelButton>
-      <PanelButton label="Request Reinforcment" class="m-2" on:click={sendTo}>
-        <div class="w-20">Request Reinforcment</div>
+      <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+        <div class="w-20">Send Here</div>
       </PanelButton>
       {#if $planetState.numSpaceships > 0}
-        <PanelButton label="Send Fleet" class="m-2" on:click={sendFrom}>
-          <div class="w-20">Send Fleet</div>
+        <PanelButton label="Send" class="m-2" on:click={sendFrom}>
+          <div class="w-20">Send</div>
         </PanelButton>
       {/if}
     {:else if walletIsOwner}
-      <PanelButton label="Request Reinforcment" class="m-2" on:click={sendTo}>
-        <div class="w-20">Request Reinforcment</div>
+      <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+        <div class="w-20">Send Here</div>
       </PanelButton>
-      <PanelButton label="Send Fleet" class="m-2" on:click={sendFrom}>
-        <div class="w-20">Send Fleet</div>
+      <PanelButton label="Send" class="m-2" on:click={sendFrom}>
+        <div class="w-20">Send</div>
       </PanelButton>
       <PanelButton label="Exit" color="text-yellow-400" borderColor="border-yellow-400" class="m-2" on:click={exitFrom}>
         <div class="w-20">Exit</div>
       </PanelButton>
     {:else}
-      <PanelButton label="Attack" class="m-2" color="text-red-500" borderColor="border-red-500" on:click={sendTo}>
+      <PanelButton label="Send" class="m-2" on:click={sendTo}>
         <div class="w-20">
-          Attack
+          Send Here
           <Help class="inline w-4 h-4">
-            You can attack other planets by sending spaceships to them. Once it reaches destination, you ll have to
-            resolve the attack.
+            You can send out spaceships in the form of fleets to either attack or send reinforcement.
           </Help>
         </div>
       </PanelButton>

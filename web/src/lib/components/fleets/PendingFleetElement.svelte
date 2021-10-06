@@ -22,7 +22,11 @@
     const {toHash, fleetId, secretHash} = await account.hashFleet(
       from.location,
       to.location,
-      fleet.sending.action.nonce
+      fleet.gift,
+      fleet.sending.action.nonce,
+      fleet.owner,
+      fleet.fleetSender,
+      fleet.operator
     );
     const {queueID} = await agentService.submitReveal(
       fleetId,
@@ -30,8 +34,12 @@
       from.location,
       to.location,
       distance,
+      fleet.gift,
+      fleet.potentialAlliances,
       fleet.launchTime,
-      duration
+      duration,
+      fleet.fleetSender,
+      fleet.operator
     );
     account.recordQueueID(fleet.sending.id, queueID);
   }

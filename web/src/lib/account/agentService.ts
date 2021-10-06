@@ -36,7 +36,9 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
     gift: boolean,
     potentialAlliances: string[] | undefined,
     startTime: number,
-    duration: number
+    duration: number,
+    fleetSender?: string,
+    operator?: string
   ): Promise<{queueID: string}> {
     const revealSubmission = {
       player: wallet.address.toLowerCase(),
@@ -50,6 +52,8 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
       startTime,
       duration,
       nonceMsTimestamp: Math.floor(Date.now()),
+      fleetSender,
+      operator,
     };
     const queueMessageString = `queue:${revealSubmission.player}:${fleetID}:${secret}:${from.x}:${from.y}:${to.x}:${
       to.y

@@ -102,8 +102,10 @@ contract OuterSpace is Proxied {
 
     event PlanetStake(address indexed acquirer, uint256 indexed location, uint32 numSpaceships, uint256 stake);
     event FleetSent(
+        address indexed fleetSender,
         address indexed fleetOwner,
         uint256 indexed from,
+        address operator,
         uint256 fleet,
         uint32 quantity,
         uint32 newNumSpaceships
@@ -346,9 +348,15 @@ contract OuterSpace is Proxied {
         uint256 distance;
         address alliance; // address(0) means attack, address(1) means no alliance, 2 or more means allianceIndex + 2
         bytes32 secret;
+        address fleetSender;
+        address operator;
     }
 
     function resolveFleet(uint256 fleetId, FleetResolution calldata resolution) external {
+         require(
+            uint256(keccak256(abi.encodePacked(keccak256(abi.encodePacked(resolution.secret, resolution.to, uint160(resolution.alliance) > 0)), resolution.from, resolution.fleetSender, resolution.operator))) == fleetId,
+            "INVALID_FLEET_DATA_OR_SECRET'"
+        );
         _resolveFleet(fleetId, resolution);
     }
 
@@ -356,25 +364,45 @@ contract OuterSpace is Proxied {
     // FLEET SENDING
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+    struct FleetLaunch {
+        address fleetSender;
+        address fleetOwner;
+        uint256 from;
+        uint32 quantity;
+        bytes32 toHash;
+    }
+
     function send(
         uint256 from,
         uint32 quantity,
         bytes32 toHash
     ) external {
-        _sendFor(_msgSender(), from, quantity, toHash);
+        address sender = _msgSender();
+        uint256 fleetId = uint256(keccak256(abi.encodePacked(toHash, from, sender, sender)));
+        _sendFor(fleetId, sender, FleetLaunch({
+            fleetSender: sender,
+            fleetOwner: sender,
+            from: from,
+            quantity: quantity,
+            toHash: toHash
+        }));
     }
 
-    function sendFor(
-        address owner,
-        uint256 from,
-        uint32 quantity,
-        bytes32 toHash
-    ) external {
-        address sender = _msgSender();
-        if (sender != owner) {
-            require(_operators[owner][sender], "NOT_AUTHORIZED");
+    function sendFor(FleetLaunch calldata launch) external { //  bytes calldata fleetSignature // TODO for fleetOwner's signature ?
+
+        address operator = _msgSender();
+        if (operator != launch.fleetSender) {
+            require(_operators[launch.fleetSender][operator], "NOT_AUTHORIZED_TO_SEND");
         }
-        _sendFor(owner, from, quantity, toHash);
+        uint256 fleetId = uint256(keccak256(abi.encodePacked(launch.toHash, launch.from, launch.fleetSender, operator)));
+
+        if (launch.fleetOwner != launch.fleetSender && launch.fleetOwner != operator) {
+            // TODO use signature from fleetOwner instead?
+            require(_operators[launch.fleetOwner][operator], "NOT_AUTHORIZED_TO_FLEET");
+        }
+
+        _sendFor(fleetId, operator, launch);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -697,18 +725,13 @@ contract OuterSpace is Proxied {
     // FLEET SENDING
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    function _sendFor(
-        address owner,
-        uint256 from,
-        uint32 quantity,
-        bytes32 toHash
-    ) internal {
-        Planet storage planet = _getPlanet(from);
+    function _sendFor(uint256 fleetId, address operator, FleetLaunch memory launch) internal {
+        Planet storage planet = _getPlanet(launch.from);
 
         require(planet.exitTime == 0, "PLANET_EXIT");
-        require(owner == planet.owner, "NOT_OWNER");
+        require(launch.fleetSender == planet.owner, "NOT_OWNER");
 
-        bytes32 data = _planetData(from);
+        bytes32 data = _planetData(launch.from);
         uint16 production = _production(data);
 
         (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(
@@ -716,9 +739,24 @@ contract OuterSpace is Proxied {
             planet.lastUpdated,
             production
         );
-        require(currentNumSpaceships >= quantity, "SPACESHIPS_NOT_ENOUGH");
+        require(currentNumSpaceships >= launch.quantity, "SPACESHIPS_NOT_ENOUGH");
 
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        (uint32 launchTime, uint32 numSpaceships) = _computeSpaceshipBeforeSending(currentNumSpaceships, active, launch.from, launch.quantity);
+
+
+        _fleets[fleetId] = Fleet({launchTime: launchTime, owner: launch.fleetOwner, quantity: launch.quantity});
+
+        emit FleetSent(launch.fleetSender, launch.fleetOwner, launch.from, operator, fleetId, launch.quantity, numSpaceships);
+    }
+
+    function _computeSpaceshipBeforeSending(
+        uint32 currentNumSpaceships,
+        bool active,
+        uint256 from,
+        uint32 quantity
+    ) internal returns( uint32 launchTime, uint32 numSpaceships) {
+        Planet storage planet = _getPlanet(from);
+         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         // record flying fleets (to prevent front-running, see resolution)
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         uint256 timeSlot = block.timestamp / (FRONT_RUNNING_DELAY / 2);
@@ -728,15 +766,11 @@ contract OuterSpace is Proxied {
         _inFlight[from][timeSlot].flying = flying;
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        uint32 launchTime = uint32(block.timestamp); // TODO allow delay : launchTime in future
-        uint32 numSpaceships = currentNumSpaceships - quantity;
+        launchTime = uint32(block.timestamp); // TODO allow delay : launchTime in future
+        numSpaceships = currentNumSpaceships - quantity;
         planet.numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
         planet.lastUpdated = launchTime;
 
-        uint256 fleetId = uint256(keccak256(abi.encodePacked(toHash, from)));
-        _fleets[fleetId] = Fleet({launchTime: launchTime, owner: owner, quantity: quantity});
-
-        emit FleetSent(owner, from, fleetId, quantity, numSpaceships);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -755,7 +789,6 @@ contract OuterSpace is Proxied {
         Fleet memory fleet = _fleets[fleetId];
         (uint32 quantity, uint32 inFlightFleetLoss) = _checkFleetAndComputeQuantityLeft(
             fleet,
-            fleetId,
             resolution
         );
         Planet memory toPlanet = _getPlanet(resolution.to);
@@ -788,13 +821,8 @@ contract OuterSpace is Proxied {
 
     function _checkFleetAndComputeQuantityLeft(
         Fleet memory fleet,
-        uint256 fleetId,
         FleetResolution memory resolution
     ) internal returns (uint32 quantity, uint32 inFlightFleetLoss) {
-        require(
-            uint256(keccak256(abi.encodePacked(keccak256(abi.encodePacked(resolution.secret, resolution.to, uint160(resolution.alliance) > 0)), resolution.from))) == fleetId,
-            "INVALID_FLEET_DATA_OR_SECRET'"
-        );
 
         quantity = fleet.quantity;
         require(quantity > 0, "FLEET_DO_NOT_EXIST");

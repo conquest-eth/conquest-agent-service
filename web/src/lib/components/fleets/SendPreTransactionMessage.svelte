@@ -36,7 +36,7 @@
     <p>Once the first transaction is submitted, we will help you create a reminder.</p>
     <p class="my-2">
       You can also setup the agent-service so that it will resolve your fleets automatically. See
-      <a href={`agent-service/`} target="_blank" class="underline font-black">Agent Service</a>
+      <a href={`agent-service/`} class="underline font-black">Agent Service</a>
     </p>
   {/if}
   <div class="text-center">

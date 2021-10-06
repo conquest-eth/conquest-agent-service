@@ -1,11 +1,13 @@
 <script lang="ts">
   export let active: boolean;
+  export let disabled = false;
 </script>
 
 {#if active}
   <button
     class="text-gray-200 rounded-l-lg group relative min-w-0 flex-1 overflow-hidden bg-gray-800 py-4 px-4 text-sm font-medium text-center hover:bg-gray-700 focus:z-10"
     aria-current="page"
+    {disabled}
     on:click
   >
     <span><slot /></span>

@@ -15,7 +15,6 @@
   import {account} from '$lib/account/account';
   import AttackSendTabButton from './AttackSendTabButton.svelte';
   import {playersQuery} from '$lib/space/playersQuery';
-  import {min} from 'bn.js';
 
   let useAgentService = false;
   let gift = false;
@@ -51,6 +50,7 @@
         outcome: {
           min: {captured: boolean; numSpaceshipsLeft: number};
           max: {captured: boolean; numSpaceshipsLeft: number};
+          allies: boolean;
           giving?: {tax: number; loss: number};
           timeUntilFails: number;
         };
@@ -68,9 +68,9 @@
           $toPlanetState,
           fleetAmount,
           $time,
-          gift,
           fromPlayer,
-          toPlayer
+          toPlayer,
+          gift
         ),
       };
     }
@@ -83,30 +83,52 @@
     }
   }
 
+  $: warning =
+    !gift && prediction && prediction.outcome.allies
+      ? 'You are attacking an ally!'
+      : gift && prediction && !prediction.outcome.allies
+      ? 'Your are giving spaceship to a potential enemy!'
+      : '';
+
+  $: border_color = gift ? 'border-cyan-300' : 'border-red-500';
+  $: text_color = gift ? 'text-cyan-300' : 'text-red-500';
+
   onMount(() => {
     useAgentService = account.isAgentServiceActivatedByDefault();
     fleetAmount = 1;
     fleetAmountSet = false;
+    gift = sendFlow.isGift();
   });
 
   function useSend() {
-    gift = true;
+    if ($toPlanetState.owner) {
+      gift = true;
+    }
   }
 
   function useAttack() {
-    gift = false;
+    if ($fromPlanetState.owner != $toPlanetState.owner) {
+      gift = false;
+    }
   }
 </script>
 
 <!-- TODO Remove on:confirm, see button below -->
-<Modal on:close={() => sendFlow.cancel()} on:confirm={() => sendFlow.confirm(fleetAmount, gift, useAgentService)}>
+<Modal {border_color} on:close={() => sendFlow.cancel()}>
   <!-- <h2 slot="header">Capture Planet {location.x},{location.y}</h2> -->
 
   <nav class="relative z-0 mb-5 rounded-lg shadow flex divide-x divide-gray-700" aria-label="Tabs">
     <!-- Current: "text-gray-900", Default: "text-gray-500 hover:text-gray-700" -->
-    <AttackSendTabButton active={!gift} on:click={useAttack}>Attack</AttackSendTabButton>
+    <AttackSendTabButton disabled={$fromPlanetState.owner === $toPlanetState.owner} active={!gift} on:click={useAttack}
+      >Attack</AttackSendTabButton
+    >
     <AttackSendTabButton active={gift} on:click={useSend}>Give</AttackSendTabButton>
   </nav>
+  {#if warning}
+    <div class="text-center text-yellow-600">
+      {warning}
+    </div>
+  {/if}
   <div class="text-center">
     <p class="font-bold">How many spaceships?</p>
   </div>
@@ -232,6 +254,9 @@
       <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
       <div class="text-center">
         <PanelButton
+          borderColor={border_color}
+          color={text_color}
+          cornerColor={border_color}
           class="mt-5"
           label="Fleet Amount"
           disabled={confirmDisabled}

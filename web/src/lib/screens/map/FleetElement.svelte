@@ -71,6 +71,7 @@
     <ul class="text-white">
       <li><span class="text-yellow-300">from:</span> {fleet.from.stats.name}</li>
       <li><span class="text-yellow-300">to:</span> {fleet.to.stats.name}</li>
+      <li><span class="text-yellow-300">spaceships:</span> {fleet.quantity}</li>
       <li>
         <span class="text-yellow-300">Duration:</span>
         {timeToText(fleet.duration)}
