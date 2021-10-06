@@ -12,7 +12,7 @@ contract AllianceRegistry is Proxied {
      using ECDSA for bytes32;
 
 
-    uint8 internal constant MAX_NUM_ALLIANCES = 8;
+    uint8 internal constant MAX_NUM_ALLIANCES = 4;
 
     struct AccountData {
         uint8 numAlliances;

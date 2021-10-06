@@ -7,6 +7,9 @@ import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {now, correctTime, isCorrected} from '$lib/time';
 import {TutorialSteps} from '$lib/account/constants';
 import {agentService} from '$lib/account/agentService';
+import {playersQuery} from '$lib/space/playersQuery';
+import {planets} from '$lib/space/planets';
+import {get} from 'svelte/store';
 
 type Data = {
   txHash?: string;
@@ -33,6 +36,16 @@ export type SendFlow = {
   data?: Data;
   error?: {message?: string};
 };
+
+function findCommonAlliances(arr1: string[], arr2: string[]): string[] {
+  const result = [];
+  for (const item1 of arr1) {
+    if (arr2.indexOf(item1) !== -1) {
+      result.push(item1);
+    }
+  }
+  return result;
+}
 
 class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
   constructor() {
@@ -144,10 +157,21 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 
     let potentialAlliances: string[] | undefined;
+
     if (gift) {
-      // TODO
-      // potentialAlliances = ['0x0000000000000000000000000000000000000001'];
+      const destinationPlanetState = get(planets.planetStateFor(toPlanetInfo));
+      if (destinationPlanetState.owner) {
+        await playersQuery.triggerUpdate();
+        const me = playersQuery.getPlayer(wallet.address.toLowerCase());
+        const destinationOwner = playersQuery.getPlayer(destinationPlanetState.owner);
+        console.log({me, destinationOwner});
+        if (me && me.alliances.length > 0 && destinationOwner && destinationOwner.alliances.length > 0) {
+          potentialAlliances = findCommonAlliances(me.alliances, destinationOwner.alliances);
+        }
+      }
     }
+
+    console.log({potentialAlliances});
 
     this.setPartial({step: 'WAITING_TX'});
 
