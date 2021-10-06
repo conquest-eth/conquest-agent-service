@@ -11,6 +11,7 @@
   import {wallet} from '$lib/blockchain/wallet';
   import selection from '$lib/map/selection';
   import {spaceInfo} from '$lib/space/spaceInfo';
+  import {playersQuery} from '$lib/space/playersQuery';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -61,6 +62,11 @@
   const y = planetInfo.location.globalY - frame.h / 2;
 
   $: owner = $planetState?.owner;
+
+  const alliancesOffset = [-1, 1, 1, -1];
+
+  $: ownerObject = $playersQuery.data?.players[owner];
+  $: alliances = ownerObject ? ownerObject.alliances : [];
 
   // if (x > -20 * 4 && x < 20 * 4 && y > -20 * 4 && y < 20 * 4) {
   //   owner = '0x3333333333333333333333333333333333333333';
@@ -195,6 +201,7 @@ animation-timing-function: linear;
     {:else}
       <SharedBlockie
         style={`
+        pointer-events: none;
         z-index: 1;
         position: absolute;
         transform:
@@ -207,4 +214,44 @@ animation-timing-function: linear;
       />
     {/if}
   {/if}
+
+  {#each alliances as alliance, i}
+    {#if blockieScale <= scale}
+      <SharedBlockie
+        offset={1}
+        style={`
+        pointer-events: none;
+        z-index: 1;
+        position: absolute;
+        transform:
+          translate(${x + alliancesOffset[i % 4] * 1.6 * multiplier}px,${
+          y + alliancesOffset[(i + 3) % 4] * 1.6 * multiplier
+        }px)
+          scale(${blockieScale * 1.5}, ${blockieScale * 1.5});
+        width: ${frame.w}px; height: ${frame.h}px;
+        border: solid ${0.1 / scale}px  ${alliance.ally ? 'lime' : 'white'};
+        border-radius: ${frame.w}px;
+`}
+        address={alliance.address}
+      />
+    {:else}
+      <SharedBlockie
+        offset={1}
+        style={`
+        pointer-events: none;
+        z-index: 1;
+        position: absolute;
+        transform:
+          translate(${x + alliancesOffset[i % 4] * 1.6 * multiplier}px,${
+          y + alliancesOffset[(i + 3) % 4] * 1.6 * multiplier
+        }px)
+          scale(${blockieScale * 1.5}, ${blockieScale * 1.5});
+        width: ${frame.w}px; height: ${frame.h}px;
+        border: solid ${0.1 / scale}px  ${alliance.ally ? 'lime' : 'white'};
+        border-radius: ${frame.w}px;
+`}
+        address={alliance.address}
+      />
+    {/if}
+  {/each}
 </div>

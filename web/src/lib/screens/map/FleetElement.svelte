@@ -25,6 +25,7 @@
   let showLine = true;
   let color;
   let isShow = false;
+  let lineColor = fleet.gift ? '#34D399' : 'red';
   $: if (fleet.state === 'SEND_BROADCASTED') {
     color = 'orange';
   } else if (fleet.state === 'LOADING') {
@@ -96,6 +97,6 @@
     >
       <path d="M 0 0 L 10 5 L 0 10 z" />
     </marker>
-    <line marker-end="url(#triangle)" stroke-width={`${4 / scale}px`} stroke="#34D399" {x1} {y1} {x2} {y2} />
+    <line marker-end="url(#triangle)" stroke-width={`${4 / scale}px`} stroke={lineColor} {x1} {y1} {x2} {y2} />
   </svg>
 {/if}

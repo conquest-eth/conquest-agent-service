@@ -82,7 +82,12 @@ export async function setupOuterSpace(): Promise<{
 export async function sendInSecret(
   spaceInfo: SpaceInfo,
   player: User,
-  {from, quantity, to}: {from: PlanetInfo; quantity: number; to: PlanetInfo}
+  {
+    from,
+    quantity,
+    to,
+    gift,
+  }: {from: PlanetInfo; quantity: number; to: PlanetInfo; gift: boolean}
 ): Promise<{
   receipt: ContractReceipt;
   timeRequired: number;
@@ -90,10 +95,14 @@ export async function sendInSecret(
   fleetId: string;
   from: string;
   to: string;
+  gift: boolean;
   secret: string;
 }> {
   const secret = Wallet.createRandom().privateKey;
-  const toHash = keccak256(['bytes32', 'uint256'], [secret, to.location.id]);
+  const toHash = keccak256(
+    ['bytes32', 'uint256', 'bool'],
+    [secret, to.location.id, gift]
+  );
   const fleetId = keccak256(['bytes32', 'uint256'], [toHash, from.location.id]);
   const receipt = await waitFor<ContractReceipt>(
     player.OuterSpace.send(from.location.id, quantity, toHash) // TODO subId
@@ -114,6 +123,7 @@ export async function sendInSecret(
     from: from.location.id,
     to: to.location.id,
     secret,
+    gift,
   };
 }
 

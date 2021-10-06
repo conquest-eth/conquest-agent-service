@@ -4,13 +4,11 @@ pragma solidity 0.8.9;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./Libraries/Extraction.sol";
-import "./Libraries/Math.sol";
+import "../Libraries/Extraction.sol";
+import "../Libraries/Math.sol";
 import "hardhat-deploy/solc_0.8/proxy/Proxied.sol";
-import "./Interfaces/IAlliance.sol";
-import "./AllianceRegistry.sol";
 
-contract OuterSpace is Proxied {
+contract OuterSpaceTmp is Proxied {
     using Extraction for bytes32;
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -24,8 +22,6 @@ contract OuterSpace is Proxied {
 
     int256 internal constant EXPANSION = 8;
     uint32 internal constant INITIAL_SPACE = 16;
-    uint256 internal constant GIFT_TAX_PER_10000 = 2500;
-    // uint8 internal constant MAX_NUM_ALLIANCES = 8;
 
     uint256 internal constant COMBAT_RULE_SWITCH_TIME = 1620144000; // Tuesday, 4 May 2021 16:00:00 GMT
 
@@ -33,7 +29,6 @@ contract OuterSpace is Proxied {
     // CONFIGURATION / IMMUTABLE
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    AllianceRegistry public immutable allianceRegistry;
     bytes32 internal immutable _genesis;
     IERC20 internal immutable _stakingToken;
     uint256 internal immutable _resolveWindow;
@@ -49,16 +44,9 @@ contract OuterSpace is Proxied {
     mapping(uint256 => Planet) internal _planets;
     mapping(uint256 => Fleet) internal _fleets;
 
-    // struct AccountData {
-    //     uint128 stakeReadyToBeWithdrawn;
-    //     uint8 numAlliances;
-    // }
-    // mapping(address => AccountData) internal _accounts;
     mapping(address => uint256) internal _stakeReadyToBeWithdrawn;
 
     mapping(address => mapping(address => bool)) internal _operators;
-
-    // mapping(address => mapping(IAlliance => uint256)) internal _alliances;
 
     // front running protection : FRONT_RUNNING_DELAY / 2 slots
     struct InFlight {
@@ -124,8 +112,6 @@ contract OuterSpace is Proxied {
         uint32 newNumspaceships
     );
 
-    // event AllianceLink(IAlliance indexed alliance, address indexed player, bool joining);
-
     event PlanetExit(address indexed owner, uint256 indexed location);
 
     event ExitComplete(address indexed owner, uint256 indexed location, uint256 stake);
@@ -143,7 +129,6 @@ contract OuterSpace is Proxied {
 
     constructor(
         IERC20 stakingToken,
-        AllianceRegistry theAllianceRegistry,
         bytes32 genesis,
         uint32 resolveWindow,
         uint32 timePerDistance,
@@ -155,7 +140,6 @@ contract OuterSpace is Proxied {
         require(t * 4 == timePerDistance, "TIME_PER_DIST_NOT_DIVISIBLE_4");
 
         _stakingToken = stakingToken;
-        allianceRegistry = theAllianceRegistry;
         _genesis = genesis;
         _resolveWindow = resolveWindow;
         _timePerDistance = t;
@@ -165,7 +149,6 @@ contract OuterSpace is Proxied {
 
         postUpgrade(
             stakingToken,
-            theAllianceRegistry,
             genesis,
             resolveWindow,
             timePerDistance,
@@ -177,7 +160,6 @@ contract OuterSpace is Proxied {
 
     function postUpgrade(
         IERC20,
-        AllianceRegistry,
         bytes32,
         uint32,
         uint32,
@@ -194,54 +176,6 @@ contract OuterSpace is Proxied {
             });
         }
     }
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // ALLIANCES
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    // function joinAlliance(IAlliance alliance, bytes calldata data) external returns (bool joined) {
-    //     uint8 numAlliances = _accounts[msg.sender].numAlliances;
-    //     require(numAlliances < MAX_NUM_ALLIANCES, "MAX_NUM_ALLIANCES_REACHED");
-    //     joined = alliance.requestToJoin(msg.sender, data);
-    //     if (joined) {
-    //         _alliances[msg.sender][alliance] = block.timestamp;
-    //         _accounts[msg.sender].numAlliances  = numAlliances + 1;
-    //         emit AllianceLink(alliance, msg.sender, true);
-    //     }
-    // }
-
-    // function addPLayerToAlliance(address player, uint256 nonce, bytes calldata signature) external {
-    //     IAlliance alliance = IAlliance(msg.sender);
-    //     bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", "Add ", ""));
-    //     address signer = digest.recover(signature);
-    //     require(player == signer, "INVALID_SIGNATURE");
-    //     uint8 numAlliances = _accounts[player].numAlliances;
-    //     require(numAlliances < MAX_NUM_ALLIANCES, "MAX_NUM_ALLIANCES_REACHED");
-    //     _alliances[player][alliance] = block.timestamp;
-    //     _accounts[player].numAlliances  = numAlliances + 1;
-    //     emit AllianceLink(alliance, player, true);
-    // }
-
-    // function allianceJoinTime(address player, IAlliance alliance) external view returns(uint256 timestamp) {
-    //     return _alliances[player][alliance];
-    // }
-
-    // function leaveAlliance(IAlliance alliance) external {
-    //     _leaveAlliance(msg.sender, alliance);
-    // }
-
-    // function ejectPlayerFromAlliance(address player) external {
-    //     _leaveAlliance(player, IAlliance(msg.sender));
-    // }
-
-    // function _leaveAlliance(address player, IAlliance alliance) internal {
-    //     uint256 joinTime = _alliances[player][alliance];
-    //     require(joinTime > 0, "NOT_PART_OF_THE_ALLIANCE");
-    //     _alliances[player][alliance] = 0;
-    //     _accounts[player].numAlliances --;
-    //     emit AllianceLink(alliance, player, false);
-    // }
-
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // STAKING / PRODUCTION CAPTURE
@@ -344,7 +278,7 @@ contract OuterSpace is Proxied {
         uint256 from;
         uint256 to;
         uint256 distance;
-        address alliance; // address(0) means attack, address(1) means no alliance, 2 or more means allianceIndex + 2
+        bool gift;
         bytes32 secret;
     }
 
@@ -703,7 +637,7 @@ contract OuterSpace is Proxied {
         uint32 quantity,
         bytes32 toHash
     ) internal {
-        Planet storage planet = _getPlanet(from);
+        Planet memory planet = _getPlanet(from);
 
         require(planet.exitTime == 0, "PLANET_EXIT");
         require(owner == planet.owner, "NOT_OWNER");
@@ -718,7 +652,22 @@ contract OuterSpace is Proxied {
         );
         require(currentNumSpaceships >= quantity, "SPACESHIPS_NOT_ENOUGH");
 
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        (uint32 launchTime, uint32 numSpaceships) = _computeSpaceshipBeforeSending(currentNumSpaceships, active, from, quantity);
+
+        uint256 fleetId = uint256(keccak256(abi.encodePacked(toHash, from)));
+        _fleets[fleetId] = Fleet({launchTime: launchTime, owner: owner, quantity: quantity});
+
+        emit FleetSent(owner, from, fleetId, quantity, numSpaceships);
+    }
+
+    function _computeSpaceshipBeforeSending(
+        uint32 currentNumSpaceships,
+        bool active,
+        uint256 from,
+        uint32 quantity
+    ) internal returns( uint32 launchTime, uint32 numSpaceships) {
+        Planet storage planet = _getPlanet(from);
+         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         // record flying fleets (to prevent front-running, see resolution)
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         uint256 timeSlot = block.timestamp / (FRONT_RUNNING_DELAY / 2);
@@ -728,15 +677,11 @@ contract OuterSpace is Proxied {
         _inFlight[from][timeSlot].flying = flying;
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        uint32 launchTime = uint32(block.timestamp); // TODO allow delay : launchTime in future
-        uint32 numSpaceships = currentNumSpaceships - quantity;
+        launchTime = uint32(block.timestamp); // TODO allow delay : launchTime in future
+        numSpaceships = currentNumSpaceships - quantity;
         planet.numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
         planet.lastUpdated = launchTime;
 
-        uint256 fleetId = uint256(keccak256(abi.encodePacked(toHash, from)));
-        _fleets[fleetId] = Fleet({launchTime: launchTime, owner: owner, quantity: quantity});
-
-        emit FleetSent(owner, from, fleetId, quantity, numSpaceships);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -764,8 +709,8 @@ contract OuterSpace is Proxied {
             fleetId,
             _hasJustExited(toPlanet.exitTime) ? address(0) : toPlanet.owner,
             resolution.to,
-            uint160(resolution.alliance) > 0,
-            _performResolution(fleet, resolution.from, toPlanet, resolution.to, resolution.alliance, quantity),
+            resolution.gift,
+            _performResolution(fleet, resolution.from, toPlanet, resolution.to, resolution.gift, quantity),
             inFlightFleetLoss
         );
         _fleets[fleetId].quantity = 0; // TODO reset all to get gas refund? // TODO ensure frontend can still easily check fleet status
@@ -776,11 +721,11 @@ contract OuterSpace is Proxied {
         uint256 from,
         Planet memory toPlanet,
         uint256 to,
-        address alliance,
+        bool gift,
         uint32 quantity
     ) internal returns (FleetResult memory result) {
-        if (uint160(alliance) > 0 && toPlanet.owner != address(0)) { // TODO || toPlanet.owner == fleet.owner ? // toPlanet.owner != address(0) => not able to send gift to unhabited planet
-            return _performReinforcement(fleet.owner, toPlanet, to, quantity, alliance, fleet.launchTime);
+        if (gift && toPlanet.owner != address(0)) { // TODO || toPlanet.owner == fleet.owner ? // toPlanet.owner != address(0) => not able to send gift to unhabited planet
+            return _performReinforcement(fleet.owner, toPlanet, to, quantity);
         } else {
             return _performAttack(fleet.owner, fleet.launchTime, from, toPlanet, to, quantity);
         }
@@ -792,7 +737,7 @@ contract OuterSpace is Proxied {
         FleetResolution memory resolution
     ) internal returns (uint32 quantity, uint32 inFlightFleetLoss) {
         require(
-            uint256(keccak256(abi.encodePacked(keccak256(abi.encodePacked(resolution.secret, resolution.to, uint160(resolution.alliance) > 0)), resolution.from))) == fleetId,
+            uint256(keccak256(abi.encodePacked(keccak256(abi.encodePacked(resolution.secret, resolution.to, resolution.gift)), resolution.from))) == fleetId,
             "INVALID_FLEET_DATA_OR_SECRET'"
         );
 
@@ -1070,9 +1015,7 @@ contract OuterSpace is Proxied {
         address sender,
         Planet memory toPlanet,
         uint256 to,
-        uint32 quantity,
-        address alliance,
-        uint32 launchTime
+        uint32 quantity
     ) internal returns (FleetResult memory result) {
         if (_hasJustExited(toPlanet.exitTime)) {
             address newOwner = toPlanet.owner;
@@ -1081,18 +1024,6 @@ contract OuterSpace is Proxied {
             }
             return _fleetAfterExit(to, toPlanet.owner, _planets[to], quantity > 0 ? newOwner : address(0), quantity);
         } else {
-            bool taxed = true;
-            if (uint160(alliance) > 1) {
-                // uint256 allianceStart = _alliances[sender][IAlliance(alliance)];
-                // taxed = allianceStart == 0 || allianceStart > launchTime; + toPlanet.owner
-                taxed = !allianceRegistry.arePlayersAllies(IAlliance(alliance), sender, toPlanet.owner, block.timestamp);
-            } else if (sender == toPlanet.owner) {
-                taxed = false;
-            }
-            if (taxed) {
-                // quantity = uint32(uint256(quantity) * 10000 / GIFT_TAX_PER_10000);
-                quantity = uint32(uint256(quantity) - (uint256(quantity) * GIFT_TAX_PER_10000) / 10000);
-            }
             bytes32 toPlanetData = _planetData(to);
             uint16 production = _production(toPlanetData);
             (bool active, uint32 currentNumSpaceships) = _getCurrentNumSpaceships(

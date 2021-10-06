@@ -12,23 +12,23 @@ export class Blockie {
 
   static blockiesCache: {[key: string]: Blockie} = {};
   static blockieStringsCache: {[key: string]: string} = {};
-  static get(address: string): Blockie {
-    const key = address.toLowerCase();
+  static get(address: string, offset = 0): Blockie {
+    const key = address.toLowerCase() + '_' + offset;
     if (!Blockie.blockiesCache[key]) {
       Blockie.blockiesCache[key] = new Blockie(address, 1);
     }
     return Blockie.blockiesCache[key];
   }
 
-  static getURI(address: string): string {
-    const key = address.toLowerCase();
+  static getURI(address: string, offset = 0): string {
+    const key = address.toLowerCase() + '_' + offset;
     if (!Blockie.blockieStringsCache[key]) {
       const blockie = Blockie.get(address);
       const canvas = document.createElement('canvas');
-      canvas.width = 8;
-      canvas.height = 8;
+      canvas.width = 8 + offset * 2;
+      canvas.height = 8 + offset * 2;
       const ctx = canvas.getContext('2d');
-      blockie.draw(ctx, 0, 0, 1);
+      blockie.draw(ctx, 0, 0, 1, {offset});
       Blockie.blockieStringsCache[key] = canvas.toDataURL();
     }
     return Blockie.blockieStringsCache[key];
@@ -47,7 +47,13 @@ export class Blockie {
   }
 
   //TODO Image Texture
-  draw(ctx: CanvasRenderingContext2D, x: number, y: number, furtherScale: number, border = 0): void {
+  draw(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    furtherScale: number,
+    options?: {offset?: number; border?: number}
+  ): void {
     const oldColor = ctx.fillStyle;
     const appliedScale = this.scale * furtherScale;
     const appliedSize = this.size * appliedScale;
@@ -61,7 +67,7 @@ export class Blockie {
     // 	case Center: y-= appliedSize/2;
     // 	case Bottom: y-= appliedSize;
     // }
-    if (border === 1) {
+    if (options?.border === 1) {
       ctx.strokeStyle = 'green';
       ctx.lineWidth = appliedScale;
       ctx.setLineDash([]);
@@ -85,7 +91,19 @@ export class Blockie {
     // }
 
     ctx.fillStyle = this.bgcolor;
-    ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(appliedSize), Math.floor(appliedSize));
+
+    if (options?.offset) {
+      ctx.fillRect(
+        Math.floor(x),
+        Math.floor(y),
+        Math.floor(appliedSize + options.offset * 2),
+        Math.floor(appliedSize + options.offset * 2)
+      );
+      x += options.offset;
+      y += options.offset;
+    } else {
+      ctx.fillRect(Math.floor(x), Math.floor(y), Math.floor(appliedSize), Math.floor(appliedSize));
+    }
     for (let i = 0; i < this.imageData.length; i++) {
       const row = Math.floor(i / this.size);
       const col = i % this.size;

@@ -1,9 +1,10 @@
 <script lang="ts">
   export let address: string;
+  export let offset: number = 0;
   export let style: string | undefined = undefined;
 
   import {Blockie} from '$lib/utils/eth/blockie';
-  const uri = Blockie.getURI(address);
+  const uri = Blockie.getURI(address, offset);
 </script>
 
 <img {style} src={uri} alt={address} />

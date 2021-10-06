@@ -1,9 +1,21 @@
+type Alliance @entity {
+  id: ID!
+  members: [AllianceOwnerPair!]! @derivedFrom(field: "alliance")
+}
+
+type AllianceOwnerPair @entity {
+  id: ID! # <alliance.id>_<owner.id>`
+  owner: Owner!
+  alliance: Alliance!
+}
+
 type Owner @entity {
   id: ID!
   planets: [Planet!]! @derivedFrom(field: "owner")
   fleets: [Fleet!]! @derivedFrom(field: "owner")
   events: [OwnerEvent!]! @derivedFrom(field: "owner")
   rewards: [Reward]! @derivedFrom(field: "owner")
+  alliances: [AllianceOwnerPair!]! @derivedFrom(field: "owner")
   totalStaked: BigInt!
   currentStake: BigInt!
   totalCollected: BigInt!
@@ -159,6 +171,7 @@ type FleetArrivedEvent implements OwnerEvent & PlanetEvent & FleetEvent @entity 
   planet: Planet!
   fleet: Fleet!
   destinationOwner: Owner!
+  gift: Boolean!
   fleetLoss: BigInt!
   planetLoss: BigInt!
   inFlightFleetLoss: BigInt!

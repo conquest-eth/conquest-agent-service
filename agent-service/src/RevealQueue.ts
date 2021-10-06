@@ -55,6 +55,8 @@ type Reveal = {
   distance: number;
   startTime: number; // this is the expected startTime, needed as sendTx could be pending
   duration: number; // could technically recompute it from spaceInfo // TODO ? if so move duration in RevealData type
+  gift: boolean;
+  potentialAlliances?: string[];
 };
 
 type RevealSubmission = Reveal & {delegate?: string; signature: string; nonceMsTimestamp: number};
@@ -177,6 +179,7 @@ function checkSubmission(data: RevealSubmission): {errorResponse?: Response; rev
     data.from &&
     data.from.x !== undefined &&
     data.from.y !== undefined &&
+    data.gift !== undefined &&
     data.signature &&
     data.nonceMsTimestamp
   ) {
@@ -198,6 +201,7 @@ export class RevealQueue extends DO {
   provider: ethers.providers.JsonRpcProvider;
   wallet: ethers.Wallet;
   outerspaceContract: ethers.Contract;
+  allianceRegistryContract: ethers.Contract;
   paymentContract: ethers.Contract;
   finality: number;
 
@@ -206,6 +210,11 @@ export class RevealQueue extends DO {
     this.provider = new ethers.providers.JsonRpcProvider(env.ETHEREUM_NODE);
     this.wallet = new Wallet(this.env.PRIVATE_KEY, this.provider);
     this.outerspaceContract = new Contract(contracts.OuterSpace.address, contracts.OuterSpace.abi, this.wallet);
+    this.allianceRegistryContract = new Contract(
+      contracts.AllianceRegistry.address,
+      contracts.AllianceRegistry.abi,
+      this.wallet
+    );
     this.paymentContract = new Contract(contracts.PaymentGateway.address, contracts.PaymentGateway.abi, this.wallet);
     this.finality = env.FINALITY ? parseInt(env.FINALITY) : defaultFinality;
   }
@@ -343,9 +352,14 @@ export class RevealQueue extends DO {
       }
     }
 
-    const {player, fleetID, secret, from, to, distance, startTime, duration} = revealSubmission;
+    const {player, fleetID, secret, from, to, distance, startTime, duration, gift, potentialAlliances} =
+      revealSubmission;
 
-    const queueMessageString = `queue:${player}:${fleetID}:${secret}:${from.x}:${from.y}:${to.x}:${to.y}:${distance}:${startTime}:${duration}:${revealSubmission.nonceMsTimestamp}`;
+    const queueMessageString = `queue:${player}:${fleetID}:${secret}:${from.x}:${from.y}:${to.x}:${
+      to.y
+    }:${distance}:${gift}:${potentialAlliances ? potentialAlliances.join(',') : ''}:${startTime}:${duration}:${
+      revealSubmission.nonceMsTimestamp
+    }`;
     const authorized = isAuthorized(
       revealSubmission.delegate ? account.delegate : player,
       queueMessageString,
@@ -680,7 +694,11 @@ export class RevealQueue extends DO {
           maxFeePerGas: currentMaxFee,
         }); // first save before broadcast ? // or catch "tx already submitted error"
         if (error) {
-          // TODO
+          if (error.code === 5502) {
+            console.log('deleting....');
+            this.state.storage.delete(queueID);
+            this.state.storage.delete(revealID);
+          }
           return;
         } else if (!tx) {
           // impossible
@@ -708,7 +726,7 @@ export class RevealQueue extends DO {
         this.state.storage.put<ListData>(revealID, {pendingID});
         this.state.storage.put<PendingTransactionData>(pendingID, {...reveal, tx});
 
-        transactionsCounter.nextIndex++;
+        transactionsCounter.nextIndex = tx.nonce + 1;
         this.state.storage.put<TransactionsCounter>(`pending`, transactionsCounter);
         this.state.storage.delete(queueID);
       } else {
@@ -734,11 +752,15 @@ export class RevealQueue extends DO {
   async _submitTransaction(
     reveal: RevealData,
     options: {expectedNonce?: number; forceNonce?: number; maxFeePerGas: BigNumber}
-  ): Promise<{
-    tx?: {hash: string; nonce: number; broadcastTime: number; maxFeePerGasUsed: string};
-    error?: {message: string; code: number};
-  }> {
+  ): Promise<
+    | {
+        tx?: {hash: string; nonce: number; broadcastTime: number; maxFeePerGasUsed: string};
+        error?: {message: string; code: number};
+      }
+    | undefined
+  > {
     try {
+      let nonceIncreased = false;
       let nonce: number | undefined;
       if (options.forceNonce) {
         nonce = options.forceNonce;
@@ -748,7 +770,16 @@ export class RevealQueue extends DO {
           nonce = await this.wallet.getTransactionCount();
         }
         if (nonce !== options.expectedNonce) {
-          return {error: {message: `nonce not matching, expected ${options.expectedNonce}, got ${nonce}`, code: 5501}};
+          if (nonce > options.expectedNonce) {
+            const message = `nonce not matching, expected ${options.expectedNonce}, got ${nonce}, increasing...`;
+            console.error(message);
+            nonceIncreased = true;
+            // return {error: {message, code: 5501}};
+          } else {
+            const message = `nonce not matching, expected ${options.expectedNonce}, got ${nonce}`;
+            console.error(message);
+            return {error: {message, code: 5501}};
+          }
         }
       }
 
@@ -779,14 +810,47 @@ export class RevealQueue extends DO {
       //   console.log('no feeHistory')
       // }
 
+      console.log('getting mathcing alliance...');
+      const alliance = await this._getAlliance(reveal);
+      console.log({alliance});
+
+      console.log('checcking if fleet still alive....');
+      const {quantity} = await this.outerspaceContract.getFleet(reveal.fleetID, '0');
+      console.log({quantity});
+      if (quantity === 0) {
+        if (nonceIncreased) {
+          return {error: {message: 'nonce increased but fleet already resolved', code: 5502}};
+        } else {
+          console.log('already done');
+          const tx = await this.wallet.sendTransaction({
+            to: this.wallet.address,
+            value: 0,
+            nonce,
+            maxFeePerGas: options.maxFeePerGas,
+            maxPriorityFeePerGas,
+          });
+          return {
+            tx: {
+              hash: tx.hash,
+              nonce: tx.nonce,
+              broadcastTime: getTimestamp(),
+              maxFeePerGasUsed: options.maxFeePerGas.toString(),
+            },
+          };
+        }
+      }
+
       let tx;
       try {
         tx = await this.outerspaceContract.resolveFleet(
           reveal.fleetID,
-          xyToLocation(reveal.from.x, reveal.from.y),
-          xyToLocation(reveal.to.x, reveal.to.y),
-          reveal.distance,
-          reveal.secret,
+          {
+            from: xyToLocation(reveal.from.x, reveal.from.y),
+            to: xyToLocation(reveal.to.x, reveal.to.y),
+            distance: reveal.distance,
+            secret: reveal.secret,
+            alliance,
+          },
           {
             nonce,
             maxFeePerGas: options.maxFeePerGas,
@@ -799,10 +863,13 @@ export class RevealQueue extends DO {
           console.log('RETRYING with maxPriorityFeePerGas = maxFeePerGas');
           tx = await this.outerspaceContract.resolveFleet(
             reveal.fleetID,
-            xyToLocation(reveal.from.x, reveal.from.y),
-            xyToLocation(reveal.to.x, reveal.to.y),
-            reveal.distance,
-            reveal.secret,
+            {
+              from: xyToLocation(reveal.from.x, reveal.from.y),
+              to: xyToLocation(reveal.to.x, reveal.to.y),
+              distance: reveal.distance,
+              secret: reveal.secret,
+              alliance,
+            },
             {
               nonce,
               maxFeePerGas: options.maxFeePerGas,
@@ -810,6 +877,9 @@ export class RevealQueue extends DO {
             }
           );
         } else {
+          // TODO make dummy tx
+          // or even better resign all tx queued with lower nonce, to skip it
+          // but note in that "better" case, we should not do it if a tx has been broadcasted as we cannot guarantee the broadcasted tx will not be included in the end
           throw e;
         }
       }
@@ -830,6 +900,33 @@ export class RevealQueue extends DO {
       const error = e as {message?: string};
       return {error: {message: error.message || 'error caught: ' + e, code: 5502}};
     }
+  }
+
+  async _getAlliance(reveal: RevealData): Promise<string> {
+    let alliance = '0x0000000000000000000000000000000000000000';
+    if (reveal.gift) {
+      alliance = '0x0000000000000000000000000000000000000001';
+      if (reveal.potentialAlliances) {
+        const planet = await this.outerspaceContract.getPlanet(xyToLocation(reveal.to.x, reveal.to.y));
+        const planetOwner = planet.state.owner;
+        if (planetOwner !== '0x0000000000000000000000000000000000000000') {
+          for (const allianceToTest of reveal.potentialAlliances) {
+            const allies = await this.allianceRegistryContract.arePlayersAllies(
+              allianceToTest,
+              reveal.player,
+              planetOwner,
+              reveal.startTime
+            );
+            console.log({allies, allianceToTest, player: reveal.player, planetOwner});
+            if (allies) {
+              alliance = allianceToTest;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return alliance;
   }
 
   async _checkPendingTransaction(pendingID: string, pendingReveal: PendingTransactionData): Promise<void> {
