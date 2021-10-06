@@ -48,6 +48,8 @@ type TransactionInfo = {hash: string; nonce: number; broadcastTime: number; maxF
 // - this would need the sendTxSender address too to compare nonce
 type Reveal = {
   player: string;
+  fleetSender?: string;
+  operator?: string;
   fleetID: string;
   secret: string;
   from: {x: number; y: number};
@@ -651,6 +653,7 @@ export class RevealQueue extends DO {
     const timestamp = getTimestamp();
     let change = false;
     if (!reveal.sendConfirmed) {
+      console.log('fetching startTime...');
       // TODO use reveal.sendTxHash will aloow to get confirmations, need to check if fleet exist
       const actualStartTime = await this._fetchStartTime(reveal);
       // refetch queueID in case it was deleted / moved
@@ -662,6 +665,7 @@ export class RevealQueue extends DO {
       }
 
       if (!actualStartTime) {
+        console.log(`fleet not found :  ${reveal.fleetID}`);
         // not found
         reveal.startTime = timestamp + retryPeriod(reveal.duration);
         reveal.retries++;
@@ -850,6 +854,8 @@ export class RevealQueue extends DO {
             distance: reveal.distance,
             secret: reveal.secret,
             alliance,
+            fleetSender: reveal.fleetSender || reveal.player,
+            operator: reveal.operator || reveal.player,
           },
           {
             nonce,
@@ -869,6 +875,8 @@ export class RevealQueue extends DO {
               distance: reveal.distance,
               secret: reveal.secret,
               alliance,
+              fleetSender: reveal.fleetSender || reveal.player,
+              operator: reveal.operator || reveal.player,
             },
             {
               nonce,
@@ -989,7 +997,7 @@ export class RevealQueue extends DO {
     const lastestBlockFinalized = Math.max(0, block.number - this.finality);
     const fleet = await this.outerspaceContract.getFleet(reveal.fleetID, '0', {blockTag: lastestBlockFinalized});
     if (fleet.owner !== '0x0000000000000000000000000000000000000000') {
-      // quantity >0 means already submitted , should remove them ?
+      // quantity == 0 means already submitted , should remove them ?
       return fleet.launchTime;
     } else {
       // console.log(`cannot get startTIme for fleet ${reveal.fleetID} ${fleet.launchTime} ${fleet.quantity} ${lastestBlockFinalized} ${block.number}`)
