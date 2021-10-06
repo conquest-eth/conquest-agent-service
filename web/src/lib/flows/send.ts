@@ -166,7 +166,10 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         const destinationOwner = playersQuery.getPlayer(destinationPlanetState.owner);
         console.log({me, destinationOwner});
         if (me && me.alliances.length > 0 && destinationOwner && destinationOwner.alliances.length > 0) {
-          potentialAlliances = findCommonAlliances(me.alliances, destinationOwner.alliances);
+          potentialAlliances = findCommonAlliances(
+            me.alliances.map((v) => v.address),
+            destinationOwner.alliances.map((v) => v.address)
+          );
         }
       }
     }
