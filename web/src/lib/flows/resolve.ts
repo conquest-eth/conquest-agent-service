@@ -26,7 +26,10 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
       fleet.from.location,
       fleet.to.location,
       fleet.gift,
-      fleet.sending.action.nonce
+      fleet.sending.action.nonce,
+      fleet.owner,
+      fleet.fleetSender,
+      fleet.operator
     );
     const latestBlock = await wallet.provider.getBlock('latest');
     if (!isCorrected) {
@@ -63,6 +66,8 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
           distance,
           secret: secretHash,
           alliance,
+          fleetSender: fleet.fleetSender || fleet.owner,
+          operator: fleet.operator || fleet.owner,
         },
         {gasPrice}
       );
