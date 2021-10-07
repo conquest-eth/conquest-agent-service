@@ -129,6 +129,13 @@ export class FleetsStore implements Readable<Fleet[]> {
             } else {
               // TODO error ?
             }
+          } else if (
+            state === 'READY_TO_RESOLVE' &&
+            sendAction.queueID &&
+            spaceInfo.resolveWindow - timeToResolve < 10 * 60
+          ) {
+            // TODO config : 10 * 60 = 10 min late before showing the button to resolve manually
+            state = 'RESOLVE_BROADCASTED'; //TODO add another state for agent-service handling
           }
           // console.log({state})
           if (!(resolution && resolution.action.acknowledged)) {

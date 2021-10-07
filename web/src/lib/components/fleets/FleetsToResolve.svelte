@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { fleets } from "$lib/space/fleets";
+  import {fleets} from '$lib/space/fleets';
 
   import resolveFlow from '$lib/flows/resolve';
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import {time} from '$lib/time';
   import {timeToText} from '$lib/utils';
-  import type { Fleet } from "conquest-eth-common";
+  import type {Fleet} from 'conquest-eth-common';
 
   function resolve(fleet: Fleet) {
     resolveFlow.resolve(fleet);
   }
-  $: fleetsToResolve = $fleets.filter((fleet) => fleet.timeToResolve > 0 && !fleet.resolution)
+  $: fleetsToResolve = $fleets.filter((fleet) => fleet.state === 'READY_TO_RESOLVE');
 
   // $: console.log(fleetsToResolve);
 </script>
@@ -23,13 +23,13 @@
     <div class="w-full h-1 bg-red-600 mt-1 mb-2" />
     {#each fleetsToResolve as fleet}
       <!-- {#if agentActive && fleet.timeToResolve < $time + 5 * 60} -->
-        <!-- <div class="border border-cyan-400 w-24 mx-auto">Agent Resolving...</div> -->
+      <!-- <div class="border border-cyan-400 w-24 mx-auto">Agent Resolving...</div> -->
       <!-- {:else} -->
-        <PanelButton class="m-1" label="Resolve Fleet" on:click={() => resolve(fleet)}>
-          {timeToText(fleet.timeToResolve)}
-          left
-          <!-- {spaceInfo.getPlanetInfo(fleet.to.x, fleet.to.y)?.stats.name} -->
-        </PanelButton>
+      <PanelButton class="m-1" label="Resolve Fleet" on:click={() => resolve(fleet)}>
+        {timeToText(fleet.timeToResolve)}
+        left
+        <!-- {spaceInfo.getPlanetInfo(fleet.to.x, fleet.to.y)?.stats.name} -->
+      </PanelButton>
       <!-- {/if} -->
     {/each}
     <div class="w-full mt-1" />
