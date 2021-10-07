@@ -91,7 +91,9 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
 
   async acknowledgeProfileSuggestion() {
     account.recordWelcomingStep(TutorialSteps.SUGGESTION_PROFILE);
-    this.setPartial({step: 'SUCCESS'});
+    if (this.$store.step === 'PROFILE_INFO') {
+      this.setPartial({step: 'SUCCESS'});
+    }
   }
 
   private _reset() {

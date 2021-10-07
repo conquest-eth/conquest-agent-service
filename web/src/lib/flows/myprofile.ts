@@ -2,6 +2,9 @@ import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {wallet} from '$lib/blockchain/wallet';
 import {base64} from '$lib/utils';
 import {privateWallet} from '$lib/account/privateWallet';
+import {account} from '$lib/account/account';
+import {TutorialSteps} from '$lib/account/constants';
+import claimFlow from './claim';
 
 // TODO tweetnacl do not work with vite
 // import {sign} from 'tweetnacl';
@@ -72,6 +75,7 @@ class MyProfileFlowStore extends BaseStoreWithData<ProfileFlow, undefined> {
   }
 
   async setProfile(data: {description: string}) {
+    const {description} = data;
     const walletAddress = this.$store.owner;
     await this.getProfile(walletAddress);
     const account = this.$store.account;
@@ -83,7 +87,7 @@ class MyProfileFlowStore extends BaseStoreWithData<ProfileFlow, undefined> {
         base64.base64ToBytes(
           base64.base64encode(
             JSON.stringify({
-              description: data.description,
+              description,
               nonceMsTimestamp: account ? account.nonceMsTimestamp + 1 : 0,
             })
           )
@@ -131,6 +135,14 @@ class MyProfileFlowStore extends BaseStoreWithData<ProfileFlow, undefined> {
       });
     }
     await this.getProfile(walletAddress);
+
+    if (description) {
+      this.recordTutorial();
+    }
+  }
+
+  recordTutorial() {
+    claimFlow.acknowledgeProfileSuggestion();
   }
 
   async cancel(): Promise<void> {

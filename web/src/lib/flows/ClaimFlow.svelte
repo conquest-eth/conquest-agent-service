@@ -20,7 +20,8 @@
   $: stake = stats && stats.stake;
   $: cost = stats ? BigNumber.from(stats.stake) : undefined; // TODO multiplier from config/contract
 
-  $: result = planetInfo && $planetState ? spaceInfo.simulateCapture($wallet.address, planetInfo, $planetState) : undefined;
+  $: result =
+    planetInfo && $planetState ? spaceInfo.simulateCapture($wallet.address, planetInfo, $planetState) : undefined;
 </script>
 
 {#if $claimFlow.error}
@@ -91,8 +92,8 @@
       very soon!
     </p>
     <p class="text-center">
-      We suggest you add info to your profile so other player can communicate with you and make plan together to conquer
-      the universe!
+      You did not setup any profile info yet. We suggest you add info to your profile so other player can communicate
+      with you and make plan together to conquer the universe!
     </p>
     <p class="text-center mt-3">
       <NavButton label="profile" href={`${base}/settings`}>Setup Profile</NavButton>
