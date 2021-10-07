@@ -2,6 +2,7 @@ import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {wallet} from '$lib/blockchain/wallet';
 import {blockTime, finality, logPeriod} from '$lib/config';
 import type {BigNumber} from '@ethersproject/bignumber';
+import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
 
 export type Departure = {
   amount: number;
@@ -29,7 +30,7 @@ export type ShowPlanetDeparturesFlow = {
   error?: {message?: string};
 };
 
-class MessageFlowStore extends BaseStoreWithData<ShowPlanetDeparturesFlow, undefined> {
+class ShowDeparturesFlowStore extends BaseStoreWithData<ShowPlanetDeparturesFlow, undefined> {
   public constructor() {
     super({
       type: 'SHOW_PLANET_DEPARTURE',
@@ -37,40 +38,49 @@ class MessageFlowStore extends BaseStoreWithData<ShowPlanetDeparturesFlow, undef
     });
   }
 
+  /*
+  type FleetSentEvent implements OwnerEvent & PlanetEvent & FleetEvent @entity {
+  id: ID! # <blockNumber>_logID
+  blockNumber: Int!
+  timestamp: BigInt!
+  transaction: Transaction!
+  owner: Owner!
+  planet: Planet!
+  fleet: Fleet!
+  quantity: BigInt!
+  newNumSpaceships: BigInt!
+}
+  */
   async show(location: string): Promise<void> {
     this.setPartial({step: 'LOADING', location});
     try {
-      const latestBlock = await wallet.provider.getBlock('latest');
-      const toBlock = latestBlock.number - finality;
-      const fromBlockNumber = Math.max(0, toBlock - Math.floor(logPeriod / blockTime)) + 1;
-      const OuterSpace = wallet.contracts.OuterSpace;
-      const filter = OuterSpace.filters.FleetSent(null, location);
-      const fleetSentEvents = (
-        (await OuterSpace.queryFilter(filter, fromBlockNumber, toBlock)) as unknown as FleetSentEvent[]
-      ).filter((v) => v.args.fleetOwner.toLowerCase() !== wallet.address?.toLowerCase());
+      const query = `
+query($first: Int! $lastId: ID! $owner: String $planet: String) {
+  fleets(where: {from: $planet owner_not: $owner resolved: false} first: $first orderBy: launchTime orderDirection: desc) {
+    id
+    launchTime
+    owner {id}
+    quantity
+  }
+}`;
+      const owner = wallet.address?.toLowerCase() || '0x0000000000000000000000000000000000000000';
+      const result = await SUBGRAPH_ENDPOINT.query<{
+        fleets: {id: string; launchTime: number; owner: {id: string}; quantity: number}[];
+      }>(query, {
+        variables: {
+          owner,
+          planet: location,
+        },
+      });
 
-      // remove resolved fleets
-      for (let i = 0; i < fleetSentEvents.length; i++) {
-        const fleetEvent = fleetSentEvents[i];
-        const fleetResolved = await OuterSpace.callStatic.getFleet(fleetEvent.args.fleet, fleetEvent.args.from);
-        if (fleetResolved.quantity == 0) {
-          fleetSentEvents.splice(i, 1);
-          i--;
-        }
-      }
-
-      let departures: Departure[] = [];
-      if (fleetSentEvents.length > 0) {
-        const earliestBlock = await wallet.provider.getBlock(fleetSentEvents[0].blockNumber);
-        const earliestTime = earliestBlock.timestamp;
-        const earliestBlockNumber = earliestBlock.number;
-        const averageBlockTime = (latestBlock.timestamp - earliestTime) / (latestBlock.number - earliestBlockNumber);
-        departures = fleetSentEvents.map((v) => {
+      let departures = [];
+      if (result.data) {
+        departures = result.data.fleets.map((v) => {
           return {
-            timestamp: (v.blockNumber - earliestBlockNumber) * averageBlockTime + earliestTime,
-            amount: v.args.quantity,
-            fleet: v.args.fleet.toHexString(),
-            owner: v.args.fleetOwner,
+            timestamp: v.launchTime,
+            amount: v.quantity,
+            fleet: v.id,
+            owner: v.owner.id,
           };
         });
       }
@@ -102,4 +112,4 @@ class MessageFlowStore extends BaseStoreWithData<ShowPlanetDeparturesFlow, undef
   }
 }
 
-export default new MessageFlowStore();
+export default new ShowDeparturesFlowStore();

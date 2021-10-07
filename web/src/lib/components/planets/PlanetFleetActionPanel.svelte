@@ -383,7 +383,7 @@
       class="m-2"
       on:click={showDepartures}
     >
-      <div class="w-20">Enemy Fleets</div>
+      <div class="w-20">Transits</div>
     </PanelButton>
   {:else}
     <PanelButton label="Connect your wallet" class="m-2" on:click={connect}>

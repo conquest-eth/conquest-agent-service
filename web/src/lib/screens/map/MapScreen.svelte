@@ -26,10 +26,11 @@
   import FleetsToResolve from '$lib/components/fleets/FleetsToResolve.svelte';
   import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
 
-  // import messageFlow from '$lib/flows/message';
-  // import MessageFlow from '$lib/flows/MessageFlow.svelte';
-  // import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
-  // import ShowPlanetDeparturesFlow from '$lib/flows/ShowPlanetDeparturesFlow.svelte';
+  import messageFlow from '$lib/flows/message';
+  import MessageFlow from '$lib/flows/MessageFlow.svelte';
+  import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
+  import ShowPlanetDeparturesFlow from '$lib/flows/ShowPlanetDeparturesFlow.svelte';
+
   // import Search from '$lib/components/utils/Search.svelte';
 
   // import {timeToText} from '$lib/utils';
@@ -93,13 +94,13 @@
   <ExitFlow />
 {/if}
 
-<!-- {#if $messageFlow.error || $messageFlow.step !== 'IDLE'}
+{#if $messageFlow.error || $messageFlow.step !== 'IDLE'}
   <MessageFlow />
 {/if} -->
 
-<!-- {#if $showPlanetDepartures.error || $showPlanetDepartures.step !== 'IDLE'}
+{#if $showPlanetDepartures.error || $showPlanetDepartures.step !== 'IDLE'}
   <ShowPlanetDeparturesFlow />
-{/if} -->
+{/if}
 
 <!--
 {:else if $selection.id}
