@@ -1,24 +1,26 @@
 import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {wallet} from '$lib/blockchain/wallet';
+import {base64} from '$lib/utils';
+import {privateWallet} from '$lib/account/privateWallet';
+
+// TODO tweetnacl do not work with vite
+// import {sign} from 'tweetnacl';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const nacl = (typeof window !== 'undefined' ? (window as any).nacl : {}) as any;
+
+// TODO remove duplication, abstract away profile sync but also sync in general
+const PROFILE_URI = import.meta.env.VITE_PROFILE_URI as string;
 
 export type ProfileFlow = {
   type: 'MY_PROFILE';
   step: 'IDLE' | 'LOADING' | 'READY';
   owner?: string;
-  profile?: {
-    name?: string;
-    contact?: string; // generic contact
-    telegram?: string;
-    twitter?: string;
-    email?: string;
-    discord?: string;
-    [key: string]: string;
+  account?: {
+    description?: string;
+    nonceMsTimestamp: number;
   };
   error?: {message?: string};
 };
-
-const PROFILE_URI = import.meta.env.VITE_PROFILE_URI as string;
-const DB_NAME = 'etherplay-profile';
 
 class MyProfileFlowStore extends BaseStoreWithData<ProfileFlow, undefined> {
   public constructor() {
@@ -28,51 +30,107 @@ class MyProfileFlowStore extends BaseStoreWithData<ProfileFlow, undefined> {
     });
 
     wallet.subscribe(($wallet) => {
+      if ($wallet.address?.toLowerCase() !== this.$store.owner?.toLowerCase()) {
+        this.setPartial({
+          step: 'IDLE',
+          owner: undefined,
+          account: undefined,
+        });
+      }
       if ($wallet.address) {
-        this.show($wallet.address);
-      } else {
-        if (this.$store.step === 'READY') {
-          this.setPartial({
-            step: 'IDLE',
-            owner: undefined,
-            profile: undefined,
-          });
-        }
+        this.getProfile($wallet.address);
       }
     });
   }
 
-  private async show(owner: string): Promise<void> {
-    this.setPartial({step: 'LOADING', owner});
+  async getProfile(owner: string) {
+    if (this.$store.step !== 'READY') {
+      this.setPartial({step: 'LOADING', owner});
+    }
     try {
-      // TODO CACHE data
-      const data = await fetch(PROFILE_URI, {
-        method: 'POST',
-        body: JSON.stringify({
-          method: 'wallet_getString',
-          params: [owner, DB_NAME],
-          jsonrpc: '2.0',
-          id: 99999999, // TODO ?
-        }),
+      const response = await fetch(`${PROFILE_URI}get/${owner}`, {
+        method: 'GET',
         headers: {
           'Content-type': 'application/json; charset=UTF-8',
         },
       });
-      // TODO fetch ENS name first ?
-      const json = await data.json();
-      const result = json.result;
+      const json = await response.json();
+      const result: {
+        account: {
+          description?: string;
+          publicEncryptionKey: string;
+          publicSigningKey: string;
+          nonceMsTimestamp: number;
+        } | null;
+      } = json;
       // TODO check signature
-      let parsedData = undefined;
-      if (result.data && result.data !== '') {
-        parsedData = JSON.parse(result.data);
-        if (Object.keys(parsedData).length === 0) {
-          parsedData = undefined; // an empty profile is the equivalent of no profile
-        }
-      }
-      this.setPartial({step: 'READY', owner, profile: parsedData});
+
+      this.setPartial({step: 'READY', owner, account: result.account});
     } catch (e) {
       this.setPartial({error: e});
     }
+  }
+
+  async setProfile(data: {description: string}) {
+    const walletAddress = this.$store.owner;
+    await this.getProfile(walletAddress);
+    const account = this.$store.account;
+
+    const privateState = privateWallet.getState();
+
+    const signedMessage = base64.bytesToBase64(
+      nacl.sign(
+        base64.base64ToBytes(
+          base64.base64encode(
+            JSON.stringify({
+              description: data.description,
+              nonceMsTimestamp: account ? account.nonceMsTimestamp + 1 : 0,
+            })
+          )
+        ),
+        privateState.signingKey.secretKey
+      )
+    );
+
+    if (!account) {
+      const publicEncryptionKey = base64.bytesToBase64(privateState.messagingKey.publicKey);
+      const publicSigningKey = base64.bytesToBase64(privateState.signingKey.publicKey);
+      const signature = await wallet.provider
+        .getSigner()
+        .signMessage(
+          `My Public Encryption Key is ${publicEncryptionKey}\nMy Public Signing Key is ${publicSigningKey}\n`
+        );
+
+      const registration = {
+        publicEncryptionKey,
+        publicSigningKey,
+        signature,
+        update: {
+          signedMessage,
+        },
+      };
+      const response = await fetch(`${PROFILE_URI}register/${walletAddress}`, {
+        method: 'POST',
+        body: JSON.stringify(registration),
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+      });
+      const json = await response.json();
+      console.log(json);
+    } else {
+      const update = {
+        signedMessage,
+      };
+      await fetch(`${PROFILE_URI}save/${walletAddress}`, {
+        method: 'POST',
+        body: JSON.stringify(update),
+        headers: {
+          'Content-type': 'application/json; charset=UTF-8',
+        },
+      });
+    }
+    await this.getProfile(walletAddress);
   }
 
   async cancel(): Promise<void> {

@@ -33,7 +33,7 @@ function copyPrettierFixVSCodeSettings(p) {
 
 ['conquest-eth.code-workspace', '.env', '.env.production', '.env.staging'].map(copyFromDefault);
 
-['common-lib', 'contracts', 'subgraph', 'web'].map(copyPrettierFixVSCodeSettings);
+['common-lib', 'contracts', 'subgraph', 'web', 'agent-service', 'account-service'].map(copyPrettierFixVSCodeSettings);
 
 switch (process.platform) {
   case 'win32':

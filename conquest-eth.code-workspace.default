@@ -16,6 +16,9 @@
       "path": "agent-service"
     },
     {
+      "path": "account-service"
+    },
+    {
       "path": "."
     }
   ],

@@ -89,59 +89,117 @@
 
 {#if $planetState}
   {#if $wallet.address}
-    {#if $planetState.capturing}
-      <p>Capturing....</p>
-    {:else if $sendFlow.step === 'PICK_DESTINATION'}
-      {#if planetInfo.location.id === (originPlanetInfo ? originPlanetInfo.location.id : null)}
-        <p class="m-3">Pick a Different Planet than Itself</p>
-      {:else if !$planetState.owner}
-        <!-- SEND TO CONQUERE -->
-        <PanelButton label="Confirm" class="m-2" color="text-blue-500" borderColor="border-blue-500" on:click={sendTo}>
-          <div class="w-20">
-            Confirm
-            <Help class="inline w-4 h-4"
-              >You can send out spaceships in the form of fleets to either attack or send reinforcement.</Help
-            >
-          </div>
-        </PanelButton>
-      {:else if walletIsOwner && !$planetState.active}
-        <!-- SEND MORE -->
-        <PanelButton label="Confirm" class="m-2" color="text-blue-500" borderColor="border-blue-500" on:click={sendTo}>
-          <div class="w-20">Confirm</div>
-        </PanelButton>
-      {:else if walletIsOwner}
-        <!-- SEND PROTECTION -->
-        <PanelButton label="Confirm" class="m-2" color="text-blue-500" borderColor="border-blue-500" on:click={sendTo}>
-          <div class="w-20">Confirm</div>
-        </PanelButton>
-      {:else}
-        <!-- ATTACK -->
-        <PanelButton label="Confirm" class="m-2" color="text-blue-500" borderColor="border-blue-500" on:click={sendTo}>
-          <div class="w-20">
-            Confirm
-            <Help class="inline w-4 h-4">
-              You can send out spaceships in the form of fleets to either attack or send reinforcement.
-            </Help>
-          </div>
-        </PanelButton>
-      {/if}
-      <PanelButton label="Cancel" class="m-2" on:click={cancelSend}>
-        <div class="w-20">Cancel</div>
+    {#if $privateWallet.step !== 'READY'}
+      <PanelButton label="Sign-in" class="m-2" on:click={connect}>
+        <div class="w-20">Sign-In</div>
       </PanelButton>
-    {:else if $sendFlow.step === 'PICK_ORIGIN'}
-      {#if planetInfo.location.id === (destinationPlanetInfo ? destinationPlanetInfo.location.id : null)}
-        <p class="m-3">Pick a Different Planet than Itself</p>
-      {:else if !$planetState.owner}
-        <!-- SEND TO CONQUERE -->
-        <p class="m-3">Pick a Planet you own.</p>
-      {:else if walletIsOwner && $planetState.exiting}
-        <!-- SEND TO CONQUERE -->
-        <p class="m-3">This Planet is exiting, pick another one</p>
-      {:else if walletIsOwner && !$planetState.active}
-        {#if $planetState.numSpaceships == 0}
-          <p class="m-3">Pick a Planet with spaceships.</p>
-        {:else}
+    {:else}
+      {#if $planetState.capturing}
+        <p>Capturing....</p>
+      {:else if $sendFlow.step === 'PICK_DESTINATION'}
+        {#if planetInfo.location.id === (originPlanetInfo ? originPlanetInfo.location.id : null)}
+          <p class="m-3">Pick a Different Planet than Itself</p>
+        {:else if !$planetState.owner}
+          <!-- SEND TO CONQUERE -->
+          <PanelButton
+            label="Confirm"
+            class="m-2"
+            color="text-blue-500"
+            borderColor="border-blue-500"
+            on:click={sendTo}
+          >
+            <div class="w-20">
+              Confirm
+              <Help class="inline w-4 h-4"
+                >You can send out spaceships in the form of fleets to either attack or send reinforcement.</Help
+              >
+            </div>
+          </PanelButton>
+        {:else if walletIsOwner && !$planetState.active}
           <!-- SEND MORE -->
+          <PanelButton
+            label="Confirm"
+            class="m-2"
+            color="text-blue-500"
+            borderColor="border-blue-500"
+            on:click={sendTo}
+          >
+            <div class="w-20">Confirm</div>
+          </PanelButton>
+        {:else if walletIsOwner}
+          <!-- SEND PROTECTION -->
+          <PanelButton
+            label="Confirm"
+            class="m-2"
+            color="text-blue-500"
+            borderColor="border-blue-500"
+            on:click={sendTo}
+          >
+            <div class="w-20">Confirm</div>
+          </PanelButton>
+        {:else}
+          <!-- ATTACK -->
+          <PanelButton
+            label="Confirm"
+            class="m-2"
+            color="text-blue-500"
+            borderColor="border-blue-500"
+            on:click={sendTo}
+          >
+            <div class="w-20">
+              Confirm
+              <Help class="inline w-4 h-4">
+                You can send out spaceships in the form of fleets to either attack or send reinforcement.
+              </Help>
+            </div>
+          </PanelButton>
+        {/if}
+        <PanelButton label="Cancel" class="m-2" on:click={cancelSend}>
+          <div class="w-20">Cancel</div>
+        </PanelButton>
+      {:else if $sendFlow.step === 'PICK_ORIGIN'}
+        {#if planetInfo.location.id === (destinationPlanetInfo ? destinationPlanetInfo.location.id : null)}
+          <p class="m-3">Pick a Different Planet than Itself</p>
+        {:else if !$planetState.owner}
+          <!-- SEND TO CONQUERE -->
+          <p class="m-3">Pick a Planet you own.</p>
+        {:else if walletIsOwner && $planetState.exiting}
+          <!-- SEND TO CONQUERE -->
+          <p class="m-3">This Planet is exiting, pick another one</p>
+        {:else if walletIsOwner && !$planetState.active}
+          {#if $planetState.numSpaceships == 0}
+            <p class="m-3">Pick a Planet with spaceships.</p>
+          {:else}
+            <!-- SEND MORE -->
+            {#if attacking}
+              <PanelButton
+                label="Confirm"
+                class="m-2"
+                color="text-blue-500"
+                borderColor="border-blue-500"
+                on:click={sendFrom}
+              >
+                <div class="w-20">
+                  Confirm
+                  <Help class="inline w-4 h-4">
+                    You can send out spaceships in the form of fleets to either attack or send reinforcement.
+                  </Help>
+                </div>
+              </PanelButton>
+            {:else}
+              <PanelButton
+                label="Confirm"
+                class="m-2"
+                color="text-blue-500"
+                borderColor="border-blue-500"
+                on:click={sendFrom}
+              >
+                <div class="w-20">Confirm</div>
+              </PanelButton>
+            {/if}
+          {/if}
+        {:else if walletIsOwner}
+          <!-- SEND PROTECTION -->
           {#if attacking}
             <PanelButton
               label="Confirm"
@@ -159,172 +217,43 @@
             </PanelButton>
           {:else}
             <PanelButton
-              label="Confirm"
+              label="Send Reinforcment"
               class="m-2"
-              color="text-blue-500"
-              borderColor="border-blue-500"
+              color="text-green-500"
+              borderColor="border-green-500"
               on:click={sendFrom}
             >
-              <div class="w-20">Confirm</div>
+              <div class="w-20">Send Reinforcment</div>
             </PanelButton>
           {/if}
-        {/if}
-      {:else if walletIsOwner}
-        <!-- SEND PROTECTION -->
-        {#if attacking}
-          <PanelButton
-            label="Confirm"
-            class="m-2"
-            color="text-blue-500"
-            borderColor="border-blue-500"
-            on:click={sendFrom}
-          >
-            <div class="w-20">
-              Confirm
-              <Help class="inline w-4 h-4">
-                You can send out spaceships in the form of fleets to either attack or send reinforcement.
-              </Help>
-            </div>
-          </PanelButton>
         {:else}
-          <PanelButton
-            label="Send Reinforcment"
-            class="m-2"
-            color="text-green-500"
-            borderColor="border-green-500"
-            on:click={sendFrom}
-          >
-            <div class="w-20">Send Reinforcment</div>
-          </PanelButton>
+          <!-- ATTACK -->
+          <p class="m-3">Pick a Planet you own.</p>
         {/if}
-      {:else}
-        <!-- ATTACK -->
-        <p class="m-3">Pick a Planet you own.</p>
-      {/if}
-      <PanelButton label="Cancel" class="m-2" on:click={cancelSend}>
-        <div class="w-20">Cancel</div>
-      </PanelButton>
-    {:else if $simulateFlow.step === 'PICK_DESTINATION'}
-      <PanelButton
-        label="Show simulation"
-        class="m-2"
-        color="text-green-500"
-        borderColor="border-green-500"
-        on:click={showSimulation}
-      >
-        <div class="w-20">Show Simulation</div>
-      </PanelButton>
+        <PanelButton label="Cancel" class="m-2" on:click={cancelSend}>
+          <div class="w-20">Cancel</div>
+        </PanelButton>
+      {:else if $simulateFlow.step === 'PICK_DESTINATION'}
+        <PanelButton
+          label="Show simulation"
+          class="m-2"
+          color="text-green-500"
+          borderColor="border-green-500"
+          on:click={showSimulation}
+        >
+          <div class="w-20">Show Simulation</div>
+        </PanelButton>
 
-      <PanelButton label="Cancel" class="m-2" on:click={cancelSimulation}>
-        <div class="w-20">Cancel</div>
-      </PanelButton>
-    {:else if !$planetState.owner}
-      <PanelButton
-        label="Capture"
-        class="m-2"
-        color="text-yellow-400"
-        borderColor="border-yellow-400"
-        disabled={!$planetState.inReach}
-        on:click={capture}
-      >
-        <div class="w-20">
-          Capture
-          <span class="text-sm">
-            {#if !$planetState.inReach}
-              (unreachable)
-              <Help class="inline w-4 h-4">
-                The Reachable Universe expands as more planets get captured. Note though that you can still send attack
-                unreachable planets. But these planets cannot produce spaceships until they get in range and you stake
-                on it.
-              </Help>
-            {:else}
-              <Help class="inline w-4 h-4">
-                To capture a planet and make it produce spaceships for you, you have to deposit a certain number of
-                <PlayCoin class="w-4 inline" />
-                (Play token) on it. If you lose your planet, you lose the ability to withdraw them.
-                <br />
-                The capture will be resolved as if it was a 10,000 attack power with 100,000
-                <!-- TODO config -->
-                spaceships. The capture will only be succesful if the attack succeed
-              </Help>
-            {/if}
-          </span>
-        </div>
-      </PanelButton>
-      {#if $planetState.natives}
-        <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
-          <div class="w-20">
-            Send Here
-            <Help class="inline w-4 h-4">
-              You can send out spaceships in the form of fleets to either attack or send reinforcement.
-            </Help>
-          </div>
+        <PanelButton label="Cancel" class="m-2" on:click={cancelSimulation}>
+          <div class="w-20">Cancel</div>
         </PanelButton>
-      {:else}
-        <!-- unreachable ? -->
-        <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
-          <div class="w-20">Send Here</div>
-        </PanelButton>
-      {/if}
-    {:else if walletIsOwner && $planetState.exiting}
-      <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
-        <div class="w-20">Send Here</div>
-      </PanelButton>
-    {:else if walletIsOwner && !$planetState.active}
-      <PanelButton
-        label="Capture"
-        class="m-2"
-        color="text-yellow-400"
-        borderColor="border-yellow-400"
-        disabled={!$planetState.inReach}
-        on:click={capture}
-      >
-        <div class="w-20">
-          Capture
-          <span class="text-sm">
-            {!$planetState.inReach ? ' (unreachable)' : ''}
-            <Help class="inline w-4 h-4">
-              The Reachable Universe expands as more planets get captured. Note though that you can still send attack
-              unreachable planets. But these planets cannot produce spaceships until they get in range and you stake on
-              it.
-            </Help></span
-          >
-        </div>
-      </PanelButton>
-      <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
-        <div class="w-20">Send Here</div>
-      </PanelButton>
-      {#if $planetState.numSpaceships > 0}
-        <PanelButton label="Send" class="m-2" on:click={sendFrom}>
-          <div class="w-20">Send</div>
-        </PanelButton>
-      {/if}
-    {:else if walletIsOwner}
-      <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
-        <div class="w-20">Send Here</div>
-      </PanelButton>
-      <PanelButton label="Send" class="m-2" on:click={sendFrom}>
-        <div class="w-20">Send</div>
-      </PanelButton>
-      <PanelButton label="Exit" color="text-yellow-400" borderColor="border-yellow-400" class="m-2" on:click={exitFrom}>
-        <div class="w-20">Exit</div>
-      </PanelButton>
-    {:else}
-      <PanelButton label="Send" class="m-2" on:click={sendTo}>
-        <div class="w-20">
-          Send Here
-          <Help class="inline w-4 h-4">
-            You can send out spaceships in the form of fleets to either attack or send reinforcement.
-          </Help>
-        </div>
-      </PanelButton>
-      {#if !$planetState.active}
+      {:else if !$planetState.owner}
         <PanelButton
           label="Capture"
           class="m-2"
           color="text-yellow-400"
           borderColor="border-yellow-400"
-          disabled={!$planetState.inReach || !captureResult.success}
+          disabled={!$planetState.inReach}
           on:click={capture}
         >
           <div class="w-20">
@@ -336,11 +265,6 @@
                   The Reachable Universe expands as more planets get captured. Note though that you can still send
                   attack unreachable planets. But these planets cannot produce spaceships until they get in range and
                   you stake on it.
-                </Help>
-              {:else if !captureResult.success}
-                <Help class="inline w-4 h-4">
-                  <!-- The planet cannot be captured at the moment as it has too strong defense -->
-                  To capture a planet, it first need to be either without spaceships or controlled by you.
                 </Help>
               {:else}
                 <Help class="inline w-4 h-4">
@@ -356,35 +280,147 @@
             </span>
           </div>
         </PanelButton>
+        {#if $planetState.natives}
+          <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+            <div class="w-20">
+              Send Here
+              <Help class="inline w-4 h-4">
+                You can send out spaceships in the form of fleets to either attack or send reinforcement.
+              </Help>
+            </div>
+          </PanelButton>
+        {:else}
+          <!-- unreachable ? -->
+          <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+            <div class="w-20">Send Here</div>
+          </PanelButton>
+        {/if}
+      {:else if walletIsOwner && $planetState.exiting}
+        <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+          <div class="w-20">Send Here</div>
+        </PanelButton>
+      {:else if walletIsOwner && !$planetState.active}
+        <PanelButton
+          label="Capture"
+          class="m-2"
+          color="text-yellow-400"
+          borderColor="border-yellow-400"
+          disabled={!$planetState.inReach}
+          on:click={capture}
+        >
+          <div class="w-20">
+            Capture
+            <span class="text-sm">
+              {!$planetState.inReach ? ' (unreachable)' : ''}
+              <Help class="inline w-4 h-4">
+                The Reachable Universe expands as more planets get captured. Note though that you can still send attack
+                unreachable planets. But these planets cannot produce spaceships until they get in range and you stake
+                on it.
+              </Help></span
+            >
+          </div>
+        </PanelButton>
+        <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+          <div class="w-20">Send Here</div>
+        </PanelButton>
+        {#if $planetState.numSpaceships > 0}
+          <PanelButton label="Send" class="m-2" on:click={sendFrom}>
+            <div class="w-20">Send</div>
+          </PanelButton>
+        {/if}
+      {:else if walletIsOwner}
+        <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+          <div class="w-20">Send Here</div>
+        </PanelButton>
+        <PanelButton label="Send" class="m-2" on:click={sendFrom}>
+          <div class="w-20">Send</div>
+        </PanelButton>
+        <PanelButton
+          label="Exit"
+          color="text-yellow-400"
+          borderColor="border-yellow-400"
+          class="m-2"
+          on:click={exitFrom}
+        >
+          <div class="w-20">Exit</div>
+        </PanelButton>
+      {:else}
+        <PanelButton label="Send" class="m-2" on:click={sendTo}>
+          <div class="w-20">
+            Send Here
+            <Help class="inline w-4 h-4">
+              You can send out spaceships in the form of fleets to either attack or send reinforcement.
+            </Help>
+          </div>
+        </PanelButton>
+        {#if !$planetState.active}
+          <PanelButton
+            label="Capture"
+            class="m-2"
+            color="text-yellow-400"
+            borderColor="border-yellow-400"
+            disabled={!$planetState.inReach || !captureResult.success}
+            on:click={capture}
+          >
+            <div class="w-20">
+              Capture
+              <span class="text-sm">
+                {#if !$planetState.inReach}
+                  (unreachable)
+                  <Help class="inline w-4 h-4">
+                    The Reachable Universe expands as more planets get captured. Note though that you can still send
+                    attack unreachable planets. But these planets cannot produce spaceships until they get in range and
+                    you stake on it.
+                  </Help>
+                {:else if !captureResult.success}
+                  <Help class="inline w-4 h-4">
+                    <!-- The planet cannot be captured at the moment as it has too strong defense -->
+                    To capture a planet, it first need to be either without spaceships or controlled by you.
+                  </Help>
+                {:else}
+                  <Help class="inline w-4 h-4">
+                    To capture a planet and make it produce spaceships for you, you have to deposit a certain number of
+                    <PlayCoin class="w-4 inline" />
+                    (Play token) on it. If you lose your planet, you lose the ability to withdraw them.
+                    <br />
+                    The capture will be resolved as if it was a 10,000 attack power with 100,000
+                    <!-- TODO config -->
+                    spaceships. The capture will only be succesful if the attack succeed
+                  </Help>
+                {/if}
+              </span>
+            </div>
+          </PanelButton>
+        {/if}
+        <PanelButton
+          label="Message"
+          color="text-blue-400"
+          borderColor="border-blue-400"
+          class="m-2"
+          on:click={messageOwner}
+        >
+          <div class="w-20">Message Owner</div>
+        </PanelButton>
+        <PanelButton
+          label="Simulate"
+          color="text-gray-200"
+          borderColor="border-gray-200"
+          class="m-2"
+          on:click={simulateFrom}
+        >
+          <div class="w-20">Simulate Attack</div>
+        </PanelButton>
       {/if}
       <PanelButton
-        label="Message"
-        color="text-blue-400"
-        borderColor="border-blue-400"
-        class="m-2"
-        on:click={messageOwner}
-      >
-        <div class="w-20">Message Owner</div>
-      </PanelButton>
-      <PanelButton
-        label="Simulate"
+        label="Departures"
         color="text-gray-200"
         borderColor="border-gray-200"
         class="m-2"
-        on:click={simulateFrom}
+        on:click={showDepartures}
       >
-        <div class="w-20">Simulate Attack</div>
+        <div class="w-20">Transits</div>
       </PanelButton>
     {/if}
-    <PanelButton
-      label="Departures"
-      color="text-gray-200"
-      borderColor="border-gray-200"
-      class="m-2"
-      on:click={showDepartures}
-    >
-      <div class="w-20">Transits</div>
-    </PanelButton>
   {:else}
     <PanelButton label="Connect your wallet" class="m-2" on:click={connect}>
       <div class="w-20">Connect Wallet</div>

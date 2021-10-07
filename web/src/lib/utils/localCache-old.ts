@@ -44,15 +44,27 @@ class LocalCache {
   async clear(): Promise<void> {
     try {
       const l = localStorage.length;
+      const keys = [];
       for (let i = 0; i < l; i++) {
         const key = localStorage.key(i);
-        if (key.startsWith(this._prefix)) {
+        if (key.startsWith(this._prefix) || key.startsWith('_web3w_')) {
+          keys.push(key);
+        }
+      }
+      for (const key of keys) {
+        try {
           console.log(`removing ${key}...`);
-          this.removeItem(key);
+          localStorage.removeItem(key);
+        } catch (e) {
+          // console.error('removeITem', e);
         }
       }
     } catch (e) {}
   }
 }
 
-export default new LocalCache(contractsInfos.contracts.OuterSpace.address);
+export default new LocalCache(
+  contractsInfos.contracts.OuterSpace.address + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+    ? ':' + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+    : ''
+);

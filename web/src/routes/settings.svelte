@@ -1,86 +1,25 @@
 <script lang="ts">
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
-  import {wallet, builtin, flow} from '$lib/blockchain/wallet';
   import myprofile from '$lib/flows/myprofile';
-  import {BigNumber} from '@ethersproject/bignumber';
   import WalletAccess from '$lib/blockchain/WalletAccess.svelte';
   import Button from '$lib/components/generic/PanelButton.svelte';
-  import {base64} from '$lib/utils';
   import {privateWallet} from '$lib/account/privateWallet';
 
-  // TODO remove duplication, abstract away profile sync but also sync in general
-  const PROFILE_URI = import.meta.env.VITE_PROFILE_URI as string;
-  const DB_NAME = 'etherplay-profile';
-
-  async function getProfile(walletAddress: string) {
-    // TODO request signature, etc...
-
-    const response = await fetch(PROFILE_URI, {
-      method: 'POST',
-      body: JSON.stringify({
-        method: 'wallet_getString',
-        params: [walletAddress, DB_NAME],
-        jsonrpc: '2.0',
-        id: 99999999, // TODO ?
-      }),
-      headers: {
-        'Content-type': 'application/json; charset=UTF-8',
-      },
-    });
-    const json = await response.json();
-    const result = json.result;
-    // TODO check signature
-    let parsedData = undefined;
-    if (result.data && result.data !== '') {
-      parsedData = JSON.parse(result.data);
-      if (Object.keys(parsedData).length === 0) {
-        parsedData = undefined; // an empty profile is the equivalent of no profile
-      }
-    }
-    if (parsedData === undefined) {
-      parsedData = {};
-    }
-
-    const counter = BigNumber.from(result.counter).add(1).toString();
-
-    return {counter, currentData: parsedData};
+  function setProfile() {
+    myprofile.setProfile({description});
   }
 
-  async function setProfile(e: Event) {
-    const walletAddress = $wallet.address;
-    const {counter, currentData} = await getProfile(walletAddress);
-    currentData.name = name;
-    currentData.contact = contact;
-    const {publicKey} = $privateWallet.messagingKey;
-    var publicKeyString = base64.bytesToBase64(publicKey);
-    currentData.publicKey = publicKeyString;
-    const data = JSON.stringify(currentData);
+  $: descriptionFromProfile = $myprofile.account?.description;
 
-    const signature = await wallet.provider.getSigner().signMessage('put:' + DB_NAME + ':' + counter + ':' + data);
-    await fetch(PROFILE_URI, {
-      method: 'POST',
-      body: JSON.stringify({
-        method: 'wallet_putString',
-        params: [walletAddress, DB_NAME, counter, data, signature],
-        jsonrpc: '2.0',
-        id: 99999999, // TODO ?
-      }),
-      headers: {
-        'Content-type': 'application/json; charset=UTF-8',
-      },
-    });
-  }
-
-  let name: string | undefined;
-  let contact: string | undefined;
+  let ownerSet: string | undefined = undefined;
+  let description = '';
+  $: changed = description !== '' && descriptionFromProfile !== description;
 
   $: {
-    if (!name) {
-      name = $myprofile.profile?.name;
-    }
-    if (!contact) {
-      contact = $myprofile.profile?.contact;
+    if ($myprofile.step === 'READY' && (!ownerSet || ownerSet !== $myprofile.owner)) {
+      ownerSet = $myprofile.owner;
+      description = descriptionFromProfile || '';
     }
   }
 </script>
@@ -107,7 +46,7 @@
             </div>
 
             <div class="mt-6 sm:mt-5 space-y-6 sm:space-y-5 text-gray-200">
-              <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+              <!-- <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                 <label for="name" class="block text-sm font-medium sm:mt-px sm:pt-2"> Name </label>
                 <div class="mt-1 sm:mt-0 sm:col-span-2">
                   <div class="max-w-lg flex rounded-md shadow-sm">
@@ -121,13 +60,13 @@
                     />
                   </div>
                 </div>
-              </div>
+              </div> -->
 
               <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                 <label for="Contact" class="block text-sm font-medium sm:mt-px sm:pt-2"> Contact </label>
                 <div class="mt-1 sm:mt-0 sm:col-span-2">
                   <textarea
-                    bind:value={contact}
+                    bind:value={description}
                     id="contact"
                     name="contact"
                     rows="3"
@@ -143,8 +82,13 @@
       <div class="pt-5">
         <div class="flex justify-end">
           <button
+            disabled={!changed}
             on:click={setProfile}
-            class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            class={`ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md  ${
+              changed
+                ? 'text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                : 'text-gray-300 bg-gray-600 hover:bg-gray-700'
+            } `}
           >
             Save
           </button>

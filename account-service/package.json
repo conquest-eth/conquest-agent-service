@@ -1,0 +1,32 @@
+{
+  "private": true,
+  "name": "conquest-account-service",
+  "version": "0.0.1",
+  "description": "Account Service to let players connect to each other",
+  "module": "./dist/index.mjs",
+  "scripts": {
+    "prepare": "node .setup.cjs",
+    "build": "node build.cjs",
+    "format": "prettier --write '**/*.{js,css,json,md}'",
+    "deploy": "wrangler publish",
+    "dev": "miniflare --watch --debug --port 8788",
+    "manual-test": "esbuild test/manual.ts --outfile=dist/manual.mjs && node dist/manual.mjs"
+  },
+  "author": "wighawag <wighawag@gmail.com>",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^2.2.2",
+    "@cloudflare/wrangler": "^1.19.3",
+    "cross-env": "^7.0.3",
+    "esbuild": "^0.13.2",
+    "isomorphic-fetch": "^3.0.0",
+    "miniflare": "^1.4.1",
+    "prettier": "^1.19.1",
+    "tslib": "^2.2.0",
+    "typescript": "^4.2.4"
+  },
+  "dependencies": {
+    "byte-base64": "^1.1.0",
+    "ethers": "^5.4.4",
+    "tweetnacl": "^1.0.3"
+  }
+}

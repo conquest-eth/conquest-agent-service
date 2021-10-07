@@ -30,6 +30,9 @@
   import MessageFlow from '$lib/flows/MessageFlow.svelte';
   import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
   import ShowPlanetDeparturesFlow from '$lib/flows/ShowPlanetDeparturesFlow.svelte';
+  import myprofile from '$lib/flows/myprofile';
+  import FirstTimeProfile from '$lib/flows/FirstTimeProfile.svelte';
+  import {privateWallet} from '$lib/account/privateWallet';
 
   // import Search from '$lib/components/utils/Search.svelte';
 
@@ -100,6 +103,10 @@
 
 {#if $showPlanetDepartures.error || $showPlanetDepartures.step !== 'IDLE'}
   <ShowPlanetDeparturesFlow />
+{/if}
+
+{#if $privateWallet.step === 'READY' && $myprofile.step === 'READY' && !$myprofile.account}
+  <FirstTimeProfile />
 {/if}
 
 <!--

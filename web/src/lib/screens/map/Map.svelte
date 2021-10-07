@@ -43,6 +43,12 @@
           Math.sqrt(Math.pow(planetInfo.location.globalX - x, 2) + Math.pow(planetInfo.location.globalY - y, 2)) <=
           (camera.zoom < 3 ? 6 / camera.zoom : 2) * multiplier
         ) {
+          // if error =>
+
+          // if event =>
+
+          // if fleet ?
+
           // console.log(JSON.stringify(planet, null, '  '));
           selection.select(planetInfo.location.x, planetInfo.location.y);
           return;

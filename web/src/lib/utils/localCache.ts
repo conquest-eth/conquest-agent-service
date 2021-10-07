@@ -53,8 +53,12 @@ class LocalCache {
       const keys = await db.getAllKeys('keyval');
       for (const key of keys) {
         if (typeof key === 'string' && key.startsWith(this._prefix)) {
-          console.log(`removing ${key}...`);
-          await this.removeItem(key);
+          try {
+            console.log(`removing ${key}...`);
+            await db.delete('keyval', key);
+          } catch (e) {
+            //
+          }
         }
       }
     } catch (e) {}

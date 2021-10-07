@@ -22,6 +22,7 @@ export type PrivateWalletState = {
   signer?: Wallet;
   aesKey?: Uint8Array;
   messagingKey?: MessagingKey;
+  signingKey?: MessagingKey;
   ownerAddress?: string;
   chainId?: string;
 };
@@ -44,6 +45,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
       signer: Wallet;
       aesKey: Uint8Array;
       messagingKey: MessagingKey;
+      signingKey: MessagingKey;
       syncEnabled: boolean;
     };
   } = {};
@@ -150,8 +152,14 @@ class PrivateWallet implements Readable<PrivateWalletState> {
       const signature = await wallet.provider
         .getSigner()
         .signMessage(`Only sign this message on "conquest.eth" or other trusted frontend.\nThis is for ${chainName}`);
-      const {signer, aesKey, messagingKey} = await this._generateKeys(signature);
-      this.cache[walletAddressLC + '_' + chainId] = {signer, aesKey, messagingKey, syncEnabled: syncRemotely};
+      const {signer, aesKey, messagingKey, signingKey} = await this._generateKeys(signature);
+      this.cache[walletAddressLC + '_' + chainId] = {
+        signer,
+        aesKey,
+        messagingKey,
+        signingKey,
+        syncEnabled: syncRemotely,
+      };
 
       const toStorage = JSON.stringify({
         signature: storeSignatureLocally ? signature : undefined,
@@ -164,6 +172,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
       this.state.signer = signer;
       this.state.aesKey = aesKey;
       this.state.messagingKey = messagingKey;
+      this.state.signingKey = signingKey;
       this.state.ownerAddress = wallet.address;
       this.state.chainId = chainId;
       this._notify();
@@ -247,11 +256,12 @@ class PrivateWallet implements Readable<PrivateWalletState> {
             const syncEnabled = storage.syncEnabled;
             if (signature) {
               // TODO loading ?
-              const {signer, aesKey, messagingKey} = await this._generateKeys(signature);
+              const {signer, aesKey, messagingKey, signingKey} = await this._generateKeys(signature);
               inCache = this.cache[walletAddressLC + '_' + chainId] = {
                 signer,
                 aesKey,
                 messagingKey,
+                signingKey,
                 syncEnabled,
               };
             } else {
@@ -270,6 +280,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
         this.state.signer = inCache.signer;
         this.state.aesKey = inCache.aesKey;
         this.state.messagingKey = inCache.messagingKey;
+        this.state.signingKey = inCache.signingKey;
         this.state.ownerAddress = walletAddress;
         this.state.chainId = chainId;
 
@@ -292,6 +303,7 @@ class PrivateWallet implements Readable<PrivateWalletState> {
     this.state.signer = undefined;
     this.state.aesKey = undefined;
     this.state.messagingKey = undefined;
+    this.state.signingKey = undefined;
     this.state.ownerAddress = undefined;
     this.state.chainId = undefined;
     if (notify) {
@@ -314,10 +326,15 @@ class PrivateWallet implements Readable<PrivateWalletState> {
     this.store.set(this.state);
   }
 
+  getState() {
+    return this.state;
+  }
+
   async _generateKeys(signature: string): Promise<{
     signer: Wallet;
     aesKey: Uint8Array;
     messagingKey: MessagingKey;
+    signingKey: MessagingKey;
   }> {
     const signer = new Wallet(signature.slice(0, 130));
     const aesKeySignature = await signer.signMessage('AES KEY');
@@ -330,7 +347,8 @@ class PrivateWallet implements Readable<PrivateWalletState> {
           .map((byte) => parseInt(byte, 16))
       )
     );
-    return {signer, aesKey, messagingKey};
+    const signingKey = nacl.sign.keyPair.fromSeed(messagingKey.secretKey);
+    return {signer, aesKey, messagingKey, signingKey};
   }
 
   hashString() {

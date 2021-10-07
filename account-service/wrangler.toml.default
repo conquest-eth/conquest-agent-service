@@ -1,0 +1,43 @@
+name = "account-service-testing"
+type = "javascript"
+account_id = ""
+workers_dev = true
+route = ""
+zone_id = ""
+compatibility_date = "2021-09-21"
+usage_model= "bundled"
+
+[vars]
+ENVIRONMENT = "dev"
+
+# ------------------ STAGING ---------------------------------
+[env.staging]
+name = "account-service-staging"
+workers_dev = false
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+# --------------------------------------------------------------
+
+
+# ------------------ PRODUCTION ---------------------------------
+[env.production]
+name = "account-service"
+workers_dev = false
+
+[env.production.vars]
+ENVIRONMENT = "production"
+# --------------------------------------------------------------
+
+[build]
+command = "npm run build"
+[build.upload]
+format = "modules"
+main = "./index.mjs"
+
+[durable_objects]
+bindings = [{name = "ACCOUNT", class_name = "Account"}]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["Account"]

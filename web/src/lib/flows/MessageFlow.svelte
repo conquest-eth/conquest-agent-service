@@ -18,19 +18,15 @@
   </Modal>
 {:else if $messageFlow.step === 'READY'}
   <Modal on:close={() => messageFlow.cancel()} on:confirm={() => messageFlow.cancel()}>
-    {#if !$messageFlow.profile}
+    {#if !$messageFlow.profile || !$messageFlow.profile.description}
       <p class="text-center">The user did not provide any information.</p>
       <p class="text-center">
         Find each other on
         <a href="https://discord.gg/Qb4gr2ekfr" target="_blank" rel="noopener" class="underline">discord</a>
       </p>
-    {:else}
-      {#if $messageFlow.profile.name}
-        <p class="text-center">{$messageFlow.profile.name}</p>
-      {/if}
-      {#if $messageFlow.profile.contact}
-        <p class="text-center">{$messageFlow.profile.contact}</p>
-      {/if}
+    {:else if $messageFlow.profile.description}
+      <p class="m-4 text-center">Here is how to contact the player:</p>
+      <p class="text-center">{$messageFlow.profile.description}</p>
     {/if}
   </Modal>
 {/if}

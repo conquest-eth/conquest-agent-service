@@ -5,19 +5,12 @@ export type MessageFlow = {
   step: 'IDLE' | 'LOADING' | 'READY';
   owner?: string;
   profile?: {
-    name?: string;
-    contact?: string; // generic contact
-    telegram?: string;
-    twitter?: string;
-    email?: string;
-    discord?: string;
-    [key: string]: string;
+    description?: string;
   };
   error?: {message?: string};
 };
 
 const PROFILE_URI = import.meta.env.VITE_PROFILE_URI as string;
-const DB_NAME = 'etherplay-profile';
 
 class MessageFlowStore extends BaseStoreWithData<MessageFlow, undefined> {
   public constructor() {
@@ -31,30 +24,22 @@ class MessageFlowStore extends BaseStoreWithData<MessageFlow, undefined> {
     this.setPartial({step: 'LOADING', owner});
     try {
       // TODO CACHE data
-      const data = await fetch(PROFILE_URI, {
-        method: 'POST',
-        body: JSON.stringify({
-          method: 'wallet_getString',
-          params: [owner, DB_NAME],
-          jsonrpc: '2.0',
-          id: 99999999, // TODO ?
-        }),
+      const response = await fetch(`${PROFILE_URI}get/${owner}`, {
+        method: 'GET',
         headers: {
           'Content-type': 'application/json; charset=UTF-8',
         },
       });
-      // TODO fetch ENS name first ?
-      const json = await data.json();
-      const result = json.result;
-      // TODO check signature
-      let parsedData = undefined;
-      if (result.data && result.data !== '') {
-        parsedData = JSON.parse(result.data);
-        if (Object.keys(parsedData).length === 0) {
-          parsedData = undefined; // an empty profile is the equivalent of no profile
-        }
-      }
-      this.setPartial({step: 'READY', owner, profile: parsedData});
+      const json = await response.json();
+      const result: {
+        account: {
+          description?: string;
+          publicEncryptionKey: string;
+          publicSigningKey: string;
+          nonceMsTimestamp: number;
+        } | null;
+      } = json;
+      this.setPartial({step: 'READY', owner, profile: result.account});
     } catch (e) {
       this.setPartial({error: e});
     }
