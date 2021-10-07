@@ -55,8 +55,8 @@ class ShowDeparturesFlowStore extends BaseStoreWithData<ShowPlanetDeparturesFlow
     this.setPartial({step: 'LOADING', location});
     try {
       const query = `
-query($first: Int! $lastId: ID! $owner: String $planet: String) {
-  fleets(where: {from: $planet owner_not: $owner resolved: false} first: $first orderBy: launchTime orderDirection: desc) {
+query($owner: String $planet: String) {
+  fleets(where: {from: $planet owner_not: $owner resolved: false} orderBy: launchTime orderDirection: desc) {
     id
     launchTime
     owner {id}
@@ -72,6 +72,8 @@ query($first: Int! $lastId: ID! $owner: String $planet: String) {
           planet: location,
         },
       });
+
+      console.log(result);
 
       let departures = [];
       if (result.data) {
