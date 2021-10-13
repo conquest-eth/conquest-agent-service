@@ -1,13 +1,13 @@
-import type {SpaceQueryWithPendingState} from '$lib/space/optimisticSpace';
-import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
-import type {Readable, Writable} from 'svelte/store';
-import {writable} from 'svelte/store';
+import type { SpaceQueryWithPendingState } from '$lib/space/optimisticSpace';
+import { spaceQueryWithPendingActions } from '$lib/space/optimisticSpace';
+import type { Readable, Writable } from 'svelte/store';
+import { writable } from 'svelte/store';
 // object representing a fleet (publicly)
 export type SpaceError = {
   txHash: string; // TODO better id
   status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
-  action: {nonce: number; timestamp: number; queueID?: string};
-  location: {x: number; y: number};
+  action: { nonce: number; timestamp: number; queueID?: string, type: string };
+  location: { x: number; y: number };
   acknowledged: boolean;
 };
 
@@ -26,7 +26,7 @@ export class ErrorsStore implements Readable<SpaceError[]> {
   private onSpaceUpdate(update: SpaceQueryWithPendingState): void {
     this.errors.length = 0;
     for (const pendingAction of update.pendingActions) {
-      let location: {x: number; y: number} | undefined;
+      let location: { x: number; y: number } | undefined;
       if (pendingAction.action.type === 'SEND') {
         location = pendingAction.action.from;
       } else if (pendingAction.action.type === 'CAPTURE') {

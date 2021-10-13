@@ -5,6 +5,8 @@
   import type {SpaceError} from '$lib/space/errors';
   import {spaceInfo} from '$lib/space/spaceInfo';
   export let error: SpaceError;
+  export let isShow;
+  export let selectedError;
 
   $: planetInfo = spaceInfo.getPlanetInfo(error.location.x, error.location.y);
   $: x = planetInfo.location.globalX - 48 / 2;
@@ -33,15 +35,16 @@
     adjustedRenderScale = 1;
   }
 
-  async function acknowledge() {
-    console.log(error);
-    await account.acknowledgeError(error.txHash, null);
-  }
+  const handleClick = () => {
+    selectedError = error;
+    console.log(selectedError);
+    isShow = true;
+  };
 </script>
 
 <div
   id={error.txHash}
-  on:click={acknowledge}
+  on:click={handleClick}
   style={`z-index: 5; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
     blockieScale * 3
   }); width: 48px; height: 48px;`}

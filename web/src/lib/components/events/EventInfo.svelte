@@ -18,7 +18,14 @@
 </script>
 
 {#if isShow}
-  <Modal {title} globalCloseButton={true} on:close={() => (isShow = null)}>
+  <Modal
+    {title}
+    globalCloseButton={true}
+    on:close={() => {
+      isShow = false;
+      event = null;
+    }}
+  >
     <ul class="mt-10 text-white">
       <li>Planet: {spaceInfo.getPlanetInfoViaId(event.event.planet.id).stats.name}</li>
       <li>In flight fleet loss: {event.event.inFlightFleetLoss}</li>

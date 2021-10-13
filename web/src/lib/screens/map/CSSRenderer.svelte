@@ -9,12 +9,15 @@
   import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
   import {myevents} from '$lib/space/myevents';
   import type {MyEvent} from '$lib/space/myevents';
+  import type {SpaceError} from '$lib/space/errors';
   import EventElement from './EventElement.svelte';
   import {errors} from '$lib/space/errors';
   import ErrorElement from './ErrorElement.svelte';
   import EventInfo from '$lib/components/events/EventInfo.svelte';
+  import ErrorInfo from '$lib/components/events/ErrorInfo.svelte';
 
   let selectedEvent: MyEvent;
+  let selectedError: SpaceError;
   let isShow = false;
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
 
@@ -24,8 +27,11 @@
   $: y2 = ($spaceQueryWithPendingActions.queryState.data?.space.y2 || 16) * 4 + 2;
 </script>
 
-{#if isShow}
-  <EventInfo event={selectedEvent} bind:isShow />
+{#if selectedEvent}
+  <EventInfo bind:event={selectedEvent} bind:isShow />
+{/if}
+{#if selectedError}
+  <ErrorInfo bind:error={selectedError} bind:isShow />
 {/if}
 <div
   style={`
@@ -89,7 +95,7 @@ width:100%; height: 100%;
     {#if $errors}
       {#each $errors as error}
         {#if !error.acknowledged}
-          <ErrorElement {error} />
+          <ErrorElement bind:selectedError bind:isShow {error} />
         {/if}
       {/each}
     {/if}
