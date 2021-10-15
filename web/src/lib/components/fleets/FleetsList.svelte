@@ -36,8 +36,11 @@
       {#if $fleets.length}
         <ul class="overflow-auto max-h-32" style="cursor: pointer;">
           {#each $fleets as fleet}
-            <li class="text-yellow-300" on:click={() => onFleetSelect(fleet)}>
+            <li style="display: block" class="text-yellow-300" on:click={() => onFleetSelect(fleet)}>
               {fleet.from.stats.name} to {fleet.to.stats.name}
+              {#if fleet.gift}
+                (GIFT)
+              {/if}
             </li>
           {/each}
         </ul>
