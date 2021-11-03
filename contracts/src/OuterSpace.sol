@@ -20,12 +20,10 @@ contract OuterSpace is Proxied {
     uint256 internal constant DECIMALS_18 = 1e18;
     uint32 internal constant ACTIVE_MASK = 2**31;
     int256 internal constant UINT32_MAX = 2**32 - 1;
-    uint256 internal constant FRONT_RUNNING_DELAY = 30 * 60; // 30 min // TODO make it configurable in the constructor
 
     int256 internal constant EXPANSION = 8;
     uint32 internal constant INITIAL_SPACE = 16;
     uint256 internal constant GIFT_TAX_PER_10000 = 2500;
-    // uint8 internal constant MAX_NUM_ALLIANCES = 8;
 
     uint256 internal constant COMBAT_RULE_SWITCH_TIME = 1620144000; // Tuesday, 4 May 2021 16:00:00 GMT
 
@@ -41,6 +39,7 @@ contract OuterSpace is Proxied {
     uint256 internal immutable _exitDuration;
     uint32 internal immutable _acquireNumSpaceships;
     uint32 internal immutable _productionSpeedUp;
+    uint256 internal immutable _frontrunningDelay;
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // STORAGE
@@ -60,7 +59,7 @@ contract OuterSpace is Proxied {
 
     // mapping(address => mapping(IAlliance => uint256)) internal _alliances;
 
-    // front running protection : FRONT_RUNNING_DELAY / 2 slots
+    // front running protection : _frontruunningDelay / 2 slots
     struct InFlight {
         uint64 flying;
         uint64 destroyed;
@@ -151,7 +150,8 @@ contract OuterSpace is Proxied {
         uint32 timePerDistance,
         uint32 exitDuration,
         uint32 acquireNumSpaceships,
-        uint32 productionSpeedUp
+        uint32 productionSpeedUp,
+        uint32 frontrunningDelay
     ) {
         uint32 t = timePerDistance / 4; // the coordinates space is 4 times bigger
         require(t * 4 == timePerDistance, "TIME_PER_DIST_NOT_DIVISIBLE_4");
@@ -164,6 +164,7 @@ contract OuterSpace is Proxied {
         _exitDuration = exitDuration;
         _acquireNumSpaceships = acquireNumSpaceships;
         _productionSpeedUp = productionSpeedUp;
+        _frontrunningDelay = frontrunningDelay;
 
         postUpgrade(
             stakingToken,
@@ -173,7 +174,8 @@ contract OuterSpace is Proxied {
             timePerDistance,
             exitDuration,
             acquireNumSpaceships,
-            productionSpeedUp
+            productionSpeedUp,
+            frontrunningDelay
         );
     }
 
@@ -181,6 +183,7 @@ contract OuterSpace is Proxied {
         IERC20,
         AllianceRegistry,
         bytes32,
+        uint32,
         uint32,
         uint32,
         uint32,
@@ -424,7 +427,7 @@ contract OuterSpace is Proxied {
         quantity = _fleets[fleetId].quantity;
         owner = _fleets[fleetId].owner;
 
-        uint256 timeSlot = launchTime / (FRONT_RUNNING_DELAY / 2);
+        uint256 timeSlot = launchTime / (_frontrunningDelay / 2);
         destroyedAtLaunch = _inFlight[from][timeSlot].destroyed;
         flyingAtLaunch = _inFlight[from][timeSlot].flying;
     }
@@ -759,7 +762,7 @@ contract OuterSpace is Proxied {
          // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         // record flying fleets (to prevent front-running, see resolution)
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
-        uint256 timeSlot = block.timestamp / (FRONT_RUNNING_DELAY / 2);
+        uint256 timeSlot = block.timestamp / (_frontrunningDelay / 2);
         uint64 flying = _inFlight[from][timeSlot].flying;
         flying = flying + quantity;
         require(flying >= quantity, "OVERFLOW"); // unlikely to ever happen, would need a hug amount of spaceships to be received and each in turn being sent
@@ -867,7 +870,7 @@ contract OuterSpace is Proxied {
         uint256 from,
         uint32 launchTime
     ) internal returns (uint32) {
-        uint256 timeSlot = launchTime / (FRONT_RUNNING_DELAY / 2);
+        uint256 timeSlot = launchTime / (_frontrunningDelay / 2);
         uint64 destroyed = _inFlight[from][timeSlot].destroyed;
         if (destroyed < quantity) {
             quantity -= uint32(destroyed);
@@ -1021,7 +1024,7 @@ contract OuterSpace is Proxied {
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         // consider fleets that just departed from the planet (used to prevent front-running, see fleet sending)
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
-        uint256 timeSlot = block.timestamp / (FRONT_RUNNING_DELAY / 2);
+        uint256 timeSlot = block.timestamp / (_frontrunningDelay / 2);
         flying1 = _inFlight[to][timeSlot - 1].flying;
         destroyed1 = _inFlight[to][timeSlot - 1].flying;
         flying2 = _inFlight[to][timeSlot].flying;
@@ -1070,10 +1073,10 @@ contract OuterSpace is Proxied {
                 }
                 state.flying1 = 0;
             }
-            _inFlight[to][block.timestamp / (FRONT_RUNNING_DELAY / 2) - 1].flying = state.flying1;
-            _inFlight[to][block.timestamp / (FRONT_RUNNING_DELAY / 2) - 1].destroyed = state.destroyed1;
-            _inFlight[to][block.timestamp / (FRONT_RUNNING_DELAY / 2)].flying = state.flying2;
-            _inFlight[to][block.timestamp / (FRONT_RUNNING_DELAY / 2)].destroyed = state.destroyed2;
+            _inFlight[to][block.timestamp / (_frontrunningDelay / 2) - 1].flying = state.flying1;
+            _inFlight[to][block.timestamp / (_frontrunningDelay / 2) - 1].destroyed = state.destroyed1;
+            _inFlight[to][block.timestamp / (_frontrunningDelay / 2)].flying = state.flying2;
+            _inFlight[to][block.timestamp / (_frontrunningDelay / 2)].destroyed = state.destroyed2;
         }
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         // (attackerLoss: 0, defenderLoss: 0) could either mean attack was zero or defense was zero :
