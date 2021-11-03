@@ -1,5 +1,5 @@
 {
-  "address": "0x5e18f8981D77348C9f7DaEe046c2813aB8Cc2E09",
+  "address": "0x436588dEaeB9F884A3FcFDe000bE31658b3Ddc0b",
   "abi": [
     {
       "inputs": [
@@ -145,64 +145,65 @@
       "type": "receive"
     }
   ],
-  "transactionHash": "0x216edb7980c13535a83b2b19505d596bc84ca5e884e46689f217b513cbe35b4e",
+  "transactionHash": "0x2f275182a30206f01f4cedbb9a331324158a81de6b34c3e9808141760998f000",
   "receipt": {
     "to": null,
     "from": "0x61c461EcC993aaDEB7e4b47E96d1B8cC37314B20",
-    "contractAddress": "0x5e18f8981D77348C9f7DaEe046c2813aB8Cc2E09",
-    "transactionIndex": 9,
-    "gasUsed": "644930",
-    "logsBloom": "0x00000000000000000000000000400000840000000000000000800000000000000000000000000000000400000000000000000000000000000000000000000040000000000000000000000000000000000001000000000000000000000000000000000010020000000000000000000800000000000000000000000080000000400000000000000000000000002000000000000000000000000000000000000000000000000000400000000000000280000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200021000000000000080000000400000000000000000000000000000000000000000000",
-    "blockHash": "0xda281dfd70e2701888837c9a652d2a242aaf79325d75db10e82ec85d3591cbe2",
-    "transactionHash": "0x216edb7980c13535a83b2b19505d596bc84ca5e884e46689f217b513cbe35b4e",
+    "contractAddress": "0x436588dEaeB9F884A3FcFDe000bE31658b3Ddc0b",
+    "transactionIndex": 1,
+    "gasUsed": "644067",
+    "logsBloom": "0x00000000000800000000400000400000000000000000000000800000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000010020000000000000000000800000000000000000001000000000000400000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000200000000000200000000000000000010000000000000000000000000000000000000000000000000000000000020200021000000000000080000000400000000000000000000000000000000000000000000",
+    "blockHash": "0xc8d5d9436ec978c3d5f4a269369eae102fe06b2f4f932406aff672f11e0eba51",
+    "transactionHash": "0x2f275182a30206f01f4cedbb9a331324158a81de6b34c3e9808141760998f000",
     "logs": [
       {
-        "transactionIndex": 9,
-        "blockNumber": 5393481,
-        "transactionHash": "0x216edb7980c13535a83b2b19505d596bc84ca5e884e46689f217b513cbe35b4e",
-        "address": "0x5e18f8981D77348C9f7DaEe046c2813aB8Cc2E09",
+        "transactionIndex": 1,
+        "blockNumber": 5785107,
+        "transactionHash": "0x2f275182a30206f01f4cedbb9a331324158a81de6b34c3e9808141760998f000",
+        "address": "0x436588dEaeB9F884A3FcFDe000bE31658b3Ddc0b",
         "topics": [
           "0x5570d70a002632a7b0b3c9304cc89efb62d8da9eca0dbd7752c83b7379068296",
           "0x0000000000000000000000000000000000000000000000000000000000000000",
-          "0x0000000000000000000000007cb38cb301654ed7a205dd88c0eb17eb976324fe"
+          "0x000000000000000000000000f52f9c497a51c0574921d9a207d358c73e893afc"
         ],
         "data": "0x",
-        "logIndex": 8,
-        "blockHash": "0xda281dfd70e2701888837c9a652d2a242aaf79325d75db10e82ec85d3591cbe2"
+        "logIndex": 0,
+        "blockHash": "0xc8d5d9436ec978c3d5f4a269369eae102fe06b2f4f932406aff672f11e0eba51"
       },
       {
-        "transactionIndex": 9,
-        "blockNumber": 5393481,
-        "transactionHash": "0x216edb7980c13535a83b2b19505d596bc84ca5e884e46689f217b513cbe35b4e",
-        "address": "0x5e18f8981D77348C9f7DaEe046c2813aB8Cc2E09",
+        "transactionIndex": 1,
+        "blockNumber": 5785107,
+        "transactionHash": "0x2f275182a30206f01f4cedbb9a331324158a81de6b34c3e9808141760998f000",
+        "address": "0x436588dEaeB9F884A3FcFDe000bE31658b3Ddc0b",
         "topics": [
           "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0",
           "0x000000000000000000000000ffffffffffffffffffffffffffffffffffffffff",
           "0x00000000000000000000000061c461ecc993aadeb7e4b47e96d1b8cc37314b20"
         ],
         "data": "0x",
-        "logIndex": 9,
-        "blockHash": "0xda281dfd70e2701888837c9a652d2a242aaf79325d75db10e82ec85d3591cbe2"
+        "logIndex": 1,
+        "blockHash": "0xc8d5d9436ec978c3d5f4a269369eae102fe06b2f4f932406aff672f11e0eba51"
       }
     ],
-    "blockNumber": 5393481,
-    "cumulativeGasUsed": "1183037",
+    "blockNumber": 5785107,
+    "cumulativeGasUsed": "885919",
     "status": 1,
     "byzantium": true
   },
   "args": [
-    "0x7Cb38CB301654Ed7a205DD88C0eB17Eb976324FE",
+    "0xf52f9C497A51C0574921D9A207D358c73e893afc",
     "0x61c461EcC993aaDEB7e4b47E96d1B8cC37314B20",
-    "0x653d4983000000000000000000000000a06026e7f570a329022b7caf905aaa0d9ff99c3ecce77b122615b6093c0df0c7392bec6f537eb7a0595c337a573ee6d96d1107c8000000000000000000000000000000000000000000000000000000000000a8c00000000000000000000000000000000000000000000000000000000000001c20000000000000000000000000000000000000000000000000000000000003f48000000000000000000000000000000000000000000000000000000000000186a00000000000000000000000000000000000000000000000000000000000000001"
+    "0x3540f129000000000000000000000000c7e510d0216fb7b8c0d7138827a86c17f2a86002000000000000000000000000a7dd9e518fa161cad166333a65fc315d87e998f09e9e23df9a65ca95f7a3b613673c89db774d0cdaaa1850160a59406c0220d7f6000000000000000000000000000000000000000000000000000000000000a8c00000000000000000000000000000000000000000000000000000000000001c20000000000000000000000000000000000000000000000000000000000003f48000000000000000000000000000000000000000000000000000000000000186a000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000708"
   ],
   "linkedData": {
-    "genesisHash": "0xcce77b122615b6093c0df0c7392bec6f537eb7a0595c337a573ee6d96d1107c8",
+    "genesisHash": "0x9e9e23df9a65ca95f7a3b613673c89db774d0cdaaa1850160a59406c0220d7f6",
     "resolveWindow": 43200,
     "timePerDistance": 7200,
     "exitDuration": 259200,
     "acquireNumSpaceships": 100000,
     "productionSpeedUp": 1,
-    "chainGenesisHash": ""
+    "chainGenesisHash": "",
+    "frontrunningDelay": 1800
   },
   "solcInputHash": "2db89642daf7ebd20cbbef9f4540b20d",
   "metadata": "{\"compiler\":{\"version\":\"0.7.6+commit.7338295f\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"implementationAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"ownerAddress\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"stateMutability\":\"payable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"previousImplementation\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"}],\"name\":\"ProxyImplementationUpdated\",\"type\":\"event\"},{\"stateMutability\":\"payable\",\"type\":\"fallback\"},{\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"id\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"}],\"name\":\"upgradeTo\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newImplementation\",\"type\":\"address\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"upgradeToAndCall\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"notice\":\"Proxy implementing EIP173 for ownership management\",\"version\":1}},\"settings\":{\"compilationTarget\":{\"solc_0.7/proxy/EIP173Proxy.sol\":\"EIP173Proxy\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":999999},\"remappings\":[]},\"sources\":{\"solc_0.7/proxy/EIP173Proxy.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.7.0;\\n\\nimport \\\"./Proxy.sol\\\";\\n\\ninterface ERC165 {\\n    function supportsInterface(bytes4 id) external view returns (bool);\\n}\\n\\n///@notice Proxy implementing EIP173 for ownership management\\ncontract EIP173Proxy is Proxy {\\n    // ////////////////////////// EVENTS ///////////////////////////////////////////////////////////////////////\\n\\n    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);\\n\\n    // /////////////////////// CONSTRUCTOR //////////////////////////////////////////////////////////////////////\\n\\n    constructor(\\n        address implementationAddress,\\n        address ownerAddress,\\n        bytes memory data\\n    ) payable {\\n        _setImplementation(implementationAddress, data);\\n        _setOwner(ownerAddress);\\n    }\\n\\n    // ///////////////////// EXTERNAL ///////////////////////////////////////////////////////////////////////////\\n\\n    function owner() external view returns (address) {\\n        return _owner();\\n    }\\n\\n    function supportsInterface(bytes4 id) external view returns (bool) {\\n        if (id == 0x01ffc9a7 || id == 0x7f5828d0) {\\n            return true;\\n        }\\n        if (id == 0xFFFFFFFF) {\\n            return false;\\n        }\\n\\n        ERC165 implementation;\\n        // solhint-disable-next-line security/no-inline-assembly\\n        assembly {\\n            implementation := sload(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)\\n        }\\n\\n        // Technically this is not standard compliant as ERC-165 require 30,000 gas which that call cannot ensure\\n        // because it is itself inside `supportsInterface` that might only get 30,000 gas.\\n        // In practise this is unlikely to be an issue.\\n        try implementation.supportsInterface(id) returns (bool support) {\\n            return support;\\n        } catch {\\n            return false;\\n        }\\n    }\\n\\n    function transferOwnership(address newOwner) external onlyOwner {\\n        _setOwner(newOwner);\\n    }\\n\\n    function upgradeTo(address newImplementation) external onlyOwner {\\n        _setImplementation(newImplementation, \\\"\\\");\\n    }\\n\\n    function upgradeToAndCall(address newImplementation, bytes calldata data) external payable onlyOwner {\\n        _setImplementation(newImplementation, data);\\n    }\\n\\n    // /////////////////////// MODIFIERS ////////////////////////////////////////////////////////////////////////\\n\\n    modifier onlyOwner() {\\n        require(msg.sender == _owner(), \\\"NOT_AUTHORIZED\\\");\\n        _;\\n    }\\n\\n    // ///////////////////////// INTERNAL //////////////////////////////////////////////////////////////////////\\n\\n    function _owner() internal view returns (address adminAddress) {\\n        // solhint-disable-next-line security/no-inline-assembly\\n        assembly {\\n            adminAddress := sload(0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103)\\n        }\\n    }\\n\\n    function _setOwner(address newOwner) internal {\\n        address previousOwner = _owner();\\n        // solhint-disable-next-line security/no-inline-assembly\\n        assembly {\\n            sstore(0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103, newOwner)\\n        }\\n        emit OwnershipTransferred(previousOwner, newOwner);\\n    }\\n}\\n\",\"keccak256\":\"0x7f9bbb686cd29ade05acf0cec1bfded16f0ad8d7e3fcb9cf35cc8b04efdda744\",\"license\":\"MIT\"},\"solc_0.7/proxy/Proxy.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\npragma solidity ^0.7.0;\\n\\n// EIP-1967\\nabstract contract Proxy {\\n    // /////////////////////// EVENTS ///////////////////////////////////////////////////////////////////////////\\n\\n    event ProxyImplementationUpdated(address indexed previousImplementation, address indexed newImplementation);\\n\\n    // ///////////////////// EXTERNAL ///////////////////////////////////////////////////////////////////////////\\n\\n    receive() external payable virtual {\\n        revert(\\\"ETHER_REJECTED\\\"); // explicit reject by default\\n    }\\n\\n    fallback() external payable {\\n        _fallback();\\n    }\\n\\n    // ///////////////////////// INTERNAL //////////////////////////////////////////////////////////////////////\\n\\n    function _fallback() internal {\\n        // solhint-disable-next-line security/no-inline-assembly\\n        assembly {\\n            let implementationAddress := sload(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)\\n            calldatacopy(0x0, 0x0, calldatasize())\\n            let success := delegatecall(gas(), implementationAddress, 0x0, calldatasize(), 0, 0)\\n            let retSz := returndatasize()\\n            returndatacopy(0, 0, retSz)\\n            switch success\\n                case 0 {\\n                    revert(0, retSz)\\n                }\\n                default {\\n                    return(0, retSz)\\n                }\\n        }\\n    }\\n\\n    function _setImplementation(address newImplementation, bytes memory data) internal {\\n        address previousImplementation;\\n        // solhint-disable-next-line security/no-inline-assembly\\n        assembly {\\n            previousImplementation := sload(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc)\\n        }\\n\\n        // solhint-disable-next-line security/no-inline-assembly\\n        assembly {\\n            sstore(0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc, newImplementation)\\n        }\\n\\n        emit ProxyImplementationUpdated(previousImplementation, newImplementation);\\n\\n        if (data.length > 0) {\\n            (bool success, ) = newImplementation.delegatecall(data);\\n            if (!success) {\\n                assembly {\\n                    // This assembly ensure the revert contains the exact string data\\n                    let returnDataSize := returndatasize()\\n                    returndatacopy(0, 0, returnDataSize)\\n                    revert(0, returnDataSize)\\n                }\\n            }\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0xfa071ffed5c967384ac4787576322a46a4863d89bf39cd6fde58d4780b42e0ed\",\"license\":\"MIT\"}},\"version\":1}",
