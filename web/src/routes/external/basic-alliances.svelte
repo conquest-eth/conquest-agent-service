@@ -14,12 +14,28 @@
   // TODO SHare this in _layout ?
   import messageFlow from '$lib/flows/message';
   import MessageFlow from '$lib/flows/MessageFlow.svelte';
+  import {Wallet} from '@ethersproject/wallet';
 
   function connect() {
     flow.connect();
   }
   function disconnect() {
     wallet.disconnect();
+  }
+
+  async function create() {
+    await flow.execute(async (contracts) => {
+      const salt = Wallet.createRandom().privateKey;
+      const deterministicAddress = await contracts.BasicAllianceFactory.getAddress(salt);
+      // TODO allow multiple members at creation
+      const message = `Join Alliance ${hexZeroPad(deterministicAddress.toLowerCase(), 20)}`;
+      const signature = await wallet.provider.getSigner().signMessage(message);
+      await contracts.BasicAllianceFactory.instantiate(
+        wallet.address,
+        [{addr: wallet.address, nonce: 0, signature}],
+        salt
+      );
+    });
   }
 
   async function join() {
@@ -47,6 +63,11 @@
 
   let lastWalletState: WalletData | undefined;
   async function update() {
+    if (!id) {
+      admin = undefined;
+      step = 'READY';
+      return;
+    }
     if (lastWalletState && lastWalletState.state === 'Ready') {
       if (step != 'READY') {
         step = 'LOADING';
@@ -106,15 +127,20 @@
       <PanelButton on:click={connect} label="Connect">Connect</PanelButton>
     {:else}
       <PanelButton class="float-right" on:click={disconnect} label="Disconnect">Disconnect</PanelButton>
-      <h1 class="text-xl text-yellow-500 m-4"><Blockie address={id} class="w-10 h-10 inline" /> Alliance {id}</h1>
+
+      {#if id}
+        <h1 class="text-xl text-yellow-500 m-4"><Blockie address={id} class="w-10 h-10 inline" /> Alliance {id}</h1>
+      {/if}
 
       {#if step === 'LOADING'}
-        <p>Loading alliance...</p>
+        <p>Loading ...</p>
       {:else if step === 'IDLE'}
         {#if error}
           {error}
         {/if}
         <PanelButton on:click={() => wallet.connect()} label="load">load</PanelButton>
+      {:else if !id}
+        <!-- nothing -->
       {:else if $wallet.address.toLowerCase() !== admin}
         <h2 class="text-xl text-green-500">Do you want to join the alliance ?</h2>
         <div>
@@ -142,6 +168,16 @@
           </div>
         </div>
       {/if}
+
+      <p class="m-8">Maybe you want to create your own alliance?</p>
+      <div>
+        <!-- <div>
+          <textarea bind:value={joinMessage} class="bg-gray-800 w-80 h-80" />
+        </div> -->
+        <div>
+          <PanelButton on:click={create} label="Create">Create</PanelButton>
+        </div>
+      </div>
     {/if}
   </div>
 </WalletAccess>
