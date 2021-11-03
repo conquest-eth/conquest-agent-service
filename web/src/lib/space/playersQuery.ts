@@ -14,7 +14,14 @@ export type Player = {
   alliances: {address: string; ally: boolean}[];
 };
 
+export type Alliance = {
+  address: string;
+  members: Player[];
+};
+
 export type PlayersMap = {[address: string]: Player};
+
+export type AlliancesMap = {[address: string]: Alliance};
 
 export type PlayersQueryResult = {
   owners: {id: string; alliances: {alliance: {id: string}}[]}[];
@@ -24,6 +31,7 @@ export type PlayersQueryResult = {
 export type PlayersState = {
   loading: boolean;
   players: PlayersMap;
+  alliances: AlliancesMap;
   chain: {blockHash: string; blockNumber: string};
 };
 
@@ -31,6 +39,7 @@ export class SpaceQueryStore implements QueryStore<PlayersState> {
   private queryStore: QueryStoreWithRuntimeVariables<PlayersQueryResult>;
   private store: Writable<QueryState<PlayersState>>;
   private $players: PlayersMap = {};
+  private $alliances: AlliancesMap = {};
   private unsubscribeFromQuery: () => void | undefined;
   private stopAccountSubscription: (() => void) | undefined = undefined;
   private _resolveFetch: () => void | undefined;
@@ -127,13 +136,24 @@ export class SpaceQueryStore implements QueryStore<PlayersState> {
     }
 
     this.$players = {};
+    this.$alliances = {};
     for (const owner of data.owners) {
-      this.$players[owner.id] = {
+      const player = (this.$players[owner.id] = {
         address: owner.id,
         alliances: owner.alliances.map((v) => {
           return {address: v.alliance.id, ally: playerAlliances[v.alliance.id]};
         }),
-      };
+      });
+      for (const alliance of owner.alliances) {
+        let existingAlliance = this.$alliances[alliance.alliance.id];
+        if (!existingAlliance) {
+          existingAlliance = this.$alliances[alliance.alliance.id] = {
+            address: alliance.alliance.id,
+            members: [],
+          };
+        }
+        existingAlliance.members.push(player);
+      }
     }
 
     return {
@@ -143,6 +163,7 @@ export class SpaceQueryStore implements QueryStore<PlayersState> {
         blockHash: data.chain.blockHash,
         blockNumber: data.chain.blockNumber,
       },
+      alliances: this.$alliances,
     };
   }
 
