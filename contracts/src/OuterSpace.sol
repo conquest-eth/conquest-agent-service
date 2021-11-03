@@ -200,53 +200,6 @@ contract OuterSpace is Proxied {
         }
     }
 
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // ALLIANCES
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    // function joinAlliance(IAlliance alliance, bytes calldata data) external returns (bool joined) {
-    //     uint8 numAlliances = _accounts[msg.sender].numAlliances;
-    //     require(numAlliances < MAX_NUM_ALLIANCES, "MAX_NUM_ALLIANCES_REACHED");
-    //     joined = alliance.requestToJoin(msg.sender, data);
-    //     if (joined) {
-    //         _alliances[msg.sender][alliance] = block.timestamp;
-    //         _accounts[msg.sender].numAlliances  = numAlliances + 1;
-    //         emit AllianceLink(alliance, msg.sender, true);
-    //     }
-    // }
-
-    // function addPLayerToAlliance(address player, uint256 nonce, bytes calldata signature) external {
-    //     IAlliance alliance = IAlliance(msg.sender);
-    //     bytes32 digest = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", "Add ", ""));
-    //     address signer = digest.recover(signature);
-    //     require(player == signer, "INVALID_SIGNATURE");
-    //     uint8 numAlliances = _accounts[player].numAlliances;
-    //     require(numAlliances < MAX_NUM_ALLIANCES, "MAX_NUM_ALLIANCES_REACHED");
-    //     _alliances[player][alliance] = block.timestamp;
-    //     _accounts[player].numAlliances  = numAlliances + 1;
-    //     emit AllianceLink(alliance, player, true);
-    // }
-
-    // function allianceJoinTime(address player, IAlliance alliance) external view returns(uint256 timestamp) {
-    //     return _alliances[player][alliance];
-    // }
-
-    // function leaveAlliance(IAlliance alliance) external {
-    //     _leaveAlliance(msg.sender, alliance);
-    // }
-
-    // function ejectPlayerFromAlliance(address player) external {
-    //     _leaveAlliance(player, IAlliance(msg.sender));
-    // }
-
-    // function _leaveAlliance(address player, IAlliance alliance) internal {
-    //     uint256 joinTime = _alliances[player][alliance];
-    //     require(joinTime > 0, "NOT_PART_OF_THE_ALLIANCE");
-    //     _alliances[player][alliance] = 0;
-    //     _accounts[player].numAlliances --;
-    //     emit AllianceLink(alliance, player, false);
-    // }
-
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // STAKING / PRODUCTION CAPTURE
@@ -1114,14 +1067,11 @@ contract OuterSpace is Proxied {
         } else {
             bool taxed = true;
             if (uint160(alliance) > 1) {
-                // uint256 allianceStart = _alliances[sender][IAlliance(alliance)];
-                // taxed = allianceStart == 0 || allianceStart > launchTime; + toPlanet.owner
                 taxed = !allianceRegistry.arePlayersAllies(IAlliance(alliance), sender, toPlanet.owner, block.timestamp);
             } else if (sender == toPlanet.owner) {
                 taxed = false;
             }
             if (taxed) {
-                // quantity = uint32(uint256(quantity) * 10000 / GIFT_TAX_PER_10000);
                 quantity = uint32(uint256(quantity) - (uint256(quantity) * GIFT_TAX_PER_10000) / 10000);
             }
             bytes32 toPlanetData = _planetData(to);
