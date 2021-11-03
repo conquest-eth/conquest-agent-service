@@ -20,6 +20,7 @@
 {:else}
   <div>
     <ul class="m-2">
+      <hr />
       {#each Object.entries($playersQuery.data.alliances) as entry}
         <li>
           <h3 class="text-xl text-yellow-500">
@@ -40,6 +41,7 @@
               </li>
             {/each}
           </ul>
+          <hr />
         </li>
       {/each}
     </ul>

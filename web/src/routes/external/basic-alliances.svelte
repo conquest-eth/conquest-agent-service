@@ -69,7 +69,7 @@
       return;
     }
     if (lastWalletState && lastWalletState.state === 'Ready') {
-      if (step != 'READY') {
+      if (step != 'READY' || (id && !admin)) {
         step = 'LOADING';
         try {
           const contract = new Contract(id, contractsInfos.contracts.BasicAllianceFactory.abi, wallet.provider);
