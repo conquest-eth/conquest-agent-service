@@ -324,17 +324,17 @@
           <div class="w-20">Send Here</div>
         </PanelButton>
         {#if $planetState.numSpaceships > 0}
-          <PanelButton label="Send" class="m-2" on:click={sendFrom}>
+          <!-- <PanelButton label="Send" class="m-2" on:click={sendFrom}>
             <div class="w-20">Send</div>
-          </PanelButton>
+          </PanelButton> -->
         {/if}
       {:else if walletIsOwner}
         <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
           <div class="w-20">Send Here</div>
         </PanelButton>
-        <PanelButton label="Send" class="m-2" on:click={sendFrom}>
+        <!-- <PanelButton label="Send" class="m-2" on:click={sendFrom}>
           <div class="w-20">Send</div>
-        </PanelButton>
+        </PanelButton> -->
         <PanelButton
           label="Exit"
           color="text-yellow-400"
