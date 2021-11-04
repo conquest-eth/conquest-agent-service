@@ -4,7 +4,7 @@ import {account} from '$lib/account/account';
 import {xyToLocation} from 'conquest-eth-common';
 import {spaceInfo} from '$lib/space/spaceInfo';
 import {BaseStoreWithData} from '$lib/utils/stores/base';
-import {now, correctTime, isCorrected} from '$lib/time';
+import {correctTime, isCorrected} from '$lib/time';
 import {TutorialSteps} from '$lib/account/constants';
 import {agentService} from '$lib/account/agentService';
 import {playersQuery} from '$lib/space/playersQuery';
