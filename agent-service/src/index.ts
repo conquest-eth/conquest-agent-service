@@ -130,6 +130,30 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     }
     let resp = await obj.fetch(url.toString(), request);
     return resp;
+  } else if (fnc === 'test') {
+    if (method !== 'GET') {
+      return InvalidMethod();
+    }
+    let resp = await obj.fetch(url.toString(), request);
+    return resp;
+  } else if (fnc === 'direct') {
+    const request = {
+      method: 'eth_chainId',
+      params: [],
+      id: 1,
+      jsonrpc: '2.0',
+    };
+    const response = await fetch(env.ETHEREUM_NODE, {
+      method: 'POST',
+      body: JSON.stringify(request),
+      headers: {
+        'content-type': 'application/json;charset=UTF-8',
+      },
+    });
+    return new Response(JSON.stringify(await response.json()), {
+      headers: {...corsHeaders, 'content-type': 'application/json;charset=UTF-8'},
+      status: 200,
+    });
   }
   return UnknownRequestType();
 }

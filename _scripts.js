@@ -122,6 +122,15 @@ async function performAction(rawArgs) {
     await execute(
       `${env}npm --prefix contracts run export ${network} -- ../web/src/lib/contracts.json,../agent-service/src/contracts.json`
     );
+  } else if (firstArg === 'contracts:metadata') {
+    const {fixedArgs, extra} = parseArgs(args, 1, {});
+    const network = fixedArgs[0];
+    if (!network) {
+      console.error(`need to specify the network as first argument`);
+      return;
+    }
+    const env = getEnv(network);
+    await execute(`${env}npm --prefix contracts run metadata ${network}`);
   } else if (firstArg === 'contracts:seed') {
     const {fixedArgs, extra, options} = parseArgs(args, 1, {waitContracts: 'boolean'});
     const network = fixedArgs[0] || 'localhost';

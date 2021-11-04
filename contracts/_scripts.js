@@ -92,6 +92,9 @@ async function performAction(rawArgs) {
     await execute(
       `hardhat --network ${fixedArgs[0]} export --export ${fixedArgs[1]}`
     );
+  } else if (firstArg === 'metadata') {
+    const {fixedArgs} = parseArgs(args, 2, {});
+    await execute(`hardhat --network ${fixedArgs[0]} export-metadata`);
   } else if (firstArg === 'fork:run') {
     const {fixedArgs, options, extra} = parseArgs(args, 2, {
       deploy: 'boolean',

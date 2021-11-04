@@ -28,6 +28,7 @@
     "contracts:local:dev": "node ./_scripts.js contracts:local:dev",
     "contracts:dev": "node ./_scripts.js contracts:dev",
     "contracts:deploy": "node ./_scripts.js contracts:deploy",
+    "contracts:metadata": "dotenv -- npm --prefix contracts run metadata",
     "seed": "node ./_scripts.js contracts:seed",
     "contracts:execute": "node ./_scripts.js contracts:execute",
     "---------------------- agent-service ----------------------": "deploy agent-service",

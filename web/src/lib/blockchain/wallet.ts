@@ -1,4 +1,4 @@
-import WalletStores from 'web3w';
+import {initWeb3W} from 'web3w';
 import {WalletConnectModuleLoader} from 'web3w-walletconnect-loader';
 import {PortisModuleLoader} from 'web3w-portis-loader';
 import {contractsInfos} from './contractsInfos';
@@ -8,10 +8,7 @@ import {isCorrected, correctTime} from '../time';
 import {base} from '$app/paths';
 import {chainTempo} from '$lib/blockchain/chainTempo';
 
-// weird bug in vite build?
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const walletStores = ((WalletStores as any).default || WalletStores)({
-  // const walletStores = WalletStores({
+const walletStores = initWeb3W({
   chainConfigs: contractsInfos,
   builtin: {autoProbe: true},
   transactions: {

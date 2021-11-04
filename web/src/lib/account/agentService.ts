@@ -40,8 +40,19 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
     fleetSender?: string,
     operator?: string
   ): Promise<{queueID: string}> {
+    const walletAddress = wallet.address;
+    const accountResponse = await fetch(`${AGENT_SERVICE_URL}/account/${walletAddress}`);
+    const {account} = (await accountResponse.json()) as {
+      account?: {
+        balance: string;
+        delegate?: string;
+        nonceMsTimestamp: number;
+        requireTopUp: boolean;
+        minimumBalance: string;
+      };
+    };
     const revealSubmission = {
-      player: wallet.address.toLowerCase(),
+      player: walletAddress.toLowerCase(),
       fleetID,
       secret,
       from,
@@ -51,7 +62,7 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
       potentialAlliances,
       startTime,
       duration,
-      nonceMsTimestamp: Math.floor(Date.now()),
+      nonceMsTimestamp: account.nonceMsTimestamp + 1,
       fleetSender,
       operator,
     };
@@ -62,6 +73,7 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
     }`;
     const queueSignature = await privateWallet.signer.signMessage(queueMessageString);
     const data = {...revealSubmission, signature: queueSignature, delegate: privateWallet.signer.address.toLowerCase()};
+    // console.log(data);
     const response = await fetch(`${AGENT_SERVICE_URL}/queueReveal`, {
       method: 'POST',
       body: JSON.stringify(data),
