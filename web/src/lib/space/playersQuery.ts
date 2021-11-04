@@ -74,7 +74,7 @@ export class SpaceQueryStore implements QueryStore<PlayersState> {
     return this.$players[address];
   }
 
-  public start(): () => void {
+  protected start(): () => void {
     this.stopAccountSubscription = account.subscribe(async ($account) => {
       await this._handleAccountChange($account);
     });
@@ -196,4 +196,3 @@ export class SpaceQueryStore implements QueryStore<PlayersState> {
 }
 
 export const playersQuery = new SpaceQueryStore(SUBGRAPH_ENDPOINT);
-playersQuery.start();
