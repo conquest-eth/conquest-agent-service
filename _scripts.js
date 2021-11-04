@@ -232,6 +232,18 @@ async function performAction(rawArgs) {
     const env = getEnv(network);
     await performAction(['web:build', network]);
     await execute(`${env}npm --prefix web run deploy`);
+  } else if (firstArg === 'deploy:noweb') {
+    //run-s staging:contracts web:prepare common:build staging:web:rebuild staging:web:deploy
+    const {fixedArgs, extra} = parseArgs(args, 1, {});
+    const network = fixedArgs[0] || process.env.NETWORK_NAME;
+    if (!network) {
+      console.error(`need to specify the network as first argument (or via env: NETWORK_NAME)`);
+      return;
+    }
+    await performAction(['contracts:deploy', network]);
+    await performAction(['subgraph:deploy', network]);
+    await performAction(['agent-service:deploy', network]);
+    await performAction(['account-service:deploy', network]);
   } else if (firstArg === 'deploy') {
     //run-s staging:contracts web:prepare common:build staging:web:rebuild staging:web:deploy
     const {fixedArgs, extra} = parseArgs(args, 1, {});
