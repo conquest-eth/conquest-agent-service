@@ -37,13 +37,15 @@
   const handleClick = () => {
     selectedEvent = event;
     isShow = true;
+    console.log(true)
   };
 </script>
 
 <div
   id={event.event.fleet.id}
   on:click={handleClick}
-  style={`z-index: 5; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
+
+  style={`z-index: 52; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
     blockieScale * 3
   }); width: 48px; height: 48px;`}
 >

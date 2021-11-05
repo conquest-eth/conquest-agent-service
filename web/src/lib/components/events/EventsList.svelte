@@ -2,7 +2,7 @@
   import {myevents} from '$lib/space/myevents';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import type {MyEvent} from '$lib/space/myevents';
-  import {camera} from '$lib/map/camera';
+  import {fleets} from '$lib/space/fleets';
   import EventInfo from '$lib/components/events/EventInfo.svelte';
   import {clickOutside} from '$lib/utils/clickOutside';
   import {errors} from '$lib/space/errors';
@@ -22,6 +22,11 @@
   function onErrorSelected(error: SpaceError) {
     selectedError = error;
     isShowInfo = true;
+  }
+
+  function findFleetById(fleetId) {
+/*     let fleet = $fleets.find(f => f. === fleetId)
+    console.log(fleet) */
   }
 </script>
 
@@ -46,18 +51,23 @@
       {#if $myevents.length || $errors.length}
         <ul class="overflow-auto max-h-32 w-48" style="cursor: pointer;">
           {#each $errors as error}
-            <li style="width: 100%" class="text-red-300" on:click={() => onErrorSelected(error)}>
-              An error ocured on planet {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name}
+            <li style="width: 100%" class="text-red-300 my-3" on:click={() => onErrorSelected(error)}>
+            * An error ocured on planet {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name}
             </li>
           {/each}
           {#each $myevents as event}
             {#if event.event.won}
-              <li class="text-yellow-300" on:click={() => onEventSelect(event)}>
-                You captured {spaceInfo.getPlanetInfoViaId(event.event.planet.id).stats.name}
+              <li class="text-yellow-300 my-3" on:click={() => onEventSelect(event)}>
+               * You captured {spaceInfo.getPlanetInfoViaId(event.event.planet.id).stats.name}
               </li>
-            {:else}
-              <li class="text-yellow-300" on:click={() => onEventSelect(event)}>
-                You didn't capture {spaceInfo.getPlanetInfoViaId(event.event.planet.id).stats.name}
+              {:else if event.event.fleet}
+              <li class="text-yellow-300 my-3" on:click={() => onEventSelect(event)}>
+                * You received {event.event.quantity} spaceships from {spaceInfo.getPlanetInfoViaId(event.event.planet.id).stats.name}
+               </li>
+            {:else if !event.event.won}
+              <li class="text-yellow-300 my-3" on:click={() => onEventSelect(event)}>
+                {event.event.fleet}
+               * You didn't capture {spaceInfo.getPlanetInfoViaId(event.event.planet.id).stats.name}
               </li>
             {/if}
           {/each}
@@ -68,3 +78,27 @@
     </div>
   {/if}
 </div>
+
+<style>
+  /* width */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.8);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #539ff0;
+  border-radius: 100vh;
+  border: 3px solid #edf2f7;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #4690f0;
+}
+</style>

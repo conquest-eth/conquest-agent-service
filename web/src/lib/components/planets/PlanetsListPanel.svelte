@@ -24,10 +24,10 @@
       class="top-0 p-3 text-center absolute bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 mt-16 text-sm"
     >
       {#if $myplanetInfos.length}
-        <ul class="overflow-auto max-h-32" style="cursor: pointer;">
+        <ul class="overflow-auto max-h-32 px-3" style="cursor: pointer;">
           {#each $myplanetInfos as planet}
-            <li class="text-yellow-300" on:click={() => onPlanetSelect(planet)}>
-              {planet.stats.name}
+            <li class="text-yellow-300 my-4" on:click={() => onPlanetSelect(planet)}>
+             * {planet.stats.name}
             </li>
           {/each}
         </ul>
@@ -37,3 +37,27 @@
     </div>
   {/if}
 </div>
+
+<style>
+  /* width */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.8);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #539ff0;
+  border-radius: 100vh;
+  border: 3px solid #edf2f7;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #4690f0;
+}
+</style>
