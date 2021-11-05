@@ -107,8 +107,9 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
     const gasPrice = maxGasPriceToUse.gte(maxPriorityFeeToUSe) ? maxGasPriceToUse : maxPriorityFeeToUSe; //gwei.mul(500); //await wallet.provider.getGasPrice();
 
     const ethLeft = ethBalance.sub(estimate.mul(gasPrice));
+    console.log({ethLeft: ethLeft.toString()});
     const tx = await playToken_l2.transferAlongWithETH(wallet.address, tokenBalance, {
-      value: ethLeft,
+      value: ethLeft.toString(),
       nonce,
       maxFeePerGas: gasPrice, // TODO won't sweep it all
       maxPriorityFeePerGas: maxPriorityFeeToUSe,
