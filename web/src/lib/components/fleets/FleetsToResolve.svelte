@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {fleets} from '$lib/space/fleets';
+  import {fleetList} from '$lib/space/fleets';
 
   import resolveFlow from '$lib/flows/resolve';
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import {time} from '$lib/time';
   import {timeToText} from '$lib/utils';
-  import type {Fleet} from 'conquest-eth-common';
+  import type {Fleet} from '$lib/space/fleets';
 
   function resolve(fleet: Fleet) {
     resolveFlow.resolve(fleet);
   }
-  $: fleetsToResolve = $fleets.filter((fleet) => fleet.state === 'READY_TO_RESOLVE');
+  $: fleetsToResolve = $fleetList.fleets.filter((fleet) => fleet.state === 'READY_TO_RESOLVE');
 
   // $: console.log(fleetsToResolve);
 </script>

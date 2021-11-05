@@ -29,12 +29,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let exitDuration = hours(3 * 24);
   const acquireNumSpaceships = 100000;
   let productionSpeedUp = 1;
+  let frontrunningDelay = 30 * 60;
 
   // use a command to increase time in 1337
   if (localTesting) {
     timePerDistance /= 180;
     exitDuration /= 180;
     productionSpeedUp = 1; // give more time to attack
+    frontrunningDelay /= 180;
   }
 
   if (network.name === 'quick') {
@@ -44,12 +46,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     timePerDistance /= 40;
     exitDuration /= 40;
     productionSpeedUp = 40;
+    frontrunningDelay /= 40;
   }
 
   // TODO remove when updating staging to a new contract
   if (network.name === 'staging') {
     genesisHash =
       '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
+  }
+
+  if (network.name === 'testing') {
+    genesisHash =
+      '0x9e9e23df9a65ca95f7a3b613673c89db774d0cdaaa1850160a59406c0220d7f6';
   }
 
   await deploy('OuterSpace', {
@@ -62,6 +70,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       acquireNumSpaceships,
       productionSpeedUp,
       chainGenesisHash,
+      frontrunningDelay,
     },
     args: [
       playToken_l2.address,
@@ -72,6 +81,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       exitDuration,
       acquireNumSpaceships,
       productionSpeedUp,
+      frontrunningDelay,
     ],
     proxy: hre.network.name !== 'mainnet' ? 'postUpgrade' : undefined,
     log: true,

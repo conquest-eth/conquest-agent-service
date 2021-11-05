@@ -119,6 +119,7 @@ importers:
       '@typechain/ethers-v5': ^7.1.2
       '@typechain/hardhat': ^2.3.0
       '@types/chai': ^4.2.22
+      '@types/fs-extra': ^9.0.13
       '@types/mocha': ^9.0.0
       '@types/node': ^16.10.2
       '@types/qrcode': 1.4.1
@@ -167,6 +168,7 @@ importers:
       '@typechain/ethers-v5': 7.1.2_9aa7c2033e89f5e4c7f670ad9dee4d07
       '@typechain/hardhat': 2.3.0_hardhat@2.6.4+typechain@5.1.2
       '@types/chai': 4.2.22
+      '@types/fs-extra': 9.0.13
       '@types/mocha': 9.0.0
       '@types/node': 16.10.2
       '@types/qrcode': 1.4.1
@@ -277,7 +279,7 @@ importers:
       tslib: ^2.3.1
       typescript: ^4.4.2
       vite: ^2.5.1
-      web3w: ^0.3.2-beta.3
+      web3w: ^0.3.2-beta.11
       web3w-portis-loader: ^0.3.1
       web3w-walletconnect-loader: ^0.3.1
       wonka: ^4.0.15
@@ -300,7 +302,7 @@ importers:
       named-logs: 0.1.0
       pretty-ms: github.com/wighawag/pretty-ms/320ba46c464052ebbe605e48ad05df9e9801e956
       sveltejs-tippy: 3.0.0
-      web3w: 0.3.2-beta.3_30489dd9f56dae6b78a8b20ca8e88cc5
+      web3w: 0.3.2-beta.11_30489dd9f56dae6b78a8b20ca8e88cc5
       web3w-portis-loader: 0.3.1
       web3w-walletconnect-loader: 0.3.1
       wonka: 4.0.15
@@ -2026,6 +2028,12 @@ packages:
       '@types/node': 15.6.1
     dev: true
 
+  /@types/fs-extra/9.0.13:
+    resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}
+    dependencies:
+      '@types/node': 16.11.6
+    dev: true
+
   /@types/glob/7.1.4:
     resolution: {integrity: sha512-w+LsMxKyYQm347Otw+IfBXOv9UWVjpHpCDdbBMt8Kz/xbvCYNjP+0qPh91Km3iKfSRLBB0P7fAMf0KHrPu+MyA==}
     dependencies:
@@ -2111,6 +2119,10 @@ packages:
 
   /@types/node/16.10.2:
     resolution: {integrity: sha512-zCclL4/rx+W5SQTzFs9wyvvyCwoK9QtBpratqz2IYJ3O8Umrn0m3nsTv0wQBk9sRGpvUe9CwPDrQFB10f1FIjQ==}
+    dev: true
+
+  /@types/node/16.11.6:
+    resolution: {integrity: sha512-ua7PgUoeQFjmWPcoo9khiPum3Pd60k4/2ZGXt18sm2Slk0W0xZTqt5Y0Ny1NyBiN1EVQ/+FaF9NcY4Qe6rwk5w==}
     dev: true
 
   /@types/node/16.7.6:
@@ -15104,8 +15116,8 @@ packages:
       named-logs: 0.1.0
     dev: false
 
-  /web3w/0.3.2-beta.3_30489dd9f56dae6b78a8b20ca8e88cc5:
-    resolution: {integrity: sha512-DM27e+qfpveUzLtXl1me/2S169dtHZBwA+tCp7MsPHLANLw559Z2/+lqQYlLuAJTmILodQWCAeWK6BVigmflWQ==}
+  /web3w/0.3.2-beta.11_30489dd9f56dae6b78a8b20ca8e88cc5:
+    resolution: {integrity: sha512-5lZFGsNrGOjcD8NQqU223xGzQ0Uvs0Oge+tl29WKEldWYg1Dz313X3fFXcBhwhp+L8apzfp+r7mjq/UnuL/nUQ==}
     peerDependencies:
       '@ethersproject/abi': ^5.0.0
       '@ethersproject/bignumber': ^5.0.0

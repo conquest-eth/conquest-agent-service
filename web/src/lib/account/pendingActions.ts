@@ -143,9 +143,11 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         continue;
       }
       try {
+        // console.log(`checking ${item.id}...`);
         await this._checkAction(ownerAddress, item, $chainTempoInfo.lastBlockNumber);
 
         if (this.ownerAddress !== ownerAddress) {
+          console.log(`cancel checks as account changed`);
           this.checkingInProgress = false;
           return;
         }
@@ -160,6 +162,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         console.error(e);
       }
       if (this.ownerAddress !== ownerAddress) {
+        console.log(`cancel checks as account changed`);
         this.checkingInProgress = false;
         return;
       }
@@ -329,7 +332,10 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     }
 
     if (changes) {
+      // console.log(`changes found for ${checkedAction.id}`);
       this._notify();
+    } else {
+      // console.log(`no change for ${checkedAction.id}`);
     }
   }
 

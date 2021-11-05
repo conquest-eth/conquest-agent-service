@@ -16,6 +16,7 @@ export type SyncedPendingActions = SyncedPendingAction[];
 
 export type SpaceQueryWithPendingState = {
   pendingActions: SyncedPendingActions;
+  rawPendingActions: CheckedPendingActions;
   queryState: QueryState<SpaceState>;
 };
 
@@ -24,7 +25,6 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
   private store: Writable<SpaceQueryWithPendingState>;
 
   private lastQueryTime: number;
-  private rawPendingActions: CheckedPendingActions = [];
   private includedTx: {[txHash: string]: boolean} = {};
   private queryState: QueryState<SpaceState> = {step: 'IDLE'};
 
@@ -32,7 +32,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
   private stopPendingActionsSubscription: (() => void) | undefined = undefined;
 
   constructor() {
-    this.state = {pendingActions: [], queryState: this.queryState};
+    this.state = {pendingActions: [], rawPendingActions: [], queryState: this.queryState};
     this.store = writable(this.state, this._start.bind(this));
   }
   subscribe(
@@ -44,7 +44,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
 
   private _handlePendingActions(pendingActions: CheckedPendingActions): void {
     console.log('checked pending actions updated');
-    this.rawPendingActions = pendingActions;
+    this.state.rawPendingActions = pendingActions;
     // this._updateAndNotify();
     // TODO consider loading
     // show pendingActions as loading, since we do not want to show them until we queries the graph and check if these have already been included
@@ -66,7 +66,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
     for (const pendingAction of this.state.pendingActions) {
       dict[pendingAction.id] = true;
     }
-    for (const pendingAction of this.rawPendingActions) {
+    for (const pendingAction of this.state.rawPendingActions) {
       if (dict[pendingAction.id]) {
         continue;
       }
@@ -75,7 +75,9 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
         this.state.pendingActions.push({...pendingAction, counted: !!pendingAction.action.external});
       } else {
         if (pendingAction.action.timestamp < this.lastQueryTime) {
-          console.log(`pendingAction was submitted before lastQueryTime, ignore? ${pendingAction.id}`);
+          console.log(`WARNING pendingAction was submitted before lastQueryTime, ignore? ${pendingAction.id}`);
+          // TODO decide whether it is ok: happenned often as tx recording use latestBlock timestamp while lastQueryTime use now()
+          this.state.pendingActions.push({...pendingAction, counted: !!pendingAction.action.external});
         }
       }
     }
@@ -83,7 +85,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
   }
 
   private _updateAndNotify() {
-    this.state.pendingActions = this.rawPendingActions.map((v) => {
+    this.state.pendingActions = this.state.rawPendingActions.map((v) => {
       return {...v, counted: !!v.action.external || this.includedTx[v.id]};
     });
     this._notify();
@@ -96,7 +98,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
       return;
     }
     const txsToCheck: string[] = [];
-    for (const pendingAction of this.rawPendingActions) {
+    for (const pendingAction of this.state.rawPendingActions) {
       if (pendingAction.action.external) {
         continue;
       }
@@ -138,7 +140,11 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
       this.includedTx[tx] = true;
     }
 
-    this.state = {queryState: space, pendingActions: this.state.pendingActions};
+    this.state = {
+      queryState: space,
+      pendingActions: this.state.pendingActions,
+      rawPendingActions: this.state.rawPendingActions,
+    };
     this._updateAndNotify();
   }
 

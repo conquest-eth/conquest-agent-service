@@ -8,81 +8,89 @@ import type {Writable} from 'svelte/store';
 import {writable} from 'svelte/store';
 import type {AccountState} from '$lib/account/account';
 import {account} from '$lib/account/account';
+import {now} from '$lib/time';
+import {contractsInfos} from '$lib/blockchain/contractsInfos';
+import {BigNumber} from '@ethersproject/bignumber';
 
-export type Player = {
-  address: string;
-  alliances: {address: string; ally: boolean}[];
+export type PlanetExitEvent = {
+  exitTime: string;
+  planet: {id: string};
+  stake: string;
 };
 
-export type Alliance = {
-  address: string;
-  members: Player[];
+export type ExitsQueryResult = {
+  planetExitEvents: PlanetExitEvent[];
+  owner: {
+    playTokenBalance: string;
+    playTokenToWithdraw: string;
+  };
 };
 
-export type PlayersMap = {[address: string]: Player};
-
-export type AlliancesMap = {[address: string]: Alliance};
-
-export type PlayersQueryResult = {
-  owners: {id: string; alliances: {alliance: {id: string}}[]}[];
-  chain: {blockHash: string; blockNumber: string};
-};
-
-export type PlayersState = {
+export type ExitsState = {
   loading: boolean;
-  players: PlayersMap;
-  alliances: AlliancesMap;
-  chain: {blockHash: string; blockNumber: string};
+  exits: PlanetExitEvent[];
+  balanceToWithdraw: BigNumber;
 };
 
-export class SpaceQueryStore implements QueryStore<PlayersState> {
-  private queryStore: QueryStoreWithRuntimeVariables<PlayersQueryResult>;
-  private store: Writable<QueryState<PlayersState>>;
-  private $players: PlayersMap = {};
-  private $alliances: AlliancesMap = {};
+export class ExitQueryStore implements QueryStore<ExitsState> {
+  private queryStore: QueryStoreWithRuntimeVariables<ExitsQueryResult>;
+  private store: Writable<QueryState<ExitsState>>;
   private unsubscribeFromQuery: () => void | undefined;
   private stopAccountSubscription: (() => void) | undefined = undefined;
   private _resolveFetch: () => void | undefined;
+  private _timeout: NodeJS.Timeout | undefined;
 
   constructor(endpoint: EndPoint) {
     this.queryStore = new HookedQueryStore( // TODO full list
       endpoint,
-      `query($first: Int! $lastId: ID!) {
-  owners(first: $first where: {id_gt: $lastId }) {
-    id
-    alliances {
-      alliance {
-        id
-      }
-    }
+      `query($first: Int! $lastId: ID! $time: BigInt! $owner: String) {
+  planetExitEvents(first: $first where: {interupted: false success: false id_gt: $lastId exitTime_lt: $time owner: $owner}) {
+    exitTime
+    planet {id}
+    stake
   }
-  chain(id: "Chain") {
-    blockHash
-    blockNumber
+  owner(id: $owner) {
+    playTokenBalance
+    playTokenToWithdraw
   }
 }`,
       chainTempo, // replayTempo, //
       {
-        list: {path: 'owners'},
+        list: {path: 'planetExitEvents'},
       }
     );
 
-    this.store = writable({step: 'IDLE'}, this.start.bind(this));
+    this.store = writable({step: 'IDLE', exits: [], balaceToWithdraw: BigNumber.from(0)}, this.start.bind(this));
   }
 
-  getPlayer(address: string): Player | undefined {
-    return this.$players[address];
+  getTime(): number {
+    return now() - contractsInfos.contracts.OuterSpace.linkedData.exitDuration;
   }
 
   protected start(): () => void {
+    this._timeout;
+    this.queryStore.runtimeVariables.time = '' + this.getTime();
+    // console.log(this.queryStore.runtimeVariables);
+    this.queryStore.runtimeVariables.owner = '0x0000000000000000000000000000000000000000';
+    this._timeout = setInterval(this.onTime.bind(this), 1000);
     this.stopAccountSubscription = account.subscribe(async ($account) => {
       await this._handleAccountChange($account);
     });
     this.unsubscribeFromQuery = this.queryStore.subscribe(this.update.bind(this));
+
     return this.stop.bind(this);
   }
 
+  onTime(): void {
+    this.queryStore.runtimeVariables.time = '' + this.getTime();
+    console.log(this.queryStore.runtimeVariables);
+  }
+
   protected stop(): void {
+    if (this._timeout) {
+      clearInterval(this._timeout);
+      this._timeout = undefined;
+    }
     if (this.stopAccountSubscription) {
       this.stopAccountSubscription();
       this.stopAccountSubscription = undefined;
@@ -96,7 +104,26 @@ export class SpaceQueryStore implements QueryStore<PlayersState> {
   triggerUpdate(): Promise<void> {
     return new Promise((resolve, reject) => {
       this._resolveFetch = resolve;
-      this.queryStore.fetch({blockNumber: chainTempo.chainInfo.lastBlockNumber}).catch((e) => reject(e));
+      this._fetch().catch((e) => reject(e));
+    });
+  }
+
+  private _fetch(): Promise<void> {
+    if (
+      !this.queryStore.runtimeVariables.owner ||
+      this.queryStore.runtimeVariables.owner === '0x0000000000000000000000000000000000000000'
+    ) {
+      this.store.update((v) => {
+        v.data = v.data || {loading: false, exits: [], balanceToWithdraw: BigNumber.from(0)};
+        v.data.loading = false;
+        v.data.exits = [];
+        v.data.balanceToWithdraw = BigNumber.from(0);
+        return v;
+      });
+      return;
+    }
+    return this.queryStore.fetch({
+      blockNumber: chainTempo.chainInfo.lastBlockNumber,
     });
   }
 
@@ -104,13 +131,16 @@ export class SpaceQueryStore implements QueryStore<PlayersState> {
     const accountAddress = $account.ownerAddress?.toLowerCase();
     if (this.queryStore.runtimeVariables.owner !== accountAddress) {
       this.queryStore.runtimeVariables.owner = accountAddress;
+      if (!this.queryStore.runtimeVariables.owner) {
+        this.queryStore.runtimeVariables.owner = '0x0000000000000000000000000000000000000000';
+      }
       this.store.update((v) => {
         if (v.data) {
           v.data.loading = true;
         }
         return v;
       });
-      this.queryStore.fetch({blockNumber: chainTempo.chainInfo.lastBlockNumber});
+      this._fetch();
     }
     // TODO
     // delete other account data in sync
@@ -119,55 +149,19 @@ export class SpaceQueryStore implements QueryStore<PlayersState> {
     // then a global loading flag could be set based on whether there is at least one planet loading, or account changed
   }
 
-  _transform(data?: PlayersQueryResult): PlayersState | undefined {
+  _transform(data?: ExitsQueryResult): ExitsState | undefined {
     if (!data) {
       return undefined;
     }
 
-    const playerAlliances = {};
-    if (this.queryStore.runtimeVariables.owner) {
-      const playerAddress = this.queryStore.runtimeVariables.owner.toLowerCase();
-      const playerObject = data.owners.find((v) => v.id === playerAddress);
-      if (playerObject) {
-        for (const alliance of playerObject.alliances) {
-          playerAlliances[alliance.alliance.id] = true;
-        }
-      }
-    }
-
-    this.$players = {};
-    this.$alliances = {};
-    for (const owner of data.owners) {
-      const player = (this.$players[owner.id] = {
-        address: owner.id,
-        alliances: owner.alliances.map((v) => {
-          return {address: v.alliance.id, ally: playerAlliances[v.alliance.id]};
-        }),
-      });
-      for (const alliance of owner.alliances) {
-        let existingAlliance = this.$alliances[alliance.alliance.id];
-        if (!existingAlliance) {
-          existingAlliance = this.$alliances[alliance.alliance.id] = {
-            address: alliance.alliance.id,
-            members: [],
-          };
-        }
-        existingAlliance.members.push(player);
-      }
-    }
-
     return {
       loading: false,
-      players: this.$players,
-      chain: {
-        blockHash: data.chain.blockHash,
-        blockNumber: data.chain.blockNumber,
-      },
-      alliances: this.$alliances,
+      exits: data.planetExitEvents,
+      balanceToWithdraw: data.owner ? BigNumber.from(data.owner.playTokenToWithdraw) : BigNumber.from(0),
     };
   }
 
-  private async update($query: QueryState<PlayersQueryResult>): Promise<void> {
+  private async update($query: QueryState<ExitsQueryResult>): Promise<void> {
     const transformed = {
       step: $query.step,
       error: $query.error,
@@ -188,11 +182,11 @@ export class SpaceQueryStore implements QueryStore<PlayersState> {
   }
 
   subscribe(
-    run: Subscriber<QueryState<PlayersState>>,
-    invalidate?: Invalidator<QueryState<PlayersState>> | undefined
+    run: Subscriber<QueryState<ExitsState>>,
+    invalidate?: Invalidator<QueryState<ExitsState>> | undefined
   ): Unsubscriber {
     return this.store.subscribe(run, invalidate);
   }
 }
 
-export const playersQuery = new SpaceQueryStore(SUBGRAPH_ENDPOINT);
+export const exitsQuery = new ExitQueryStore(SUBGRAPH_ENDPOINT);

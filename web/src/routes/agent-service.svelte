@@ -14,7 +14,7 @@
   import agentService_topup from '$lib/flows/agentService_topup';
   import {BigNumber} from '@ethersproject/bignumber';
   import {account} from '$lib/account/account';
-  import {fleets} from '$lib/space/fleets';
+  import {fleetList} from '$lib/space/fleets';
 </script>
 
 <div class="w-full h-full bg-black">
@@ -136,7 +136,7 @@
               {/if} -->
 
           <ul class="list-disc text-yellow-600">
-            {#each $fleets as fleet (fleet.txHash)}
+            {#each $fleetList.fleets as fleet (fleet.txHash)}
               <li><PendingFleetElement {fleet} /></li>
             {:else}
               No Fleets
@@ -157,7 +157,7 @@
   import PendingFleetElement from '$lib/components/fleets/PendingFleetElement.svelte';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import FleetElement from '$lib/screens/map/FleetElement.svelte';
-  import {fleets} from '$lib/space/fleets';
+  import {fleetList} from '$lib/space/fleets';
   import {onMount} from 'svelte';
 
   onMount(() => {
@@ -169,9 +169,9 @@
   <div class="w-full h-full bg-black text-white">
     <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
 
-    {$fleets.length}
+    {$fleetList.fleets.length}
 
-    {#if $fleets}
+    {#if $fleetList.fleets}
       {#each $fleets as fleet}
         {#if fleet.state !== 'WAITING_ACKNOWLEDGMENT'}
           {fleet.txHash}

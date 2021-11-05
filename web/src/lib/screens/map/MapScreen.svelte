@@ -33,6 +33,7 @@
   import myprofile from '$lib/flows/myprofile';
   import FirstTimeProfile from '$lib/flows/FirstTimeProfile.svelte';
   import {privateWallet} from '$lib/account/privateWallet';
+  import {fleetList} from '$lib/space/fleets';
 
   // import Search from '$lib/components/utils/Search.svelte';
 
@@ -43,7 +44,7 @@
 
 <Map />
 
-{#if $spaceQueryWithPendingActions.queryState.data?.loading}
+{#if $spaceQueryWithPendingActions.queryState.data?.loading || $fleetList.step === 'LOADING'}
   <div class="w-full flex items-center justify-center fixed top-0 pointer-events-none" style="z-index: 5;">
     <p class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-blue-500 p-1">Loading</p>
   </div>

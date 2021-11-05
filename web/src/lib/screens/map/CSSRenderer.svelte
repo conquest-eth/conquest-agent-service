@@ -4,7 +4,7 @@
   import {camera} from '$lib/map/camera';
   import spaceBackground from '../../../assets/Red3.png';
   import {base} from '$app/paths';
-  import {fleets} from '$lib/space/fleets';
+  import {fleetList} from '$lib/space/fleets';
   import FleetElement from './FleetElement.svelte';
   import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
   import {myevents} from '$lib/space/myevents';
@@ -76,8 +76,8 @@ width:100%; height: 100%;
       {/each}
     {/if}
 
-    {#if $fleets}
-      {#each $fleets as fleet}
+    {#if $fleetList.fleets}
+      {#each $fleetList.fleets as fleet}
         {#if fleet.state !== 'WAITING_ACKNOWLEDGMENT'}
           <FleetElement {fleet} />
         {/if}

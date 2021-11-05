@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {fleets} from '$lib/space/fleets';
+  import {fleetList} from '$lib/space/fleets';
   import type {Fleet} from '$lib/space/fleets';
   import {clickOutside} from '$lib/utils/clickOutside';
   import {camera} from '$lib/map/camera';
@@ -33,7 +33,7 @@
     <div
       class="top-0 text-center absolute bg-gray-900 bg-opacity-80 text-cyan-300 border-2 p-3  border-cyan-300 mt-16 text-sm"
     >
-      {#if $fleets.length}
+       {#if $fleets.length}
         <ul class="overflow-auto max-h-32 px-3 " style="cursor: pointer;">
           {#each $fleets as fleet}
             <li style="display: block" class="text-yellow-300 my-3" on:click={() => onFleetSelect(fleet)}>

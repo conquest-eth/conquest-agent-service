@@ -16,6 +16,25 @@ import {
 } from './errors';
 import {xyToLocation, createResponse} from './utils';
 
+// const oldFetch = globalThis.fetch;
+
+// function wait(delay) {
+//   return new Promise((resolve) => setTimeout(resolve, delay));
+// }
+
+// function fetchRetry(url, delay, tries, fetchOptions = {}) {
+//   function onError(err) {
+//     let triesLeft = tries - 1;
+//     if (!triesLeft) {
+//       throw err;
+//     }
+//     return wait(delay).then(() => fetchRetry(url, delay, triesLeft, fetchOptions));
+//   }
+//   return oldFetch(url, fetchOptions).catch(onError);
+// }
+
+// globalThis.fetch = (url, fetchOptions) => fetchRetry(url, 500, 3, fetchOptions);
+
 const {verifyMessage} = utils;
 
 let defaultFinality = 12;
@@ -533,6 +552,33 @@ export class RevealQueue extends DO {
       };
     }
     return createResponse({queue});
+  }
+
+  // async test(path: string[]): Promise<Response> {
+  //   const provider = new ethers.providers.JsonRpcProvider(this.env.ETHEREUM_NODE);
+  //   const wallet = new Wallet(this.env.PRIVATE_KEY, provider);
+  //   const outerspaceContract = new Contract(contracts.OuterSpace.address, contracts.OuterSpace.abi, wallet);
+
+  //   // const test = await outerspaceContract.balanceToWithdraw('0x0000000000000000000000000000000000000000');
+
+  //   return createResponse({test: 'no', node: this.env.ETHEREUM_NODE});
+  // }
+
+  async test(path: string[]): Promise<Response> {
+    const request = {
+      method: 'eth_chainId',
+      params: [],
+      id: 1,
+      jsonrpc: '2.0',
+    };
+    const response = await fetch(this.env.ETHEREUM_NODE, {
+      method: 'POST',
+      body: JSON.stringify(request),
+      headers: {
+        'content-type': 'application/json;charset=UTF-8',
+      },
+    });
+    return createResponse({response: await response.json()});
   }
 
   async syncAccountBalances(path: string[]): Promise<Response> {
