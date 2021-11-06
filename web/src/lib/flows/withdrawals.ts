@@ -1,111 +1,57 @@
-// TODO redo
-// import {BigNumber} from '@ethersproject/bignumber';
-// import {locationToXY} from 'conquest-eth-common';
-// import {spaceInfo} from '$lib/space/spaceInfo';
-// import {BaseStore} from '$lib/utils/stores/base';
-// import {wallet} from '../blockchain/wallet';
-// import {now} from '../time';
-// import {finality, highFrequencyFetch} from '$lib/config';
+import {BigNumber} from '@ethersproject/bignumber';
+import {AutoStartBaseStore} from '$lib/utils/stores/base';
+import {exitsQuery} from '$lib/space/exitsQuery';
+import type {PlanetExitEvent} from '$lib/space/exitsQuery';
+import type {ExitsState} from '$lib/space/exitsQuery';
+import type {QueryState} from '$lib/utils/stores/graphql';
+import {wallet} from '$lib/blockchain/wallet';
 
-// type Withdrawals = {
-//   state: 'Idle' | 'Loading' | 'Ready';
-//   balance: BigNumber;
-// };
+type Withdrawals = {
+  state: 'Idle' | 'Loading' | 'Ready';
+  balance: BigNumber;
+};
 
-// class WithdrawalsStore extends BaseStore<Withdrawals> {
-//   private timeout: NodeJS.Timeout | undefined;
-//   constructor() {
-//     super({state: 'Idle', balance: BigNumber.from(0)});
-//   }
+class WithdrawalsStore extends AutoStartBaseStore<Withdrawals> {
+  private timeout: NodeJS.Timeout | undefined;
+  private exits: PlanetExitEvent[] = [];
+  constructor() {
+    super({state: 'Idle', balance: BigNumber.from(0)});
+  }
 
-//   loadWithrawableBalance(): void {
-//     this.setPartial({state: 'Loading'});
-//     this.timeout = setTimeout(this.check.bind(this), 300);
-//   }
+  _onStart(): (() => void) | undefined {
+    if (this.$store.state === 'Idle') {
+      this.setPartial({state: 'Loading'});
+    }
+    return exitsQuery.subscribe(this.onExitsQuery.bind(this));
+  }
 
-//   getExits(): {location: string; stake: BigNumber}[] {
-//     // TODO
-//     // return privateAccount.getSuccessfulExits().map((v) => {
-//     //   const xy = locationToXY(v);
-//     //   const planetInfo = spaceInfo.getPlanetInfo(xy.x, xy.y);
-//     //   return {
-//     //     location: v,
-//     //     stake: BigNumber.from(planetInfo?.stats.stake).mul('1000000000000000000'),
-//     //   };
-//     // });
-//   }
+  onExitsQuery(exitsState: QueryState<ExitsState>) {
+    if (exitsState.data) {
+      this.exits = exitsState.data.exits;
+      let balance = exitsState.data.balanceToWithdraw;
+      for (const exitEvent of exitsState.data.exits) {
+        balance = balance.add(exitEvent.stake);
+      }
+      this.setPartial({balance, state: 'Ready'});
+    }
+  }
 
-//   async check() {
-//     if (wallet.provider && wallet.address && wallet.contracts) {
-//       const latestBlock = await wallet.provider.getBlock('latest');
-//       const latestBlockNumber = latestBlock.number;
-//       const withdrawal = privateAccount.getWithdrawalTx();
-//       if (withdrawal) {
-//         const receipt = await wallet.provider.getTransactionReceipt(withdrawal.txHash);
-//         if (receipt) {
-//           if (receipt.status !== undefined && receipt.status === 0) {
-//             // show error
-//             this.timeout = setTimeout(this.check.bind(this), highFrequencyFetch * 1000);
-//             return;
-//           } else {
-//             privateAccount.deleteWithdrawalTx(); // optimistic
-//           }
-//         } else {
-//           const finalNonce = await wallet.provider.getTransactionCount(wallet.address, latestBlockNumber - finality);
-//           if (finalNonce > withdrawal.nonce) {
-//             // TODO check for failure ? or success through contract call ?
-//             privateAccount.deleteWithdrawalTx();
-//           }
-//         }
-//       }
+  async withdraw() {
+    if (wallet.address && wallet.contracts) {
+      const locations = this.exits.map((v) => v.planet.id);
+      const tx = await wallet.contracts.OuterSpace.fetchAndWithdrawFor(wallet.address, locations);
+      // account.recordWithdrawal(tx.hash, tx.nonce);
+    } else {
+      throw new Error(` not wallet or contracts`);
+    }
+  }
 
-//       // get withdrawal // wait for privateAccount to be ready
-//       let balanceToWithdraw = await wallet.contracts.OuterSpace.callStatic.balanceToWithdraw(wallet.address);
-//       const exits = this.getExits();
-//       const locations = exits.map((v) => v.location);
-//       const planetsData = await wallet.contracts.OuterSpace.callStatic.getPlanetStates(locations);
-//       const planets = planetsData.planetStates;
-//       const exitsToDelete = [];
-//       const exitsToConsider = [];
-//       for (let i = 0; i < exits.length; i++) {
-//         const planet = planets[i];
-//         const exit = exits[i];
-//         if (planet.owner.toLowerCase() !== wallet.address.toLowerCase() || planet.exitTime === 0) {
-//           exitsToDelete.push(exit.location);
-//         } else if (now() > planet.exitTime + spaceInfo.exitDuration) {
-//           exitsToConsider.push(exit);
-//         }
-//       }
+  stop() {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+      this.timeout = undefined;
+    }
+  }
+}
 
-//       privateAccount.deleteExits(exitsToDelete);
-
-//       for (const exit of exitsToConsider) {
-//         balanceToWithdraw = balanceToWithdraw.add(exit.stake);
-//       }
-
-//       this.setPartial({state: 'Ready', balance: balanceToWithdraw});
-//     } else {
-//       this.setPartial({state: 'Loading', balance: BigNumber.from(0)});
-//     }
-//     this.timeout = setTimeout(this.check.bind(this), highFrequencyFetch * 1000);
-//   }
-
-//   async withdraw() {
-//     if (wallet.address && wallet.contracts) {
-//       const locations = this.getExits().map((v) => v.location);
-//       const tx = await wallet.contracts.OuterSpace.fetchAndWithdrawFor(wallet.address, locations);
-//       privateAccount.recordWithdrawal(tx.hash, tx.nonce);
-//     } else {
-//       throw new Error(` not wallet or contracts`);
-//     }
-//   }
-
-//   stop() {
-//     if (this.timeout) {
-//       clearTimeout(this.timeout);
-//       this.timeout = undefined;
-//     }
-//   }
-// }
-
-// export const withdrawals = new WithdrawalsStore();
+export const withdrawals = new WithdrawalsStore();

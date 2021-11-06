@@ -45,14 +45,19 @@ export type Fleet = {
   state: FleetState;
 };
 
-export class FleetsStore implements Readable<Fleet[]> {
+export type FleetListState = {fleets: Fleet[]; step: 'LOADING' | 'IDLE' | 'LOADED'};
+
+export class FleetsStore implements Readable<FleetListState> {
   private readonly spaceInfo: SpaceInfo;
-  private store: Writable<Fleet[]>;
-  private fleets: Fleet[] = [];
+  private store: Writable<FleetListState>;
+  private state: FleetListState = {
+    fleets: [],
+    step: 'IDLE',
+  };
 
   constructor(spaceInfo: SpaceInfo) {
     this.spaceInfo = spaceInfo;
-    this.store = writable(this.fleets, this._start.bind(this));
+    this.store = writable(this.state, this._start.bind(this));
   }
 
   _start(): void {
@@ -61,18 +66,22 @@ export class FleetsStore implements Readable<Fleet[]> {
   }
 
   private onTime() {
-    for (const fleet of this.fleets) {
+    for (const fleet of this.state.fleets) {
       fleet.timeLeft = Math.max(fleet.duration - (now() - fleet.launchTime), 0);
       if (fleet.timeLeft <= 0) {
         fleet.timeToResolve = Math.max(fleet.launchTime + fleet.duration + spaceInfo.resolveWindow - now(), 0);
       }
     }
-    this.store.set(this.fleets);
+    this.store.set(this.state);
   }
 
   private onSpaceUpdate(update: SpaceQueryWithPendingState): void {
-    this.fleets.length = 0;
-    for (const pendingAction of update.pendingActions) {
+    this.state.fleets.length = 0;
+    let loading = false;
+
+    const pendingActions = update.queryState.data ? update.pendingActions : update.rawPendingActions;
+
+    for (const pendingAction of pendingActions) {
       if (pendingAction.action.type === 'SEND') {
         const sendAction = pendingAction.action;
         // TODO
@@ -106,6 +115,7 @@ export class FleetsStore implements Readable<Fleet[]> {
             }
           } else if (pendingAction.status === 'LOADING') {
             state = 'LOADING';
+            loading = true;
           }
 
           let resolution: SyncedPendingAction | undefined;
@@ -139,7 +149,7 @@ export class FleetsStore implements Readable<Fleet[]> {
           }
           // console.log({state})
           if (!(resolution && resolution.action.acknowledged)) {
-            this.fleets.push({
+            this.state.fleets.push({
               txHash: pendingAction.id, // TODO better id
               from,
               to,
@@ -163,17 +173,23 @@ export class FleetsStore implements Readable<Fleet[]> {
       }
     }
 
-    this.store.set(this.fleets);
+    if (loading) {
+      this.state.step = 'LOADING';
+    } else {
+      this.state.step = 'LOADED';
+    }
+
+    this.store.set(this.state);
   }
 
-  subscribe(run: (value: Fleet[]) => void, invalidate?: (value?: Fleet[]) => void): () => void {
+  subscribe(run: (value: FleetListState) => void, invalidate?: (value?: FleetListState) => void): () => void {
     return this.store.subscribe(run, invalidate);
   }
 }
 
-export const fleets = new FleetsStore(spaceInfo);
+export const fleetList = new FleetsStore(spaceInfo);
 
 if (typeof window !== 'undefined') {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).fleets = fleets;
+  (window as any).fleetList = fleetList;
 }

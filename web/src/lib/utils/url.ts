@@ -2,14 +2,16 @@ import {base} from '$app/paths';
 import {getParamsFromURL, queryStringifyNoArray} from './web';
 import {params, globalQueryParams} from '$lib/config';
 
-export function url(path: string): string {
+export function url(path: string, hash?: string): string {
   const {params: paramFromPath, pathname} = getParamsFromURL(path);
+  console.log({paramFromPath, pathname});
   for (const queryParam of globalQueryParams) {
     if (typeof params[queryParam] != 'undefined' && typeof paramFromPath[queryParam] === 'undefined') {
       paramFromPath[queryParam] = params[queryParam];
     }
   }
-  return `${base}/${pathname}${queryStringifyNoArray(paramFromPath)}`;
+  console.log({paramFromPath, pathname, base, queryString: queryStringifyNoArray(paramFromPath)});
+  return `${base}/${pathname}${queryStringifyNoArray(paramFromPath)}${hash ? `#${hash}` : ''}`;
 }
 
 export function urlOfPath(url: string, path: string): boolean {

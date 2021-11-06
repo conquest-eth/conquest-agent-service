@@ -22,11 +22,25 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
   async resolve(fleet: Fleet): Promise<void> {
     this.setPartial({step: 'CONNECTING'});
     this.setPartial({step: 'CREATING_TX'});
+
+    let nonce = fleet.sending.action.nonce;
+
+    if (!nonce) {
+      console.error('NO NONCE FOUND, fetching from transaciton hash');
+      const tx = await wallet.provider.getTransaction(fleet.sending.id);
+
+      // console.log(tx);
+      nonce = tx.nonce;
+
+      // TODO why the following was needed in one instance?
+      // nonce = tx.nonce - 1;
+    }
+
     const fleetData = await account.hashFleet(
       fleet.from.location,
       fleet.to.location,
       fleet.gift,
-      fleet.sending.action.nonce,
+      nonce,
       fleet.owner,
       fleet.fleetSender,
       fleet.operator

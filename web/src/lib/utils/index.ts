@@ -20,3 +20,8 @@ export function timeToText(timeInSec: number, options?: prettyMs.Options): strin
 export function bitMaskMatch(value: number | undefined, bit: number): boolean {
   return value === undefined ? false : (value & Math.pow(2, bit)) == Math.pow(2, bit);
 }
+
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function formatError(e: any): string {
+  return e.message || (e.toString ? e.toString() : JSON.stringify(e));
+}
