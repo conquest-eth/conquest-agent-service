@@ -23,11 +23,6 @@
     selectedError = error;
     isShowInfo = true;
   }
-
-  function findFleetById(fleetId) {
-/*     let fleet = $fleets.find(f => f. === fleetId)
-    console.log(fleet) */
-  }
 </script>
 
 {#if selectedEvent}
