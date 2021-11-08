@@ -250,7 +250,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       },
       tx.hash,
       latestBlock.timestamp,
-      tx.nonce
+      nonce // tx.nounce can be different it seems, metamask can change it, or maybe be even user
     );
 
     if (useAgentService) {
