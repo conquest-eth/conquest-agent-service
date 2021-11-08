@@ -116,7 +116,10 @@ export class MyEventsStore implements Readable<MyEvent[]> {
     this.acknowledgements = $account.data?.acknowledgements;
     this.pendingActions = $account.data?.pendingActions;
 
-    if (this.currentOwner === newPlayer) {
+    if ($account.step === 'IDLE') {
+      this.currentOwner = undefined;
+      this.events = [];
+    } else if (this.currentOwner === newPlayer) {
       this.events = this.addAcknowledgements(this.events);
     } else if (newPlayer === this.tmpPlayer) {
       this.currentOwner = newPlayer;

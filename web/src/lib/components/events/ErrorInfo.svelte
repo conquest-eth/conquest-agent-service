@@ -4,6 +4,7 @@
   import {account} from '$lib/account/account';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import Button from '$lib/components/generic/PanelButton.svelte';
+  import {now} from '$lib/time';
 
   export let error: SpaceError;
   export let isShow;
@@ -18,7 +19,7 @@
   }
 
   async function acknowledge() {
-    await account.acknowledgeError(error.txHash, null);
+    await account.acknowledgeError(error.txHash, null, error.late ? now() : undefined);
     error = null;
     isShow = isShow && false;
   }

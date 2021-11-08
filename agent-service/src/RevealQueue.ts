@@ -266,7 +266,7 @@ export class RevealQueue extends DO {
       })`,
       registrationSubmission.signature
     );
-    // console.log({player, authorized, signature: registrationSubmission.signature});
+    // this.log({player, authorized, signature: registrationSubmission.signature});
     if (!authorized) {
       return NotAuthorized();
     }
@@ -321,7 +321,7 @@ export class RevealQueue extends DO {
       scheduleMessageString,
       feeScheduleSubmission.signature
     );
-    console.log({
+    this.info({
       scheduleMessageString,
       player,
       delegate: account.delegate,
@@ -386,7 +386,7 @@ export class RevealQueue extends DO {
       queueMessageString,
       revealSubmission.signature
     );
-    console.log({
+    this.info({
       queueMessageString,
       player,
       delegate: account.delegate,
@@ -448,10 +448,10 @@ export class RevealQueue extends DO {
       const queueID = revealEntry[0];
       const revealTime = reveal.startTime + reveal.duration;
       if (revealTime <= timestamp) {
-        console.log(`executing ${queueID}...`);
+        this.info(`executing ${queueID}...`);
         await this._executeReveal(queueID, reveal);
       } else {
-        console.log(
+        this.info(
           `skip reveal (${queueID}) because not yet time (${reveal.startTime} + ${reveal.duration} = ${revealTime}) > ${timestamp}`
         );
       }
@@ -535,6 +535,22 @@ export class RevealQueue extends DO {
     return createResponse({txs, success: true});
   }
 
+  // TODO admin
+  // async deleteFromQueue(path: string[]): Promise<Response> {
+  //   const reveal = (await this.state.storage.get(path[0])) as RevealData;
+  //   const listID = `l_${reveal.fleetID}`;
+  //   const listData = (await this.state.storage.get(listID)) as ListData;
+  //   if (listData) {
+  //     if (listData.pendingID) {
+  //       this.state.storage.delete(listData.pendingID);
+  //     }
+  //     this.state.storage.delete(listID);
+  //   }
+  //   this.state.storage.delete(path[0]);
+
+  //   return createResponse({success: true});
+  // }
+
   async getQueue(path: string[]): Promise<Response> {
     const limit = 1000;
     const reveals = (await this.state.storage.list({prefix: `q_`, limit})) as Map<string, RevealData>;
@@ -549,9 +565,25 @@ export class RevealQueue extends DO {
         retries: reveal.retries,
         startTime: reveal.startTime,
         sendConfirmed: reveal.sendConfirmed,
+        // secretHash: reveal.secret,
       };
     }
-    return createResponse({queue});
+    return createResponse({queue, success: true});
+  }
+
+  async getRevealList(path: string[]): Promise<Response> {
+    const limit = 1000;
+    const listDatas = (await this.state.storage.list({prefix: `l_`, limit})) as Map<string, ListData>;
+    const list = {};
+    for (const listEntry of listDatas.entries()) {
+      const listData = listEntry[1];
+      const lID = listEntry[0];
+      list[lID] = {
+        queueID: listData.queueID,
+        pendingID: listData.pendingID,
+      };
+    }
+    return createResponse({list, success: true});
   }
 
   // async test(path: string[]): Promise<Response> {
@@ -592,7 +624,7 @@ export class RevealQueue extends DO {
       lastSync = {blockNumber: 0, blockHash: ''};
     }
 
-    // console.log({lastSync});
+    // this.log({lastSync});
 
     // if there is no new block, no point processing, this will just handle reorg for no benefit
     if (toBlockNumber <= lastSync.blockNumber) {
@@ -607,13 +639,13 @@ export class RevealQueue extends DO {
       toBlockNumber
     );
 
-    // console.log({events});
+    // this.log({events});
     for (const event of events) {
       if (event.removed) {
         continue; //ignore removed
       }
       if (event.args) {
-        // console.log(event.args);
+        // this.log(event.args);
         const payer = event.args.payer.toLowerCase();
         const accountUpdate = (accountsToUpdate[payer] = accountsToUpdate[payer] || {balanceUpdate: BigNumber.from(0)});
         if (event.args.refund) {
@@ -631,7 +663,7 @@ export class RevealQueue extends DO {
       lastSyncRefetched = {blockHash: '', blockNumber: 0};
     }
     if (lastSyncRefetched.blockHash !== lastSync.blockHash) {
-      // console.log(`got already updated ?`)
+      // this.log(`got already updated ?`)
       return createResponse(`got already updated ?`); // TODO ?
     }
 
@@ -649,13 +681,13 @@ export class RevealQueue extends DO {
         delegate: currentAccountState.delegate,
         maxFeesSchedule: currentAccountState.maxFeesSchedule,
       });
-      console.log(`${accountAddress} updated...`);
+      this.info(`${accountAddress} updated...`);
     }
     lastSyncRefetched.blockHash = toBlockObject.hash;
     lastSyncRefetched.blockNumber = toBlockNumber;
     this.state.storage.put<SyncData>('sync', lastSyncRefetched);
 
-    // console.log({lastSyncRefetched});
+    // this.log({lastSyncRefetched});
     return createResponse({success: true});
   }
 
@@ -686,9 +718,9 @@ export class RevealQueue extends DO {
     const account = await this.state.storage.get<AccountData | undefined>(`account_${reveal.player}`);
     if (!account || BigNumber.from(account.paid).lt(minimumBalance)) {
       if (!account) {
-        console.log(`no account registered for ${reveal.player}`);
+        this.info(`no account registered for ${reveal.player}`);
       } else {
-        console.log(`not enough fund for ${reveal.player}`);
+        this.info(`not enough fund for ${reveal.player}`);
       }
 
       return;
@@ -699,7 +731,7 @@ export class RevealQueue extends DO {
     const timestamp = getTimestamp();
     let change = false;
     if (!reveal.sendConfirmed) {
-      console.log('fetching startTime...');
+      this.info('fetching startTime...');
       // TODO use reveal.sendTxHash will aloow to get confirmations, need to check if fleet exist
       const actualStartTime = await this._fetchStartTime(reveal);
       // refetch queueID in case it was deleted / moved
@@ -711,10 +743,16 @@ export class RevealQueue extends DO {
       }
 
       if (!actualStartTime) {
-        console.log(`fleet not found :  ${reveal.fleetID}`);
+        this.info(`fleet not found :  ${reveal.fleetID}`);
         // not found
         reveal.startTime = timestamp + retryPeriod(reveal.duration);
         reveal.retries++;
+        if (reveal.retries >= 10) {
+          this.info(`deleting reveal ${revealID} after ${reveal.retries} retries ...`);
+          this.state.storage.delete(queueID);
+          this.state.storage.delete(revealID);
+          return;
+        }
         change = true;
       } else {
         reveal.sendConfirmed = true;
@@ -745,9 +783,11 @@ export class RevealQueue extends DO {
         }); // first save before broadcast ? // or catch "tx already submitted error"
         if (error) {
           if (error.code === 5502) {
-            console.log('deleting....');
+            this.info(`deleting reveal: ${revealID}....`);
             this.state.storage.delete(queueID);
             this.state.storage.delete(revealID);
+          } else {
+            this.error(error);
           }
           return;
         } else if (!tx) {
@@ -855,23 +895,23 @@ export class RevealQueue extends DO {
       //   if (options.maxFeePerGas.lt(feeHistory.reward[0][0])) {
       //     maxPriorityFeePerGas = options.maxFeePerGas;
       //   }
-      //   console.log(feeHistory.reward);
+      //   this.log(feeHistory.reward);
       // } else {
-      //   console.log('no feeHistory')
+      //   this.log('no feeHistory')
       // }
 
-      console.log('getting mathcing alliance...');
+      this.info('getting mathcing alliance...');
       const alliance = await this._getAlliance(reveal);
-      console.log({alliance});
+      this.info({alliance});
 
-      console.log('checcking if fleet still alive....');
+      this.info('checcking if fleet still alive....');
       const {quantity} = await this.outerspaceContract.getFleet(reveal.fleetID, '0');
-      console.log({quantity});
+      this.info({quantity});
       if (quantity === 0) {
         if (nonceIncreased) {
           return {error: {message: 'nonce increased but fleet already resolved', code: 5502}};
         } else {
-          console.log('already done');
+          this.info('already done');
           const tx = await this.wallet.sendTransaction({
             to: this.wallet.address,
             value: 0,
@@ -912,7 +952,7 @@ export class RevealQueue extends DO {
       } catch (e) {
         // TODO investigate error code for it ?
         if (e.message && e.message.indexOf && e.message.indexOf(' is bigger than maxFeePerGas ') !== -1) {
-          console.log('RETRYING with maxPriorityFeePerGas = maxFeePerGas');
+          this.info('RETRYING with maxPriorityFeePerGas = maxFeePerGas');
           tx = await this.outerspaceContract.resolveFleet(
             reveal.fleetID,
             {
@@ -971,7 +1011,7 @@ export class RevealQueue extends DO {
               planetOwner,
               reveal.startTime
             );
-            console.log({allies, allianceToTest, player: reveal.player, planetOwner});
+            this.info({allies, allianceToTest, player: reveal.player, planetOwner});
             if (allies) {
               alliance = allianceToTest;
               break;
@@ -990,7 +1030,7 @@ export class RevealQueue extends DO {
       const broadcastingTime = pendingReveal.startTime + pendingReveal.duration;
       const currentMaxFee = getMaxFeeFromArray(pendingReveal.maxFeesSchedule, getTimestamp() - broadcastingTime);
       if (!transaction || currentMaxFee.gt(lastMaxFeeUsed)) {
-        console.log(
+        this.info(
           `broadcast reveal tx for fleet: ${pendingReveal.fleetID} ${
             transaction ? 'with new fee' : 'again as it was lost'
           } ... `
@@ -1046,7 +1086,7 @@ export class RevealQueue extends DO {
       // quantity == 0 means already submitted , should remove them ?
       return fleet.launchTime;
     } else {
-      // console.log(`cannot get startTIme for fleet ${reveal.fleetID} ${fleet.launchTime} ${fleet.quantity} ${lastestBlockFinalized} ${block.number}`)
+      // this.log(`cannot get startTIme for fleet ${reveal.fleetID} ${fleet.launchTime} ${fleet.quantity} ${lastestBlockFinalized} ${block.number}`)
       return undefined;
     }
   }

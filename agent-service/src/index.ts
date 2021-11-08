@@ -117,6 +117,20 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     }
     let resp = await obj.fetch(url.toString(), request);
     return resp;
+    // } else if (fnc === 'deleteFromQueue') {
+    //   // TODO remove unless admin
+    //   if (method !== 'GET') {
+    //     return InvalidMethod();
+    //   }
+    //   let resp = await obj.fetch(url.toString(), request);
+    //   return resp;
+  } else if (fnc === 'getRevealList') {
+    // TODO remove unless admin
+    if (method !== 'GET') {
+      return InvalidMethod();
+    }
+    let resp = await obj.fetch(url.toString(), request);
+    return resp;
   } else if (fnc === 'setMaxFeePerGasSchedule') {
     if (method !== 'POST') {
       return InvalidMethod();
