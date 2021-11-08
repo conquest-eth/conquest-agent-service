@@ -535,6 +535,22 @@ export class RevealQueue extends DO {
     return createResponse({txs, success: true});
   }
 
+  // TODO admin
+  // async deleteFromQueue(path: string[]): Promise<Response> {
+  //   const reveal = (await this.state.storage.get(path[0])) as RevealData;
+  //   const listID = `l_${reveal.fleetID}`;
+  //   const listData = (await this.state.storage.get(listID)) as ListData;
+  //   if (listData) {
+  //     if (listData.pendingID) {
+  //       this.state.storage.delete(listData.pendingID);
+  //     }
+  //     this.state.storage.delete(listID);
+  //   }
+  //   this.state.storage.delete(path[0]);
+
+  //   return createResponse({success: true});
+  // }
+
   async getQueue(path: string[]): Promise<Response> {
     const limit = 1000;
     const reveals = (await this.state.storage.list({prefix: `q_`, limit})) as Map<string, RevealData>;
@@ -549,9 +565,25 @@ export class RevealQueue extends DO {
         retries: reveal.retries,
         startTime: reveal.startTime,
         sendConfirmed: reveal.sendConfirmed,
+        // secretHash: reveal.secret,
       };
     }
-    return createResponse({queue});
+    return createResponse({queue, success: true});
+  }
+
+  async getRevealList(path: string[]): Promise<Response> {
+    const limit = 1000;
+    const listDatas = (await this.state.storage.list({prefix: `l_`, limit})) as Map<string, ListData>;
+    const list = {};
+    for (const listEntry of listDatas.entries()) {
+      const listData = listEntry[1];
+      const lID = listEntry[0];
+      list[lID] = {
+        queueID: listData.queueID,
+        pendingID: listData.pendingID,
+      };
+    }
+    return createResponse({list, success: true});
   }
 
   // async test(path: string[]): Promise<Response> {
@@ -715,6 +747,12 @@ export class RevealQueue extends DO {
         // not found
         reveal.startTime = timestamp + retryPeriod(reveal.duration);
         reveal.retries++;
+        if (reveal.retries >= 10) {
+          this.info(`deleting reveal ${revealID} after ${reveal.retries} retries ...`);
+          this.state.storage.delete(queueID);
+          this.state.storage.delete(revealID);
+          return;
+        }
         change = true;
       } else {
         reveal.sendConfirmed = true;
