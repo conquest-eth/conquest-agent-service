@@ -51,11 +51,13 @@ class PlayTokenAccount extends BaseStore<TokenAccount> {
       });
       try {
         if (this.$store.account) {
-          await this.fetchFor(this.$store.account, (address) =>
-            this.wallet.contracts?.PlayToken_L2.balanceOf(address).then((b: BigNumber) => ({
+          await this.fetchFor(this.$store.account, async (address) => {
+            const balance = await this.wallet.contracts?.PlayToken_L2.balanceOf(address).then((b: BigNumber) => ({
               balance: b,
-            }))
-          );
+            }));
+            // TODO handle pendingActions (captures)
+            return balance;
+          });
         }
       } catch (e) {
         this.setPartial({
