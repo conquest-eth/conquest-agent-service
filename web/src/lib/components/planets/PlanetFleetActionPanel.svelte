@@ -359,7 +359,7 @@
             class="m-2"
             color="text-yellow-400"
             borderColor="border-yellow-400"
-            disabled={!$planetState.inReach || !captureResult.success}
+            disabled={!$planetState.inReach || (captureResult && !captureResult.success)}
             on:click={capture}
           >
             <div class="w-20">
@@ -372,7 +372,7 @@
                     attack unreachable planets. But these planets cannot produce spaceships until they get in range and
                     you stake on it.
                   </Help>
-                {:else if !captureResult.success}
+                {:else if captureResult && !captureResult.success}
                   <Help class="inline w-4 h-4">
                     <!-- The planet cannot be captured at the moment as it has too strong defense -->
                     To capture a planet, it first need to be either without spaceships or controlled by you.
