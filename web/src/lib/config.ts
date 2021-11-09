@@ -11,36 +11,7 @@ let root = undefined;
 if (typeof window !== 'undefined') {
   root = window.location.protocol + '//' + window.location.host + (window as any).BASE;
 }
-
-if (import.meta.env.MODE === 'production') {
-  Sentry.init({
-    release: __VERSION__,
-    dsn: 'https://3ce483b67b094d40a9ecece7ee1ba007@o43511.ingest.sentry.io/6056118',
-    integrations: [
-      new Integrations.BrowserTracing(),
-      new RewriteFramesIntegration({
-        iteratee: (frame) => {
-          if (frame.filename) {
-            frame.filename = frame.filename.replace(root, '');
-          }
-          return frame;
-        },
-      }),
-    ],
-
-    // Set tracesSampleRate to 1.0 to capture 100%
-    // of transactions for performance monitoring.
-    // We recommend adjusting this value in production
-    tracesSampleRate: 1.0,
-  });
-  console.log(`VERSION: ${__VERSION__}`);
-  if (typeof window !== 'undefined') {
-    (window as any).generateError = (message) => {
-      const result = Sentry.captureMessage(message);
-      console.log({result});
-    };
-  }
-}
+console.log(`VERSION: ${__VERSION__}`);
 
 export const hashParams = getHashParamsFromLocation();
 export const {params} = getParamsFromLocation();
@@ -124,6 +95,38 @@ function dropTransactions(yes: boolean): void {
 
 function shouldDropTransactions(): boolean {
   return _dropTransactions;
+}
+
+if (import.meta.env.MODE === 'production') {
+  Sentry.init({
+    release: __VERSION__,
+    dsn: 'https://3ce483b67b094d40a9ecece7ee1ba007@o43511.ingest.sentry.io/6056118',
+    integrations: [
+      new Integrations.BrowserTracing({
+        tracingOrigins: ['localhost', /^\//, graphNodeURL.split('/')[0]],
+      }),
+      new RewriteFramesIntegration({
+        iteratee: (frame) => {
+          if (frame.filename) {
+            frame.filename = frame.filename.replace(root, '');
+          }
+          return frame;
+        },
+      }),
+    ],
+
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+  });
+  console.log('SENTRY ENABLED');
+  if (typeof window !== 'undefined') {
+    (window as any).generateError = (message) => {
+      const result = Sentry.captureMessage(message);
+      console.log({result});
+    };
+  }
 }
 
 export {
