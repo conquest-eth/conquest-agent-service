@@ -272,7 +272,7 @@ importers:
       pretty-ms: https://github.com/wighawag/pretty-ms#320ba46c464052ebbe605e48ad05df9e9801e956
       svelte: ^3.42.4
       svelte-preprocess: ^4.8.0
-      sveltejs-adapter-ipfs: ^0.1.8
+      sveltejs-adapter-ipfs: ^0.1.9
       sveltejs-tippy: ^3.0.0
       tailwindcss: ^2.2.8
       tailwindcss-question-mark: ^0.1.1
@@ -334,7 +334,7 @@ importers:
       prettier-plugin-svelte: 2.4.0_prettier@2.3.2+svelte@3.42.4
       svelte: 3.42.4
       svelte-preprocess: 4.8.0_2a1072f850182c32279df48c7d9c0088
-      sveltejs-adapter-ipfs: 0.1.8
+      sveltejs-adapter-ipfs: 0.1.9
       tailwindcss: 2.2.8_3ae63246f7b6ebdbe8521b4b745e51c3
       tailwindcss-question-mark: 0.1.1
       tslib: 2.3.1
@@ -13815,8 +13815,8 @@ packages:
     engines: {node: '>= 8'}
     dev: true
 
-  /sveltejs-adapter-ipfs/0.1.8:
-    resolution: {integrity: sha512-FVPJ4cx5PXjHsxifm5shK9VL1XnftSrZZU7GgoV3Wf/vmWreS91JCQaIJG0hAFiVF/lf90+XeMmaB9a42BJ/hg==}
+  /sveltejs-adapter-ipfs/0.1.9:
+    resolution: {integrity: sha512-vW6zOPlGZ8+2Y/PJy5N8P/91NZjxw3BXmeJAXJz8ml6fikhbDw0SEU4tyMP6XJtVYdDRdfYPyryTziOyeC+FSg==}
     dependencies:
       fs-extra: 10.0.0
       slash: 4.0.0
