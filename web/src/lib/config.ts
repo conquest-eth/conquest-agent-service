@@ -34,6 +34,12 @@ if (import.meta.env.MODE === 'production') {
     tracesSampleRate: 1.0,
   });
   console.log(`VERSION: ${__VERSION__}`);
+  if (typeof window !== 'undefined') {
+    (window as any).generateError = (message) => {
+      const result = Sentry.captureMessage(message);
+      console.log({result});
+    };
+  }
 }
 
 export const hashParams = getHashParamsFromLocation();
