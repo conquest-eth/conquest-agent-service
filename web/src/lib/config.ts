@@ -117,7 +117,7 @@ if (import.meta.env.MODE === 'production') {
     },
     integrations: [
       new Integrations.BrowserTracing({
-        tracingOrigins: ['localhost', /^\//, graphNodeURL.split('/')[0]],
+        tracingOrigins: ['localhost', /^\//], //, graphNodeURL.split('/')[0]], fails with "has been blocked by CORS policy: Request header field sentry-trace is not allowed by Access-Control-Allow-Headers in preflight response."
       }),
       new RewriteFramesIntegration({
         iteratee: (frame) => {
