@@ -97,10 +97,24 @@ function shouldDropTransactions(): boolean {
   return _dropTransactions;
 }
 
+let getName = () => {
+  return undefined;
+};
+function setGetName(func: () => string): void {
+  getName = func;
+}
+
 if (import.meta.env.MODE === 'production') {
   Sentry.init({
     release: __VERSION__,
     dsn: 'https://3ce483b67b094d40a9ecece7ee1ba007@o43511.ingest.sentry.io/6056118',
+    beforeSend(event, hint) {
+      // Check if it is an exception, and if so, show the report dialog
+      if (event.exception) {
+        Sentry.showReportDialog({eventId: event.event_id, user: {name: getName()}});
+      }
+      return event;
+    },
     integrations: [
       new Integrations.BrowserTracing({
         tracingOrigins: ['localhost', /^\//, graphNodeURL.split('/')[0]],
@@ -149,4 +163,5 @@ export {
   shouldDropTransactions,
   dropTransactions,
   localDev,
+  setGetName,
 };

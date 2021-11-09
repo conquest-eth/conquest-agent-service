@@ -1,4 +1,4 @@
-import {SYNC_DB_NAME, SYNC_URI} from '$lib/config';
+import {SYNC_DB_NAME, SYNC_URI, setGetName} from '$lib/config';
 import {bitMaskMatch} from '$lib/utils';
 import type {SyncingState} from '$lib/utils/sync';
 import {AccountDB} from '$lib/utils/sync';
@@ -11,6 +11,7 @@ import {keccak256} from '@ethersproject/solidity';
 import type {MyEvent} from '$lib/space/myevents';
 import {now, time} from '$lib/time';
 import {BigNumber} from '@ethersproject/bignumber';
+import {wallet} from '$lib/blockchain/wallet';
 
 export type AccountState = {
   step: 'IDLE' | 'READY';
@@ -741,3 +742,5 @@ if (typeof window !== 'undefined') {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (window as any).account = account;
 }
+
+setGetName(() => wallet.address || undefined);
