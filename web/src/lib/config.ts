@@ -111,7 +111,7 @@ if (import.meta.env.MODE === 'production') {
     beforeSend(event, hint) {
       // Check if it is an exception, and if so, show the report dialog
       if (event.exception) {
-        Sentry.showReportDialog({eventId: event.event_id, user: {name: getName()}});
+        Sentry.showReportDialog({eventId: event.event_id, user: {name: getName(), email: 'noone@nowhere.eth'}});
       }
       return event;
     },
