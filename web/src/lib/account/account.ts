@@ -729,6 +729,10 @@ class Account implements Readable<AccountState> {
   private _notify(): void {
     this.store.set(this.state);
   }
+
+  generateError() {
+    throw new Error(`error on version: ${import.meta.env.__VERSION__}`);
+  }
 }
 
 export const account = new Account();

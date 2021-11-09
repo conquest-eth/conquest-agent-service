@@ -3,6 +3,39 @@ import {contractsInfos} from './blockchain/contractsInfos';
 import {nameForChainId} from './utils/networks';
 import {getParamsFromLocation, getHashParamsFromLocation} from './utils/web';
 
+import * as Sentry from '@sentry/browser';
+import {Integrations} from '@sentry/tracing';
+import {RewriteFrames as RewriteFramesIntegration} from '@sentry/integrations';
+
+let root = undefined;
+if (typeof window !== 'undefined') {
+  root = window.location.protocol + '//' + window.location.host + (window as any).BASE;
+}
+
+if (import.meta.env.MODE === 'production') {
+  Sentry.init({
+    release: __VERSION__,
+    dsn: 'https://3ce483b67b094d40a9ecece7ee1ba007@o43511.ingest.sentry.io/6056118',
+    integrations: [
+      new Integrations.BrowserTracing(),
+      new RewriteFramesIntegration({
+        iteratee: (frame) => {
+          if (frame.filename) {
+            frame.filename = frame.filename.replace(root, '');
+          }
+          return frame;
+        },
+      }),
+    ],
+
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+  });
+  console.log(`VERSION: ${__VERSION__}`);
+}
+
 export const hashParams = getHashParamsFromLocation();
 export const {params} = getParamsFromLocation();
 // export const VERSION = '1';
