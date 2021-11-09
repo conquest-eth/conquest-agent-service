@@ -8,6 +8,7 @@
   import Help from '$lib/components/utils/Help.svelte';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import {url} from '$lib/utils/url';
+  import {account} from '$lib/account/account';
 
   function connect() {
     privateWallet.login();
@@ -117,6 +118,10 @@
       <NavButton class="m-1" label="settings" href={url('settings/')}>
         Profile
         <Help class="w-4 h-4">You can setup your profile so that other player can contact you.</Help>
+      </NavButton>
+      <NavButton class="m-1" label="settings" on:click={() => account.generateError()}>
+        Error
+        <Help class="w-4 h-4">Generate an Error</Help>
       </NavButton>
       <PanelButton class="m-1" label="Disconnect" on:click={disconnect}>Disconnect</PanelButton>
     </div>

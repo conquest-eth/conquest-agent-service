@@ -731,7 +731,7 @@ class Account implements Readable<AccountState> {
   }
 
   generateError() {
-    throw new Error(`error on version: ${import.meta.env.__VERSION__}`);
+    throw new Error(`error on version: ${__VERSION__}`);
   }
 }
 
