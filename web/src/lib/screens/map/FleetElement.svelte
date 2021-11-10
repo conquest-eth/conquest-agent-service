@@ -46,18 +46,57 @@
   }
 </script>
 
-<svg style={`position: absolute; z-index: 51; overflow: visible; transform: translate(${x}px,${y}px)`}>
-  <!-- <g style={`transform: scale(${scale});`} > -->
-  <!-- svelte-ignore a11y-mouse-events-have-key-events -->
-  <path
-    on:click={() => (isShow = !isShow)}
-    style={`transform: rotate(${angle}rad); cursor: pointer`}
-    d="M -5 -2.5 L 0 0 L -5 2.5 z"
-    fill={color}
-  />
+{#if fleet.state === 'READY_TO_RESOLVE'}
+  <svg
+    viewBox="0 0 500 500"
+    width={15}
+    y={15}
+    style={`position: absolute; z-index: 51; overflow: visible; transform: translate(${x - 4}px,${y - 3}px) ;`}
+  >
+    <path
+      id="motionPath"
+      fill="none"
+      stroke="#000000"
+      stroke-miterlimit="20"
+      d="
+        M 150, 100
+        m -75, 0
+        a 75,75 0 1,0 150,0
+        a 75,75 0 1,0 -150,0
+        "
+    />
 
-  <!-- </g> -->
-</svg>
+    <path
+      id="plane"
+      on:click={() => (isShow = !isShow)}
+      style={`transform: rotate(${angle}rad); cursor: pointer; `}
+      d="M 75, 100 L 0 0 L -5 2.5 z"
+      fill={color}
+    />
+
+    <animateMotion xlink:href="#plane" dur="2s" begin="0s" fill="freeze" repeatCount="indefinite" rotate="auto-reverse">
+      <mpath xlink:href="#motionPath" />
+    </animateMotion>
+  </svg>
+{:else}
+  <svg
+    viewBox="0 0 500 500 "
+    width={(400 / scale) * 6}
+    height={(400 / scale) * 6}
+    style={`position: absolute; z-index: 51; overflow: visible; transform: translate(${x}px,${y}px);`}
+  >
+    <!-- <g style={`transform: scale(${scale});`} > -->
+    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+    <path
+      on:click={() => (isShow = !isShow)}
+      style={`transform: rotate(${angle}rad); cursor: pointer; `}
+      d="M -5 -2.5 L 0 0 L -5 2.5 z"
+      fill={color}
+    />
+
+    <!-- </g> -->
+  </svg>
+{/if}
 {#if isShow}
   <!-- svelte-ignore a11y-mouse-events-have-key-events -->
   <div

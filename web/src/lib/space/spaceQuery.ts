@@ -30,7 +30,57 @@ export type PlanetContractState = {
   reward: string;
 };
 
-export type FleetArrived = FleetArrivedEvent; // TODO ?
+export type OwnerParsedEvent = {
+  transaction: {id: string};
+  owner: {id: string};
+  timestamp: number;
+  blockNumber: number;
+};
+
+export type GenericParsedEvent =
+  | PlanetStakeParsedEvent
+  | PlanetExitParsedEvent
+  | FleetArrivedParsedEvent
+  | FleetSentParsedEvent; // | ExitCompleteEvent ?
+
+export type PlanetParsedEvent = OwnerParsedEvent & {
+  __typename: 'PlanetStakeEvent' | 'PlanetExitEvent' | 'FleetSentEvent' | 'FleetArrivedEvent';
+  planet: {id: string};
+};
+
+export type PlanetStakeParsedEvent = PlanetParsedEvent & {
+  __typename: 'PlanetStakeEvent';
+  numSpaceships: string;
+  stake: string;
+};
+
+export type PlanetExitParsedEvent = PlanetParsedEvent & {
+  __typename: 'PlanetExitEvent';
+  exitTime: string;
+  stake: string;
+};
+
+export type FleetArrivedParsedEvent = PlanetParsedEvent & {
+  __typename: 'FleetArrivedEvent';
+  fleetLoss: number;
+  planetLoss: number;
+  inFlightFleetLoss: number;
+  inFlightPlanetLoss: number;
+  destinationOwner: {id: string};
+  gift: boolean;
+  fleet: {id: string};
+  from: {id: string};
+  won: boolean;
+  quantity: number;
+  planet: {id: string};
+  newNumspaceships: number;
+};
+
+export type FleetSentParsedEvent = PlanetParsedEvent & {
+  __typename: 'FleetSentEvent';
+  fleet: {id: string};
+  quantity: number;
+};
 
 export type SpaceQueryResult = {
   otherplanets: PlanetQueryState[];
@@ -48,9 +98,31 @@ export type SpaceState = {
   loading: boolean;
   space: {x1: number; x2: number; y1: number; y2: number};
   chain: {blockHash: string; blockNumber: string};
-  fleetsArrivedFromYou: FleetArrived[]; // TODO
-  fleetsArrivedToYou: FleetArrived[]; // TODO
+  fleetsArrivedFromYou: FleetArrivedParsedEvent[]; // TODO
+  fleetsArrivedToYou: FleetArrivedParsedEvent[]; // TODO
 };
+
+function parseFleetArrived(v: FleetArrivedEvent): FleetArrivedParsedEvent {
+  return {
+    __typename: v.__typename,
+    transaction: v.transaction,
+    owner: v.owner,
+    timestamp: parseInt(v.timestamp),
+    blockNumber: v.blockNumber,
+    planet: v.planet,
+    fleetLoss: parseInt(v.fleetLoss),
+    planetLoss: parseInt(v.planetLoss),
+    inFlightFleetLoss: parseInt(v.inFlightFleetLoss),
+    inFlightPlanetLoss: parseInt(v.inFlightPlanetLoss),
+    destinationOwner: v.destinationOwner,
+    gift: v.gift,
+    fleet: v.fleet,
+    from: v.from,
+    won: v.won,
+    quantity: parseInt(v.quantity),
+    newNumspaceships: parseInt(v.newNumspaceships),
+  };
+}
 
 // TODO fleetArrivedEvents need to be capped from 7 days / latest acknowledged block number
 export class SpaceQueryStore implements QueryStore<SpaceState> {
@@ -109,6 +181,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     planet {id}
     fleet {id}
     destinationOwner {id}
+    gift
     fleetLoss
     planetLoss
     inFlightFleetLoss
@@ -128,6 +201,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     planet {id}
     fleet {id}
     destinationOwner {id}
+    gift
     fleetLoss
     planetLoss
     inFlightFleetLoss
@@ -216,16 +290,8 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
         blockHash: data.chain.blockHash,
         blockNumber: data.chain.blockNumber,
       },
-      fleetsArrivedFromYou: !data.fleetsArrivedFromYou
-        ? []
-        : data.fleetsArrivedFromYou.map((v) => {
-            return v; // TODO ?
-          }),
-      fleetsArrivedToYou: !data.fleetsArrivedToYou
-        ? []
-        : data.fleetsArrivedToYou.map((v) => {
-            return v; // TODO ?
-          }),
+      fleetsArrivedFromYou: !data.fleetsArrivedFromYou ? [] : data.fleetsArrivedFromYou.map(parseFleetArrived),
+      fleetsArrivedToYou: !data.fleetsArrivedToYou ? [] : data.fleetsArrivedToYou.map(parseFleetArrived),
     };
   }
 

@@ -31,6 +31,7 @@ export type FleetArrivedEvent = PlanetEvent & {
   inFlightFleetLoss: string;
   inFlightPlanetLoss: string;
   destinationOwner: {id: string};
+  gift: boolean;
   fleet: {id: string};
   from: {id: string};
   won: boolean;
