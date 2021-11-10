@@ -50,7 +50,7 @@ export type FleetListState = {fleets: Fleet[]; step: 'LOADING' | 'IDLE' | 'LOADE
 export class FleetsStore implements Readable<FleetListState> {
   private readonly spaceInfo: SpaceInfo;
   private store: Writable<FleetListState>;
-  private state: FleetListState = {
+  public state: FleetListState = {
     fleets: [],
     step: 'IDLE',
   };
