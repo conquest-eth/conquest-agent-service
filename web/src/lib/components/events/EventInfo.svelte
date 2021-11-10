@@ -26,7 +26,7 @@
           toYou = true;
           title = 'Your spaceships landed!';
         } else {
-          title = 'A friend send you some spaceships!';
+          title = 'Your spaceships arrived to your friend!';
         }
       } else if (event.event.won) {
         title = 'You captured a planet!';
