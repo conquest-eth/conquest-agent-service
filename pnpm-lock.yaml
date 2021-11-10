@@ -284,8 +284,8 @@ importers:
       typescript: ^4.4.2
       vite: ^2.5.1
       web3w: ^0.3.2-beta.11
-      web3w-portis-loader: ^0.3.1
-      web3w-walletconnect-loader: ^0.3.1
+      web3w-portis-loader: ^0.3.2
+      web3w-walletconnect-loader: ^0.3.2
       wonka: ^4.0.15
     dependencies:
       '@ethersproject/abi': 5.4.1
@@ -310,8 +310,8 @@ importers:
       pretty-ms: github.com/wighawag/pretty-ms/320ba46c464052ebbe605e48ad05df9e9801e956
       sveltejs-tippy: 3.0.0
       web3w: 0.3.2-beta.11_30489dd9f56dae6b78a8b20ca8e88cc5
-      web3w-portis-loader: 0.3.1
-      web3w-walletconnect-loader: 0.3.1
+      web3w-portis-loader: 0.3.2
+      web3w-walletconnect-loader: 0.3.2
       wonka: 4.0.15
     devDependencies:
       '@sentry/cli': 1.71.0
@@ -15235,14 +15235,14 @@ packages:
       web3-utils: 1.5.2
     dev: true
 
-  /web3w-portis-loader/0.3.1:
-    resolution: {integrity: sha512-g5yTT6VQX6z1qb9LdYzu4g6V3IfaavSaMpaXEjb3bndR1v17CZzbtsdkqJiHhyeWJaE3TDvohZajc6hdKXfc9Q==}
+  /web3w-portis-loader/0.3.2:
+    resolution: {integrity: sha512-9Zxl81twYsEUAqyFyaA+SMAkfSMSZRHIQTOtCwki6cg8iniN7fYsnEASxFVTnyIBB/K3S73ZAuBDez7l2rGNaQ==}
     dependencies:
       named-logs: 0.1.0
     dev: false
 
-  /web3w-walletconnect-loader/0.3.1:
-    resolution: {integrity: sha512-gF+SjsNKvl5lKUwFGAI8CHTsWl34YkLkr9BqlCi9CCVB9DgB5Rj8BpliFlLKAgomW9lSVG32Vzr6o0LYCYUd6A==}
+  /web3w-walletconnect-loader/0.3.2:
+    resolution: {integrity: sha512-6IgyNsnC92ermTq3cGmU0hLMM0LuGObyN3sZfR/Zp01haaMGi6GRrtx9BtHkBcHfO4lXbtx6iO3Chc71prtHrA==}
     dependencies:
       named-logs: 0.1.0
     dev: false
