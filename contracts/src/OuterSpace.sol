@@ -40,6 +40,7 @@ contract OuterSpace is Proxied {
     uint32 internal immutable _acquireNumSpaceships;
     uint32 internal immutable _productionSpeedUp;
     uint256 internal immutable _frontrunningDelay;
+    uint256 internal immutable _productionCapAsDuration;
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // STORAGE
@@ -151,7 +152,8 @@ contract OuterSpace is Proxied {
         uint32 exitDuration,
         uint32 acquireNumSpaceships,
         uint32 productionSpeedUp,
-        uint32 frontrunningDelay
+        uint32 frontrunningDelay,
+        uint32 productionCapAsDuration
     ) {
         uint32 t = timePerDistance / 4; // the coordinates space is 4 times bigger
         require(t * 4 == timePerDistance, "TIME_PER_DIST_NOT_DIVISIBLE_4");
@@ -165,6 +167,7 @@ contract OuterSpace is Proxied {
         _acquireNumSpaceships = acquireNumSpaceships;
         _productionSpeedUp = productionSpeedUp;
         _frontrunningDelay = frontrunningDelay;
+        _productionCapAsDuration = productionCapAsDuration;
 
         postUpgrade(
             stakingToken,
@@ -175,7 +178,8 @@ contract OuterSpace is Proxied {
             exitDuration,
             acquireNumSpaceships,
             productionSpeedUp,
-            frontrunningDelay
+            frontrunningDelay,
+            productionCapAsDuration
         );
     }
 
@@ -183,6 +187,7 @@ contract OuterSpace is Proxied {
         IERC20,
         AllianceRegistry,
         bytes32,
+        uint32,
         uint32,
         uint32,
         uint32,
@@ -1189,6 +1194,7 @@ contract OuterSpace is Proxied {
     bytes32 constant stakeRange = 0x000400050005000A000A000F000F00140014001E001E00280028005000500064;
 
     function _stake(bytes32 data) internal pure returns (uint16) {
+        require(_exists(data), "PLANET_NOT_EXISTS");
         // return data.normal16(4, 0x000400050005000A000A000F000F00140014001E001E00280028005000500064);
         uint8 productionIndex = data.normal8(12); // production affect the stake value
         uint16 offset = data.normal16(4, 0x0000000100010002000200030003000400040005000500060006000700070008);
@@ -1204,6 +1210,7 @@ contract OuterSpace is Proxied {
     }
 
     function _production(bytes32 data) internal pure returns (uint16) {
+        require(_exists(data), "PLANET_NOT_EXISTS");
         // TODO TRY : 1800,2100,2400,2700,3000,3300,3600, 3600, 3600, 3600,4000,4400,4800,5400,6200,7200 ?
 
         // 1800,2100,2400,2700,3000,3300,3600, 3600, 3600, 3600,4200,5400,6600,7800,9000,12000
@@ -1212,18 +1219,22 @@ contract OuterSpace is Proxied {
     }
 
     function _attack(bytes32 data) internal pure returns (uint16) {
+        require(_exists(data), "PLANET_NOT_EXISTS");
         return 4000 + data.normal8(20) * 400; // 4,000 - 7,000 - 10,000
     }
 
     function _defense(bytes32 data) internal pure returns (uint16) {
+        require(_exists(data), "PLANET_NOT_EXISTS");
         return 4000 + data.normal8(28) * 400; // 4,000 - 7,000 - 10,000
     }
 
     function _speed(bytes32 data) internal pure returns (uint16) {
+        require(_exists(data), "PLANET_NOT_EXISTS");
         return 5005 + data.normal8(36) * 333; // 5,005 - 7,502.5 - 10,000
     }
 
     function _natives(bytes32 data) internal pure returns (uint16) {
+        require(_exists(data), "PLANET_NOT_EXISTS");
         return 15000 + data.normal8(44) * 3000; // 15,000 - 37,500 - 60,000
     }
 
@@ -1269,10 +1280,28 @@ contract OuterSpace is Proxied {
     ) internal view returns (bool active, uint32 currentNumSpaceships) {
         (active, currentNumSpaceships) = _activeNumSpaceships(numSpaceshipsData);
         if (active) {
+            uint256 maxIncrease = ACTIVE_MASK;
+            if (_productionCapAsDuration > 0) {
+                uint256 cap = _productionCapAsDuration * uint256(production);
+                if (currentNumSpaceships > cap) {
+                    maxIncrease = 0;
+                } else {
+                    maxIncrease = cap - currentNumSpaceships;
+                }
+            }
             uint256 timePassed = block.timestamp - lastUpdated;
-            uint256 newSpaceships = uint256(currentNumSpaceships) +
-                (timePassed * uint256(production) * _productionSpeedUp) /
-                1 hours;
+            uint256 increase = (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
+            if (increase > maxIncrease) {
+                increase = maxIncrease;
+            }
+            uint256 newSpaceships = uint256(currentNumSpaceships) + increase;
+
+            // if (_planetCapacity > 0) {
+            //     uint256 maxCapacity = _planetCapacity * uint256(production);
+            //     if (newSpaceships > maxCapacity) {
+            //         newSpaceships = maxCapacity; // do not grow more than that
+            //     }
+            // }
             if (newSpaceships >= ACTIVE_MASK) {
                 newSpaceships = ACTIVE_MASK - 1;
             }
