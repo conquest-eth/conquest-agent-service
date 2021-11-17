@@ -83,13 +83,13 @@
     viewBox="0 0 500 500 "
     width={(400 / scale) * 6}
     height={(400 / scale) * 6}
-    style={`position: absolute; z-index: 51; overflow: visible; transform: translate(${x}px,${y}px);`}
+    style={`position: absolute; z-index: 3; overflow: visible; transform: translate(${x}px,${y}px);`}
   >
     <!-- <g style={`transform: scale(${scale});`} > -->
     <!-- svelte-ignore a11y-mouse-events-have-key-events -->
     <path
       on:click={() => (isShow = !isShow)}
-      style={`transform: rotate(${angle}rad); cursor: pointer; `}
+      style={`transform: rotate(${angle}rad); cursor: pointer; z-index: 99 `}
       d="M -5 -2.5 L 0 0 L -5 2.5 z"
       fill={color}
     />
@@ -121,7 +121,7 @@
 {/if}
 
 {#if showLine}
-  <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
+  <svg style={`position: absolute; z-index: 2; overflow: visible;`}>
     <marker
       xmlns="http://www.w3.org/2000/svg"
       id="triangle"
@@ -137,6 +137,6 @@
     >
       <path d="M 0 0 L 10 5 L 0 10 z" />
     </marker>
-    <line marker-end="url(#triangle)" stroke-width={`${4 / scale}px`} stroke={lineColor} {x1} {y1} {x2} {y2} />
+    <line marker-end="url(#triangle)" style="z-index: 1;" stroke-width={`${4 / scale}px`} stroke={lineColor} {x1} {y1} {x2} {y2} />
   </svg>
 {/if}
