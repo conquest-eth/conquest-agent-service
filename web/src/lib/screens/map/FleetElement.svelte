@@ -48,9 +48,9 @@
 
 {#if fleet.state === 'READY_TO_RESOLVE'}
   <svg
-    viewBox="0 0 500 500"
-    width={15}
-    y={15}
+    viewBox="0 0 400 400"
+    width={10}
+    y={10}
     style={`position: absolute; z-index: 51; overflow: visible; transform: translate(${x - 4}px,${y - 3}px) ;`}
   >
     <path
@@ -67,14 +67,14 @@
     />
 
     <path
-      id="plane"
+      id={fleet.txHash}
       on:click={() => (isShow = !isShow)}
       style={`transform: rotate(${angle}rad); cursor: pointer; `}
-      d="M 75, 100 L 0 0 L -5 2.5 z"
+      d="M150 0 L75 200 L225 200 Z"
       fill={color}
     />
 
-    <animateMotion xlink:href="#plane" dur="2s" begin="0s" fill="freeze" repeatCount="indefinite" rotate="auto-reverse">
+    <animateMotion xlink:href={'#' + fleet.txHash} dur="2s" begin="0s" fill="freeze" repeatCount="indefinite" rotate="auto-reverse">
       <mpath xlink:href="#motionPath" />
     </animateMotion>
   </svg>
