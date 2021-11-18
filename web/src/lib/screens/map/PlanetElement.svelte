@@ -94,12 +94,13 @@
 
   $: playerIsOwner = owner?.toLowerCase() === $wallet.address?.toLowerCase();
 
-  $: capacityReached =
-    spaceInfo.productionCapAsDuration &&
-    spaceInfo.productionCapAsDuration > 0 &&
-    $planetState.numSpaceships >=
-      spaceInfo.acquireNumSpaceships +
-        Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60);
+  $: capacityReached = $planetState
+    ? spaceInfo.productionCapAsDuration &&
+      spaceInfo.productionCapAsDuration > 0 &&
+      $planetState.numSpaceships >=
+        spaceInfo.acquireNumSpaceships +
+          Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60)
+    : false;
 </script>
 
 <div>
