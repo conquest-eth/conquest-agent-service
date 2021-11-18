@@ -633,10 +633,11 @@ export class RevealQueue extends DO {
       lastSync = {blockNumber: 0, blockHash: ''};
     }
 
-    this.info({lastSync});
+    this.info(`lastSync: ${lastSync.blockNumber}`);
 
     // if there is no new block, no point processing, this will just handle reorg for no benefit
     if (toBlockNumber <= lastSync.blockNumber) {
+      this.info(`no new block to fetch`);
       return createResponse('no new block to fetch'); // TODO ?
     }
     const fromBlock = lastSync.blockNumber + 1;
@@ -648,7 +649,7 @@ export class RevealQueue extends DO {
       toBlockNumber
     );
 
-    this.info({events});
+    this.info(`found ${events.length} events`);
     for (const event of events) {
       if (event.removed) {
         continue; //ignore removed
