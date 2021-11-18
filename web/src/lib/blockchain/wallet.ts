@@ -3,7 +3,7 @@ import {WalletConnectModuleLoader} from 'web3w-walletconnect-loader';
 import {PortisModuleLoader} from 'web3w-portis-loader';
 import {contractsInfos} from './contractsInfos';
 import {notifications} from '../web/notifications';
-import {finality, fallbackProviderOrUrl, chainId, localDev} from '$lib/config';
+import {webWalletURL, finality, fallbackProviderOrUrl, chainId, localDev} from '$lib/config';
 import {isCorrected, correctTime} from '../time';
 import {base} from '$app/paths';
 import {chainTempo} from '$lib/blockchain/chainTempo';
@@ -29,7 +29,12 @@ const walletStores = initWeb3W({
     }),
     new PortisModuleLoader('7bc13179-0c86-4e5f-b8d4-ef91cd3e0882', {
       chainId,
-      nodeUrl: typeof fallbackProviderOrUrl === 'string' ? fallbackProviderOrUrl : undefined, // TODO ?
+      nodeUrl:
+        typeof webWalletURL === 'string' && webWalletURL !== ''
+          ? webWalletURL
+          : typeof fallbackProviderOrUrl === 'string' && fallbackProviderOrUrl !== ''
+          ? fallbackProviderOrUrl
+          : undefined, // TODO ?
     }),
   ],
   fallbackNode: fallbackProviderOrUrl,

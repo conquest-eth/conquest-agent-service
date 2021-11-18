@@ -28,10 +28,14 @@ if (chainId !== '1') {
   nativeTokenSymbol = 'ETH'; // TODO
 }
 
+let webWalletURL: string | undefined = import.meta.env.VITE_WEB_WALLET_ETH_NODE as string | undefined;
+
 let localDev = false;
 if (chainId === '1337' || chainId === '31337') {
   localDev = true;
   fallbackProviderOrUrl = import.meta.env.VITE_ETH_NODE_URI_LOCALHOST as string;
+  webWalletURL = (import.meta.env.VITE_WEB_WALLET_ETH_NODE_LOCALHOST as string) || webWalletURL;
+
   // const localEthNode = import.meta.env.VITE_ETH_NODE_URI_LOCALHOST as string;
   // if (localEthNode && localEthNode !== '') {
   //   fallbackProviderOrUrl = localEthNode;
@@ -146,6 +150,7 @@ if (import.meta.env.MODE === 'production') {
 export {
   finality,
   fallbackProviderOrUrl,
+  webWalletURL,
   chainId,
   blockTime,
   chainName,
