@@ -63,7 +63,7 @@
 
   $: owner = $planetState?.owner;
 
-  $: active = $planetState.active;
+  $: active = $planetState?.active;
 
   const alliancesOffset = [-1, 1, 1, -1];
 
