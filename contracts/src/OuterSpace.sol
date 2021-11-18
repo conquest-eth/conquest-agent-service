@@ -1279,49 +1279,45 @@ contract OuterSpace is Proxied {
         uint16 production
     ) internal view returns (bool active, uint32 currentNumSpaceships) {
         (active, currentNumSpaceships) = _activeNumSpaceships(numSpaceshipsData);
-        if (active) {
-            uint256 maxIncrease = ACTIVE_MASK -1;
-            uint256 timePassed = block.timestamp - lastUpdated;
-            uint256 newSpaceships = currentNumSpaceships;
-            if (_productionCapAsDuration > 0) {
-                uint256 decrease = 0;
-                uint256 cap = _acquireNumSpaceships + _productionCapAsDuration * uint256(production) / 1 hours;
-                if (currentNumSpaceships > cap) {
-                    decrease = timePassed; // 1 per second
-                    if (decrease > currentNumSpaceships - cap) {
-                        decrease = currentNumSpaceships - cap;
-                    }
-                    maxIncrease = 0;
-                } else {
-                    maxIncrease = cap - currentNumSpaceships;
-                }
 
+        uint256 maxIncrease = ACTIVE_MASK -1;
+        uint256 timePassed = block.timestamp - lastUpdated;
+        uint256 newSpaceships = currentNumSpaceships;
+        if (_productionCapAsDuration > 0) {
+            uint256 decrease = 0;
+            uint256 cap = _acquireNumSpaceships + _productionCapAsDuration * uint256(production) / 1 hours;
+            if (currentNumSpaceships > cap) {
+                decrease = timePassed; // 1 per second
+                if (decrease > currentNumSpaceships - cap) {
+                    decrease = currentNumSpaceships - cap;
+                }
+                maxIncrease = 0;
+            } else {
+                maxIncrease = cap - currentNumSpaceships;
+            }
+
+            if (active) {
                 uint256 increase = (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
                 if (increase > maxIncrease) {
                     increase = maxIncrease;
                 }
                 newSpaceships += increase;
-                if (decrease > newSpaceships) {
-                    newSpaceships = 0; // not possible
-                } else {
-                    newSpaceships -= decrease;
-                }
+            }
+
+            if (decrease > newSpaceships) {
+                newSpaceships = 0; // not possible
             } else {
-                newSpaceships += (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
+                newSpaceships -= decrease;
             }
-
-
-            // if (_planetCapacity > 0) {
-            //     uint256 maxCapacity = _planetCapacity * uint256(production);
-            //     if (newSpaceships > maxCapacity) {
-            //         newSpaceships = maxCapacity; // do not grow more than that
-            //     }
-            // }
-            if (newSpaceships >= ACTIVE_MASK) {
-                newSpaceships = ACTIVE_MASK - 1;
-            }
-            currentNumSpaceships = uint32(newSpaceships);
+        } else if (active) {
+            newSpaceships += (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
         }
+
+        if (newSpaceships >= ACTIVE_MASK) {
+            newSpaceships = ACTIVE_MASK - 1;
+        }
+        currentNumSpaceships = uint32(newSpaceships);
+
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------

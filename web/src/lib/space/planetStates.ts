@@ -156,7 +156,7 @@ export class PlanetStates {
         exiting = false;
         exitTimeLeft = 0;
         reward = '0'; //BigNumber.from('0'); // TODO ?
-      } else if (contractState.active) {
+      } else {
         let maxIncrease = Math.pow(2, 31);
         const timePassed = time - contractState.lastUpdated;
         if (spaceInfo.productionCapAsDuration && spaceInfo.productionCapAsDuration > 0) {
@@ -175,19 +175,22 @@ export class PlanetStates {
             maxIncrease = cap - numSpaceships;
           }
 
-          let increase = Math.floor(
-            (timePassed * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
-          );
-          if (increase > maxIncrease) {
-            increase = maxIncrease;
+          if (contractState.active) {
+            let increase = Math.floor(
+              (timePassed * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
+            );
+            if (increase > maxIncrease) {
+              increase = maxIncrease;
+            }
+            numSpaceships += increase;
           }
-          numSpaceships += increase;
+
           if (decrease > numSpaceships) {
             numSpaceships = 0; // not possible
           } else {
             numSpaceships -= decrease;
           }
-        } else {
+        } else if (contractState.active) {
           numSpaceships += Math.floor(
             (timePassed * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
           );
@@ -221,7 +224,9 @@ export class PlanetStates {
                 newSpaceships += (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
             }
         */
-      } else if (natives) {
+      }
+
+      if (natives) {
         numSpaceships = planetInfo.stats.natives; // TODO show num Natives
       }
     }
