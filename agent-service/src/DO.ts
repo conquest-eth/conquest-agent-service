@@ -93,6 +93,7 @@ export abstract class DO {
       } catch (e: unknown) {
         const error = e as {message?: string};
         let message = error.message || `Error happen while calling ${fnc}`;
+        this.error(message);
         return errorResponse({code: 5555, message});
         // console.log(message);
         // throw e;
