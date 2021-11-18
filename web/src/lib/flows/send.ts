@@ -25,6 +25,7 @@ export type SendFlow = {
   step:
     | 'IDLE'
     | 'CONNECTING'
+    | 'INACTIVE_PLANET'
     | 'PICK_DESTINATION'
     | 'PICK_ORIGIN'
     | 'TUTORIAL_PRE_FLEET_AMOUNT'
@@ -66,6 +67,10 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       await privateWallet.login();
       this.setData({from}, {step: 'PICK_DESTINATION'});
     }
+  }
+
+  async sendToInactivePlanet(to: {x: number; y: number}): Promise<void> {
+    this.setData({to}, {step: 'INACTIVE_PLANET'});
   }
 
   async sendTo(to: {x: number; y: number}): Promise<void> {

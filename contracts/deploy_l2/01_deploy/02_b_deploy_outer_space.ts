@@ -30,13 +30,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const acquireNumSpaceships = 100000;
   let productionSpeedUp = 1;
   let frontrunningDelay = 30 * 60;
-  let productionCapAsDuration = 3 * 24; // 3 days
+  let productionCapAsDuration = 3 * 24 * 3600; // 3 days
 
   // use a command to increase time in 1337
   if (localTesting) {
     timePerDistance /= 180;
     exitDuration /= 180;
-    productionSpeedUp = 1; // give more time to attack
+    productionSpeedUp = 180; // give more time to attack
     frontrunningDelay /= 180;
   }
 

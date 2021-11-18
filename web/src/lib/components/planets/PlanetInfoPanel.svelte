@@ -109,11 +109,13 @@
         <p class="p-0 mb-1 {textColor}">
           Capacity
           <Help class="inline w-4 h-4">
-            The planet will stop producing planet when it carries that many spaceships.
+            The planet will stop producing planet when it carries that many spaceships. The spaceships number will
+            actually decrease to reach that capacity at a rate of one per second.
           </Help>:
         </p>
         <p class="p-0 mb-1 {textColor}">
-          {planetInfo.stats.production * spaceInfo.productionSpeedUp * spaceInfo.productionCapAsDuration}
+          {spaceInfo.acquireNumSpaceships +
+            Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60)}
         </p>
       </div>
     {/if}

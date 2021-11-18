@@ -30,6 +30,11 @@
     close();
   }
 
+  function sendToInactivePlanet() {
+    sendFlow.sendToInactivePlanet(coords);
+    close();
+  }
+
   function sendFrom() {
     sendFlow.sendFrom(coords);
     close();
@@ -281,11 +286,18 @@
           </div>
         </PanelButton>
         {#if $planetState.natives}
-          <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
-            <div class="w-20">
-              Send Here
+          <PanelButton
+            color="text-red-500"
+            borderColor="border-red-500"
+            label="Send Here"
+            class="m-2"
+            on:click={sendToInactivePlanet}
+          >
+            <div class="w-20 text-red-500">
+              Conquer
               <Help class="inline w-4 h-4">
-                You can send out spaceships in the form of fleets to either attack or send reinforcement.
+                You can send out spaceships to non-productive planet but note that the planet will remain non-active.
+                You ll need to stake <PlayCoin class="w-4 h-4 inline" /> to make it produce spaceships.
               </Help>
             </div>
           </PanelButton>

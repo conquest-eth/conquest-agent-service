@@ -8,6 +8,9 @@
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import SendPreTransactionMessage from '$lib/components/fleets/SendPreTransactionMessage.svelte';
   import {url} from '$lib/utils/url';
+  import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
+  import {flow} from '$lib/blockchain/wallet';
+  import {dataset_dev} from 'svelte/internal';
 
   $: pickNeeded =
     $sendFlow.step === 'PICK_DESTINATION' ? 'destination' : $sendFlow.step === 'PICK_ORIGIN' ? 'origin' : undefined;
@@ -28,6 +31,26 @@
       {#if pickNeeded === 'destination'}Pick the Destination{:else}Pick the Origin{/if}
     </p>
   </Banner>
+{:else if $sendFlow.step === 'INACTIVE_PLANET'}
+  <Modal>
+    <p class="mb-3">
+      You are sending spaceships to an inactive planets. Note that once your fleet capture the planet, it will not
+      produce spaceships until you stake <PlayCoin class="w-4 h-4 inline" /> on it.
+    </p>
+
+    <div class="text-center">
+      <PanelButton
+        label="Cancel"
+        color="text-red-500"
+        borderColor="border-red-500"
+        class="mt-4"
+        on:click={() => sendFlow.cancel()}>Cancel</PanelButton
+      >
+      <PanelButton label="Continue" class="mt-4" on:click={() => sendFlow.sendTo($sendFlow.data.to)}
+        >Continue</PanelButton
+      >
+    </div>
+  </Modal>
 {:else if $sendFlow.step === 'CHOOSE_FLEET_AMOUNT'}
   <!-- <SpaceshipsSent /> -->
   <SendingSpaceships />

@@ -1280,21 +1280,36 @@ contract OuterSpace is Proxied {
     ) internal view returns (bool active, uint32 currentNumSpaceships) {
         (active, currentNumSpaceships) = _activeNumSpaceships(numSpaceshipsData);
         if (active) {
-            uint256 maxIncrease = ACTIVE_MASK;
+            uint256 maxIncrease = ACTIVE_MASK -1;
+            uint256 timePassed = block.timestamp - lastUpdated;
+            uint256 newSpaceships = currentNumSpaceships;
             if (_productionCapAsDuration > 0) {
-                uint256 cap = _acquireNumSpaceships + _productionCapAsDuration * uint256(production) * _productionSpeedUp / 1 hours;
+                uint256 decrease = 0;
+                uint256 cap = _acquireNumSpaceships + _productionCapAsDuration * uint256(production) / 1 hours;
                 if (currentNumSpaceships > cap) {
+                    decrease = timePassed; // 1 per second
+                    if (decrease > currentNumSpaceships - cap) {
+                        decrease = currentNumSpaceships - cap;
+                    }
                     maxIncrease = 0;
                 } else {
                     maxIncrease = cap - currentNumSpaceships;
                 }
+
+                uint256 increase = (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
+                if (increase > maxIncrease) {
+                    increase = maxIncrease;
+                }
+                newSpaceships += increase;
+                if (decrease > newSpaceships) {
+                    newSpaceships = 0; // not possible
+                } else {
+                    newSpaceships -= decrease;
+                }
+            } else {
+                newSpaceships += (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
             }
-            uint256 timePassed = block.timestamp - lastUpdated;
-            uint256 increase = (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
-            if (increase > maxIncrease) {
-                increase = maxIncrease;
-            }
-            uint256 newSpaceships = uint256(currentNumSpaceships) + increase;
+
 
             // if (_planetCapacity > 0) {
             //     uint256 maxCapacity = _planetCapacity * uint256(production);

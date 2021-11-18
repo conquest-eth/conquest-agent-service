@@ -94,7 +94,7 @@
   // }
 </script>
 
-<div class="flex flex-col text-center">
+<div class="flex flex-col text-center text-xs">
   <!-- {#if attacks && attacks.length > 0} -->
   <!-- <PlanetAttackResultPanel attack={attacks[0]} />
   {:else if exitFailure}

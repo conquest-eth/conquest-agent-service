@@ -63,6 +63,8 @@
 
   $: owner = $planetState?.owner;
 
+  $: active = $planetState.active;
+
   const alliancesOffset = [-1, 1, 1, -1];
 
   $: ownerObject = $playersQuery.data?.players[owner];
@@ -91,6 +93,13 @@
   }
 
   $: playerIsOwner = owner?.toLowerCase() === $wallet.address?.toLowerCase();
+
+  $: capacityReached =
+    spaceInfo.productionCapAsDuration &&
+    spaceInfo.productionCapAsDuration > 0 &&
+    $planetState.numSpaceships >=
+      spaceInfo.acquireNumSpaceships +
+        Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60);
 </script>
 
 <div>
@@ -194,7 +203,9 @@ animation-timing-function: linear;
           translate(${x + 0.6 * multiplier}px,${y - 1.2 * multiplier}px)
           scale(${blockieScale}, ${blockieScale});
         width: ${frame.w}px; height: ${frame.h}px;
-        outline: solid ${0.25 / scale}px ${playerIsOwner ? 'lime' : 'white'};
+        outline: ${active ? 'solid ' + 0.25 / scale + 'px' : 'dashed ' + 0.12 / scale + 'px'} ${
+          playerIsOwner ? (capacityReached ? 'red' : 'lime') : capacityReached ? 'white' : '#ddd'
+        };
 `}
         address={owner}
       />
@@ -208,7 +219,9 @@ animation-timing-function: linear;
           translate(${x + 0 * multiplier}px,${y - 0 * multiplier}px)
           scale(${blockieScale}, ${blockieScale});
         width: ${frame.w}px; height: ${frame.h}px;
-        outline: solid ${0.25 / scale}px ${playerIsOwner ? 'lime' : 'white'};
+        outline: ${active ? 'solid ' + 0.25 / scale + 'px' : 'dashed ' + 0.12 / scale + 'px'} ${
+          playerIsOwner ? (capacityReached ? 'red' : 'lime') : capacityReached ? 'white' : '#ddd'
+        };
 `}
         address={owner}
       />

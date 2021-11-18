@@ -158,25 +158,69 @@ export class PlanetStates {
         reward = '0'; //BigNumber.from('0'); // TODO ?
       } else if (contractState.active) {
         let maxIncrease = Math.pow(2, 31);
+        const timePassed = time - contractState.lastUpdated;
         if (spaceInfo.productionCapAsDuration && spaceInfo.productionCapAsDuration > 0) {
+          let decrease = 0;
           const cap =
             spaceInfo.acquireNumSpaceships +
-            (spaceInfo.productionCapAsDuration * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60);
+            Math.floor((spaceInfo.productionCapAsDuration * planetInfo.stats.production) / (60 * 60));
+          // console.log({cap});
           if (numSpaceships > cap) {
+            decrease = timePassed; // 1 per second
+            if (decrease > numSpaceships - cap) {
+              decrease = numSpaceships - cap;
+            }
             maxIncrease = 0;
           } else {
             maxIncrease = cap - numSpaceships;
           }
+
+          let increase = Math.floor(
+            (timePassed * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
+          );
+          if (increase > maxIncrease) {
+            increase = maxIncrease;
+          }
+          numSpaceships += increase;
+          if (decrease > numSpaceships) {
+            numSpaceships = 0; // not possible
+          } else {
+            numSpaceships -= decrease;
+          }
+        } else {
+          numSpaceships += Math.floor(
+            (timePassed * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
+          );
         }
 
-        let increase = Math.floor(
-          ((time - contractState.lastUpdated) * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
-        );
-        if (increase > maxIncrease) {
-          increase = maxIncrease;
-        }
+        /*
+         if (_productionCapAsDuration > 0) {
+                uint256 decrease = 0;
+                uint256 cap = _acquireNumSpaceships + _productionCapAsDuration * uint256(production) * _productionSpeedUp / 1 hours;
+                if (currentNumSpaceships > cap) {
+                    decrease = timePassed; // 1 per second
+                    if (decrease > currentNumSpaceships - cap) {
+                        decrease = currentNumSpaceships - cap;
+                    }
+                    maxIncrease = 0;
+                } else {
+                    maxIncrease = cap - currentNumSpaceships;
+                }
 
-        numSpaceships = contractState.numSpaceships + maxIncrease;
+                uint256 increase = (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
+                if (increase > maxIncrease) {
+                    increase = maxIncrease;
+                }
+                newSpaceships += increase;
+                if (decrease > newSpaceships) {
+                    newSpaceships = 0; // not possible
+                } else {
+                    newSpaceships -= decrease;
+                }
+            } else {
+                newSpaceships += (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
+            }
+        */
       } else if (natives) {
         numSpaceships = planetInfo.stats.natives; // TODO show num Natives
       }
