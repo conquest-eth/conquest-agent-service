@@ -31,6 +31,9 @@ export const InvalidFeesScheduleSubmission = () =>
     message: 'Invalid submission for fee schedule, need to be an array of 3 elements with delay in increasing order',
   });
 
+export const PaymentAddressChangeDetected = () =>
+  errorResponse({code: 5555, message: 'the payment contract address has changed'});
+
 export const InvalidMethod = () => errorResponse({code: 4444, message: 'Invalid Method'});
 
 export const NotAuthorized = () => errorResponse({code: 4202, message: 'Not authorized'});

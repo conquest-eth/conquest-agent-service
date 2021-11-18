@@ -3,6 +3,7 @@ import type {Env} from './types';
 import {contracts, chainId} from './contracts.json';
 import {DO} from './DO';
 import {
+  PaymentAddressChangeDetected,
   TransactionInvalidMissingFields,
   NoReveal,
   AlreadyPending,
@@ -137,6 +138,7 @@ type ListData = {
 type SyncData = {
   blockHash: string;
   blockNumber: number;
+  paymentContractAddress: string;
 };
 
 const gwei = BigNumber.from('1000000000');
@@ -616,7 +618,7 @@ export class RevealQueue extends DO {
   async getSyncState(path: string[]): Promise<Response> {
     let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
     if (!lastSync) {
-      lastSync = {blockNumber: 0, blockHash: ''};
+      lastSync = {blockNumber: 0, blockHash: '', paymentContractAddress: this.paymentContract.address};
     }
     return createResponse({lastSync});
   }
@@ -630,7 +632,17 @@ export class RevealQueue extends DO {
 
     let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
     if (!lastSync) {
-      lastSync = {blockNumber: 0, blockHash: ''};
+      lastSync = {blockNumber: 0, blockHash: '', paymentContractAddress: this.paymentContract.address};
+    }
+    if (!lastSync.paymentContractAddress) {
+      lastSync.paymentContractAddress = this.paymentContract.address;
+    }
+
+    if (lastSync.paymentContractAddress !== this.paymentContract.address) {
+      this.error(
+        `new payment contract dectect : ${this.paymentContract.address} vs last registered: ${lastSync.paymentContractAddress}`
+      );
+      return PaymentAddressChangeDetected();
     }
 
     this.info(`lastSync: ${lastSync.blockNumber}`);
@@ -670,7 +682,10 @@ export class RevealQueue extends DO {
     }
     let lastSyncRefetched = await this.state.storage.get<SyncData | undefined>('sync');
     if (!lastSyncRefetched) {
-      lastSyncRefetched = {blockHash: '', blockNumber: 0};
+      lastSyncRefetched = {blockHash: '', blockNumber: 0, paymentContractAddress: this.paymentContract.address};
+    }
+    if (!lastSyncRefetched.paymentContractAddress) {
+      lastSyncRefetched.paymentContractAddress = this.paymentContract.address;
     }
     if (lastSyncRefetched.blockHash !== lastSync.blockHash) {
       // this.info(`got already updated ?`)
@@ -704,7 +719,23 @@ export class RevealQueue extends DO {
   private async _fetchExtraBalanceFromLogs(balance: BigNumber, player: string): Promise<BigNumber> {
     let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
     if (!lastSync) {
-      lastSync = {blockNumber: 0, blockHash: '0x0000000000000000000000000000000000000000000000000000000000000000'};
+      lastSync = {
+        blockNumber: 0,
+        blockHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+        paymentContractAddress: this.paymentContract.address,
+      };
+    }
+    if (!lastSync.paymentContractAddress) {
+      lastSync.paymentContractAddress = this.paymentContract.address;
+    }
+
+    if (lastSync.paymentContractAddress !== this.paymentContract.address) {
+      this.error(
+        `new payment contract dectect : ${this.paymentContract.address} vs last registered: ${lastSync.paymentContractAddress}`
+      );
+      throw new Error(
+        `new payment contract dectect : ${this.paymentContract.address} vs last registered: ${lastSync.paymentContractAddress}`
+      );
     }
 
     // fetch latest events; (not finalized)
