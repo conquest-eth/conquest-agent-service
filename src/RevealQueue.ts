@@ -266,7 +266,7 @@ export class RevealQueue extends DO {
       })`,
       registrationSubmission.signature
     );
-    // this.log({player, authorized, signature: registrationSubmission.signature});
+    // this.info({player, authorized, signature: registrationSubmission.signature});
     if (!authorized) {
       return NotAuthorized();
     }
@@ -613,8 +613,17 @@ export class RevealQueue extends DO {
     return createResponse({response: await response.json()});
   }
 
+  async getSyncState(path: string[]): Promise<Response> {
+    let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
+    if (!lastSync) {
+      lastSync = {blockNumber: 0, blockHash: ''};
+    }
+    return createResponse({lastSync});
+  }
+
   async syncAccountBalances(path: string[]): Promise<Response> {
     const currentBlockNumber = await this.provider.getBlockNumber();
+    this.info(`syncAccountBalances currentBlockNumber:${currentBlockNumber} (${this.env.ETHEREUM_NODE})`);
     const toBlockNumber = Math.max(0, currentBlockNumber - this.finality); // TODO configure finality
     const toBlockObject = await this.provider.getBlock(toBlockNumber);
     // const toBlock = toBlockObject.hash;
@@ -624,7 +633,7 @@ export class RevealQueue extends DO {
       lastSync = {blockNumber: 0, blockHash: ''};
     }
 
-    // this.log({lastSync});
+    this.info({lastSync});
 
     // if there is no new block, no point processing, this will just handle reorg for no benefit
     if (toBlockNumber <= lastSync.blockNumber) {
@@ -639,13 +648,13 @@ export class RevealQueue extends DO {
       toBlockNumber
     );
 
-    // this.log({events});
+    this.info({events});
     for (const event of events) {
       if (event.removed) {
         continue; //ignore removed
       }
       if (event.args) {
-        // this.log(event.args);
+        // this.info(event.args);
         const payer = event.args.payer.toLowerCase();
         const accountUpdate = (accountsToUpdate[payer] = accountsToUpdate[payer] || {balanceUpdate: BigNumber.from(0)});
         if (event.args.refund) {
@@ -663,7 +672,7 @@ export class RevealQueue extends DO {
       lastSyncRefetched = {blockHash: '', blockNumber: 0};
     }
     if (lastSyncRefetched.blockHash !== lastSync.blockHash) {
-      // this.log(`got already updated ?`)
+      // this.info(`got already updated ?`)
       return createResponse(`got already updated ?`); // TODO ?
     }
 
@@ -687,7 +696,7 @@ export class RevealQueue extends DO {
     lastSyncRefetched.blockNumber = toBlockNumber;
     this.state.storage.put<SyncData>('sync', lastSyncRefetched);
 
-    // this.log({lastSyncRefetched});
+    // this.info({lastSyncRefetched});
     return createResponse({success: true});
   }
 
@@ -895,9 +904,9 @@ export class RevealQueue extends DO {
       //   if (options.maxFeePerGas.lt(feeHistory.reward[0][0])) {
       //     maxPriorityFeePerGas = options.maxFeePerGas;
       //   }
-      //   this.log(feeHistory.reward);
+      //   this.info(feeHistory.reward);
       // } else {
-      //   this.log('no feeHistory')
+      //   this.info('no feeHistory')
       // }
 
       this.info('getting mathcing alliance...');
@@ -1086,7 +1095,7 @@ export class RevealQueue extends DO {
       // quantity == 0 means already submitted , should remove them ?
       return fleet.launchTime;
     } else {
-      // this.log(`cannot get startTIme for fleet ${reveal.fleetID} ${fleet.launchTime} ${fleet.quantity} ${lastestBlockFinalized} ${block.number}`)
+      // this.info(`cannot get startTIme for fleet ${reveal.fleetID} ${fleet.launchTime} ${fleet.quantity} ${lastestBlockFinalized} ${block.number}`)
       return undefined;
     }
   }
