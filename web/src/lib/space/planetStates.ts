@@ -157,11 +157,26 @@ export class PlanetStates {
         exitTimeLeft = 0;
         reward = '0'; //BigNumber.from('0'); // TODO ?
       } else if (contractState.active) {
-        numSpaceships =
-          contractState.numSpaceships +
-          Math.floor(
-            ((time - contractState.lastUpdated) * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
-          );
+        let maxIncrease = Math.pow(2, 31);
+        if (spaceInfo.productionCapAsDuration && spaceInfo.productionCapAsDuration > 0) {
+          const cap =
+            spaceInfo.acquireNumSpaceships +
+            (spaceInfo.productionCapAsDuration * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60);
+          if (numSpaceships > cap) {
+            maxIncrease = 0;
+          } else {
+            maxIncrease = cap - numSpaceships;
+          }
+        }
+
+        let increase = Math.floor(
+          ((time - contractState.lastUpdated) * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
+        );
+        if (increase > maxIncrease) {
+          increase = maxIncrease;
+        }
+
+        numSpaceships = contractState.numSpaceships + maxIncrease;
       } else if (natives) {
         numSpaceships = planetInfo.stats.natives; // TODO show num Natives
       }

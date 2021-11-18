@@ -1282,7 +1282,7 @@ contract OuterSpace is Proxied {
         if (active) {
             uint256 maxIncrease = ACTIVE_MASK;
             if (_productionCapAsDuration > 0) {
-                uint256 cap = _productionCapAsDuration * uint256(production);
+                uint256 cap = _acquireNumSpaceships + _productionCapAsDuration * uint256(production) * _productionSpeedUp / 1 hours;
                 if (currentNumSpaceships > cap) {
                     maxIncrease = 0;
                 } else {

@@ -71,7 +71,7 @@
   {/if}
   <div class="w-full h-1 bg-cyan-300 my-2" />
 
-  <div class="m-2">
+  <div class="m-2 text-xs">
     {#if $planetState}
       <!-- if active-->
       <!-- <div class="m-1">
@@ -103,6 +103,20 @@
           class="value">{$planetState.numSpaceships}</span>
       </div>
     {/if} -->
+
+    {#if spaceInfo.productionCapAsDuration && spaceInfo.productionCapAsDuration > 0}
+      <div class={'m-1 w-36 flex justify-between text-green-400'}>
+        <p class="p-0 mb-1 {textColor}">
+          Capacity
+          <Help class="inline w-4 h-4">
+            The planet will stop producing planet when it carries that many spaceships.
+          </Help>:
+        </p>
+        <p class="p-0 mb-1 {textColor}">
+          {planetInfo.stats.production * spaceInfo.productionSpeedUp * spaceInfo.productionCapAsDuration}
+        </p>
+      </div>
+    {/if}
 
     <div class={'m-1 w-36 flex justify-between' + ($planetState?.active ? ' text-green-400' : ' text-gray-400')}>
       {#if !$planetState}
