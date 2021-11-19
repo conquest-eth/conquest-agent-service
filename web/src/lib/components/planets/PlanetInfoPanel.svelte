@@ -168,7 +168,10 @@
           <PlayCoin class="inline w-4" />
         </p>
         <div class="box-border rounded-md bg-gray-600">
-          <div class="w-full h-3 rounded-md bg-yellow-400" style="width: {Math.floor(planetInfo.stats.stake)}%;" />
+          <div
+            class="w-full h-3 rounded-md bg-yellow-400"
+            style="width: {Math.floor((planetInfo.stats.stake * 100) / 72)}%;"
+          />
         </div>
       </div>
     </div>

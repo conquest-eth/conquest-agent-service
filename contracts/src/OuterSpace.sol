@@ -1199,22 +1199,28 @@ contract OuterSpace is Proxied {
         subY = 1 - int8(data.value8Mod(2, 3));
     }
 
-    // 4,5,5,10,10,15,15, 20, 20, 30,30,40,40,80,80,100
-    bytes32 constant stakeRange = 0x000400050005000A000A000F000F00140014001E001E00280028005000500064;
+    // // 4,5,5,10,10,15,15, 20, 20, 30,30,40,40,80,80,100
+    // bytes32 constant stakeRange = 0x000400050005000A000A000F000F00140014001E001E00280028005000500064;
+
+    // 6, 8, 10, 12, 14, 16, 18, 20, 20, 22, 24, 32, 40, 48, 56, 72
+    bytes32 constant stakeRange = 0x00060008000A000C000E00100012001400140016001800200028003000380048;
 
     function _stake(bytes32 data) internal pure returns (uint16) {
         require(_exists(data), "PLANET_NOT_EXISTS");
         // return data.normal16(4, 0x000400050005000A000A000F000F00140014001E001E00280028005000500064);
         uint8 productionIndex = data.normal8(12); // production affect the stake value
-        uint16 offset = data.normal16(4, 0x0000000100010002000200030003000400040005000500060006000700070008);
-        uint16 stakeIndex = productionIndex + offset;
-        if (stakeIndex < 4) {
-            stakeIndex = 0;
-        } else if (stakeIndex > 19) {
-            stakeIndex = 15;
-        } else {
-            stakeIndex -= 4;
-        }
+
+        // TODO remove or decide otherwise:
+        // uint16 offset = data.normal16(4, 0x0000000100010002000200030003000400040005000500060006000700070008);
+        // uint16 stakeIndex = productionIndex + offset;
+        // if (stakeIndex < 4) {
+        //     stakeIndex = 0;
+        // } else if (stakeIndex > 19) {
+        //     stakeIndex = 15;
+        // } else {
+        //     stakeIndex -= 4;
+        // }
+        uint16 stakeIndex = productionIndex;
         return uint16(uint8(stakeRange[stakeIndex * 2 + 1])); // skip stakeIndex * 2 + 0 as it is always zero in stakeRange
     }
 
