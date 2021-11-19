@@ -445,36 +445,40 @@ export class RevealQueue extends DO {
     const timestamp = getTimestamp();
     // TODO test limit, is 10 good enough ? this will depends on exec time and CRON period and number of tx submitted
     const limit = 10;
-    const reveals = (await this.state.storage.list({prefix: `q_`, limit})) as Map<string, RevealData>;
-    for (const revealEntry of reveals.entries()) {
-      const reveal = revealEntry[1];
-      const queueID = revealEntry[0];
-      const revealTime = reveal.startTime + reveal.duration;
-      if (revealTime <= timestamp) {
-        this.info(`executing ${queueID}...`);
-        await this._executeReveal(queueID, reveal);
-      } else {
-        this.info(
-          `skip reveal (${queueID}) because not yet time (${reveal.startTime} + ${reveal.duration} = ${revealTime}) > ${timestamp}`
-        );
+    const reveals = (await this.state.storage.list({prefix: `q_`, limit})) as Map<string, RevealData> | undefined;
+    if (reveals) {
+      for (const revealEntry of reveals.entries()) {
+        const reveal = revealEntry[1];
+        const queueID = revealEntry[0];
+        const revealTime = reveal.startTime + reveal.duration;
+        if (revealTime <= timestamp) {
+          this.info(`executing ${queueID}...`);
+          await this._executeReveal(queueID, reveal);
+        } else {
+          this.info(
+            `skip reveal (${queueID}) because not yet time (${reveal.startTime} + ${reveal.duration} = ${revealTime}) > ${timestamp}`
+          );
+        }
       }
     }
-
     return createResponse({success: true});
   }
 
   async checkPendingTransactions(path: string[]): Promise<Response> {
     // TODO test limit, is 10 good enough ? this will depends on exec time and CRON period and number of tx submitted
     const limit = 10;
-    const txs = (await this.state.storage.list({prefix: `pending_`, limit})) as Map<string, PendingTransactionData>;
-    for (const txEntry of txs.entries()) {
-      const pendingID = txEntry[0];
-      const pendingReveal = txEntry[1];
-      await this._checkPendingTransaction(pendingID, pendingReveal);
-      // TODO check pending transactions, remove confirmed one, increase gas if queue not moving
-      // nonce can be rebalanced too if needed ?
+    const txs = (await this.state.storage.list({prefix: `pending_`, limit})) as
+      | Map<string, PendingTransactionData>
+      | undefined;
+    if (txs) {
+      for (const txEntry of txs.entries()) {
+        const pendingID = txEntry[0];
+        const pendingReveal = txEntry[1];
+        await this._checkPendingTransaction(pendingID, pendingReveal);
+        // TODO check pending transactions, remove confirmed one, increase gas if queue not moving
+        // nonce can be rebalanced too if needed ?
+      }
     }
-
     return createResponse({success: true});
   }
 
@@ -525,16 +529,18 @@ export class RevealQueue extends DO {
 
   async getPendingTransactions(path: string[]): Promise<Response> {
     const limit = 1000;
-    const txEntries = (await this.state.storage.list({prefix: `pending_`, limit})) as Map<
-      string,
-      PendingTransactionData
-    >;
+    const txEntries = (await this.state.storage.list({prefix: `pending_`, limit})) as
+      | Map<string, PendingTransactionData>
+      | undefined;
     const txs = {};
-    for (const txEntry of txEntries.entries()) {
-      const tx = txEntry[1];
-      const txID = txEntry[0];
-      txs[txID] = tx;
+    if (txEntries) {
+      for (const txEntry of txEntries.entries()) {
+        const tx = txEntry[1];
+        const txID = txEntry[0];
+        txs[txID] = tx;
+      }
     }
+
     return createResponse({txs, success: true});
   }
 
@@ -556,36 +562,42 @@ export class RevealQueue extends DO {
 
   async getQueue(path: string[]): Promise<Response> {
     const limit = 1000;
-    const reveals = (await this.state.storage.list({prefix: `q_`, limit})) as Map<string, RevealData>;
+    const reveals = (await this.state.storage.list({prefix: `q_`, limit})) as Map<string, RevealData> | undefined;
     const queue = {};
-    for (const revealEntry of reveals.entries()) {
-      const reveal = revealEntry[1];
-      const queueID = revealEntry[0];
-      queue[queueID] = {
-        fleetID: reveal.fleetID,
-        from: reveal.from,
-        player: reveal.player,
-        retries: reveal.retries,
-        startTime: reveal.startTime,
-        sendConfirmed: reveal.sendConfirmed,
-        // secretHash: reveal.secret,
-      };
+    if (reveals) {
+      for (const revealEntry of reveals.entries()) {
+        const reveal = revealEntry[1];
+        const queueID = revealEntry[0];
+        queue[queueID] = {
+          fleetID: reveal.fleetID,
+          from: reveal.from,
+          player: reveal.player,
+          retries: reveal.retries,
+          startTime: reveal.startTime,
+          sendConfirmed: reveal.sendConfirmed,
+          // secretHash: reveal.secret,
+        };
+      }
     }
+
     return createResponse({queue, success: true});
   }
 
   async getRevealList(path: string[]): Promise<Response> {
     const limit = 1000;
-    const listDatas = (await this.state.storage.list({prefix: `l_`, limit})) as Map<string, ListData>;
+    const listDatas = (await this.state.storage.list({prefix: `l_`, limit})) as Map<string, ListData> | undefined;
     const list = {};
-    for (const listEntry of listDatas.entries()) {
-      const listData = listEntry[1];
-      const lID = listEntry[0];
-      list[lID] = {
-        queueID: listData.queueID,
-        pendingID: listData.pendingID,
-      };
+    if (listDatas) {
+      for (const listEntry of listDatas.entries()) {
+        const listData = listEntry[1];
+        const lID = listEntry[0];
+        list[lID] = {
+          queueID: listData.queueID,
+          pendingID: listData.pendingID,
+        };
+      }
     }
+
     return createResponse({list, success: true});
   }
 
