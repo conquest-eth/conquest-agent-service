@@ -139,7 +139,7 @@
 
   {#if $selection && $selection.x === planetInfo.location.x && $selection.y === planetInfo.location.y}
     <div
-      style={`z-index: 5; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
+      style={`z-index: 2; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
         blockieScale * 3
       }); width: ${frame.w}px;
   height: ${frame.h}px;`}
