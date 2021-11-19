@@ -39,6 +39,14 @@
   $: walletIsOwner = $wallet.address && $wallet.address?.toLowerCase() === $planetState?.owner?.toLowerCase();
   $: textColor =
     $planetState && $planetState.owner ? (walletIsOwner ? 'text-green-500' : 'text-red-500') : 'text-gray-100';
+
+  $: capacityReached = $planetState
+    ? spaceInfo.productionCapAsDuration &&
+      spaceInfo.productionCapAsDuration > 0 &&
+      $planetState.numSpaceships >=
+        spaceInfo.acquireNumSpaceships +
+          Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60)
+    : false;
 </script>
 
 <div class="absolute inline-block w-48 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4 text-sm">
@@ -105,15 +113,15 @@
     {/if} -->
 
     {#if spaceInfo.productionCapAsDuration && spaceInfo.productionCapAsDuration > 0}
-      <div class={'m-1 w-36 flex justify-between text-green-400'}>
-        <p class="p-0 mb-1 {textColor}">
+      <div class={`m-1 w-36 flex justify-between text-white`}>
+        <p class="p-0 mb-1 text-white">
           Capacity
           <Help class="inline w-4 h-4">
             The planet will stop producing planet when it carries that many spaceships. The spaceships number will
             actually decrease to reach that capacity at a rate of one per second.
           </Help>:
         </p>
-        <p class="p-0 mb-1 {textColor}">
+        <p class={`p-0 mb-1${capacityReached ? ' text-red-600' : ' text-white'}`}>
           {spaceInfo.acquireNumSpaceships +
             Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60)}
         </p>
@@ -129,7 +137,6 @@
           <Help class="inline w-4 h-4">
             When a planet is not owned by anyone, it has some natives population that need to be conquered.
           </Help>
-          :
         </p>
         <p class="p-0 mb-1">{planetInfo.stats.natives}</p>
       {:else}
@@ -139,9 +146,9 @@
             The number of spaceships present on the planet. These spaceships can be used for attacks or left on the
             planet for defense. When a planet is active, that it is, a stake has been deposited, it continuosly produce
             new spaceships.
-          </Help>:
+          </Help>
         </p>
-        <p class="p-0 mb-1 {textColor}">{$planetState.numSpaceships}</p>
+        <p class={`p-0 mb-1${capacityReached ? ' text-red-600' : ' ' + textColor}`}>{$planetState.numSpaceships}</p>
       {/if}
     </div>
 
