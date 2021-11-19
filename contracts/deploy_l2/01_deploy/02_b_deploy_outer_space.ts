@@ -31,6 +31,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let productionSpeedUp = 1;
   let frontrunningDelay = 30 * 60;
   let productionCapAsDuration = 3 * 24 * 3600; // 3 days
+  const fleetSizeFactor6 = 500000;
 
   // use a command to increase time in 1337
   if (localTesting) {
@@ -74,6 +75,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       chainGenesisHash,
       frontrunningDelay,
       productionCapAsDuration,
+      fleetSizeFactor6,
     },
     args: [
       playToken_l2.address,
@@ -86,6 +88,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       productionSpeedUp,
       frontrunningDelay,
       productionCapAsDuration,
+      fleetSizeFactor6,
     ],
     proxy: hre.network.name !== 'mainnet' ? 'postUpgrade' : undefined,
     log: true,

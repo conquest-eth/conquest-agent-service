@@ -19,14 +19,15 @@
   let useAgentService = false;
   let gift = false;
 
-  $: fromPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
-  $: fromPlanetState = planets.planetStateFor(fromPlanetInfo);
+  // TODO investigate why there is need to check sendFlow.data.from ? might need to do the same to sendFlow.data.to below
+  $: fromPlanetInfo = $sendFlow.data?.from && spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
+  $: fromPlanetState = fromPlanetInfo && planets.planetStateFor(fromPlanetInfo);
 
   $: toPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.to.x, $sendFlow.data?.to.y);
   $: toPlanetState = planets.planetStateFor(toPlanetInfo);
 
-  $: toPlayer = $playersQuery.data?.players[$toPlanetState.owner];
-  $: fromPlayer = $playersQuery.data?.players[$fromPlanetState.owner];
+  $: toPlayer = $playersQuery.data?.players[$toPlanetState?.owner];
+  $: fromPlayer = $playersQuery.data?.players[$fromPlanetState?.owner];
 
   // TODO maxSpaceshipsLoaded and invalid message if maxSpaceships == 0
   let fleetAmountSet = false;

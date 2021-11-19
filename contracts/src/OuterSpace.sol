@@ -41,6 +41,7 @@ contract OuterSpace is Proxied {
     uint32 internal immutable _productionSpeedUp;
     uint256 internal immutable _frontrunningDelay;
     uint256 internal immutable _productionCapAsDuration;
+    uint256 internal immutable _fleetSizeFactor6;
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // STORAGE
@@ -153,7 +154,8 @@ contract OuterSpace is Proxied {
         uint32 acquireNumSpaceships,
         uint32 productionSpeedUp,
         uint32 frontrunningDelay,
-        uint32 productionCapAsDuration
+        uint32 productionCapAsDuration,
+        uint32 fleetSizeFactor6
     ) {
         uint32 t = timePerDistance / 4; // the coordinates space is 4 times bigger
         require(t * 4 == timePerDistance, "TIME_PER_DIST_NOT_DIVISIBLE_4");
@@ -168,6 +170,7 @@ contract OuterSpace is Proxied {
         _productionSpeedUp = productionSpeedUp;
         _frontrunningDelay = frontrunningDelay;
         _productionCapAsDuration = productionCapAsDuration;
+        _fleetSizeFactor6 = fleetSizeFactor6;
 
         postUpgrade(
             stakingToken,
@@ -179,7 +182,8 @@ contract OuterSpace is Proxied {
             acquireNumSpaceships,
             productionSpeedUp,
             frontrunningDelay,
-            productionCapAsDuration
+            productionCapAsDuration,
+            fleetSizeFactor6
         );
     }
 
@@ -187,6 +191,7 @@ contract OuterSpace is Proxied {
         IERC20,
         AllianceRegistry,
         bytes32,
+        uint32,
         uint32,
         uint32,
         uint32,
@@ -1101,11 +1106,13 @@ contract OuterSpace is Proxied {
         uint256 numDefense,
         uint256 attack,
         uint256 defense
-    ) internal pure returns (uint32 attackerLoss, uint32 defenderLoss) {
+    ) internal view returns (uint32 attackerLoss, uint32 defenderLoss) {
         if (numAttack == 0 || numDefense == 0) {
             return (0, 0); // this edge case need to be considered, as the result of this function cannot tell from it whos is winning here
         }
-        uint256 attackDamage = (numAttack * attack) / defense;
+
+        uint256 attackFactor = numAttack * ((1000000 - _fleetSizeFactor6) + (_fleetSizeFactor6 * numAttack / numDefense));
+        uint256 attackDamage = (attackFactor * attack) / defense / 1000000;
 
         if (numDefense > attackDamage) {
             // attack fails
@@ -1113,7 +1120,9 @@ contract OuterSpace is Proxied {
             defenderLoss = uint32(attackDamage); // 1 spaceship will be left at least as attackDamage < numDefense
         } else {
             // attack succeed
-            uint256 defenseDamage = uint32((numDefense * defense) / attack);
+            uint256 defenseFactor = numDefense * ((1000000 - _fleetSizeFactor6) + (_fleetSizeFactor6 * numDefense / numAttack));
+            uint256 defenseDamage = uint32((defenseFactor * defense) / attack / 1000000);
+
             if (defenseDamage >= numAttack) {
                 defenseDamage = numAttack - 1; // ensure 1 spaceship left
             }
