@@ -3,6 +3,7 @@ import type {Env} from './types';
 import {contracts, chainId} from './contracts.json';
 import {DO} from './DO';
 import {
+  DifferentChainIdDetected,
   PaymentAddressChangeDetected,
   TransactionInvalidMissingFields,
   NoReveal,
@@ -624,6 +625,11 @@ export class RevealQueue extends DO {
   }
 
   async syncAccountBalances(path: string[]): Promise<Response> {
+    const network = await this.provider.getNetwork();
+    if (network.chainId.toString() !== chainId) {
+      this.error(`Different chainId detected : ${network.chainId} vs expected ${chainId}`);
+      return DifferentChainIdDetected();
+    }
     const currentBlockNumber = await this.provider.getBlockNumber();
     this.info(`syncAccountBalances currentBlockNumber:${currentBlockNumber} (${this.env.ETHEREUM_NODE})`);
     const toBlockNumber = Math.max(0, currentBlockNumber - this.finality); // TODO configure finality

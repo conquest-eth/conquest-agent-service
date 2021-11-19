@@ -31,6 +31,8 @@ export const InvalidFeesScheduleSubmission = () =>
     message: 'Invalid submission for fee schedule, need to be an array of 3 elements with delay in increasing order',
   });
 
+export const DifferentChainIdDetected = () =>
+  errorResponse({code: 5556, message: 'different chainId detected, please check the ethereum node config'});
 export const PaymentAddressChangeDetected = () =>
   errorResponse({code: 5555, message: 'the payment contract address has changed'});
 

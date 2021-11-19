@@ -165,19 +165,17 @@ async function performAction(rawArgs) {
     console.log({env});
     await execute(`${env}npm --prefix subgraph run ${deployCommand} ../contracts/deployments/${network}`);
   } else if (firstArg === 'agent-service:dev') {
-    const {fixedArgs, options} = parseArgs(args, 1, {skipContracts: 'boolean'});
+    console.log(`waiting for web/src/lib/contracts.json...`);
+    await execute(`wait-on web/src/lib/contracts.json`);
+    const {fixedArgs} = parseArgs(args, 1);
     const network = fixedArgs[0] || 'localhost';
-    if (!options.skipContracts) {
-      await performAction(['contracts:export', network]);
-    }
     const env = getEnv(network);
-    await execute(`${env}npm --prefix agent-service run dev`);
+    await execute(`${env}npm --prefix agent-service run dev ../contracts/deployments/localhost`);
   } else if (firstArg === 'agent-service:build') {
     const {fixedArgs, extra} = parseArgs(args, 1, {});
     const network = fixedArgs[0] || process.env.NETWORK_NAME || 'localhost';
     const env = getEnv(network);
-    await performAction(['contracts:export', network || 'localhost']);
-    await execute(`${env}npm --prefix agent-service run build`);
+    await execute(`${env}npm --prefix agent-service run build ../contracts/deployments/${network}`);
   } else if (firstArg === 'agent-service:deploy') {
     const {fixedArgs, extra} = parseArgs(args, 1, {});
     const network = fixedArgs[0];
@@ -186,16 +184,23 @@ async function performAction(rawArgs) {
       return;
     }
     const env = getEnv(network);
-    await performAction(['agent-service:build', network]);
-    await execute(`${env}npm --prefix agent-service run deploy`);
+    // await performAction(['agent-service:build', network]);
+    await execute(`${env}npm --prefix agent-service run deploy ../contracts/deployments/${network}`);
   } else if (firstArg === 'account-service:dev') {
-    await execute(`npm --prefix account-service run dev`);
+    const {fixedArgs, extra} = parseArgs(args, 1, {});
+    const network = fixedArgs[0] || process.env.NETWORK_NAME || 'localhost';
+    const env = getEnv(network);
+    await execute(`${env}npm --prefix account-service run dev ${network}`);
   } else if (firstArg === 'account-service:build') {
-    await execute(`npm --prefix account-service run build`);
+    const {fixedArgs, extra} = parseArgs(args, 1, {});
+    const network = fixedArgs[0] || process.env.NETWORK_NAME || 'localhost';
+    const env = getEnv(network);
+    await execute(`${env}npm --prefix account-service run build ${network}`);
   } else if (firstArg === 'account-service:deploy') {
-    // const {fixedArgs, extra} = parseArgs(args, 0, {});
-    await performAction(['account-service:build']);
-    await execute(`npm --prefix account-service run deploy`);
+    const {fixedArgs, extra} = parseArgs(args, 1, {});
+    const network = fixedArgs[0] || process.env.NETWORK_NAME || 'localhost';
+    const env = getEnv(network);
+    await execute(`${env}npm --prefix account-service run deploy ${network}`);
   } else if (firstArg === 'web:dev') {
     const {fixedArgs, options} = parseArgs(args, 1, {skipContracts: 'boolean'});
     const network = fixedArgs[0] || 'localhost';
@@ -265,7 +270,7 @@ async function performAction(rawArgs) {
   } else if (firstArg === 'dev') {
     execute(`newsh "npm run common:dev"`);
     execute(`newsh "npm run web:dev -- --skipContracts"`);
-    execute(`newsh "npm run agent-service:dev -- --skipContracts"`);
+    execute(`newsh "npm run agent-service:dev"`);
     execute(`newsh "npm run account-service:dev"`);
     execute(`newsh "npm run contracts:node"`);
     execute(`newsh "npm run contracts:local:dev -- --reset"`);
@@ -277,7 +282,7 @@ async function performAction(rawArgs) {
     execute(`newsh "npm run externals"`);
     execute(`newsh "npm run common:dev"`);
     execute(`newsh "npm run web:dev -- --skipContracts"`);
-    execute(`newsh "npm run agent-service:dev -- --skipContracts"`);
+    execute(`newsh "npm run agent-service:dev"`);
     execute(`newsh "npm run account-service:dev"`);
     execute(`newsh "npm run contracts:node"`);
     execute(`newsh "npm run contracts:local:dev -- --reset"`);
