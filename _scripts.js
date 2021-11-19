@@ -259,9 +259,9 @@ async function performAction(rawArgs) {
     }
     await performAction(['contracts:deploy', network]);
     await performAction(['subgraph:deploy', network]);
-    await performAction(['web:deploy', network]);
     await performAction(['agent-service:deploy', network]);
     await performAction(['account-service:deploy', network]);
+    await performAction(['web:deploy', network]);
   } else if (firstArg === 'stop') {
     await execute(`docker-compose down -v`);
   } else if (firstArg === 'externals') {
