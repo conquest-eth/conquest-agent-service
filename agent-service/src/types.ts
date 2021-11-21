@@ -1,5 +1,6 @@
 export type Env = {
   REVEAL_QUEUE: DurableObjectNamespace;
+  NETWORK_NAME: string;
   ENVIRONMENT: 'dev' | 'staging' | 'production';
   ETHEREUM_NODE: string;
   PRIVATE_KEY: string;

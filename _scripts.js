@@ -86,7 +86,7 @@ async function performAction(rawArgs) {
       );
     }
     await execute(
-      `dotenv -e .env -e contracts/.env -- npm --prefix contracts run dev -- --export ../web/src/lib/contracts.json,../agent-service/src/contracts.json`
+      `dotenv -e .env -e contracts/.env -- npm --prefix contracts run dev -- --export ../web/src/lib/contracts.json`
     );
   } else if (firstArg == 'contracts:node') {
     await execute(`dotenv -e .env -e contracts/.env -- npm --prefix contracts run dev:zero`);
@@ -100,16 +100,14 @@ async function performAction(rawArgs) {
     await execute(`wait-on tcp:localhost:8545`);
     await wait(1); // slight delay to ensure ethereum node is actually ready
     await execute(
-      `dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:dev -- --export ../web/src/lib/contracts.json,../agent-service/src/contracts.json`
+      `dotenv -e .env -e contracts/.env -- npm --prefix contracts run local:dev -- --export ../web/src/lib/contracts.json`
     );
   } else if (firstArg === 'contracts:deploy') {
     const {fixedArgs, extra} = parseArgs(args, 1, {});
     const network = fixedArgs[0] || 'localhost';
     const env = getEnv(network);
     await execute(
-      `${env}npm --prefix contracts run deploy ${network} -- --export ../web/src/lib/contracts.json,../agent-service/src/contracts.json ${extra.join(
-        ' '
-      )}`
+      `${env}npm --prefix contracts run deploy ${network} -- --export ../web/src/lib/contracts.json ${extra.join(' ')}`
     );
   } else if (firstArg === 'contracts:export') {
     const {fixedArgs, extra} = parseArgs(args, 1, {});
@@ -119,9 +117,7 @@ async function performAction(rawArgs) {
       return;
     }
     const env = getEnv(network);
-    await execute(
-      `${env}npm --prefix contracts run export ${network} -- ../web/src/lib/contracts.json,../agent-service/src/contracts.json`
-    );
+    await execute(`${env}npm --prefix contracts run export ${network} -- ../web/src/lib/contracts.json`);
   } else if (firstArg === 'contracts:metadata') {
     const {fixedArgs, extra} = parseArgs(args, 1, {});
     const network = fixedArgs[0];
