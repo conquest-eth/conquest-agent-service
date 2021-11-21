@@ -10,7 +10,7 @@ const networkName = args[0];
 const template = Handlebars.compile(fs.readFileSync('./templates/wrangler.toml').toString());
 const environment = networkName === 'localhost' ? 'dev' : 'production';
 const result = template({
-  devMode: environment === 'dev' ? 'true' : 'false',
+  devMode: 'true', // TODOenvironment === 'dev' ? 'true' : 'false',
   networkName,
   DATA_DOG_API_KEY: process.env.DATA_DOG_API_KEY,
   environment,
