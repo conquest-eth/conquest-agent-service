@@ -125,14 +125,18 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     fs.writeFileSync(filename, JSON.stringify(claimKeys, null, 2));
   }
 
+  const qrs: string[] = [];
   let csv = 'used,address,key,amount,url,qrURL\n';
   for (const claimKey of claimKeys) {
     const url = `${mainURL}#tokenClaim=${claimKey.key}`;
     const qrURL = await qrcode.toDataURL(url);
     const address = new Wallet(claimKey.key).address;
     csv += `false,${explorerLink}${address},${claimKey.key},${claimKey.amount},${url},"${qrURL}"\n`;
+    qrs.push(qrURL);
   }
   fs.writeFileSync(`.${network.name}.claimKeys.csv`, csv);
+
+  // fs.writeFileSync('../web/src/qrs.json', JSON.stringify(qrs, null, 2));
 }
 
 // function wait(time: number): Promise<void> {

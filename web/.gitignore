@@ -13,3 +13,7 @@ yalc.lock
 /src/app.html
 /static/robots.txt
 /release
+
+# TODO remove:
+src/qrs.json
+src/routes/qr.svelte
