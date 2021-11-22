@@ -22,6 +22,9 @@ const offset = 0;
 let mainURL = 'https://alpha.conquest.eth.link';
 if (!mainURL.endsWith('/')) {
   mainURL = mainURL + '/';
+  if (hre.network.name === 'coinfest') {
+    mainURL = 'https://conquest-coinfest.on.fleek.co/';
+  }
 }
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
@@ -42,7 +45,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     fs.writeFileSync(pastMnemonicsPath, JSON.stringify(pastMnemonics));
   }
 
-  const claimKeyETHAmount = parseEther('0.15');
+  const claimKeyETHAmount = parseEther('0.35');
   const defaultClaimKeyTokenAmount = parseEther('200');
 
   const claimKeys: {key: string; amount: number; address: string}[] = [];
