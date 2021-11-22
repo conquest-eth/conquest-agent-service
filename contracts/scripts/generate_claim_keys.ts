@@ -1,5 +1,5 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
-import hre from 'hardhat';
+import hre, {deployments} from 'hardhat';
 import {parseEther} from '@ethersproject/units';
 import {BigNumber} from '@ethersproject/bignumber';
 import {Wallet} from '@ethersproject/wallet';
@@ -114,32 +114,28 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     explorerLink = `https://${etherscanNetworkPrefix}etherscan.io/address/`;
   }
 
-  const filename = `.${network.name}.claimKeys`;
+  const filename = `.claimKeys`;
   if (append) {
     let previous: {key: string; amount: number; address: string}[] = [];
     try {
-      previous = JSON.parse(fs.readFileSync(filename).toString());
+      previous = JSON.parse(await deployments.readDotFile(filename));
     } catch (e) {}
-    fs.writeFileSync(
+    await deployments.saveDotFile(
       filename,
       JSON.stringify(previous.concat(claimKeys), null, 2)
     );
   } else {
-    fs.writeFileSync(filename, JSON.stringify(claimKeys, null, 2));
+    await deployments.saveDotFile(filename, JSON.stringify(claimKeys, null, 2));
   }
 
-  const qrs: string[] = [];
   let csv = 'used,address,key,amount,url,qrURL\n';
   for (const claimKey of claimKeys) {
     const url = `${mainURL}#tokenClaim=${claimKey.key}`;
     const qrURL = await qrcode.toDataURL(url);
     const address = new Wallet(claimKey.key).address;
     csv += `false,${explorerLink}${address},${claimKey.key},${claimKey.amount},${url},"${qrURL}"\n`;
-    qrs.push(qrURL);
   }
-  fs.writeFileSync(`.${network.name}.claimKeys.csv`, csv);
-
-  // fs.writeFileSync('../web/src/qrs.json', JSON.stringify(qrs, null, 2));
+  await deployments.saveDotFile(`.claimKeys.csv`, csv);
 }
 
 // function wait(time: number): Promise<void> {
