@@ -65,7 +65,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
       return InvalidMethod();
     }
     let resp = await obj.fetch(url.toString(), request);
-    console.log(resp);
+    // console.log(resp);
     return resp;
   } else if (fnc === 'save') {
     if (method !== 'POST') {

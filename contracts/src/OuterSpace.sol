@@ -129,6 +129,8 @@ contract OuterSpace is Proxied {
 
     // event AllianceLink(IAlliance indexed alliance, address indexed player, bool joining);
 
+    event PlanetReset(uint256 indexed location);
+
     event PlanetExit(address indexed owner, uint256 indexed location);
 
     event ExitComplete(address indexed owner, uint256 indexed location, uint256 stake);
@@ -242,6 +244,14 @@ contract OuterSpace is Proxied {
         address sender = _msgSender();
         _acquire(sender, amount, location);
         _stakingToken.transferFrom(sender, address(this), amount);
+    }
+
+    function resetPlanet(uint256 location) external onlyProxyAdmin {
+        _planets[location].owner = address(0);
+        _planets[location].exitTime = 0;
+        _planets[location].numSpaceships = 0;
+        _planets[location].lastUpdated = 0;
+        emit PlanetReset(location);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
