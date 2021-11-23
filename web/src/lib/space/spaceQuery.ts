@@ -17,7 +17,7 @@ export type PlanetQueryState = {
   lastUpdated: string;
   exitTime: string;
   active: boolean;
-  reward: string;
+  rewardGiver: string;
 };
 
 export type PlanetContractState = {
@@ -27,7 +27,7 @@ export type PlanetContractState = {
   lastUpdated: number;
   exitTime: number;
   active: boolean;
-  reward: string;
+  rewardGiver: string;
 };
 
 export type OwnerParsedEvent = {
@@ -147,7 +147,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     lastUpdated
     exitTime
     active
-    reward
+    rewardGiver
   }
   chain(id: "Chain") {
     blockHash
@@ -170,7 +170,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     lastUpdated
     exitTime
     active
-    reward
+    rewardGiver
   }
   fleetsArrivedFromYou: fleetArrivedEvents(where: {owner: $owner}) {
     id
@@ -277,7 +277,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
           lastUpdated: parseInt(v.lastUpdated),
           exitTime: parseInt(v.exitTime),
           active: v.active,
-          reward: v.reward,
+          rewardGiver: v.rewardGiver,
         };
       }),
       space: {

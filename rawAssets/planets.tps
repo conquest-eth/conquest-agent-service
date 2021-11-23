@@ -6,7 +6,7 @@
         <key>texturePackerVersion</key>
         <string>4.4.0</string>
         <key>fileName</key>
-        <string>C:/dev/wighawag/conquest-eth/rawAssets/planets.tps</string>
+        <string>/home/wighawag/dev/wighawag/etherplay/conquest-eth/rawAssets/planets.tps</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -232,6 +232,21 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">DA_sun.png</key>
+            <key type="filename">Pokt_sun.png</key>
+            <key type="filename">Xaya_sun.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>16,16,32,32</rect>
+                <key>scale9Paddings</key>
+                <rect>16,16,32,32</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">Jungle32.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -284,32 +299,6 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">xaya-64.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>16,16,32,32</rect>
-                <key>scale9Paddings</key>
-                <rect>16,16,32,32</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
-            <key type="filename">xaya.png</key>
-            <struct type="IndividualSpriteSettings">
-                <key>pivotPoint</key>
-                <point_f>0.5,0.5</point_f>
-                <key>scale9Enabled</key>
-                <false/>
-                <key>scale9Borders</key>
-                <rect>68,68,135,135</rect>
-                <key>scale9Paddings</key>
-                <rect>68,68,135,135</rect>
-                <key>scale9FromFile</key>
-                <false/>
-            </struct>
         </map>
         <key>fileList</key>
         <array>
@@ -338,8 +327,9 @@
             <filename>Terran_2.png</filename>
             <filename>Tundra.png</filename>
             <filename>Jungle48.png</filename>
-            <filename>xaya-64.png</filename>
-            <filename>xaya.png</filename>
+            <filename>Xaya_sun.png</filename>
+            <filename>Pokt_sun.png</filename>
+            <filename>DA_sun.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

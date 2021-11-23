@@ -132,7 +132,7 @@ export class PlanetStates {
 
     let owner: string | undefined = undefined;
     let active = false;
-    let reward = '';
+    let rewardGiver = '';
     let numSpaceships = planetInfo.stats.natives;
     let exiting = false;
     let exitTimeLeft = 0; // this.spaceInfo.exitDuration - (time - planet.exitTime);
@@ -142,7 +142,7 @@ export class PlanetStates {
     if (contractState) {
       owner = contractState.owner;
       active = contractState.active;
-      reward = contractState.reward ? contractState.reward.toString() : '0';
+      rewardGiver = contractState.rewardGiver ? contractState.rewardGiver : '';
       numSpaceships = contractState.numSpaceships;
       exiting = !!contractState.exitTime;
       exitTimeLeft = Math.max(spaceInfo.exitDuration - (time - contractState.exitTime), 0);
@@ -155,7 +155,7 @@ export class PlanetStates {
         active = false;
         exiting = false;
         exitTimeLeft = 0;
-        reward = '0'; //BigNumber.from('0'); // TODO ?
+        rewardGiver = '';
       } else {
         let maxIncrease = Math.pow(2, 31);
         const timePassed = time - contractState.lastUpdated;
@@ -269,7 +269,7 @@ export class PlanetStates {
       natives,
       capturing,
       inReach,
-      reward: reward.toString(),
+      rewardGiver,
       requireClaimAcknowledgement,
     };
   }
@@ -289,7 +289,7 @@ export class PlanetStates {
   //     // let capturing: (TxStatus & {txHash: string}) | null | 'Loading' = null;
   //     let owner = planet.owner;
   //     let active = planet.active;
-  //     let reward = planet.reward;
+  //     let rewardGiver = planet.rewardGiver;
   //     let numSpaceships = planet.numSpaceships;
   //     let exiting = !!planet.exitTime;
   //     let exitTimeLeft = 0; // this.spaceInfo.exitDuration - (time - planet.exitTime);
@@ -301,7 +301,7 @@ export class PlanetStates {
   //       active = false;
   //       exiting = false;
   //       exitTimeLeft = 0;
-  //       reward = '0'; //BigNumber.from('0'); // TODO ?
+  //       rewardGiver = '';
   //     } else if (planet.active) {
   //       numSpaceships =
   //         planet.numSpaceships +
@@ -327,7 +327,7 @@ export class PlanetStates {
   //         natives,
   //         capturing: null, // TODO
   //         inReach,
-  //         reward: reward.toString(),
+  //         rewardGiver,
   //       },
   //     });
   //   }

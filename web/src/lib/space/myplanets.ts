@@ -15,7 +15,7 @@ export const myplanetInfos: Readable<PlanetInfo[]> = derived(
     const planets = $spaceQueryWithPendingActions.queryState?.data?.planets;
     if (planets) {
       return planets
-        .filter((v) => v.owner.toLowerCase() === wallet.address?.toLowerCase())
+        .filter((v) => v.owner?.toLowerCase() === wallet.address?.toLowerCase())
         .map((v) => {
           const pos = locationToXY(v.id);
           return spaceInfo.getPlanetInfo(pos.x, pos.y);

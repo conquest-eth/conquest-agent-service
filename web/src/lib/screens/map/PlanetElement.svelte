@@ -54,16 +54,44 @@
       throw new Error(`no frame type for ${planetInfo.type}`);
     }
   }
-  const frameInfo = (planetsFrame.frames as any)[frameType] as {frame: Frame};
-  const frame = frameInfo.frame;
+  let frameInfo = (planetsFrame.frames as any)[frameType] as {frame: Frame};
+  let frame = frameInfo.frame;
   const multiplier = planetInfo.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
-  const scale = 0.025 * multiplier;
-  const x = planetInfo.location.globalX - frame.w / 2;
-  const y = planetInfo.location.globalY - frame.h / 2;
+  let scale = 0.025 * multiplier;
+  let x = planetInfo.location.globalX - frame.w / 2;
+  let y = planetInfo.location.globalY - frame.h / 2;
 
   $: owner = $planetState?.owner;
 
   $: active = $planetState?.active;
+
+  let rewardAttached = false;
+  $: if ($planetState && $planetState?.rewardGiver !== '' && $planetState?.rewardGiver !== '0') {
+    // console.log({rewardGiver: $planetState.rewardGiver});
+    if ($planetState?.rewardGiver === '0xdddddddddddddddddddddddddddddddddddddddd') {
+      frameType = 'Xaya_sun.png';
+    } else if ($planetState?.rewardGiver === '0x1111111111111111111111111111111111111111') {
+      frameType = 'Pokt_sun.png';
+    } else if ($planetState?.rewardGiver === '0x2222222222222222222222222222222222222222') {
+      frameType = 'DA_sun.png';
+    }
+
+    frameInfo = (planetsFrame.frames as any)[frameType] as {frame: Frame};
+    frame = frameInfo.frame;
+    scale = 0.025 * multiplier;
+    x = planetInfo.location.globalX - frame.w / 2;
+    y = planetInfo.location.globalY - frame.h / 2;
+    rewardAttached = true;
+  } else {
+    // TODO remove duplication above
+    frameType = planetTypesToFrame[planetInfo.type % planetTypesToFrame.length];
+    frameInfo = (planetsFrame.frames as any)[frameType] as {frame: Frame};
+    frame = frameInfo.frame;
+    scale = 0.025 * multiplier;
+    x = planetInfo.location.globalX - frame.w / 2;
+    y = planetInfo.location.globalY - frame.h / 2;
+    rewardAttached = false;
+  }
 
   const alliancesOffset = [-1, 1, 1, -1];
 
@@ -104,9 +132,31 @@
 </script>
 
 <div>
-  {#if zoomIn}
+  {#if rewardAttached}
+    <div
+      style={`position: absolute; transform: translate(${x}px,${y}px) scale(${blockieScale * 2}, ${
+        blockieScale * 2
+      }); background: url(${base}${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
+        frame.w
+      }px; height: ${frame.h}px;
+`}
+      data={`${planetInfo.location.x}, ${planetInfo.location.y} : ${planetInfo.stats.subX}, ${planetInfo.stats.subY} -| ${planetInfo.location.globalX}, ${planetInfo.location.globalY}`}
+    />
+  {:else if zoomIn}
+    <!-- {#if zoomIn} -->
     <div
       style={`position: absolute; transform: translate(${x}px,${y}px) scale(${scale}, ${scale}); background: url(${base}${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
+        frame.w
+      }px; height: ${frame.h}px;
+  `}
+      data={`${planetInfo.location.x}, ${planetInfo.location.y} : ${planetInfo.stats.subX}, ${planetInfo.stats.subY} -| ${planetInfo.location.globalX}, ${planetInfo.location.globalY}`}
+    />
+  {:else if rewardAttached}
+    <!-- TODO remove, handled above-->
+    <div
+      style={`position: absolute; transform: translate(${x}px,${y}px) scale(${blockieScale * 2}, ${
+        blockieScale * 2
+      }); background: url(${base}${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
         frame.w
       }px; height: ${frame.h}px;
   `}
@@ -201,7 +251,7 @@ animation-timing-function: linear;
         z-index: 1;
         position: absolute;
         transform:
-          translate(${x + 0.6 * multiplier}px,${y - 1.2 * multiplier}px)
+          translate(${x + 0.6 * multiplier}px,${rewardAttached ? y - 1.4 * multiplier : y - 1.2 * multiplier}px)
           scale(${blockieScale}, ${blockieScale});
         width: ${frame.w}px; height: ${frame.h}px;
         outline: ${active ? 'solid ' + 0.25 / scale + 'px' : 'dashed ' + 0.12 / scale + 'px'} ${

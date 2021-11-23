@@ -133,7 +133,7 @@ contract OuterSpace is Proxied {
 
     event ExitComplete(address indexed owner, uint256 indexed location, uint256 stake);
 
-    event RewardSetup(uint256 indexed location, uint256 rewardId);
+    event RewardSetup(uint256 indexed location, address indexed giver, uint256 rewardId);
     event RewardToWithdraw(address indexed owner, uint256 indexed location, uint256 indexed rewardId);
 
     event StakeToWithdraw(address indexed owner, uint256 newStake);
@@ -248,6 +248,7 @@ contract OuterSpace is Proxied {
     // REWARD SETUP
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // TODO : ERC20, ERC721, ERC1155
+    // remove sponsor, use msg.sender and this could be special contracts
     function addReward(uint256 location, address sponsor) external onlyProxyAdmin {
         Planet memory planet = _planets[location];
         if (_hasJustExited(planet.exitTime)) {
@@ -262,7 +263,7 @@ contract OuterSpace is Proxied {
         // TODO should it fails if different sponsor added reward before
 
         // TODO rewardId association with the actual rewards // probably contract address holding the reward
-        emit RewardSetup(location, rewardId);
+        emit RewardSetup(location, sponsor, rewardId);
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
