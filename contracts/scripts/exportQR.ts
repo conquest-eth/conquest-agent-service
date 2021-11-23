@@ -1,6 +1,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import hre, {deployments} from 'hardhat';
 import fs from 'fs';
+// import qrcode from 'qrcode';
 
 // const args = process.argv.slice(2);
 
@@ -18,6 +19,8 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           .replace(`"`, ``) // remove double quote 2
           .replace('***', 'data:image/png;base64,') // reinstantiate the starting uri
       );
+      // const qrURL = await qrcode.toDataURL(url);
+      // qrs.push(qrURL);
     }
   }
   fs.writeFileSync('../web/src/qrs.json', JSON.stringify(qrs, null, 2));

@@ -19,11 +19,11 @@ if (isNaN(numClaimKey) || numClaimKey === 0 || numClaimKey > 100) {
 }
 const offset = 0;
 
-let mainURL = 'https://alpha.conquest.eth.link';
+let mainURL = 'https://alpha.conquest.etherplay.io/';
 if (!mainURL.endsWith('/')) {
   mainURL = mainURL + '/';
   if (hre.network.name === 'coinfest') {
-    mainURL = 'https://conquest-coinfest.on.fleek.co/';
+    mainURL = 'https://coinfest.conquest.etherplay.io/';
   }
 }
 
@@ -34,7 +34,8 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
 
   let mnemonic =
     'curious erupt response napkin sick ketchup hard estate comic club female sudden';
-  if (network.live) {
+  // TODO check hardhat-deploy: if (network.live) {
+  if (network.name !== 'hardhat' && network.name !== 'localhost') {
     mnemonic = Wallet.createRandom().mnemonic.phrase;
     const pastMnemonicsFilename = `.claimKeys.mnemonics`;
     let pastMnemonics = [];
