@@ -122,7 +122,7 @@
     <p>
       Welcome to
       <span class="text-cyan-600">conquest.eth</span>
-      a game of war and diplomacy running on
+      a game of strategy and diplomacy running on
       <a href="https://ethereum.org" target="_blank" class="text-cyan-100">ethereum</a>.
     </p>
     <p class="mt-3">

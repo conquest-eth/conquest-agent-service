@@ -13,7 +13,7 @@
 </script>
 
 <svelte:head>
-  <title>conquest.eth, An unstoppable game of open-ended war and diplomacy running on Ethereum</title>
+  <title>conquest.eth, An unstoppable game of strategy and diplomacy running on Ethereum</title>
 </svelte:head>
 
 <NoInstallPrompt />

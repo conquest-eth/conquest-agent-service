@@ -71,7 +71,7 @@
         on:load={() => logo.gameLogoReady()}
       />
       <p class="m-6 mt-20 text-gray-500 text-2xl font-black">
-        An unstoppable and open-ended game of war and diplomacy running on ethereum.
+        An unstoppable and open-ended game of strategy and diplomacy running on ethereum.
       </p>
     </div>
   </div>
