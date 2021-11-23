@@ -20,11 +20,12 @@ if (isNaN(numClaimKey) || numClaimKey === 0 || numClaimKey > 100) {
 const offset = 0;
 
 let mainURL = 'https://alpha.conquest.etherplay.io/';
+if (hre.network.name === 'coinfest') {
+  mainURL = 'https://coinfest.conquest.etherplay.io/';
+}
+
 if (!mainURL.endsWith('/')) {
   mainURL = mainURL + '/';
-  if (hre.network.name === 'coinfest') {
-    mainURL = 'https://coinfest.conquest.etherplay.io/';
-  }
 }
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
