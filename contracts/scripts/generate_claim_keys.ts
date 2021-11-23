@@ -36,13 +36,17 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     'curious erupt response napkin sick ketchup hard estate comic club female sudden';
   if (network.live) {
     mnemonic = Wallet.createRandom().mnemonic.phrase;
-    const pastMnemonicsPath = `.${network.name}.claimKeys.mnemonics`;
+    const pastMnemonicsFilename = `.claimKeys.mnemonics`;
     let pastMnemonics = [];
     try {
-      pastMnemonics = JSON.parse(fs.readFileSync(pastMnemonicsPath).toString());
+      const mnemonicSrc = await deployments.readDotFile(pastMnemonicsFilename);
+      pastMnemonics = JSON.parse(mnemonicSrc);
     } catch (e) {}
     pastMnemonics.push(mnemonic);
-    fs.writeFileSync(pastMnemonicsPath, JSON.stringify(pastMnemonics));
+    await deployments.saveDotFile(
+      pastMnemonicsFilename,
+      JSON.stringify(pastMnemonics)
+    );
   }
 
   const claimKeyETHAmount = parseEther('0.35');
