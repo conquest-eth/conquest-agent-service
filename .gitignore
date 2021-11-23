@@ -7,3 +7,4 @@ conquest-eth.code-workspace
 .*claimKeys*
 .yalc
 yalc.lock
+exec.sh

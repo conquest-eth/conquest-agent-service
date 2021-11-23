@@ -26,24 +26,32 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericEvent[]> {
 
     const query = `
     query($timestamp: BigInt!){
-ownerEvents(orderDirection: desc orderBy: blockNumber where: {timestamp_gt: $timestamp} first: 1000) {
-  id
-   __typename
-   transaction {id}
-   timestamp
-   owner {id}
-   ... on  PlanetEvent{
-      planet {id}
-    }
-   ... on PlanetStakeEvent{
-    numSpaceships
-    stake
-   }
-   ... on PlanetExitEvent{
+      ownerEvents(
+        orderDirection: desc
+        orderBy: blockNumber
+        where: {
+          owner_not_in: ["0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20", "0xe53cd71271acadbeb0f64d9c8c62bbddc8ca9e66"]
+          timestamp_gt: $timestamp
+        }
+        first: 1000
+      ) {
+    id
+    __typename
+    transaction {id}
+    timestamp
+    owner {id}
+    ... on  PlanetEvent{
+       planet {id}
+     }
+    ... on PlanetStakeEvent{
+      numSpaceships
+      stake
+     }
+    ... on PlanetExitEvent{
       exitTime
       stake
-   }
-   ... on  FleetArrivedEvent{
+    }
+    ... on  FleetArrivedEvent{
       fleetLoss
       planetLoss
       inFlightFleetLoss
@@ -54,11 +62,11 @@ ownerEvents(orderDirection: desc orderBy: blockNumber where: {timestamp_gt: $tim
       won
       quantity
     }
-   ... on FleetSentEvent{
+    ... on FleetSentEvent{
       fleet{id}
       quantity
-   }
-}
+    }
+  }
 }
 
 `;
