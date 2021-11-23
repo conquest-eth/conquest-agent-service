@@ -43,6 +43,7 @@ query($first: Int! $lastId: ID!) {
   owners(first: $first where: {
     totalStaked_gt: 0
     id_gt: $lastId
+    id_not_in: ["0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20", "0xe53cd71271acadbeb0f64d9c8c62bbddc8ca9e66"]
   }) {
     id
     currentStake
@@ -77,7 +78,7 @@ query($first: Int! $lastId: ID!) {
           return {
             id: p.id,
             total: total.div(DECIMALS_18).toNumber(),
-            score: total.sub(playTokenGiven).mul(1000000).div(playTokenGiven).toNumber(),
+            score: total.sub(playTokenGiven).mul(1000000).div(playTokenGiven).add(1000000).toNumber(),
             currentStake: currentStake.div(DECIMALS_18).toNumber(),
             playTokenToWithdraw: playTokenToWithdraw.div(DECIMALS_18).toNumber(),
             playTokenBalance: playTokenBalance.div(DECIMALS_18).toNumber(),

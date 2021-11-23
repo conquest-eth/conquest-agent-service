@@ -22,7 +22,7 @@
     </p>
     <p class="text-gray-400">Player who received x tokens will receive x tokens more</p>
     <p class="text-gray-400">The score will adjust on reception of these extra tokens.</p>
-    <p class="text-gray-400">score = 1000 * (((token in control) - (token given)) / (token given))</p>
+    <p class="text-gray-400">score = 10000 + 10000 * (((token in control) - (token given)) / (token given))</p>
     {#if $highscores.error}
       <span class="text-red-600">{$highscores.error}</span>
     {:else if $highscores.step === 'IDLE'}
