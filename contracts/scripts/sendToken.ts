@@ -20,7 +20,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   }
   await execute(
     'PlayToken_L2',
-    {from: claimKeyDistributor, value: '0', log: true},
+    {from: claimKeyDistributor, value: '0', log: true, autoMine: true},
     'distributeAlongWithETH',
     addresses,
     parseEther(amount)

@@ -23,7 +23,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   // console.log({amounts: amounts.map((v) => v.toString()), addresses, etherAmount: etherAmount.toString()});
   await execute(
     'PlayToken_L2',
-    {from: claimKeyDistributor, value: etherAmount, log: true},
+    {from: claimKeyDistributor, value: etherAmount, log: true, autoMine: true},
     'distributeVariousAmountsAlongWithETH',
     addresses,
     amounts

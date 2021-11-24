@@ -82,7 +82,7 @@ async function main() {
   console.log({message0, message1});
   await deployments.execute(
     'BasicAllianceFactory',
-    {from: players[0].address},
+    {from: players[0].address, log: true, autoMine: true},
     'instantiate',
     players[0].address,
     [

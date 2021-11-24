@@ -11,7 +11,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     console.log(planet.location);
     const receipt = await execute(
       'OuterSpace',
-      {from: deployer, log: true},
+      {from: deployer, log: true, autoMine: true},
       'addReward',
       planet.location,
       '0xdddddddddddddddddddddddddddddddddddddddd'

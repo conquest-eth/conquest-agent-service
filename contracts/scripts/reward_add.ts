@@ -36,7 +36,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {execute} = hre.deployments;
   await execute(
     'OuterSpace',
-    {from: deployer, log: true},
+    {from: deployer, log: true, autoMine: true},
     'addReward',
     location,
     giverAddress

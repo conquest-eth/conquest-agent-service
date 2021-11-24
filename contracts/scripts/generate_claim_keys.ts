@@ -96,7 +96,12 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   });
   const receipt = await execute(
     'PlayToken_L2',
-    {from: claimKeyDistributor, value: totalETHAmount.toString(), log: true},
+    {
+      from: claimKeyDistributor,
+      value: totalETHAmount.toString(),
+      log: true,
+      autoMine: true,
+    },
     'distributeVariousAmountsAlongWithETH',
     addresses,
     amounts

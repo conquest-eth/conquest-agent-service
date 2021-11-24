@@ -20,7 +20,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (anyNotAuthorized) {
     await execute(
       'PlayToken_L2',
-      {from: deployer, log: true},
+      {from: deployer, log: true, autoMine: true},
       'enableRequireAuthorization',
       addressesToAuthorize
     );
