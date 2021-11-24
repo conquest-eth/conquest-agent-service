@@ -150,8 +150,10 @@
 {:else}
   <!-- <Search /> -->
 {/if}
-<div class="flex right-1/4 absolute">
-  <PlanetsListPanel />
-  <FleetsList />
-  <EventsList />
+<div class="flex right-0 bottom-0 md:top-0 absolute md:right-1/4">
+  <div class="md:flex ">
+    <PlanetsListPanel />
+    <FleetsList />
+    <EventsList />
+  </div>
 </div>

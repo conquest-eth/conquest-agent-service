@@ -7,7 +7,7 @@
 
 <!-- $: percent = Math.floor(((value - min) / div) / (div - min)); -->
 
-<div class="m-1 w-36">
+<div class="m-1 w-26 md:w-36">
   <div class="w-full box-border">
     <p class="text-cyan-300 p-0 mb-1">
       {name}

@@ -49,7 +49,7 @@
     : false;
 </script>
 
-<div class="absolute inline-block w-48 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4 text-sm">
+<div class="absolute inline-block w-36 md:w-48 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4 text-sm">
   <div class="flex m-1">
     {#if $planetState && $planetState.owner}
       <h2 class={`flex-auto text-center pt-1 font-bold ${textColor} inline`}>{planetInfo.stats.name}</h2>
@@ -87,7 +87,7 @@
         <span id="active" class="value">{$planetState.active}</span>
       </div> -->
       {#if $planetState.exiting}
-        <div class="m-1 w-36 flex justify-between text-red-400">
+        <div class="m-1 w-26 md:w-36 flex justify-between text-red-400">
           <p class="p-0 mb-1">Exiting in:</p>
           <p class="p-0 mb-1">{timeToText($planetState.exitTimeLeft)}</p>
         </div>
@@ -113,7 +113,7 @@
     {/if} -->
 
     {#if spaceInfo.productionCapAsDuration && spaceInfo.productionCapAsDuration > 0}
-      <div class={`m-1 w-36 flex justify-between text-white`}>
+      <div class={`m-1 w-26 md:w-36 flex justify-between text-white`}>
         <p class="p-0 mb-1 text-white">
           Capacity
           <Help class="inline w-4 h-4">
@@ -128,7 +128,7 @@
       </div>
     {/if}
 
-    <div class={'m-1 w-36 flex justify-between' + ($planetState?.active ? ' text-green-400' : ' text-gray-400')}>
+    <div class={'m-1 w-26 md:w-36 flex justify-between' + ($planetState?.active ? ' text-green-400' : ' text-gray-400')}>
       {#if !$planetState}
         <p class="p-0 mb-1">loading ...</p>
       {:else if $planetState.natives}
@@ -152,7 +152,7 @@
       {/if}
     </div>
 
-    <div class="m-1 w-36 text-yellow-400 ">
+    <div class="m-1 w-26 md:w-36 text-yellow-400 ">
       <div class="w-full box-border">
         <p class="p-0 mb-1">
           Stake

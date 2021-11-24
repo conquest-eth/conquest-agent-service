@@ -56,8 +56,6 @@
     <path
       id="motionPath"
       fill="none"
-      stroke="#000000"
-      stroke-miterlimit="20"
       d="
         M 150, 100
         m -75, 0
