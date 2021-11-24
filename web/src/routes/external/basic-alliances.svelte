@@ -138,7 +138,7 @@
         {#if error}
           {error}
         {/if}
-        <PanelButton on:click={() => wallet.connect()} label="load">load</PanelButton>
+        <PanelButton on:click={() => flow.connect()} label="load">load</PanelButton>
       {:else if !id}
         <!-- nothing -->
       {:else if $wallet.address.toLowerCase() !== admin}
@@ -169,7 +169,12 @@
         </div>
       {/if}
 
-      <p class="m-8">Maybe you want to create your own alliance?</p>
+      {#if admin && $wallet.address?.toLowerCase() === admin}
+        <p class="m-8">Maybe you want to create a new alliance?</p>
+      {:else}
+        <p class="m-8">Maybe you want to create your own alliance?</p>
+      {/if}
+
       <div>
         <!-- <div>
           <textarea bind:value={joinMessage} class="bg-gray-800 w-80 h-80" />
