@@ -48,6 +48,7 @@
     "web:build": "node ./_scripts.js web:build",
     "web:serve": "node ./_scripts.js web:serve",
     "web:build:serve": "node ./_scripts.js web:build:serve",
+    "web:sentry": "npm --prefix web run sentry",
     "---------------------- DEPLOYMENT ----------------------": "deployments",
     "deploy": "node ./_scripts.js deploy",
     "deploy:noweb": "node ./_scripts.js deploy:noweb",

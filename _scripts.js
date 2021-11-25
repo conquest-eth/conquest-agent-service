@@ -213,8 +213,6 @@ async function performAction(rawArgs) {
     await performAction(['contracts:export', network || 'localhost']);
     await execute(`${env}npm run common:build`);
     await execute(`${env}npm --prefix web run build`);
-  } else if (firstArg === 'web:sentry') {
-    await execute(`${env}npm --prefix web run sentry`);
   } else if (firstArg === 'web:serve') {
     const {fixedArgs, extra} = parseArgs(args, 1, {});
     const network = fixedArgs[0];
