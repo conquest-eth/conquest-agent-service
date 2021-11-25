@@ -25,16 +25,16 @@
 
 <div class="flex-col" use:clickOutside on:click_outside={() => (isToggled = false)}>
   <div
-    class="top-0 py-3 w-32 text-center relative bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 mt-4 text-sm"
+    class="top-0 md:p-3 p-1  w-32 text-center relative bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 mt-4 text-sm"
   >
     <button on:click={() => (isToggled = !isToggled)} class="text-white md:w-full">My fleets</button>
   </div>
   {#if isToggled}
     <div
-      class="top-0 text-center absolute bg-gray-900 bg-opacity-80 text-cyan-300 border-2 p-3  border-cyan-300 mt-16 text-sm"
+    class="top-0 md:p-3 text-center md:absolute bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 md:mt-16 text-sm"
     >
       {#if $fleetList.fleets.length}
-        <ul class="overflow-auto max-h-32 px-3 " style="cursor: pointer;">
+        <ul class="overflow-auto max-h-32 px-1 md:px-3 w-48 md:w-auto" style="cursor: pointer;">
           {#each $fleetList.fleets as fleet}
             <li style="display: block" class="text-yellow-300 my-3" on:click={() => onFleetSelect(fleet)}>
               * {fleet.from.stats.name} to {fleet.to.stats.name}
