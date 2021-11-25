@@ -3,7 +3,7 @@
   import {wallet, chain} from '$lib/blockchain/wallet';
   import Button from '$lib/components/generic/PanelButton.svelte';
   import {chainName} from '$lib/config';
-  import { privateWallet } from '$lib/account/privateWallet';
+  import {privateWallet} from '$lib/account/privateWallet';
 </script>
 
 {#if $tokenClaim.inUrl}
@@ -15,7 +15,10 @@
       </div>
     </div>
     <div class="justify-center mt-10 text-center text-white">
-      {#if $wallet.state === 'Ready'}
+      {#if $tokenClaim.error}
+        <p class="m-5 text-red-500">{$tokenClaim.error}</p>
+        <Button class="mt-4" label="ok" on:click={() => tokenClaim.acknowledgeError()}>ok</Button>
+      {:else if $wallet.state === 'Ready'}
         {#if $chain.notSupported}
           <p class="m-5 text-red-500">Please switch to {chainName}.</p>
         {:else if $tokenClaim.state === 'Loading'}
@@ -31,7 +34,8 @@
           <Button class="mt-4" label="continue" on:click={() => tokenClaim.clearURL()}>Continue</Button>
         {:else if $tokenClaim.state === 'AlreadyClaimedAnother'}
           <p class="m-5 text-red-500">
-            You already claimed tokens at this address. To ensure fairness, you should not be using multiple accounts or claim keys.
+            You already claimed tokens at this address. To ensure fairness, you should not be using multiple accounts or
+            claim keys.
           </p>
           <Button class="mt-4" label="continue" on:click={() => tokenClaim.clearURL()}>Continue</Button>
         {:else if $tokenClaim.state === 'AlreadyClaimed'}

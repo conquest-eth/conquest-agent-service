@@ -1,4 +1,4 @@
-import {wallet, chain, flow} from '../../blockchain/wallet';
+import {wallet, chain} from '../../blockchain/wallet';
 // import type {BigNumber} from '@ethersproject/bignumber';
 import type {ChainStore, WalletStore} from 'web3w';
 import {BaseStore} from '$lib/utils/stores/base';
@@ -6,6 +6,8 @@ import {Wallet} from '@ethersproject/wallet';
 import {rebuildLocationHash} from '$lib/utils/web';
 import {hashParams} from '$lib/config';
 import {BigNumber} from '@ethersproject/bignumber';
+import {formatError} from '$lib/utils';
+import {JsonRpcProvider} from '@ethersproject/providers';
 
 type TokenClaim = {
   inUrl: boolean;
@@ -100,23 +102,84 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       nonce,
     });
 
-    const gwei = BigNumber.from('1000000000');
-    const maxPriorityFeeToUSe = gwei.mul(5);
-    const maxGasPriceToUse = ethBalance.div(8).div(100000);
+    if (wallet.selected?.toLowerCase() === 'portis') {
+      console.log('PORTIS bug, use alternative provider');
 
-    const gasPrice = maxGasPriceToUse.gte(maxPriorityFeeToUSe) ? maxGasPriceToUse : maxPriorityFeeToUSe; //gwei.mul(500); //await wallet.provider.getGasPrice();
+      let provider = wallet.fallbackProvider;
+      if (!provider) {
+        let url = 'http://localhost:8545';
+        const chainId = wallet.chain.chainId;
+        if (chainId === '1') {
+          url = 'https://mainnet.infura.io/v3/bc0bdd4eaac640278cdebc3aa91fabe4';
+        } else if (chainId === '5') {
+          url = 'https://goerli.infura.io/v3/bc0bdd4eaac640278cdebc3aa91fabe4';
+        } else if (chainId === '4') {
+          url = 'https://rinkeby.infura.io/v3/bc0bdd4eaac640278cdebc3aa91fabe4';
+        }
+        provider = new JsonRpcProvider(url);
+      }
+      const claimWallet_forPortisBug = this.getClaimtWallet().connect(provider);
+      const playToken_l2_forPortisBug = wallet.chain.contracts.PlayToken_L2.connect(claimWallet_forPortisBug);
 
-    const ethLeft = ethBalance.sub(estimate.mul(gasPrice));
-    console.log({ethLeft: ethLeft.toString()});
-    const tx = await playToken_l2.transferAlongWithETH(wallet.address, tokenBalance, {
-      value: ethLeft.toString(),
-      nonce,
-      maxFeePerGas: gasPrice, // TODO won't sweep it all
-      maxPriorityFeePerGas: maxPriorityFeeToUSe,
-    });
-    this.setPartial({state: 'Claiming'});
-    await tx.wait();
-    this.setPartial({state: 'Claimed'});
+      const gasPrice = (await wallet.provider.getGasPrice()).mul(2); // TODO ?
+
+      const ethLeft = ethBalance.sub(estimate.mul(gasPrice));
+      console.log({ethLeft: ethLeft.toString()});
+
+      let tx;
+      try {
+        tx = await playToken_l2_forPortisBug.transferAlongWithETH(wallet.address, tokenBalance, {
+          value: ethLeft.toString(),
+          nonce,
+          gasPrice,
+        });
+        this.setPartial({state: 'Claiming'});
+      } catch (e) {
+        this.setPartial({error: formatError(e)});
+        console.error(e);
+      }
+      if (tx) {
+        try {
+          await tx.wait();
+          this.setPartial({state: 'Claimed'});
+        } catch (e) {
+          this.setPartial({error: formatError(e)});
+          console.error(e);
+        }
+      }
+    } else {
+      const gwei = BigNumber.from('1000000000');
+      const maxPriorityFeeToUSe = gwei.mul(5);
+      const maxGasPriceToUse = ethBalance.div(8).div(100000);
+
+      const gasPrice = maxGasPriceToUse.gte(maxPriorityFeeToUSe) ? maxGasPriceToUse : maxPriorityFeeToUSe; //gwei.mul(500); //await wallet.provider.getGasPrice();
+
+      const ethLeft = ethBalance.sub(estimate.mul(gasPrice));
+      console.log({ethLeft: ethLeft.toString()});
+
+      let tx;
+      try {
+        tx = await playToken_l2.transferAlongWithETH(wallet.address, tokenBalance, {
+          value: ethLeft.toString(),
+          nonce,
+          maxFeePerGas: gasPrice, // TODO won't sweep it all
+          maxPriorityFeePerGas: maxPriorityFeeToUSe,
+        });
+        this.setPartial({state: 'Claiming'});
+      } catch (e) {
+        this.setPartial({error: formatError(e)});
+        console.error(e);
+      }
+      if (tx) {
+        try {
+          await tx.wait();
+          this.setPartial({state: 'Claimed'});
+        } catch (e) {
+          this.setPartial({error: formatError(e)});
+          console.error(e);
+        }
+      }
+    }
   }
 
   // protected async fetchFor<T, P>(
