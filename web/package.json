@@ -79,6 +79,7 @@
     "build": "svelte-kit build",
     "start": "svelte-kit start",
     "serve": "ipfs-emulator --only -d build -p 8080",
+    "sentry": "pnpx sentry-cli releases --org etherplay new -p conquest-eth `git rev-parse --short HEAD` && pnpx sentry-cli releases --org etherplay -p conquest-eth files `git rev-parse --short HEAD` upload-sourcemaps release/build && pnpx sentry-cli releases --org etherplay -p conquest-eth set-commits --auto `git rev-parse --short HEAD` && pnpx sentry-cli releases --org etherplay -p conquest-eth finalize `git rev-parse --short HEAD`",
     "deploy": "dotenv -- ipfs-deploy -p pinata -s conquest-eth build",
     "build:deploy": "run-s build deploy"
   },
