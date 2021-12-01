@@ -52,25 +52,24 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     frontrunningDelay /= 40;
   }
 
-  if (network.name === 'coinfest') {
-    genesisHash =
-      '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
-    timePerDistance /= 5;
-    exitDuration /= 5;
-    productionSpeedUp = 5;
-    productionCapAsDuration /= 5;
-    frontrunningDelay /= 5;
-  }
+  // if (network.name === 'coinfest') {
+  //   genesisHash =
+  //     '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
+  //   timePerDistance /= 5;
+  //   exitDuration /= 5;
+  //   productionSpeedUp = 5;
+  //   productionCapAsDuration /= 5;
+  //   frontrunningDelay /= 5;
+  // }
 
-  // TODO remove when updating staging to a new contract
-  if (network.name === 'staging') {
-    genesisHash =
-      '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65a68';
-  }
-
-  if (network.name === 'testing') {
+  if (network.name === 'dev') {
     genesisHash =
       '0x9e9e23df9a65ca95f7a3b613673c89db774d0cdaaa1850160a59406c0220d7f6';
+  }
+
+  if (network.name === 'alpha') {
+    genesisHash =
+      '0x9e9e23df9a65ca95f7a3b613673c89db774d0cdaaa1850160a59406c0220d7f7';
   }
 
   await deploy('OuterSpace', {
