@@ -1,3 +1,4 @@
+import {blockTime} from '$lib/config';
 import type {SpaceQueryWithPendingState, SyncedPendingActions} from '$lib/space/optimisticSpace';
 import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
 import {now, time} from '$lib/time';
@@ -166,7 +167,7 @@ export class PlanetStates {
             Math.floor((spaceInfo.productionCapAsDuration * planetInfo.stats.production) / (60 * 60));
           // console.log({cap});
           if (numSpaceships > cap) {
-            decrease = timePassed; // 1 per second
+            decrease = timePassed + blockTime * 2; // 1 per second // adjusted to cover block delays
             if (decrease > numSpaceships - cap) {
               decrease = numSpaceships - cap;
             }
@@ -176,8 +177,10 @@ export class PlanetStates {
           }
 
           if (contractState.active) {
+            // adjusted to cover block delays
             let increase = Math.floor(
-              (timePassed * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
+              (Math.max(0, timePassed - blockTime * 2) * planetInfo.stats.production * spaceInfo.productionSpeedUp) /
+                (60 * 60)
             );
             if (increase > maxIncrease) {
               increase = maxIncrease;
@@ -191,8 +194,10 @@ export class PlanetStates {
             numSpaceships -= decrease;
           }
         } else if (contractState.active) {
+          // adjusted to cover block delays
           numSpaceships += Math.floor(
-            (timePassed * planetInfo.stats.production * spaceInfo.productionSpeedUp) / (60 * 60)
+            (Math.max(0, timePassed - blockTime * 2) * planetInfo.stats.production * spaceInfo.productionSpeedUp) /
+              (60 * 60)
           );
         }
 
