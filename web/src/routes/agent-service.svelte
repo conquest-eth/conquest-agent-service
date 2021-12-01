@@ -15,6 +15,9 @@
   import {BigNumber} from '@ethersproject/bignumber';
   import {account} from '$lib/account/account';
   import {fleetList} from '$lib/space/fleets';
+
+  $: registered = $agentService.account && $agentService.account.delegate;
+  $: enoughBalance = registered && $agentService.account.balance.gte($agentService.account.minimumBalance);
 </script>
 
 <div class="w-full h-full bg-black">
@@ -70,19 +73,7 @@
         {:else}
           <!-- <p>Agent Service Payment Address: {contractsInfos.contracts.PaymentGateway.address}</p> -->
 
-          {#if !$account.data?.agentServiceDefault?.activated}
-            <p>Agent is not active by default, it will require manual submission</p>
-            <Button class="w-max-content m-4" label="activate" on:click={() => account.recordAgentServiceDefault(true)}
-              >Activate?</Button
-            >
-          {:else}
-            <p>Agent service is active by default</p>
-            <Button class="w-max-content m-4" label="activate" on:click={() => account.recordAgentServiceDefault(false)}
-              >Deactivate?</Button
-            >
-          {/if}
-
-          {#if !$agentService.account || !$agentService.account.delegate}
+          {#if !registered}
             <!-- {JSON.stringify($agentService.account)} -->
             You need to register
             <Button
@@ -90,8 +81,33 @@
               label="register"
               on:click={() => agentService_register.register($privateWallet.signer.address)}>Register</Button
             >
-          {/if}
-          {#if $agentService.account}
+          {:else}
+            {#if enoughBalance}
+              {#if !$account.data?.agentServiceDefault?.activated}
+                <p>Agent is not active by default, it will require manual submission</p>
+                <Button
+                  class="w-max-content m-4"
+                  label="activate"
+                  on:click={() => account.recordAgentServiceDefault(true)}>Activate?</Button
+                >
+              {:else}
+                <p>Agent service is active by default</p>
+                <Button
+                  class="w-max-content m-4"
+                  label="activate"
+                  on:click={() => account.recordAgentServiceDefault(false)}>Deactivate?</Button
+                >
+              {/if}
+            {:else}
+              <p>
+                You do not have enough balance. You need at least {$agentService.account?.minimumBalance
+                  .div('100000000000000')
+                  .toNumber() / 10000} ${nativeTokenSymbol}
+              </p>
+
+              <p>please top-up</p>
+            {/if}
+
             <p>
               Your Balance:
               {$agentService.account.balance.div('100000000000000').toNumber() / 10000}
@@ -137,7 +153,7 @@
 
           <ul class="list-disc text-yellow-600">
             {#each $fleetList.fleets as fleet (fleet.txHash)}
-              <li><PendingFleetElement {fleet} /></li>
+              <li><PendingFleetElement {fleet} actionAvailable={registered && enoughBalance} /></li>
             {:else}
               No Fleets
             {/each}

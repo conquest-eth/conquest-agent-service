@@ -12,7 +12,7 @@ type AgentServiceAccountData = {
   delegate?: string;
   nonceMsTimestamp: number;
   requireTopUp: boolean;
-  minimumBalance: string;
+  minimumBalance: BigNumber;
 };
 
 type AgentServiceState = {
@@ -147,7 +147,7 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
                 delegate: account.delegate,
                 nonceMsTimestamp: account.nonceMsTimestamp,
                 requireTopUp: account.requireTopUp,
-                minimumBalance: account.minimumBalance,
+                minimumBalance: BigNumber.from(account.minimumBalance),
               }
             : undefined,
         });
