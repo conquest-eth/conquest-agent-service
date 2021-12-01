@@ -102,18 +102,7 @@ const config: HardhatUserConfig = {
         l2_dev_seed,
       ],
     },
-    testing: {
-      url: node_url('goerli'),
-      accounts: accounts('goerli'),
-      deploy: [
-        l1_pre_deploy_missing_contracts,
-        l1_deploy,
-        l1_dev_seed,
-        l2_deploy,
-        l2_dev_seed,
-      ], // testing inclues both
-    },
-    coinfest: {
+    dev: {
       url: node_url('goerli'),
       accounts: accounts('goerli'),
       deploy: [
