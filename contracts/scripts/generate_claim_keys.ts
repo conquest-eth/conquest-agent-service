@@ -19,10 +19,7 @@ if (isNaN(numClaimKey) || numClaimKey === 0 || numClaimKey > 100) {
 }
 const offset = 0;
 
-let mainURL = 'https://alpha.conquest.etherplay.io/';
-if (hre.network.name === 'coinfest') {
-  mainURL = 'https://coinfest.conquest.etherplay.io/';
-}
+let mainURL = `https://${hre.network.name}.conquest.etherplay.io/`;
 
 if (!mainURL.endsWith('/')) {
   mainURL = mainURL + '/';
@@ -54,7 +51,12 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const claimKeyETHAmount = parseEther('0.35');
   const defaultClaimKeyTokenAmount = parseEther('200');
 
-  const claimKeys: {key: string; amount: number; address: string}[] = [];
+  const claimKeys: {
+    key: string;
+    amount: number;
+    address: string;
+    url: string;
+  }[] = [];
   const addresses = [];
   let totalETHAmount = BigNumber.from(0);
   let totalTokenAmount = BigNumber.from(0);
@@ -70,6 +72,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
       key: wallet.privateKey,
       amount: claimKeyTokenAmount.div('1000000000000000000').toNumber(),
       address: wallet.address,
+      url: `${mainURL}#tokenClaim=${wallet.privateKey}`,
     });
     addresses.push(wallet.address);
     amounts.push(claimKeyTokenAmount);
@@ -141,10 +144,9 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
 
   let csv = 'used,address,key,amount,url,qrURL\n';
   for (const claimKey of claimKeys) {
-    const url = `${mainURL}#tokenClaim=${claimKey.key}`;
-    const qrURL = await qrcode.toDataURL(url);
+    const qrURL = await qrcode.toDataURL(claimKey.url);
     const address = new Wallet(claimKey.key).address;
-    csv += `false,${explorerLink}${address},${claimKey.key},${claimKey.amount},${url},"${qrURL}"\n`;
+    csv += `false,${explorerLink}${address},${claimKey.key},${claimKey.amount},${claimKey.url},"${qrURL}"\n`;
   }
   await deployments.saveDotFile(`.claimKeys.csv`, csv);
 }
