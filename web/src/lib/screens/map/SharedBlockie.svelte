@@ -4,7 +4,8 @@
   export let style: string | undefined = undefined;
 
   import {Blockie} from '$lib/utils/eth/blockie';
-  const uri = Blockie.getURI(address, offset);
+
+  $: uri = Blockie.getURI(address, offset);
 </script>
 
 <img {style} src={uri} alt={address} />
