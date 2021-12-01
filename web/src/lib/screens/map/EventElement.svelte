@@ -37,7 +37,6 @@
   const handleClick = () => {
     selectedEvent = event;
     isShow = true;
-    console.log(true)
   };
 </script>
 
