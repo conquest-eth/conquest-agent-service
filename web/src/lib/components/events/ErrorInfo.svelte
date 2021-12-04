@@ -14,8 +14,14 @@
     title = 'Your transaction failed';
   } else if (error?.status === 'CANCELED') {
     title = 'Your transaction was canceled';
+  } else if (error?.status === 'TIMEOUT') {
+    if (error?.action.type === 'SEND' && error?.action.actualLaunchTime) {
+      title = 'Your fleet has not been resolved in time';
+    } else {
+      title = 'your transaction timed out';
+    }
   } else {
-    title = 'Your transaction has timed out';
+    title = 'loading...';
   }
 
   async function acknowledge() {

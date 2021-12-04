@@ -1,3 +1,4 @@
+import type {PendingAction} from '$lib/account/account';
 import type {SpaceQueryWithPendingState} from '$lib/space/optimisticSpace';
 import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
 import {now} from '$lib/time';
@@ -8,7 +9,7 @@ import {spaceInfo} from './spaceInfo';
 export type SpaceError = {
   txHash: string; // TODO better id
   status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT';
-  action: {nonce: number; timestamp: number; queueID?: string; type: string};
+  action: PendingAction;
   location: {x: number; y: number};
   acknowledged: boolean;
   late?: boolean;
