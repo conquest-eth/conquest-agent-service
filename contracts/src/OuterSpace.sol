@@ -1316,7 +1316,7 @@ contract OuterSpace is Proxied {
             uint256 decrease = 0;
             uint256 cap = _acquireNumSpaceships + _productionCapAsDuration * uint256(production) / 1 hours;
             if (currentNumSpaceships > cap) {
-                decrease = timePassed; // 1 per second
+                decrease = timePassed * 1800 / 3600; // 1800 per hours
                 if (decrease > currentNumSpaceships - cap) {
                     decrease = currentNumSpaceships - cap;
                 }

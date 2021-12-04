@@ -167,7 +167,7 @@ export class PlanetStates {
             Math.floor((spaceInfo.productionCapAsDuration * planetInfo.stats.production) / (60 * 60));
           // console.log({cap});
           if (numSpaceships > cap) {
-            decrease = timePassed + blockTime * 2; // 1 per second // adjusted to cover block delays
+            decrease = Math.floor((timePassed * 1800) / 3600) + blockTime * 2; // 1800 per hour // adjusted to cover block delays
             if (decrease > numSpaceships - cap) {
               decrease = numSpaceships - cap;
             }
