@@ -1,5 +1,5 @@
 import type {Env} from './types';
-import {errorResponse} from './errors';
+import {createErrorResponse} from './errors';
 import {DataDogLogger, setupLogger} from './datadog';
 
 // needed because of : https://github.com/cloudflare/durable-objects-typescript-rollup-esm/issues/3
@@ -97,7 +97,7 @@ export abstract class DO {
         const error = e as {message?: string};
         let message = error.message || `Error happen while calling ${fnc}`;
         this.error(message);
-        return errorResponse({code: 5555, message});
+        return createErrorResponse({code: 5555, message});
         // console.log(message);
         // throw e;
         // if (error.message) {
