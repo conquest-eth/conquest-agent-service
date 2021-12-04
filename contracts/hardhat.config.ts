@@ -44,8 +44,8 @@ const config: HardhatUserConfig = {
   namedAccounts: {
     deployer: 0,
     agentService: {
-      1337: '0xF3F0baf1CCcc7C3aE5D5Be9747720bc055330b12', // see ../agent-service/.env(.default)
-      31337: '0xF3F0baf1CCcc7C3aE5D5Be9747720bc055330b12',
+      1337: '0x3bfa2f0888E7d87f9bb044EAE82CEb62290337B4', // see ../agent-service/.env(.default)
+      31337: '0x3bfa2f0888E7d87f9bb044EAE82CEb62290337B4',
     },
     stableTokenBeneficiary: {
       hardhat: 9,

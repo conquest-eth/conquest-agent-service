@@ -846,9 +846,12 @@ export class RevealQueue extends DO {
         }); // first save before broadcast ? // or catch "tx already submitted error"
         if (error) {
           if (error.code === 5502) {
-            this.info(`deleting reveal: ${revealID}....`);
-            this.state.storage.delete(queueID);
-            this.state.storage.delete(revealID);
+            reveal.retries++;
+            if (reveal.retries >= 10) {
+              this.info(`deleting reveal ${revealID} after 10 retires: due to error code 5502....`);
+              this.state.storage.delete(queueID);
+              this.state.storage.delete(revealID);
+            }
           } else {
             this.error(error);
           }

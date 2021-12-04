@@ -7,7 +7,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {rawTx} = hre.deployments;
   if (agentService) {
     const currentBalance = await hre.ethers.provider.getBalance(agentService);
-    if (currentBalance.lt(parseEther('0.1'))) {
+    if (currentBalance.lt(parseEther('1'))) {
       await rawTx({
         from: deployer,
         log: true,
