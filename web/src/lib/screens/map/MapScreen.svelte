@@ -139,7 +139,13 @@
       <a href="https://ethereum.org" target="_blank" class="text-cyan-100">ethereum</a>.
     </p>
     <p class="mt-3">
-      The alpha starts in {time2text(1638871200 - $time)}
+      The alpha starts in {time2text(1638871200 - $time)}. There will be <span class="text-yellow-500">5000$</span>
+      worth of rewards. See our various blog post on our
+      <a class="underline" href="https://medium.com/@etherplay">medium</a>
+    </p>
+
+    <p class="mt-3">
+      If you want to participate, just join our <a class="underline" href="https://discord.gg/Qb4gr2ekfr">Discord</a>
     </p>
   </Banner>
 {:else if $account.step === 'READY' && $account.remoteDisabledOrSynced && !bitMaskMatch($account.data?.welcomingStep, TutorialSteps.WELCOME)}
