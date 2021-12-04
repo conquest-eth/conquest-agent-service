@@ -7,7 +7,7 @@ const Handlebars = require('handlebars');
 const args = process.argv.slice(2);
 const networkName = args[0];
 
-const template = Handlebars.compile(fs.readFileSync('./templates/wrangler.toml').toString());
+const template = Handlebars.compile(fs.readFileSync('./templates/wrangler.toml.hbs').toString());
 const environment = networkName === 'localhost' ? 'dev' : 'production';
 const result = template({
   devMode: 'true', // TODOenvironment === 'dev' ? 'true' : 'false',

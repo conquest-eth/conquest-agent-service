@@ -86,7 +86,7 @@ fs.writeFileSync(
   )
 );
 
-const template = Handlebars.compile(fs.readFileSync('./templates/wrangler.toml').toString());
+const template = Handlebars.compile(fs.readFileSync('./templates/wrangler.toml.hbs').toString());
 const environment = networkName === 'localhost' ? 'dev' : 'production';
 const result = template({
   devMode: 'true', // TODOenvironment === 'dev' ? 'true' : 'false',

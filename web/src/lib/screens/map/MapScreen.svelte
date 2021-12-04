@@ -34,12 +34,24 @@
   import FirstTimeProfile from '$lib/flows/FirstTimeProfile.svelte';
   import {privateWallet} from '$lib/account/privateWallet';
   import {fleetList} from '$lib/space/fleets';
+  import {contractsInfos} from '$lib/blockchain/contractsInfos';
+  import {time} from '$lib/time';
 
   // import Search from '$lib/components/utils/Search.svelte';
 
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
   // import {camera} from '$lib/map/camera';
+
+  function time2text(numSeconds: number): string {
+    if (numSeconds < 120) {
+      return `${numSeconds} seconds`;
+    } else if (numSeconds < 7200) {
+      return `${Math.floor(numSeconds / 60)} minutes and ${numSeconds % 60} seconds`;
+    } else {
+      return `${Math.floor(numSeconds / 60 / 60)} hours and ${Math.floor((numSeconds % 3600) / 60)} minutes`;
+    }
+  }
 </script>
 
 <Map />
@@ -117,7 +129,20 @@
   <Search />
 {/if} -->
 
-{#if $account.step === 'READY' && $account.remoteDisabledOrSynced && !bitMaskMatch($account.data?.welcomingStep, TutorialSteps.WELCOME)}
+<!-- December 7th 10AM UTC  -->
+{#if contractsInfos.name === 'alpha' && $time < 1638871200}
+  <Banner on:mounted={() => selection.unselect()}>
+    <p>
+      Welcome to
+      <span class="text-cyan-600">conquest.eth</span>
+      a game of strategy and diplomacy running on
+      <a href="https://ethereum.org" target="_blank" class="text-cyan-100">ethereum</a>.
+    </p>
+    <p class="mt-3">
+      The alpha starts in {time2text(1638871200 - $time)}}
+    </p>
+  </Banner>
+{:else if $account.step === 'READY' && $account.remoteDisabledOrSynced && !bitMaskMatch($account.data?.welcomingStep, TutorialSteps.WELCOME)}
   <Banner on:mounted={() => selection.unselect()} on:close={() => account.recordWelcomingStep(TutorialSteps.WELCOME)}>
     <p>
       Welcome to
