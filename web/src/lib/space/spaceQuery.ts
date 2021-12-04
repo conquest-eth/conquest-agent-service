@@ -87,7 +87,7 @@ export type SpaceQueryResult = {
   myplanets?: PlanetQueryState[];
   owner?: {id: string};
   space?: {minX: string; maxX: string; minY: string; maxY: string};
-  chain: {blockHash: string; blockNumber: string};
+  chain?: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou?: FleetArrivedEvent[]; // TODO
   fleetsArrivedToYou?: FleetArrivedEvent[]; // TODO
 };

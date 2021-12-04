@@ -142,6 +142,8 @@ contract OuterSpace is Proxied {
 
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 
+    event Initialized(uint32 minX, uint32 maxX, uint32 minY, uint32 maxY, bytes32 genesis);
+
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // CONSTRUCTOR / INITIALIZATION
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -192,7 +194,7 @@ contract OuterSpace is Proxied {
     function postUpgrade(
         IERC20,
         AllianceRegistry,
-        bytes32,
+        bytes32 genesis,
         uint32,
         uint32,
         uint32,
@@ -209,6 +211,7 @@ contract OuterSpace is Proxied {
                 minY: INITIAL_SPACE,
                 maxY: INITIAL_SPACE
             });
+            emit Initialized(_discovered.minX, _discovered.maxX, _discovered.minY, _discovered.maxY, genesis);
         }
     }
 
