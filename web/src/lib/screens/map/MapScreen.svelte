@@ -131,7 +131,7 @@
 
 <!-- December 7th 10AM UTC  -->
 {#if contractsInfos.name === 'alpha' && $time < 1638871200}
-  <Banner on:mounted={() => selection.unselect()}>
+  <Banner on:mounted={() => selection.unselect()} disableClose={true}>
     <p>
       Welcome to
       <span class="text-cyan-600">conquest.eth</span>
@@ -139,7 +139,7 @@
       <a href="https://ethereum.org" target="_blank" class="text-cyan-100">ethereum</a>.
     </p>
     <p class="mt-3">
-      The alpha starts in {time2text(1638871200 - $time)}}
+      The alpha starts in {time2text(1638871200 - $time)}
     </p>
   </Banner>
 {:else if $account.step === 'READY' && $account.remoteDisabledOrSynced && !bitMaskMatch($account.data?.welcomingStep, TutorialSteps.WELCOME)}
