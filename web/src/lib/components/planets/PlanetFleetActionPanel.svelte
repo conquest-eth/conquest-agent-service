@@ -254,7 +254,7 @@
         </PanelButton>
       {:else if !$planetState.owner}
         <PanelButton
-          label="Capture"
+          label="Stake"
           class="m-2"
           color="text-yellow-400"
           borderColor="border-yellow-400"
@@ -262,7 +262,7 @@
           on:click={capture}
         >
           <div class="w-20">
-            Capture
+            Stake
             <span class="text-sm">
               {#if !$planetState.inReach}
                 (unreachable)
@@ -273,7 +273,7 @@
                 </Help>
               {:else}
                 <Help class="inline w-4 h-4">
-                  To capture a planet and make it produce spaceships for you, you have to deposit a certain number of
+                  To claim a planet and make it produce spaceships for you, you have to deposit a certain number of
                   <PlayCoin class="w-4 inline" />
                   (Play token) on it. If you lose your planet, you lose the ability to withdraw them.
                   <br />
@@ -313,7 +313,7 @@
         </PanelButton>
       {:else if walletIsOwner && !$planetState.active}
         <PanelButton
-          label="Capture"
+          label="Stake"
           class="m-2"
           color="text-yellow-400"
           borderColor="border-yellow-400"
@@ -321,7 +321,7 @@
           on:click={capture}
         >
           <div class="w-20">
-            Capture
+            Stake
             <span class="text-sm">
               {!$planetState.inReach ? ' (unreachable)' : ''}
               <Help class="inline w-4 h-4">
@@ -367,7 +367,7 @@
         </PanelButton>
         {#if !$planetState.active}
           <PanelButton
-            label="Capture"
+            label="Stake"
             class="m-2"
             color="text-yellow-400"
             borderColor="border-yellow-400"
@@ -375,7 +375,7 @@
             on:click={capture}
           >
             <div class="w-20">
-              Capture
+              Stake
               <span class="text-sm">
                 {#if !$planetState.inReach}
                   (unreachable)
@@ -387,11 +387,11 @@
                 {:else if captureResult && !captureResult.success}
                   <Help class="inline w-4 h-4">
                     <!-- The planet cannot be captured at the moment as it has too strong defense -->
-                    To capture a planet, it first need to be either without spaceships or controlled by you.
+                    To claim a planet, it first need to be either without spaceships or controlled by you.
                   </Help>
                 {:else}
                   <Help class="inline w-4 h-4">
-                    To capture a planet and make it produce spaceships for you, you have to deposit a certain number of
+                    To claim a planet and make it produce spaceships for you, you have to deposit a certain number of
                     <PlayCoin class="w-4 inline" />
                     (Play token) on it. If you lose your planet, you lose the ability to withdraw them.
                     <br />

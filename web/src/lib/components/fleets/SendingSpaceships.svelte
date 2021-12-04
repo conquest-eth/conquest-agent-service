@@ -116,7 +116,7 @@
 
 <!-- TODO Remove on:confirm, see button below -->
 <Modal {border_color} on:close={() => sendFlow.cancel()}>
-  <!-- <h2 slot="header">Capture Planet {location.x},{location.y}</h2> -->
+  <!-- <h2 slot="header">Stake on Planet {location.x},{location.y}</h2> -->
 
   <nav class="relative z-0 mb-5 rounded-lg shadow flex divide-x divide-gray-700" aria-label="Tabs">
     <!-- Current: "text-gray-900", Default: "text-gray-500 hover:text-gray-700" -->

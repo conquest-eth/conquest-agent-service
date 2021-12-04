@@ -1,6 +1,7 @@
 import {BaseStore} from '$lib/utils/stores/base';
 import {now} from '$lib/time';
 import lstorage from '$lib/utils/lstorage';
+import {params} from '$lib/config';
 
 class LogoStore extends BaseStore<{stage: number}> {
   private stageTime: number;
@@ -30,9 +31,13 @@ class LogoStore extends BaseStore<{stage: number}> {
   _loaded(timeIn: number) {
     const diff = now() - this.stageTime;
     if (diff > timeIn) {
-      this.nextStage();
+      if (!params['logo']) {
+        this.nextStage();
+      }
     } else {
-      this.timeout = setTimeout(() => this.nextStage(), (timeIn - diff) * 1000) as unknown as number;
+      if (!params['logo']) {
+        this.timeout = setTimeout(() => this.nextStage(), (timeIn - diff) * 1000) as unknown as number;
+      }
     }
   }
 

@@ -483,7 +483,7 @@ export class RevealQueue extends DO {
   }
 
   async deleteAll(path: string[]): Promise<Response> {
-    if (path[0] === 'fall-sunshine-autumn-tree') {
+    if (path[0] === 'booted-saffron-blatancy-poncho') {
       this.state.storage.deleteAll();
       return createResponse({success: true});
     } else {
