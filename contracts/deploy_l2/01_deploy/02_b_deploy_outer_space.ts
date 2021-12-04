@@ -24,7 +24,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
   let genesisHash =
     '0xcce77b122615b6093c0df0c7392bec6f537eb7a0595c337a573ee6d96d1107c8';
-  const resolveWindow = hours(12);
+  let resolveWindow = hours(12);
   let timePerDistance = hours(2);
   let exitDuration = hours(3 * 24);
   const acquireNumSpaceships = 100000;
@@ -39,6 +39,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     exitDuration /= 180;
     productionSpeedUp = 180; // give more time to attack
     frontrunningDelay /= 180;
+    resolveWindow /= 180;
   }
 
   if (network.name === 'quick') {

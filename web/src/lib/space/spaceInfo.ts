@@ -80,3 +80,10 @@ export class SpaceViewStore {
 
 export const spaceInfo = new SpaceInfo(contractsInfos.contracts.OuterSpace.linkedData);
 export const spaceView = new SpaceViewStore(spaceInfo, camera);
+
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).spaceInfo = spaceInfo;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).spaceView = spaceView;
+}

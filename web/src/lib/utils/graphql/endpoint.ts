@@ -24,13 +24,13 @@ export class EndPoint {
   private client: Client;
   constructor(url: string) {
     if (!url) {
-      throw new Error(`need an url for graphql queries`);
+      console.error(`need an url for graphql queries`);
+    } else {
+      this.client = new Client({
+        url,
+        exchanges,
+      });
     }
-
-    this.client = new Client({
-      url,
-      exchanges,
-    });
   }
 
   mutate<Data = unknown, Variables extends Record<string, unknown> = Record<string, unknown>>(
