@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function getParamsFromURL(url: string): {params: Record<string, string>; pathname?: string} {
   if (!url) {
-    return {params: {}};
+    return {params: {}, pathname: ''};
   }
   const obj: Record<string, string> = {};
   const hash = url.lastIndexOf('#');
@@ -18,10 +18,15 @@ export function getParamsFromURL(url: string): {params: Record<string, string>; 
       .split('&')
       .forEach((piece) => {
         const [key, val = ''] = piece.split('=');
-        obj[decodeURIComponent(key)] = decodeURIComponent(val);
+        obj[decodeURIComponent(key)] = val === '' ? 'true' : decodeURIComponent(val);
       });
   }
-  return {params: obj, pathname: cleanedUrl.slice(0, question)};
+
+  let pathname = cleanedUrl.slice(0, question) || '';
+  if (pathname && !pathname.endsWith('/')) {
+    pathname += '/';
+  }
+  return {params: obj, pathname};
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

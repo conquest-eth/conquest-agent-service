@@ -9,6 +9,7 @@
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import {url} from '$lib/utils/url';
   import {account} from '$lib/account/account';
+  import {params} from '$lib/config';
 
   function connect() {
     privateWallet.login();
@@ -17,6 +18,8 @@
     wallet.disconnect();
   }
   let menu = false;
+
+  let showErrorButton = params['errorButton'];
 </script>
 
 <svelte:window on:click={() => (menu = false)} />
@@ -119,10 +122,12 @@
         Profile
         <Help class="w-4 h-4">You can setup your profile so that other player can contact you.</Help>
       </NavButton>
-      <NavButton class="m-1" label="settings" on:click={() => account.generateError()}>
-        Error
-        <Help class="w-4 h-4">Generate an Error to test error report.</Help>
-      </NavButton>
+      {#if showErrorButton}
+        <NavButton class="m-1" label="settings" on:click={() => account.generateError()}>
+          Error
+          <Help class="w-4 h-4">Generate an Error to test error report.</Help>
+        </NavButton>
+      {/if}
       <PanelButton class="m-1" label="Disconnect" on:click={disconnect}>Disconnect</PanelButton>
     </div>
   {/if}

@@ -14,6 +14,7 @@
   import {page} from '$app/stores';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import selection from '$lib/map/selection';
+  import {url} from '$lib/utils/url';
 
   onMount(() => {
     logo.start();
@@ -21,11 +22,12 @@
     let x = parseInt($page.query.get('x'));
     let y = parseInt($page.query.get('y'));
 
-    window.history.replaceState(
-      '',
-      document.title,
-      window.location.pathname + window.location.hash // TODO keep other query
-    );
+    // console.log({
+    //   search: window.location.search,
+    //   hash: window.location.hash,
+    //   both: window.location.search + window.location.hash,
+    // });
+    window.history.replaceState('', document.title, url(window.location.search + window.location.hash));
     if (!isNaN(x) && !isNaN(y)) {
       // const locX = Math.floor((Math.round(x) + 2) / 4);
       // const locY = Math.floor((Math.round(y) + 2) / 4);
