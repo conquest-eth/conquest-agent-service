@@ -78,7 +78,11 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
       method: 'POST',
       body: JSON.stringify(data),
     });
-    return response.json();
+    const jsonResult = await response.json();
+    if (jsonResult.error) {
+      throw jsonResult.error;
+    }
+    return jsonResult;
   }
 
   constructor() {

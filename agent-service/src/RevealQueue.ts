@@ -3,6 +3,7 @@ import type {Env} from './types';
 import {contracts, chainId} from './contracts.json';
 import {DO} from './DO';
 import {
+  createErrorResponse,
   DifferentChainIdDetected,
   PaymentAddressChangeDetected,
   TransactionInvalidMissingFields,
@@ -342,6 +343,9 @@ export class RevealQueue extends DO {
   }
 
   async queueReveal(path: string[], revealSubmission: RevealSubmission): Promise<Response> {
+    // if (path || !path) {
+    //   return createErrorResponse({code: 4999, message: 'reject'});
+    // }
     const {errorResponse, revealData} = checkSubmission(revealSubmission);
     if (errorResponse) {
       return errorResponse;

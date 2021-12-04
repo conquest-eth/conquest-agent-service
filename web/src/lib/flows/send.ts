@@ -10,6 +10,7 @@ import {agentService} from '$lib/account/agentService';
 import {playersQuery} from '$lib/space/playersQuery';
 import {planets} from '$lib/space/planets';
 import {get} from 'svelte/store';
+import {formatError} from '$lib/utils';
 
 type Data = {
   txHash?: string;
@@ -35,7 +36,7 @@ export type SendFlow = {
     | 'WAITING_TX'
     | 'SUCCESS';
   data?: Data;
-  error?: {message?: string};
+  error?: {message?: string; type?: string};
 };
 
 function findCommonAlliances(arr1: string[], arr2: string[]): string[] {
@@ -258,22 +259,26 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       nonce // tx.nounce can be different it seems, metamask can change it, or maybe be even user
     );
 
-    if (useAgentService) {
-      const {queueID} = await agentService.submitReveal(
-        fleetId,
-        secretHash,
-        from,
-        to,
-        distance,
-        gift,
-        potentialAlliances,
-        latestBlock.timestamp,
-        duration
-      );
-      account.recordQueueID(tx.hash, queueID);
-    }
-
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
+
+    if (useAgentService) {
+      try {
+        const {queueID} = await agentService.submitReveal(
+          fleetId,
+          secretHash,
+          from,
+          to,
+          distance,
+          gift,
+          potentialAlliances,
+          latestBlock.timestamp,
+          duration
+        );
+        account.recordQueueID(tx.hash, queueID);
+      } catch (e) {
+        this.setPartial({error: {message: formatError(e), type: 'AGENT_SERVICE_SUBMISSION_ERROR'}});
+      }
+    }
 
     // TODO REMOVE DEBUG :
     // await tx.wait();
