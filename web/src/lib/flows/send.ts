@@ -164,9 +164,6 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       throw new Error(`no data for send flow`);
     }
 
-    // TODO option in UI ?
-    let specific = '0x0000000000000000000000000000000000000001';
-
     const from = flow.data.from;
     const to = flow.data.to;
     const fromPlanetInfo = spaceInfo.getPlanetInfo(from.x, from.y);
@@ -189,13 +186,8 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       correctTime(latestBlock.timestamp);
     }
 
-    const nonce = await wallet.provider.getTransactionCount(playerAddress);
-
-    const distance = spaceInfo.distance(fromPlanetInfo, toPlanetInfo);
-    const duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
-    const {toHash, fleetId, secretHash} = await account.hashFleet(from, to, gift, specific, nonce, playerAddress);
-
-    const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
+    // TODO option in UI ?
+    let specific = '0x0000000000000000000000000000000000000001';
 
     let potentialAlliances: string[] | undefined;
 
@@ -222,6 +214,14 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       // TODO add ahent-service option to not resolve under certain condition
       // or switch to gifting based on a signature
     }
+
+    const nonce = await wallet.provider.getTransactionCount(playerAddress);
+
+    const distance = spaceInfo.distance(fromPlanetInfo, toPlanetInfo);
+    const duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
+    const {toHash, fleetId, secretHash} = await account.hashFleet(from, to, gift, specific, nonce, playerAddress);
+
+    const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 
     console.log({potentialAlliances});
 
