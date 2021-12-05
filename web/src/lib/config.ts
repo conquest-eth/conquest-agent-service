@@ -28,6 +28,12 @@ if (chainId !== '1') {
   nativeTokenSymbol = 'ETH'; // TODO
 }
 
+if (chainId === '5') {
+  finality = 8; // TODO
+  blockTime = 15;
+  nativeTokenSymbol = 'ETH';
+}
+
 let webWalletURL: string | undefined = import.meta.env.VITE_WEB_WALLET_ETH_NODE as string | undefined;
 
 let localDev = false;

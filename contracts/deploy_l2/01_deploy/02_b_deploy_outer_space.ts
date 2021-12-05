@@ -30,14 +30,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const acquireNumSpaceships = 100000;
   let productionSpeedUp = 1;
   let frontrunningDelay = 30 * 60;
-  let productionCapAsDuration = 3 * 24 * 3600; // 3 days
+  const productionCapAsDuration = 3 * 24 * 3600; // 3 days
   const fleetSizeFactor6 = 500000;
 
   // use a command to increase time in 1337
   if (localTesting) {
     timePerDistance /= 180;
     exitDuration /= 180;
-    productionSpeedUp = 180; // give more time to attack
+    productionSpeedUp = 180;
     frontrunningDelay /= 180;
     resolveWindow /= 180;
   }
@@ -46,11 +46,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // TODO remove when updating quick to a new contract
     genesisHash =
       '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
-    timePerDistance /= 40;
-    exitDuration /= 40;
-    productionSpeedUp = 40;
-    productionCapAsDuration /= 40;
-    frontrunningDelay /= 40;
+    timePerDistance /= 180;
+    exitDuration /= 180;
+    productionSpeedUp = 180;
+    frontrunningDelay /= 180;
+    resolveWindow /= 180;
+    // productionCapAsDuration /= 180;
   }
 
   // if (network.name === 'coinfest') {

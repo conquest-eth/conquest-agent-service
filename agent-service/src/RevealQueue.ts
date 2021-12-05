@@ -650,7 +650,7 @@ export class RevealQueue extends DO {
     }
     const currentBlockNumber = await this.provider.getBlockNumber();
     this.info(`syncAccountBalances currentBlockNumber:${currentBlockNumber} (${this.env.ETHEREUM_NODE})`);
-    const toBlockNumber = Math.max(0, currentBlockNumber - this.finality); // TODO configure finality
+    const toBlockNumber = Math.max(0, currentBlockNumber - this.finality);
     const toBlockObject = await this.provider.getBlock(toBlockNumber);
     // const toBlock = toBlockObject.hash;
 
@@ -1041,6 +1041,7 @@ export class RevealQueue extends DO {
             }
           );
         } else {
+          this.error(`FAILED TO SENDING TX... , TODO ? send dummy tx ?`);
           // TODO make dummy tx
           // or even better resign all tx queued with lower nonce, to skip it
           // but note in that "better" case, we should not do it if a tx has been broadcasted as we cannot guarantee the broadcasted tx will not be included in the end
@@ -1111,6 +1112,7 @@ export class RevealQueue extends DO {
         });
         if (error) {
           // TODO
+          this.error(error);
           return;
         } else if (!tx) {
           // impossible
@@ -1136,7 +1138,7 @@ export class RevealQueue extends DO {
         accountData.spending = spending.toString();
         this.state.storage.put<AccountData>(accountID, accountData);
       } else {
-        console.error(`weird, accountData do not exist anymore`); // TODO handle it
+        this.error(`weird, accountData do not exist anymore`); // TODO handle it
       }
       this.state.storage.delete(pendingID);
       const revealID = `l_${pendingReveal.fleetID}`;

@@ -44,7 +44,8 @@ class RegisterFlowStore extends BaseStoreWithData<RegisterFlow, undefined> {
         account.recordAgentServiceDefault(true);
         agentService.triggerUpdate();
       } else {
-        // TODO
+        console.error(json.error);
+        this.setPartial({error: json.error || 'unknown error'});
       }
     } catch (e) {
       console.error(e);
