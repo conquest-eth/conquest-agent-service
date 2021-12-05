@@ -326,7 +326,9 @@ contract OuterSpace is Proxied {
         uint256 from;
         uint256 to;
         uint256 distance;
-        address alliance; // address(0) means attack, address(1) means no alliance, 2 or more means allianceIndex + 2
+        bool gift;
+        address allianceInCommon;
+        address specific;
         bytes32 secret;
         address fleetSender;
         address operator;
@@ -334,8 +336,13 @@ contract OuterSpace is Proxied {
 
     function resolveFleet(uint256 fleetId, FleetResolution calldata resolution) external {
          require(
-            uint256(keccak256(abi.encodePacked(keccak256(abi.encodePacked(resolution.secret, resolution.to, uint160(resolution.alliance) > 0)), resolution.from, resolution.fleetSender, resolution.operator))) == fleetId,
-            "INVALID_FLEET_DATA_OR_SECRET'"
+            uint256(keccak256(
+                abi.encodePacked(
+                    keccak256(abi.encodePacked(resolution.secret, resolution.to, resolution.gift, resolution.specific)),
+                    resolution.from, resolution.fleetSender, resolution.operator
+                )
+            )) == fleetId,
+            "INVALID_FLEET_DATA_OR_SECRET"
         );
         _resolveFleet(fleetId, resolution);
     }
@@ -772,16 +779,82 @@ contract OuterSpace is Proxied {
             resolution
         );
         Planet memory toPlanet = _getPlanet(resolution.to);
-        emit_fleet_arrived(
+        _resolveAndEmit(fleetId, toPlanet, _hasJustExited(toPlanet.exitTime) ? address(0) : toPlanet.owner, fleet, resolution, quantity, inFlightFleetLoss);
+    }
+
+    function _resolveAndEmit(uint256 fleetId, Planet memory toPlanet, address destinationOwner, Fleet memory fleet, FleetResolution memory resolution, uint32 quantity, uint32 inFlightFleetLoss) internal {
+        (bool gifting, bool taxed) = _checkGifting(fleet.owner, resolution, toPlanet); // TODO fleet.owner or sender or origin (or seller) ?
+        FleetResult memory result = _performResolution(fleet, resolution.from, toPlanet, resolution.to, gifting, taxed, quantity);
+         emit_fleet_arrived(
             fleet.owner,
             fleetId,
-            _hasJustExited(toPlanet.exitTime) ? address(0) : toPlanet.owner,
+            destinationOwner,
             resolution.to,
-            uint160(resolution.alliance) > 0,
-            _performResolution(fleet, resolution.from, toPlanet, resolution.to, resolution.alliance, quantity),
+            gifting,
+            result,
             inFlightFleetLoss
         );
         _fleets[fleetId].quantity = 0; // TODO reset all to get gas refund? // TODO ensure frontend can still easily check fleet status
+    }
+
+
+    function _checkGifting(address sender, FleetResolution memory resolution, Planet memory toPlanet) internal returns(bool gifting, bool taxed) {
+        // TODO ensure no one can change the result by specifying zero alliances or alliances that do not match
+        // this will be possible as there is a 4 alliances limit per players
+        // and we can defer the check if the alliances really do not match
+
+
+        if (toPlanet.owner == address(0)) {
+            // destination has no owner : this is an attack
+            return (false, false);
+        }
+        if (toPlanet.owner == sender) {
+            // destination is sender: this is a non-taxed gift
+            return (true, false);
+        }
+
+        // TODO  allianceInCommon can be front-runned too
+
+
+        if (resolution.gift) {
+            // intent was gift
+            if (resolution.specific == address(0) || resolution.specific == toPlanet.owner) {
+                // and it was for anyone or specific destination owner that is the same as the current one
+                return (true, uint160(resolution.allianceInCommon) > 0 && allianceRegistry.arePlayersAllies(IAlliance(resolution.allianceInCommon), sender, toPlanet.owner, block.timestamp)); // TOOD Fleet launch time for tax
+            }
+
+            if (uint160(resolution.allianceInCommon) > 0 && (resolution.specific == address(1) || resolution.specific == resolution.allianceInCommon)) {
+                // or the specific specify any alliances (1) or a specific one that matches the one used to detax
+                // note that if the specific alliances turned out to not be an one present at the beginning, tax will apply
+                // also note that here we have the issue mentioned above: that msg.sender can make that condition fails
+                // with front-running, it can happen always
+                // we need to check the all 4 alliances of both sender and owner
+                // or alternatively give power to sender but hashing 2 variant for gifting attack and throwing on case where these do not match
+                // this way they can't front-run
+                bool allies = allianceRegistry.arePlayersAllies(IAlliance(resolution.allianceInCommon), sender, toPlanet.owner, block.timestamp);
+                return (allies, allianceRegistry.arePlayersAllies(IAlliance(resolution.allianceInCommon), sender, toPlanet.owner, block.timestamp));  // TOOD Fleet launch time for tax
+            }
+        } else {
+            // intent was attack
+            if (resolution.specific == address(1)) {
+                // and the attack was on any non-allies
+
+                // note that here we have the issue mentioned above: that msg.sender can make that condition fails
+                // with front-running, it can happen always
+                // we need to check the all 4 alliances of both sender and owner
+                // or alternatively give power to sender but hashing 2 variant for gifting attack and throwing on case where these do not match
+                // this way they can't front-run
+
+                bool allies = uint160(resolution.allianceInCommon) > 0 && allianceRegistry.arePlayersAllies(IAlliance(resolution.allianceInCommon), sender, toPlanet.owner, block.timestamp);
+                return (allies, allianceRegistry.arePlayersAllies(IAlliance(resolution.allianceInCommon), sender, toPlanet.owner, block.timestamp));  // TOOD Fleet launch time for tax
+            }
+
+            // specific owner or specific alliance not matching
+            if (uint160(resolution.specific) > 1 && (resolution.specific != toPlanet.owner && allianceRegistry.getAllianceData(toPlanet.owner, IAlliance(resolution.specific)).joinTime == 0)) {
+                return (true, uint160(resolution.allianceInCommon) > 0 && allianceRegistry.arePlayersAllies(IAlliance(resolution.allianceInCommon), sender, toPlanet.owner, block.timestamp)); // TOOD Fleet launch time for tax
+            }
+
+        }
     }
 
     function _performResolution(
@@ -789,11 +862,12 @@ contract OuterSpace is Proxied {
         uint256 from,
         Planet memory toPlanet,
         uint256 to,
-        address alliance,
+        bool gifting,
+        bool taxed,
         uint32 quantity
     ) internal returns (FleetResult memory result) {
-        if (uint160(alliance) > 0 && toPlanet.owner != address(0)) { // TODO || toPlanet.owner == fleet.owner ? // toPlanet.owner != address(0) => not able to send gift to unhabited planet
-            return _performReinforcement(fleet.owner, toPlanet, to, quantity, alliance, fleet.launchTime);
+        if (gifting) {
+            return _performReinforcement(fleet.owner, toPlanet, to, quantity, taxed, fleet.launchTime);
         } else {
             return _performAttack(fleet.owner, fleet.launchTime, from, toPlanet, to, quantity);
         }
@@ -1079,7 +1153,7 @@ contract OuterSpace is Proxied {
         Planet memory toPlanet,
         uint256 to,
         uint32 quantity,
-        address alliance,
+        bool taxed,
         uint32 launchTime
     ) internal returns (FleetResult memory result) {
         if (_hasJustExited(toPlanet.exitTime)) {
@@ -1089,12 +1163,6 @@ contract OuterSpace is Proxied {
             }
             return _fleetAfterExit(to, toPlanet.owner, _planets[to], quantity > 0 ? newOwner : address(0), quantity);
         } else {
-            bool taxed = true;
-            if (uint160(alliance) > 1) {
-                taxed = !allianceRegistry.arePlayersAllies(IAlliance(alliance), sender, toPlanet.owner, block.timestamp);
-            } else if (sender == toPlanet.owner) {
-                taxed = false;
-            }
             if (taxed) {
                 quantity = uint32(uint256(quantity) - (uint256(quantity) * GIFT_TAX_PER_10000) / 10000);
             }
