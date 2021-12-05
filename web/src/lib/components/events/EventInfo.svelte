@@ -72,15 +72,12 @@
           address={event.event.destinationOwner.id}
         />
       {:else if attackCaptured}
-        You managed to capture a planet from <Blockie
-          class="w-6 h-6 inline-block"
-          address={event.event.destinationOwner.id}
-        />
+        You managed to capture a planet {#if event.event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}from
+          <Blockie class="w-6 h-6 inline-block" address={event.event.destinationOwner.id} />
+        {/if}
       {:else}
-        Your attack did not succeed but you killed {event.event.planetLoss} spaceships from <Blockie
-          class="w-6 h-6 inline-block"
-          address={event.event.destinationOwner.id}
-        />
+        Your attack did not succeed but you killed {event.event.planetLoss} spaceships {#if event.event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}from
+          <Blockie class="w-6 h-6 inline-block" address={event.event.destinationOwner.id} />{/if}
       {/if}
     {:else if gift}
       <Blockie class="w-6 h-6 inline-block" address={event.event.destinationOwner.id} /> sent you {event.event
