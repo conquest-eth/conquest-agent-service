@@ -6,16 +6,22 @@ import type {SpaceQueryWithPendingState} from '$lib/space/optimisticSpace';
 import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
 import type {AccountState, Acknowledgements, PendingActions} from '$lib/account/account';
 import {account} from '$lib/account/account';
-import type {FleetArrived} from './spaceQuery';
+import type {FleetArrivedParsedEvent} from './spaceQuery';
 import {BigNumber} from '@ethersproject/bignumber';
 
-export type MyEventType = 'external_fleet' | 'internal_fleet';
-
-export type MyEvent = {
-  type: MyEventType;
-  event: FleetArrived;
+export type ExternalFleetEvent = {
+  type: 'external_fleet';
+  event: FleetArrivedParsedEvent;
   acknowledged?: 'NO' | 'YES' | 'UPDATED_SINCE';
 };
+
+export type InternalFleetEvent = {
+  type: 'internal_fleet';
+  event: FleetArrivedParsedEvent;
+  acknowledged?: 'NO' | 'YES' | 'UPDATED_SINCE';
+};
+
+export type MyEvent = ExternalFleetEvent | InternalFleetEvent;
 
 export class MyEventsStore implements Readable<MyEvent[]> {
   private readonly spaceInfo: SpaceInfo;

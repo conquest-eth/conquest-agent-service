@@ -49,7 +49,9 @@
     : false;
 </script>
 
-<div class="absolute inline-block w-36 md:w-48 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4 text-sm">
+<div
+  class="absolute inline-block w-36 md:w-48 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4 text-sm"
+>
   <div class="flex m-1">
     {#if $planetState && $planetState.owner}
       <h2 class={`flex-auto text-center pt-1 font-bold ${textColor} inline`}>{planetInfo.stats.name}</h2>
@@ -93,9 +95,9 @@
         </div>
       {/if}
 
-      {#if $planetState?.requireClaimAcknowledgement}
+      <!-- {#if $planetState?.requireClaimAcknowledgement}
         <button on:click={() => acknowledgeClaim($planetState?.requireClaimAcknowledgement)}>OK</button>
-      {/if}
+      {/if} -->
     {/if}
 
     <!-- {#if !$planetState || $planetState.natives}
@@ -128,7 +130,9 @@
       </div>
     {/if}
 
-    <div class={'m-1 w-26 md:w-36 flex justify-between' + ($planetState?.active ? ' text-green-400' : ' text-gray-400')}>
+    <div
+      class={'m-1 w-26 md:w-36 flex justify-between' + ($planetState?.active ? ' text-green-400' : ' text-gray-400')}
+    >
       {#if !$planetState}
         <p class="p-0 mb-1">loading ...</p>
       {:else if $planetState.natives}

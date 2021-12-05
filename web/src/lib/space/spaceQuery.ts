@@ -172,7 +172,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     active
     rewardGiver
   }
-  fleetsArrivedFromYou: fleetArrivedEvents(where: {owner: $owner}) {
+  fleetsArrivedFromYou: fleetArrivedEvents(where: {owner: $owner} orderBy: timestamp, orderDirection: desc) {
     id
     blockNumber
     timestamp
@@ -192,7 +192,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     quantity
   }
 
-  fleetsArrivedToYou: fleetArrivedEvents(where: {destinationOwner: $owner owner_not: $owner}) {
+  fleetsArrivedToYou: fleetArrivedEvents(where: {destinationOwner: $owner owner_not: $owner} orderBy: timestamp, orderDirection: desc) {
     id
     blockNumber
     timestamp
