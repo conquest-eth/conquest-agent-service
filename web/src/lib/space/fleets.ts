@@ -28,6 +28,7 @@ export type Fleet = {
   timeLeft: number; // not needed to store, except to not require computing stats from from planet
   timeToResolve: number;
   gift: boolean;
+  specific: string;
   potentialAlliances?: string[];
   owner: string;
   fleetSender?: string;
@@ -147,6 +148,23 @@ export class FleetsStore implements Readable<FleetListState> {
             // TODO config : 10 * 60 = 10 min late before showing the button to resolve manually
             state = 'RESOLVE_BROADCASTED'; //TODO add another state for agent-service handling
           }
+
+          const gift = sendAction.gift;
+          if (gift) {
+            if (sendAction.specific === '0x0000000000000000000000000000000000000001') {
+              // if ()
+              // TODO make gift based on current destination owner
+            }
+            // TODO other
+          } else {
+            if (sendAction.specific === '0x0000000000000000000000000000000000000001') {
+              // TODO make gift based on current destination owner
+            } else if (sendAction.specific === '0x0000000000000000000000000000000000000000') {
+              // never gift // except if destination is you
+            }
+            // other
+          }
+
           // console.log({state})
           if (!(resolution && resolution.action.acknowledged)) {
             this.state.fleets.push({
@@ -162,7 +180,8 @@ export class FleetsStore implements Readable<FleetListState> {
               sending: pendingAction,
               resolution,
               state,
-              gift: sendAction.gift,
+              gift,
+              specific: sendAction.specific,
               potentialAlliances: sendAction.potentialAlliances,
               owner: sendAction.fleetOwner,
               fleetSender: sendAction.fleetSender,

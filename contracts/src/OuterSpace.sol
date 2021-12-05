@@ -838,14 +838,17 @@ contract OuterSpace is Proxied {
             if (resolution.specific == address(1)) {
                 // and the attack was on any non-allies
 
+                // make it a gift if the destination owner is actually an ally
                 (, uint96 joinTime) = allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
                 return (joinTime > 0, joinTime > fleetLaunchTime);
             }
 
-            // specific owner or specific alliance not matching
             if (uint160(resolution.specific) > 1 && resolution.specific != toPlanet.owner) {
+                // but specific not matching current owner
+
                 (uint96 joinTimeToSpecific,) = allianceRegistry.getAllianceData(toPlanet.owner, IAlliance(resolution.specific));
 
+                // make it a gift if the destination is not matching the specific alliance (or owner, in which case since it is not an alliance, it will also not match)
                 if (joinTimeToSpecific == 0) {
                     (, uint96 joinTime) = allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
                     return (true, joinTime == 0 || joinTime > fleetLaunchTime);

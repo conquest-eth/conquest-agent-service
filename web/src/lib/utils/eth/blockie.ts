@@ -147,9 +147,9 @@ export class Blockie {
     // saturation is the whole color spectrum
     const h = Math.floor(this.rand() * 360);
     // saturation goes from 40 to 100, it avoids greyish colors
-    const s = Math.floor(this.rand() * 60 + 40) + '%';
+    const s = Math.floor(1000 * (this.rand() * 60 + 40)) / 1000 + '%';
     // lightness can be anything from 0 to 100, but probabilities are a bell curve around 50%
-    const l = Math.floor(this.rand() + this.rand() + this.rand() + this.rand()) * 25 + '%';
+    const l = Math.floor(1000 * (this.rand() + this.rand() + this.rand() + this.rand()) * 25) / 1000 + '%';
 
     const color = 'hsl(' + h + ',' + s + ',' + l + ')';
     return color;

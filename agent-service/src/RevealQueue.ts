@@ -80,6 +80,7 @@ type Reveal = {
   startTime: number; // this is the expected startTime, needed as sendTx could be pending
   duration: number; // could technically recompute it from spaceInfo // TODO ? if so move duration in RevealData type
   gift: boolean;
+  specific: string;
   potentialAlliances?: string[];
 };
 
@@ -205,6 +206,7 @@ function checkSubmission(data: RevealSubmission): {errorResponse?: Response; rev
     data.from.x !== undefined &&
     data.from.y !== undefined &&
     data.gift !== undefined &&
+    data.specific !== undefined &&
     data.signature &&
     data.nonceMsTimestamp
   ) {
@@ -380,14 +382,14 @@ export class RevealQueue extends DO {
       }
     }
 
-    const {player, fleetID, secret, from, to, distance, startTime, duration, gift, potentialAlliances} =
+    const {player, fleetID, secret, from, to, distance, startTime, duration, gift, specific, potentialAlliances} =
       revealSubmission;
 
     const queueMessageString = `queue:${player}:${fleetID}:${secret}:${from.x}:${from.y}:${to.x}:${
       to.y
-    }:${distance}:${gift}:${potentialAlliances ? potentialAlliances.join(',') : ''}:${startTime}:${duration}:${
-      revealSubmission.nonceMsTimestamp
-    }`;
+    }:${distance}:${gift}:${specific}:${
+      potentialAlliances ? potentialAlliances.join(',') : ''
+    }:${startTime}:${duration}:${revealSubmission.nonceMsTimestamp}`;
     const authorized = isAuthorized(
       revealSubmission.delegate ? account.delegate : player,
       queueMessageString,
@@ -966,9 +968,9 @@ export class RevealQueue extends DO {
       //   this.info('no feeHistory')
       // }
 
-      this.info('getting mathcing alliance...');
-      const alliance = await this._getAlliance(reveal);
-      this.info({alliance});
+      // this.info('getting mathcing alliance...');
+      // // const alliance = await this._getAlliance(reveal);
+      // this.info({alliance});
 
       this.info('checcking if fleet still alive....');
       const {quantity} = await this.outerspaceContract.getFleet(reveal.fleetID, '0');
@@ -1005,7 +1007,8 @@ export class RevealQueue extends DO {
             to: xyToLocation(reveal.to.x, reveal.to.y),
             distance: reveal.distance,
             secret: reveal.secret,
-            alliance,
+            gift: reveal.gift,
+            specific: reveal.specific,
             fleetSender: reveal.fleetSender || reveal.player,
             operator: reveal.operator || reveal.player,
           },
@@ -1026,7 +1029,8 @@ export class RevealQueue extends DO {
               to: xyToLocation(reveal.to.x, reveal.to.y),
               distance: reveal.distance,
               secret: reveal.secret,
-              alliance,
+              gift: reveal.gift,
+              specific: reveal.specific,
               fleetSender: reveal.fleetSender || reveal.player,
               operator: reveal.operator || reveal.player,
             },

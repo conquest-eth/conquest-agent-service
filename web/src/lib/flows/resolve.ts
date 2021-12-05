@@ -40,6 +40,7 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
       fleet.from.location,
       fleet.to.location,
       fleet.gift,
+      fleet.specific,
       nonce,
       fleet.owner,
       fleet.fleetSender,
@@ -60,6 +61,7 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
 
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 
+    // TODO remove
     let alliance = '0x0000000000000000000000000000000000000000';
     if (fleet.gift) {
       if (fleet.potentialAlliances) {
@@ -79,7 +81,8 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
           to: xyToLocation(fleet.to.location.x, fleet.to.location.y),
           distance,
           secret: secretHash,
-          alliance,
+          gift: fleet.gift,
+          specific: fleet.specific,
           fleetSender: fleet.fleetSender || fleet.owner,
           operator: fleet.operator || fleet.owner,
         },

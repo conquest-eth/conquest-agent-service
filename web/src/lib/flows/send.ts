@@ -7,6 +7,7 @@ import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {correctTime, isCorrected} from '$lib/time';
 import {TutorialSteps} from '$lib/account/constants';
 import {agentService} from '$lib/account/agentService';
+import type {Player} from '$lib/space/playersQuery';
 import {playersQuery} from '$lib/space/playersQuery';
 import {planets} from '$lib/space/planets';
 import {get} from 'svelte/store';
@@ -163,6 +164,9 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       throw new Error(`no data for send flow`);
     }
 
+    // TODO option in UI ?
+    let specific = '0x0000000000000000000000000000000000000001';
+
     const from = flow.data.from;
     const to = flow.data.to;
     const fromPlanetInfo = spaceInfo.getPlanetInfo(from.x, from.y);
@@ -189,26 +193,34 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
     const distance = spaceInfo.distance(fromPlanetInfo, toPlanetInfo);
     const duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
-    const {toHash, fleetId, secretHash} = await account.hashFleet(from, to, gift, nonce, playerAddress);
+    const {toHash, fleetId, secretHash} = await account.hashFleet(from, to, gift, specific, nonce, playerAddress);
 
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 
     let potentialAlliances: string[] | undefined;
 
-    if (gift) {
-      const destinationPlanetState = get(planets.planetStateFor(toPlanetInfo));
-      if (destinationPlanetState.owner) {
-        await playersQuery.triggerUpdate();
-        const me = playersQuery.getPlayer(wallet.address.toLowerCase());
-        const destinationOwner = playersQuery.getPlayer(destinationPlanetState.owner);
-        console.log({me, destinationOwner});
-        if (me && me.alliances.length > 0 && destinationOwner && destinationOwner.alliances.length > 0) {
-          potentialAlliances = findCommonAlliances(
-            me.alliances.map((v) => v.address),
-            destinationOwner.alliances.map((v) => v.address)
-          );
-        }
+    const destinationPlanetState = get(planets.planetStateFor(toPlanetInfo));
+    let destinationOwner: Player | undefined;
+    if (destinationPlanetState.owner) {
+      await playersQuery.triggerUpdate();
+      const me = playersQuery.getPlayer(wallet.address.toLowerCase());
+      destinationOwner = playersQuery.getPlayer(destinationPlanetState.owner);
+      console.log({me, destinationOwner});
+      if (me && me.alliances.length > 0 && destinationOwner && destinationOwner.alliances.length > 0) {
+        potentialAlliances = findCommonAlliances(
+          me.alliances.map((v) => v.address),
+          destinationOwner.alliances.map((v) => v.address)
+        );
       }
+    }
+    if (destinationOwner && !gift && potentialAlliances.length > 0) {
+      specific = destinationOwner.address; // specific to this particular enemy
+      // TODO maybe instead target anyone ? '0x0000000000000000000000000000000000000000'; // no specific if an attack on an ally
+      // TODO add option to specify: this address or any non-allies
+      // or even : this alliance or any non-allies
+
+      // TODO add ahent-service option to not resolve under certain condition
+      // or switch to gifting based on a signature
     }
 
     console.log({potentialAlliances});
@@ -251,6 +263,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         from,
         fleetAmount,
         gift,
+        specific,
         potentialAlliances,
         owner: playerAddress,
       },
@@ -270,6 +283,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
           to,
           distance,
           gift,
+          specific,
           potentialAlliances,
           latestBlock.timestamp,
           duration

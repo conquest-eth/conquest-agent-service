@@ -34,7 +34,7 @@ contract AllianceRegistry is Proxied {
     function getAllianceData(address player, IAlliance alliance) external view returns (uint96 joinTime, uint256 nonce) {
         nonce = _allianceNonces[player][alliance];
 
-        Alliances storage alliances = _alliances[msg.sender];
+        Alliances storage alliances = _alliances[player];
         if (alliances.alliance0.alliance == alliance) {
             joinTime = alliances.alliance0.joinTime;
         } else if (alliances.alliance1.alliance == alliance) {
@@ -68,7 +68,7 @@ contract AllianceRegistry is Proxied {
                     allianceRow = p1Alliances.alliance3;
                 }
                 if (address(allianceRow.alliance) == address(0)) {
-                    return (IAlliance(address(0)), 0); // the alliance leave ensure that there is no gap // TODO
+                    return (alliance, joinTime); // the alliance leave ensure that there is no gap // TODO
                 }
                 player1Alliances[num1 ++] = allianceRow;
             }
@@ -85,7 +85,7 @@ contract AllianceRegistry is Proxied {
                         allianceRow = p2Alliances.alliance3;
                     }
                     if (address(allianceRow.alliance) == address(0)) {
-                        return (IAlliance(address(0)), 0); // the alliance leave ensure that there is no gap // TODO
+                        return (alliance, joinTime); // the alliance leave ensure that there is no gap // TODO
                     }
                     player2Alliances[num2 ++] = allianceRow;
                 }
