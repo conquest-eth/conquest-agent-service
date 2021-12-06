@@ -61,7 +61,14 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
     if (!wallet.chain.contracts) {
       throw new Error(`no wallet.chain.contracts`);
     }
-    const claimWallet = this.getClaimtWallet();
+    let claimWallet;
+    try {
+      claimWallet = this.getClaimtWallet();
+    } catch (e) {
+      this.setPartial({error: formatError(e)});
+      return;
+    }
+
     const playToken_l2 = wallet.chain.contracts.PlayToken_L2;
     const balance = await playToken_l2.balanceOf(claimWallet.address);
 
@@ -87,7 +94,9 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
     if (!wallet.chain.contracts) {
       throw new Error(`no wallet.chain.contracts`);
     }
+
     const claimWallet = this.getClaimtWallet().connect(wallet.provider);
+
     const playToken_l2 = wallet.chain.contracts.PlayToken_L2.connect(claimWallet);
     const ethBalance = await wallet.provider.getBalance(claimWallet.address);
     const tokenBalance = await playToken_l2.balanceOf(claimWallet.address);

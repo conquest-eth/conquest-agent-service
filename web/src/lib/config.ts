@@ -124,14 +124,17 @@ function setGetName(func: () => string): void {
   getName = func;
 }
 
-if (import.meta.env.MODE === 'production') {
+if (import.meta.env.MODE !== 'production') {
   Sentry.init({
     release: __VERSION__,
     dsn: 'https://3ce483b67b094d40a9ecece7ee1ba007@o43511.ingest.sentry.io/6056118',
     beforeSend(event, hint) {
       // Check if it is an exception, and if so, show the report dialog
       if (event.exception) {
+        console.error(`EXCEPTION`, event);
         Sentry.showReportDialog({eventId: event.event_id, user: {name: getName(), email: 'noone@nowhere.eth'}});
+      } else {
+        console.error(`sentry event`, event);
       }
       return event;
     },

@@ -11,8 +11,14 @@
   import {account} from '$lib/account/account';
   import {params} from '$lib/config';
 
-  function connect() {
-    privateWallet.login();
+  async function connect() {
+    try {
+      await privateWallet.login();
+    } catch (e) {
+      if (e.message.indexOf('Cancel') === -1) {
+        throw e;
+      }
+    }
   }
   function disconnect() {
     wallet.disconnect();
