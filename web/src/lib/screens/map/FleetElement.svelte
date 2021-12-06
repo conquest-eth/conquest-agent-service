@@ -135,10 +135,10 @@
   </svg>
 {:else}
   <svg
-    viewBox="0 0 500 500 "
+    viewBox="0 0 1 1 "
     width={(400 / scale) * 6}
     height={(400 / scale) * 6}
-    style={`position: absolute; z-index: 3; overflow: visible; transform: translate(${x}px,${y}px);`}
+    style={`position: absolute; z-index: 3; overflow: visible; transform: translate(${x}px,${y}px); height: 1px; width: 1px`}
   >
     <!-- <g style={`transform: scale(${scale});`} > -->
     <!-- svelte-ignore a11y-mouse-events-have-key-events -->
