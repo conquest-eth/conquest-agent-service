@@ -48,7 +48,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     );
   }
 
-  const claimKeyETHAmount = parseEther('0.35');
+  const claimKeyETHAmount = parseEther('0.45');
   const defaultClaimKeyTokenAmount = parseEther('200');
 
   const claimKeys: {

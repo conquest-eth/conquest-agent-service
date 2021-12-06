@@ -457,7 +457,14 @@ export class RevealQueue extends DO {
         const reveal = revealEntry[1];
         const queueID = revealEntry[0];
         const revealTime = reveal.startTime + reveal.duration;
-        if (revealTime <= timestamp) {
+
+        // TODO finalyty * blockTime
+        if (timestamp > revealTime + contracts.OuterSpace.linkedData.resolveWindow + this.finality * 15) {
+          this.info(`too late, deleting ${queueID}...`);
+          const revealID = `l_${reveal.fleetID}`;
+          this.state.storage.delete(queueID);
+          this.state.storage.delete(revealID);
+        } else if (revealTime <= timestamp) {
           this.info(`executing ${queueID}...`);
           await this._executeReveal(queueID, reveal);
         } else {
@@ -822,7 +829,8 @@ export class RevealQueue extends DO {
       } else {
         reveal.sendConfirmed = true;
         reveal.startTime = actualStartTime;
-        change = true;
+        // change = true;
+        this.state.storage.put<RevealData>(queueID, reveal); //TODO check race condition?
       }
     }
 
@@ -974,7 +982,7 @@ export class RevealQueue extends DO {
 
       this.info('checcking if fleet still alive....');
       const {quantity} = await this.outerspaceContract.getFleet(reveal.fleetID, '0');
-      this.info({quantity});
+      this.info(`quantity: ${quantity}`);
       if (quantity === 0) {
         if (nonceIncreased) {
           return {error: {message: 'nonce increased but fleet already resolved', code: 5502}};
@@ -1041,7 +1049,9 @@ export class RevealQueue extends DO {
             }
           );
         } else {
-          this.error(`FAILED TO SENDING TX... , TODO ? send dummy tx ?`);
+          this.error(
+            `FAILED TO SENDING TX... , TODO ? send dummy tx ? ${e.message || (e.toString && e.toString()) || e}`
+          );
           // TODO make dummy tx
           // or even better resign all tx queued with lower nonce, to skip it
           // but note in that "better" case, we should not do it if a tx has been broadcasted as we cannot guarantee the broadcasted tx will not be included in the end

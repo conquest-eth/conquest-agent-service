@@ -11,7 +11,7 @@ export const corsHeaders = {
 };
 
 export function createResponse(data: any, options?: {status: number}): Response {
-  return new Response(JSON.stringify(data), {
+  return new Response(JSON.stringify(data, null, '  '), {
     headers: {...corsHeaders, 'content-type': 'application/json;charset=UTF-8'},
     status: options?.status,
   });

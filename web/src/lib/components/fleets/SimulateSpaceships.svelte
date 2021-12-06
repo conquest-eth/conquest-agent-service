@@ -5,15 +5,14 @@
   import {onMount} from 'svelte';
   import {timeToText} from '$lib/utils';
   import {time} from '$lib/time';
-  import { spaceInfo } from '$lib/space/spaceInfo';
-  import { planets } from '$lib/space/planets';
+  import {spaceInfo} from '$lib/space/spaceInfo';
+  import {planets} from '$lib/space/planets';
 
   $: fromPlanetInfo = spaceInfo.getPlanetInfo($simulateFlow.data?.from.x, $simulateFlow.data?.from.y);
   $: fromPlanetState = planets.planetStateFor(fromPlanetInfo);
 
   $: toPlanetInfo = spaceInfo.getPlanetInfo($simulateFlow.data?.to.x, $simulateFlow.data?.to.y);
   $: toPlanetState = planets.planetStateFor(toPlanetInfo);
-
 
   // TODO maxSpaceshipsLoaded and invalid message if maxSpaceships == 0
   let fleetAmountSet = false;
@@ -43,7 +42,7 @@
       prediction = {
         arrivalTime: timeToText(spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo)),
         numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(fromPlanetInfo, toPlanetInfo, $toPlanetState),
-        outcome: spaceInfo.outcome(fromPlanetInfo, $fromPlanetState, toPlanetInfo, $toPlanetState, fleetAmount, $time),
+        outcome: spaceInfo.outcome(fromPlanetInfo, $fromPlanetState, toPlanetInfo, $toPlanetState, fleetAmount, 0),
       };
     }
   }
@@ -100,8 +99,7 @@
           <span>Spaceships</span><span class="text-right">Spaceships</span>
         </div>
         <div class="flex flex-row justify-between">
-          <span>{$fromPlanetState.numSpaceships}</span><span class="text-right">{$toPlanetState.numSpaceships}</span
-          >
+          <span>{$fromPlanetState.numSpaceships}</span><span class="text-right">{$toPlanetState.numSpaceships}</span>
         </div>
 
         {#if $fromPlanetState.owner !== $toPlanetState.owner}

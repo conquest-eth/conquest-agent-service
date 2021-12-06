@@ -52,6 +52,9 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
         minimumBalance: string;
       };
     };
+    if (!account) {
+      throw new Error(`no account registered for ${walletAddress}`);
+    }
     const revealSubmission = {
       player: walletAddress.toLowerCase(),
       fleetID,

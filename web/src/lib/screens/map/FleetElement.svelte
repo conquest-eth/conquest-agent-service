@@ -5,6 +5,10 @@
   import {clickOutside} from '$lib/utils/clickOutside';
   import type {Fleet} from '$lib/space/fleets';
   import {onMount} from 'svelte';
+  import {spaceInfo} from '$lib/space/spaceInfo';
+  import {time} from '$lib/time';
+  import {planets} from '$lib/space/planets';
+  import {playersQuery} from '$lib/space/playersQuery';
   export let fleet: Fleet;
 
   $: x1 = fleet.from.location.globalX;
@@ -44,6 +48,49 @@
     color = '#00ff00';
     showLine = false;
   }
+
+  // TODO investigate why there is need to check sendFlow.data.from ? might need to do the same to sendFlow.data.to below
+  $: fromPlanetInfo = spaceInfo.getPlanetInfo(fleet.from.location.x, fleet.from.location.y);
+  $: fromPlanetState = fromPlanetInfo && planets.planetStateFor(fromPlanetInfo);
+
+  $: toPlanetInfo = spaceInfo.getPlanetInfo(fleet.to.location.x, fleet.to.location.y);
+  $: toPlanetState = planets.planetStateFor(toPlanetInfo);
+
+  $: toPlayer = $playersQuery.data?.players[$toPlanetState?.owner];
+  $: fromPlayer = $playersQuery.data?.players[$fromPlanetState?.owner];
+
+  let prediction:
+    | {
+        arrivalTime: string;
+        numSpaceshipsAtArrival: {max: number; min: number};
+        outcome: {
+          min: {captured: boolean; numSpaceshipsLeft: number};
+          max: {captured: boolean; numSpaceshipsLeft: number};
+          allies: boolean;
+          giving?: {tax: number; loss: number};
+          timeUntilFails: number;
+        };
+      }
+    | undefined = undefined;
+  $: {
+    if (toPlanetState && fromPlanetState) {
+      prediction = {
+        arrivalTime: timeToText(spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo)),
+        numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(fromPlanetInfo, toPlanetInfo, $toPlanetState),
+        outcome: spaceInfo.outcome(
+          fromPlanetInfo,
+          $fromPlanetState,
+          toPlanetInfo,
+          $toPlanetState,
+          fleet.quantity,
+          Math.min($time - fleet.launchTime, fleet.duration),
+          fromPlayer,
+          toPlayer,
+          fleet.gift
+        ),
+      };
+    }
+  }
 </script>
 
 {#if fleet.state === 'READY_TO_RESOLVE'}
@@ -72,7 +119,14 @@
       fill={color}
     />
 
-    <animateMotion xlink:href={'#' + fleet.txHash} dur="2s" begin="0s" fill="freeze" repeatCount="indefinite" rotate="auto-reverse">
+    <animateMotion
+      xlink:href={'#' + fleet.txHash}
+      dur="2s"
+      begin="0s"
+      fill="freeze"
+      repeatCount="indefinite"
+      rotate="auto-reverse"
+    >
       <mpath xlink:href="#motionPath" />
     </animateMotion>
   </svg>
@@ -114,6 +168,10 @@
         {timeToText(fleet.duration)}
       </li>
       <li><span class="text-yellow-300">Time left:</span> {timeToText(fleet.timeLeft)}</li>
+      <li>
+        <span class="text-yellow-300">spaceship left at destination:</span>
+        {prediction.outcome.min.numSpaceshipsLeft}
+      </li>
     </ul>
   </div>
 {/if}
@@ -135,6 +193,15 @@
     >
       <path d="M 0 0 L 10 5 L 0 10 z" />
     </marker>
-    <line marker-end="url(#triangle)" style="z-index: 1;" stroke-width={`${4 / scale}px`} stroke={lineColor} {x1} {y1} {x2} {y2} />
+    <line
+      marker-end="url(#triangle)"
+      style="z-index: 1;"
+      stroke-width={`${4 / scale}px`}
+      stroke={lineColor}
+      {x1}
+      {y1}
+      {x2}
+      {y2}
+    />
   </svg>
 {/if}

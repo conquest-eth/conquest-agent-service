@@ -92,6 +92,12 @@ export class FleetsStore implements Readable<FleetListState> {
         } else {
           const from = spaceInfo.getPlanetInfo(sendAction.from.x, sendAction.from.y);
           const to = spaceInfo.getPlanetInfo(sendAction.to.x, sendAction.to.y);
+          if (!from) {
+            console.error(`not planet found at ${sendAction.from.x}, ${sendAction.from.y}`);
+          }
+          if (!to) {
+            console.error(`not planet found at ${sendAction.to.x}, ${sendAction.to.y}`);
+          }
           const duration = spaceInfo.timeToArrive(from, to);
           let launchTime = now(); // TODO  update.queryState.data?.chain.timestamp ?
           if (sendAction.actualLaunchTime) {

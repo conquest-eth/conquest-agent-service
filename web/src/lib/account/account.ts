@@ -492,6 +492,10 @@ class Account implements Readable<AccountState> {
     }
   }
 
+  public isReady() {
+    return !!this.state.data;
+  }
+
   private _start(): () => void {
     this.stopPrivateWalletSubscription = privateWallet.subscribe(async ($privateWallet) => {
       await this._handlePrivateWalletChange($privateWallet);

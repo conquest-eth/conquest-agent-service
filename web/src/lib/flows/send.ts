@@ -189,7 +189,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     // TODO option in UI ?
     let specific = '0x0000000000000000000000000000000000000001';
 
-    let potentialAlliances: string[] | undefined;
+    let potentialAlliances: string[] = [];
 
     const destinationPlanetState = get(planets.planetStateFor(toPlanetInfo));
     let destinationOwner: Player | undefined;

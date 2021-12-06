@@ -28,6 +28,8 @@ const chainNames = {
 let networkName = 'unknown';
 let chainId = 'unknown';
 
+let finality = 8; // TODO
+
 const stat = fs.statSync(pathArg);
 let contractsInfo;
 if (stat.isDirectory()) {
@@ -86,6 +88,10 @@ fs.writeFileSync(
   )
 );
 
+if (networkName === 'quick') {
+  finality = 3;
+}
+
 const template = Handlebars.compile(fs.readFileSync('./templates/wrangler.toml.hbs').toString());
 const environment = networkName === 'localhost' ? 'dev' : 'production';
 const result = template({
@@ -93,6 +99,7 @@ const result = template({
   networkName,
   ETHEREUM_NODE: process.env.AGENT_SERVICE_ETHEREUM_NODE,
   DATA_DOG_API_KEY: process.env.DATA_DOG_API_KEY,
+  FINALITY: finality,
   chainId,
   environment,
 });

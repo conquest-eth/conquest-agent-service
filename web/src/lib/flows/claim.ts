@@ -44,49 +44,56 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
   }
 
   async confirm(): Promise<void> {
-    const flow = this.setPartial({step: 'WAITING_TX'});
-    if (!flow.data) {
-      throw new Error(`no flow data`);
-    }
-    const latestBlock = await wallet.provider?.getBlock('latest');
-    if (!latestBlock) {
-      throw new Error(`can't fetch latest block`);
-    }
-    // console.log('HELLO');
-    const planetInfo = spaceInfo.getPlanetInfo(flow.data.coords.x, flow.data.coords.y);
-    if (!planetInfo) {
-      throw new Error(`no planet at ${flow.data.coords.x}, ${flow.data.coords.y}`);
-    }
-    let tx;
-    try {
-      tx = await wallet.contracts?.PlayToken_L2.transferAndCall(
-        wallet.contracts?.OuterSpace.address,
-        BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'),
-        defaultAbiCoder.encode(
-          ['address', 'uint256'],
-          [wallet.address, xyToLocation(flow.data.coords.x, flow.data.coords.y)]
-        )
-      );
-    } catch (e) {
-      console.error(e);
-      if (e.message && e.message.indexOf('User denied') >= 0) {
-        this.setPartial({
-          step: 'IDLE',
-          error: undefined,
-        });
+    await privateWallet.execute(async () => {
+      const flow = this.setPartial({step: 'WAITING_TX'});
+      if (!flow.data) {
+        throw new Error(`no flow data`);
+      }
+      const latestBlock = await wallet.provider?.getBlock('latest');
+      if (!latestBlock) {
+        throw new Error(`can't fetch latest block`);
+      }
+      // console.log('HELLO');
+      const planetInfo = spaceInfo.getPlanetInfo(flow.data.coords.x, flow.data.coords.y);
+      if (!planetInfo) {
+        throw new Error(`no planet at ${flow.data.coords.x}, ${flow.data.coords.y}`);
+      }
+
+      if (!account.isReady()) {
+        throw new Error(`account not ready`);
+      }
+
+      let tx;
+      try {
+        tx = await wallet.contracts?.PlayToken_L2.transferAndCall(
+          wallet.contracts?.OuterSpace.address,
+          BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'),
+          defaultAbiCoder.encode(
+            ['address', 'uint256'],
+            [wallet.address, xyToLocation(flow.data.coords.x, flow.data.coords.y)]
+          )
+        );
+      } catch (e) {
+        console.error(e);
+        if (e.message && e.message.indexOf('User denied') >= 0) {
+          this.setPartial({
+            step: 'IDLE',
+            error: undefined,
+          });
+          return;
+        }
+        this.setPartial({error: e, step: 'CHOOSE_STAKE'});
         return;
       }
-      this.setPartial({error: e, step: 'CHOOSE_STAKE'});
-      return;
-    }
 
-    account.recordCapture(flow.data.coords, tx.hash, latestBlock.timestamp, tx.nonce); // TODO check
+      account.recordCapture(flow.data.coords, tx.hash, latestBlock.timestamp, tx.nonce); // TODO check
 
-    if (!account.isWelcomingStepCompleted(TutorialSteps.SUGGESTION_PROFILE)) {
-      this.setData({txHash: tx.hash}, {step: 'PROFILE_INFO'});
-    } else {
-      this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
-    }
+      if (!account.isWelcomingStepCompleted(TutorialSteps.SUGGESTION_PROFILE)) {
+        this.setData({txHash: tx.hash}, {step: 'PROFILE_INFO'});
+      } else {
+        this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
+      }
+    });
   }
 
   async acknowledgeProfileSuggestion() {

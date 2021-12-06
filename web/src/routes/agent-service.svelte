@@ -119,7 +119,7 @@
               <Button
                 class="w-max-content m-4"
                 label="Top Up"
-                on:click={() => agentService_topup.topup(BigNumber.from('100000000000000000'))}
+                on:click={() => agentService_topup.topup(BigNumber.from('200000000000000000'))}
               >
                 Top Up
                 <!-- Top Up (for 10 fleets) -->

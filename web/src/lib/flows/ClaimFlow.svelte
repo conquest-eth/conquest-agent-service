@@ -34,7 +34,7 @@
   </Modal>
 {:else if $claimFlow.step === 'CONNECTING'}
   <!---->
-{:else if $claimFlow.step === 'CHOOSE_STAKE'}
+{:else if $claimFlow.step === 'CHOOSE_STAKE' && $wallet.state == 'Ready'}
   <Modal on:close={() => claimFlow.cancel()}>
     {#if $playTokenAccount.status === 'Idle'}
       Please wait...
