@@ -13,7 +13,7 @@
 
   <br />
   <WalletAccess>
-    <div class="flex justify-center flex-wrap text-cyan-300">
+    <div class="text-cyan-300 text-center">
       {#if $privateWallet.step !== 'READY'}
         <Button
           class="w-max-content m-4"
@@ -29,10 +29,12 @@
           <!-- {:else if $withdrawals.pending} -->
           <!-- <p>withdrawal in progress..</p> -->
         {:else}
-          <p>{$withdrawals.balance.div('10000000000000000').toNumber() / 100}</p>
+          <p class="m-2 text-center">
+            Amount available: {$withdrawals.balance.div('10000000000000000').toNumber() / 100}
+          </p>
         {/if}
         <Button
-          class="w-max-content m-4"
+          class="block w-max-content m-4"
           label="withdraw"
           disabled={$withdrawals.balance.eq(0)}
           on:click={() => withdrawals.withdraw()}

@@ -86,11 +86,14 @@
           Math.min($time - fleet.launchTime, fleet.duration),
           fromPlayer,
           toPlayer,
-          fleet.gift
+          fleet.gift,
+          fleet.specific
         ),
       };
     }
   }
+
+  $: lineColor = prediction.outcome.giving ? '#34D399' : 'red';
 </script>
 
 {#if fleet.state === 'READY_TO_RESOLVE'}
