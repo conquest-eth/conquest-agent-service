@@ -171,10 +171,39 @@
         {timeToText(fleet.duration)}
       </li>
       <li><span class="text-yellow-300">Time left:</span> {timeToText(fleet.timeLeft)}</li>
-      <li>
-        <span class="text-yellow-300">spaceship left at destination:</span>
-        {prediction.outcome.min.numSpaceshipsLeft}
-      </li>
+      {#if prediction}
+        <li>
+          {#if prediction.outcome.giving}
+            <span class="text-green-500">Reinforcement...</span>
+          {:else if prediction.outcome.min.captured}
+            <span class="text-green-500">Will capture </span>
+          {:else}
+            <!-- <span class="text-red-500">No Capture</span> -->
+          {/if}
+        </li>
+        <li>
+          {#if prediction.outcome.giving}
+            <span
+              class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
+              >spaceships: {prediction.outcome.min.numSpaceshipsLeft}</span
+            >
+          {:else if prediction.outcome.min.captured}
+            <span
+              class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
+              >spaceships: {prediction.outcome.min.numSpaceshipsLeft}</span
+            >
+          {:else}
+            <span
+              class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
+              >damage: {prediction.numSpaceshipsAtArrival.min - prediction.outcome.min.numSpaceshipsLeft}</span
+            >
+            <span
+              class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
+              >spaceships: {prediction.outcome.min.numSpaceshipsLeft}</span
+            >
+          {/if}
+        </li>
+      {/if}
     </ul>
   </div>
 {/if}
