@@ -57,12 +57,13 @@
       {#each Object.entries($playersQuery.data.alliances) as entry}
         <li>
           <h3 class="text-xl text-yellow-500">
-            <Blockie class="inline w-10 h-10 m-1" address={entry[0]} /> Alliance {entry[0]} (<a
-              target="_blank"
-              class="underline"
-              href={url(`external/basic-alliances/`, `id=${entry[0]}`)}>website</a
-            >)
+            <Blockie class="inline w-10 h-10 m-1" address={entry[0]} /> Alliance {entry[0]}
           </h3>
+          <a
+            target="_blank"
+            class="inline-block border-2 border-yellow-400 p-1 m-1"
+            href={url(`external/basic-alliances/`, `id=${entry[0]}`)}>JOIN/MANAGE</a
+          >
           <p>members:</p>
           <ul class="m-2">
             {#each entry[1].members as member}
