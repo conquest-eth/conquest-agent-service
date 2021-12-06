@@ -821,6 +821,7 @@ export class RevealQueue extends DO {
         reveal.retries++;
         if (reveal.retries >= 10) {
           this.info(`deleting reveal ${revealID} after ${reveal.retries} retries ...`);
+          await this._reduceSpending(reveal);
           this.state.storage.delete(queueID);
           this.state.storage.delete(revealID);
           return;
@@ -859,6 +860,7 @@ export class RevealQueue extends DO {
             reveal.retries++;
             if (reveal.retries >= 10) {
               this.info(`deleting reveal ${revealID} after 10 retires: due to error code 5502....`);
+              await this._reduceSpending(reveal);
               this.state.storage.delete(queueID);
               this.state.storage.delete(revealID);
             }
@@ -913,6 +915,24 @@ export class RevealQueue extends DO {
         this.state.storage.put<RevealData>(queueID, reveal);
       }
     }
+  }
+
+  async _reduceSpending(reveal: RevealData) {
+    const accountID = `account_${reveal.player}`;
+    const maxFeeAllowed = getMaxFeeAllowed(reveal.maxFeesSchedule);
+    const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
+    let accountRefetched = await this.state.storage.get<AccountData | undefined>(accountID);
+    if (!accountRefetched) {
+      accountRefetched = {paid: '0', spending: '0', nonceMsTimestamp: 0, maxFeesSchedule: defaultMaxFeesSchedule};
+    }
+    let spending = BigNumber.from(accountRefetched.spending);
+    if (spending.lt(minimumBalance)) {
+      spending = BigNumber.from(0);
+    } else {
+      spending = spending.sub(minimumBalance);
+    }
+    accountRefetched.spending = spending.toString();
+    this.state.storage.put<AccountData>(accountID, accountRefetched);
   }
 
   async _submitTransaction(
