@@ -71,7 +71,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   if (network.name === 'alpha') {
     genesisHash =
-      '0x9e9e23df9a65ca95f7a3b613673c89db774d0cdaaa1850160a59406c0220d7f7';
+      '0x015e3b02f1bb647546a9856205a64f1c2263856de7acb3fe65aa303c9c8ce7fc';
   }
 
   await deploy('OuterSpace', {
