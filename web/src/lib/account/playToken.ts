@@ -51,7 +51,7 @@ class PlayTokenAccount extends BaseStore<TokenAccount> {
         if (pendingAction.status === 'FAILURE') {
         } else if (pendingAction.status === 'CANCELED') {
         } else if (pendingAction.status === 'TIMEOUT') {
-        } else if (pendingAction.status === 'PENDING' || pendingAction.status === 'LOADING') {
+        } else if (pendingAction.status === 'PENDING') {
           if (captureAction.planetCoords) {
             const planetInfo = spaceInfo.getPlanetInfo(captureAction.planetCoords.x, captureAction.planetCoords.y);
             this.tokenPending = BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000');
