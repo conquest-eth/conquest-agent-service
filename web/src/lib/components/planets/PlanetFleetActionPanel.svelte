@@ -430,7 +430,7 @@
         class="m-2"
         on:click={showDepartures}
       >
-        <div class="w-20">Trafic</div>
+        <div class="w-20">Traffic</div>
       </PanelButton>
     {/if}
   {:else}
