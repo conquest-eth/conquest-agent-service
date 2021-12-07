@@ -39,8 +39,8 @@ class PlayTokenAccount extends BaseStore<TokenAccount> {
   }
 
   private onSpaceUpdate(update: SpaceQueryWithPendingState): void {
+    this.tokenPending = BigNumber.from(0);
     const pendingActions = update.pendingActions;
-
     for (const pendingAction of pendingActions) {
       if (pendingAction.counted) {
         continue;
