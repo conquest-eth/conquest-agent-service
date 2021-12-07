@@ -124,7 +124,7 @@ function setGetName(func: () => string): void {
   getName = func;
 }
 
-if (import.meta.env.MODE !== 'production') {
+if (import.meta.env.MODE === 'production') {
   Sentry.init({
     release: __VERSION__,
     dsn: 'https://3ce483b67b094d40a9ecece7ee1ba007@o43511.ingest.sentry.io/6056118',
