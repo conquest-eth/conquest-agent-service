@@ -144,6 +144,13 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     }
     let resp = await obj.fetch(url.toString(), request);
     return resp;
+  } else if (fnc === 'getQueueAsSortedArray') {
+    // TODO remove unless admin
+    if (method !== 'GET') {
+      return InvalidMethod();
+    }
+    let resp = await obj.fetch(url.toString(), request);
+    return resp;
   } else if (fnc === 'getSyncState') {
     if (method !== 'GET') {
       return InvalidMethod();
