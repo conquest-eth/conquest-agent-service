@@ -5,7 +5,7 @@ import {BigNumber} from '@ethersproject/bignumber';
 import fs from 'fs';
 
 const recipients: {address: string; amount: number}[] = JSON.parse(
-  fs.readFileSync('../airdrop.json').toString()
+  fs.readFileSync('./airdrop.json').toString()
 );
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
@@ -18,7 +18,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     amounts.push(BigNumber.from(recipient.amount).mul('1000000000000000000'));
     addresses.push(recipient.address);
   }
-  const etherAmount = BigNumber.from(addresses.length).mul(parseEther('0.1'));
+  const etherAmount = BigNumber.from(addresses.length).mul(parseEther('0.5'));
 
   // console.log({amounts: amounts.map((v) => v.toString()), addresses, etherAmount: etherAmount.toString()});
   await execute(
