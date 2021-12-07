@@ -27,7 +27,11 @@
     //   hash: window.location.hash,
     //   both: window.location.search + window.location.hash,
     // });
-    window.history.replaceState('', document.title, url(window.location.search + window.location.hash));
+    window.history.replaceState(
+      '',
+      document.title,
+      url(window.location.search, window.location.hash ? window.location.hash.slice(1) : undefined)
+    );
     if (!isNaN(x) && !isNaN(y)) {
       // const locX = Math.floor((Math.round(x) + 2) / 4);
       // const locY = Math.floor((Math.round(y) + 2) / 4);
