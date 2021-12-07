@@ -17,7 +17,7 @@ import {
   InvalidDelegate,
   InvalidFeesScheduleSubmission,
 } from './errors';
-import {xyToLocation, createResponse} from './utils';
+import {xyToLocation, createResponse, time2text} from './utils';
 
 // const oldFetch = globalThis.fetch;
 
@@ -594,6 +594,46 @@ export class RevealQueue extends DO {
     }
 
     return createResponse({queue, success: true});
+  }
+
+  async getQueueAsSortedArray(path: string[]): Promise<Response> {
+    if (path[0] !== 'booted-saffron-blatancy-poncho') {
+      return createResponse({success: false});
+    }
+    const limit = 1000;
+    const reveals = (await this.state.storage.list({prefix: `q_`, limit})) as Map<string, RevealData> | undefined;
+    const queue = [];
+    if (reveals) {
+      for (const revealEntry of reveals.entries()) {
+        const reveal = revealEntry[1];
+        const queueID = revealEntry[0];
+        queue.push({
+          queueID,
+          fleetID: reveal.fleetID,
+          from: reveal.from,
+          to: reveal.to,
+          player: reveal.player,
+          retries: reveal.retries,
+          startTime: reveal.startTime,
+          sendConfirmed: reveal.sendConfirmed,
+          duration: reveal.duration,
+          revealTime: reveal.startTime + reveal.duration,
+          // secretHash: reveal.secret,
+        });
+      }
+    }
+
+    return createResponse({
+      queue: queue
+        .sort((a, b) => a.revealTime - b.revealTime)
+        .map((v) => {
+          v.revealTime = new Date(v.revealTime * 1000).toUTCString();
+          v.startTime = new Date(v.startTime * 1000).toUTCString();
+          v.duration = time2text(v.duration);
+          return v;
+        }),
+      success: true,
+    });
   }
 
   async getRevealList(path: string[]): Promise<Response> {
