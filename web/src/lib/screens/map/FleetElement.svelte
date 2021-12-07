@@ -9,6 +9,7 @@
   import {time} from '$lib/time';
   import {planets} from '$lib/space/planets';
   import {playersQuery} from '$lib/space/playersQuery';
+  import fleetselection from '$lib/map/fleetselection';
   export let fleet: Fleet;
 
   $: x1 = fleet.from.location.globalX;
@@ -28,7 +29,7 @@
 
   let showLine = true;
   let color;
-  let isShow = false;
+
   let lineColor = fleet.gift ? '#34D399' : 'red';
   $: if (fleet.state === 'SEND_BROADCASTED') {
     color = 'orange';
@@ -116,7 +117,6 @@
 
     <path
       id={fleet.txHash}
-      on:click={() => (isShow = !isShow)}
       style={`transform: rotate(${angle}rad); cursor: pointer; `}
       d="M150 0 L75 200 L225 200 Z"
       fill={color}
@@ -135,15 +135,14 @@
   </svg>
 {:else}
   <svg
-    viewBox="0 0 1 1 "
+    viewBox="0 0 500 500 "
     width={(400 / scale) * 6}
     height={(400 / scale) * 6}
-    style={`position: absolute; z-index: 3; overflow: visible; transform: translate(${x}px,${y}px); height: 1px; width: 1px`}
+    style={`position: absolute; z-index: 3; overflow: visible; transform: translate(${x}px,${y}px);`}
   >
     <!-- <g style={`transform: scale(${scale});`} > -->
     <!-- svelte-ignore a11y-mouse-events-have-key-events -->
     <path
-      on:click={() => (isShow = !isShow)}
       style={`transform: rotate(${angle}rad); cursor: pointer; z-index: 99 `}
       d="M -5 -2.5 L 0 0 L -5 2.5 z"
       fill={color}
@@ -152,11 +151,9 @@
     <!-- </g> -->
   </svg>
 {/if}
-{#if isShow}
+{#if $fleetselection && $fleetselection.txHash == fleet.txHash}
   <!-- svelte-ignore a11y-mouse-events-have-key-events -->
   <div
-    use:clickOutside
-    on:click_outside={() => (isShow = false)}
     class="w-24 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300"
     style={`font-size: 9px;
       transform-origin: top left;

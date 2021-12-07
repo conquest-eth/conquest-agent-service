@@ -7,6 +7,8 @@
   import {planetStates} from '$lib/space/planetStates';
   import selection from '$lib/map/selection';
   import {spaceInfo} from '$lib/space/spaceInfo';
+  import {fleetList} from '$lib/space/fleets';
+  import fleetselection from '$lib/map/fleetselection';
 
   let surface: HTMLElement;
   let renderView: RenderView;
@@ -36,6 +38,32 @@
         pY: planetInfo && planetInfo.location.globalY,
       });
 
+      const fleets = fleetList.state.fleets;
+      for (const fleet of fleets) {
+        const x1 = fleet.from.location.globalX;
+        const y1 = fleet.from.location.globalY;
+        const x2 = fleet.to.location.globalX;
+        const y2 = fleet.to.location.globalY;
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+
+        const ratio = Math.max(0, (fleet.duration - fleet.timeLeft) / fleet.duration);
+
+        const scale = $camera ? $camera.renderScale : 1;
+        const multiplier = (400 / scale) * 6;
+
+        const dx = Math.cos(angle + Math.PI) * (3 / camera.zoom);
+        const dy = Math.sin(angle + Math.PI) * (3 / camera.zoom);
+        const fx = x1 + (x2 - x1) * ratio + dx;
+        const fy = y1 + (y2 - y1) * ratio + dy;
+
+        if (Math.sqrt(Math.pow(fx - x, 2) + Math.pow(fy - y, 2)) <= 20 / camera.zoom) {
+          console.log({x, y, fx, fy, scale});
+          console.log(fleet);
+          fleetselection.select(fleet);
+          return;
+        }
+      }
+
       if (planetInfo) {
         const multiplier = planetInfo.stats.production / 3600;
 
@@ -56,6 +84,7 @@
       }
     }
     selection.unselect();
+    fleetselection.unselect();
   }
 
   onMount(() => {
