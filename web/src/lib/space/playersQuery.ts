@@ -124,6 +124,11 @@ export class SpaceQueryStore implements QueryStore<PlayersState> {
       return undefined;
     }
 
+    // TODO remove, but for now delete alliance
+    for (const owner of data.owners) {
+      owner.alliances = owner.alliances.filter((v) => v.alliance.id !== '0x1b4d6f16c224b32661da98362a123106a7c731f8');
+    }
+
     const playerAlliances = {};
     if (this.queryStore.runtimeVariables.owner) {
       const playerAddress = this.queryStore.runtimeVariables.owner.toLowerCase();
