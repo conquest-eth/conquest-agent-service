@@ -23,7 +23,7 @@
 {:else if $showPlanetDepartures.step === 'READY'}
   <Modal on:close={() => showPlanetDepartures.cancel()} on:confirm={() => showPlanetDepartures.cancel()}>
     {#if !$showPlanetDepartures.departures || $showPlanetDepartures.departures.length === 0}
-      <p class="text-center">No fleets from other players in transit from this planet</p>
+      <p class="text-center">No fleets sent from this planet</p>
       <!-- since at least {timeToText(logPeriod)} -->
     {:else}
       {#each $showPlanetDepartures.departures as departure}
