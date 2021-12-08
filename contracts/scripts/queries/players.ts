@@ -1,12 +1,16 @@
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
+import hre from 'hardhat';
 import 'dotenv/config';
 import {TheGraph} from '../utils/thegraph';
 
-const theGraph = new TheGraph(
-  `https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`
-);
+async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
+  const {deployments} = hre;
+  const theGraph = new TheGraph(
+    `https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`
+  );
 
-// query($blockNumber: Int! $first: Int! $lastId: ID! $id: ID!) {
-const queryString = `
+  // query($blockNumber: Int! $first: Int! $lastId: ID! $id: ID!) {
+  const queryString = `
 query($first: Int! $lastId: ID!) {
     owners(first: $first where: {
       totalStaked_gt: 0
@@ -19,12 +23,21 @@ query($first: Int! $lastId: ID!) {
 }
 `;
 
-async function main() {
   const players: {
     id: string;
   }[] = await theGraph.query(queryString, {field: 'owners'});
-  console.log(JSON.stringify(players, null, 2));
+
+  await deployments.saveDotFile(
+    '.players.json',
+    JSON.stringify(players, null, 2)
+  );
   console.log({numPlayers: players.length});
 }
 
-main();
+async function main() {
+  await func(hre);
+}
+
+if (require.main === module) {
+  main();
+}
