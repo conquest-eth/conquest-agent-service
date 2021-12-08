@@ -74,7 +74,7 @@
       }
     | undefined = undefined;
   $: {
-    if (toPlanetState && fromPlanetState) {
+    if ($toPlanetState && $fromPlanetState) {
       prediction = {
         arrivalTime: timeToText(spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo)),
         numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(fromPlanetInfo, toPlanetInfo, $toPlanetState),
@@ -94,7 +94,7 @@
     }
   }
 
-  $: lineColor = prediction.outcome.giving ? '#34D399' : 'red';
+  $: lineColor = prediction?.outcome.giving ? '#34D399' : 'red';
 </script>
 
 {#if fleet.state === 'READY_TO_RESOLVE'}
