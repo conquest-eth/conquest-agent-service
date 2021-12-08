@@ -3,6 +3,8 @@ import {now} from '$lib/time';
 import lstorage from '$lib/utils/lstorage';
 import {params} from '$lib/config';
 
+const MAX_STAGE = 2;
+
 class LogoStore extends BaseStore<{stage: number}> {
   private stageTime: number;
   private timeout: number | undefined;
@@ -18,6 +20,16 @@ class LogoStore extends BaseStore<{stage: number}> {
 
   start() {
     this.stageTime = now();
+
+    // TODO  investigate, for now: to ensure logo goes through
+    if (!params['logo']) {
+      setTimeout(
+        () => {
+          this.set({stage: MAX_STAGE});
+        },
+        this.visited ? 3000 : 4000
+      );
+    }
   }
 
   gameLogoReady() {
@@ -45,12 +57,20 @@ class LogoStore extends BaseStore<{stage: number}> {
     if (this.timeout) {
       clearTimeout(this.timeout);
     }
-    this.stageTime = now();
-    this.set({stage: this.$store.stage + 1});
-    if (this.$store.stage === 2) {
+    if (this.$store.stage < MAX_STAGE) {
+      this.stageTime = now();
+      this.set({stage: this.$store.stage + 1});
+    }
+
+    if (this.$store.stage === MAX_STAGE) {
       lstorage.setItem('_conquest_visited', 'true');
     }
   }
 }
 
 export const logo = new LogoStore();
+
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).logo = logo;
+}
