@@ -46,23 +46,23 @@
           You didn't capture planet {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error
           ocurred on the transaction.
         </li>
-      {/if}
-      {#if error.action.type === 'EXIT'}
+      {:else if error.action.type === 'EXIT'}
         <li>
           You can't exit on {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error ocurred
           on the transaction.
         </li>
-      {/if}
-      {#if error.action.type === 'RESOLUTION'}
+      {:else if error.action.type === 'RESOLUTION'}
         <li>
           You didn't resolve on {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error
           ocurred on the transaction.
         </li>
-      {/if}
-      {#if error.action.type === 'WITHDRAWAL'}
+      {:else}
         <li>
-          You didn't withdrawn on planet {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because
-          an error ocurred on the transaction.
+          An error ocurred for for this <a
+            target="_blank"
+            class="underline text-cyan-100"
+            href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${error.txHash}`}>transaction</a
+          >
         </li>
       {/if}
     </ul>

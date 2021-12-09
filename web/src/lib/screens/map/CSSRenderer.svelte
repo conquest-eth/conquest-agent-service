@@ -94,7 +94,7 @@ width:100%; height: 100%;
 
     {#if $errors}
       {#each $errors as error}
-        {#if !error.acknowledged}
+        {#if !error.acknowledged && error.location}
           <ErrorElement bind:selectedError bind:isShow {error} />
         {/if}
       {/each}
