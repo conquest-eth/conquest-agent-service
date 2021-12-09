@@ -68,6 +68,8 @@ export class ErrorsStore implements Readable<SpaceError[]> {
         location = pendingAction.action.planetCoords;
       } else if (pendingAction.action.type === 'RESOLUTION') {
         location = pendingAction.action.to;
+      } else if (pendingAction.action.type === 'EXIT') {
+        location = pendingAction.action.planetCoords;
       }
 
       if (
