@@ -6,7 +6,7 @@ import "hardhat-deploy/solc_0.8/proxy/Proxied.sol";
 import "./Interfaces/IAlliance.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract AllianceRegistry is Proxied {
      using ECDSA for bytes32;
@@ -30,6 +30,26 @@ contract AllianceRegistry is Proxied {
 
     event AllianceLink(IAlliance indexed alliance, address indexed player, bool joining);
 
+
+    function getAllianceDataAtSlot(address player, uint8 slot) external view returns (IAlliance alliance, uint96 joinTime, uint256 nonce) {
+
+        Alliances storage alliances = _alliances[player];
+        if (slot == 0) {
+            alliance = alliances.alliance0.alliance;
+            joinTime = alliances.alliance0.joinTime;
+        } else if (slot == 1) {
+            alliance = alliances.alliance1.alliance;
+            joinTime = alliances.alliance1.joinTime;
+        } else if (slot == 2) {
+            alliance = alliances.alliance2.alliance;
+            joinTime = alliances.alliance2.joinTime;
+        } else if (slot == 3) {
+            alliance = alliances.alliance3.alliance;
+            joinTime = alliances.alliance3.joinTime;
+        }
+
+        nonce = _allianceNonces[player][alliance];
+    }
 
     function getAllianceData(address player, IAlliance alliance) external view returns (uint96 joinTime, uint256 nonce) {
         nonce = _allianceNonces[player][alliance];
@@ -68,6 +88,7 @@ contract AllianceRegistry is Proxied {
                     allianceRow = p1Alliances.alliance3;
                 }
                 if (address(allianceRow.alliance) == address(0)) {
+                    // console.log("p1 exhausted");
                     return (alliance, joinTime); // the alliance leave ensure that there is no gap // TODO
                 }
                 player1Alliances[num1 ++] = allianceRow;
@@ -85,7 +106,9 @@ contract AllianceRegistry is Proxied {
                         allianceRow = p2Alliances.alliance3;
                     }
                     if (address(allianceRow.alliance) == address(0)) {
-                        return (alliance, joinTime); // the alliance leave ensure that there is no gap // TODO
+                        // console.log("p2 exhausted");
+                        // return (alliance, joinTime); // the alliance leave ensure that there is no gap // TODO
+                        break;
                     }
                     player2Alliances[num2 ++] = allianceRow;
                 }
@@ -95,6 +118,7 @@ contract AllianceRegistry is Proxied {
                         if (player1Alliances[i].joinTime < timestamp) {
                             return (player1Alliances[i].alliance, player1Alliances[i].joinTime);
                         } else {
+                            // TODO check greater ?
                             alliance = player1Alliances[i].alliance;
                             joinTime = player1Alliances[i].joinTime;
                         }
@@ -102,6 +126,7 @@ contract AllianceRegistry is Proxied {
                         if (player2Alliances[j].joinTime < timestamp) {
                             return (player2Alliances[j].alliance, player2Alliances[j].joinTime);
                         } else {
+                            // TODO check greater ?
                             alliance = player2Alliances[j].alliance;
                             joinTime = player2Alliances[j].joinTime;
                         }
@@ -109,6 +134,8 @@ contract AllianceRegistry is Proxied {
                 }
             }
         }
+        // console.log(address(alliance));
+        // console.log(joinTime);
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -221,7 +248,7 @@ contract AllianceRegistry is Proxied {
         }
 
 
-        console.log(string(message));
+        // console.log(string(message));
 
         bytes32 digest = keccak256(message);
 

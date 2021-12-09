@@ -1,21 +1,46 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import hre from 'hardhat';
 
+import deployRegistry from '../../deploy_l2/01_deploy/02_a_deploy_alliance_registry';
+
+const args = process.argv.slice(2);
+
+const p1 = args[0];
+const p2 = args[1];
+const alliance = args[2];
+
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {read} = hre.deployments;
 
-  const alliance = '0xe6e59ef0b38a049cb9bbbc3bfb87dce72c1a199d';
+  async function readSlots(player: string): Promise<void> {
+    for (let i = 0; i < 4; i++) {
+      const slot = await read(
+        'AllianceRegistry',
+        'getAllianceDataAtSlot',
+        player,
+        i
+      );
+      console.log(`slot ${i}: ${slot.alliance}, ${slot.joinTime}`);
+    }
+  }
 
-  const p1 = '0x5Ee7b50d94Bebb61b343F8f5A46b787f0776bcbE';
-  const p2 = '0x90F79bf6EB2c4f870365E785982E1f101E93b906';
+  console.log(`${p1}`);
+  await readSlots(p1);
+
+  console.log(`${p2}`);
+  await readSlots(p2);
+
+  await deployRegistry(hre);
 
   const alliances = await read(
     'AllianceRegistry',
     'havePlayersAnAllianceInCommon',
     p1,
     p2,
-    1
+    1638948141
   );
+
+  console.log(alliances);
 
   const p1Data = await read(
     'AllianceRegistry',

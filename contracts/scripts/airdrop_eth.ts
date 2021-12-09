@@ -28,6 +28,8 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
         .sendTransaction({to: player.id, value: toSend});
       console.log(`tx: ${tx.hash} ...`);
       await tx.wait();
+    } else {
+      console.log(`(enough balance: ${formatEther(balance)})`);
     }
   }
 }

@@ -19,6 +19,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     contract: 'Dai',
     args: [await getChainId()],
     log: true,
+    skipIfAlreadyDeployed: true,
     autoMine: true,
   });
 };

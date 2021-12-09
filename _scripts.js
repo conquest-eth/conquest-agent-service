@@ -109,6 +109,11 @@ async function performAction(rawArgs) {
     await execute(
       `${env}npm --prefix contracts run deploy ${network} -- --export ../web/src/lib/contracts.json ${extra.join(' ')}`
     );
+  } else if (firstArg === 'contracts:fork:deploy') {
+    const {fixedArgs, extra} = parseArgs(args, 1, {});
+    const network = fixedArgs[0] || 'localhost';
+    const env = getEnv(network);
+    await execute(`${env}npm --prefix contracts run fork:deploy ${network} -- ${extra.join(' ')}`);
   } else if (firstArg === 'contracts:export') {
     const {fixedArgs, extra} = parseArgs(args, 1, {});
     const network = fixedArgs[0];
@@ -145,6 +150,11 @@ async function performAction(rawArgs) {
       await execute(`wait-on web/src/lib/contracts.json`);
     }
     await execute(`${env}npm --prefix contracts run execute ${network} ${extra.join(' ')}`);
+  } else if (firstArg === 'contracts:fork:execute') {
+    const {fixedArgs, extra} = parseArgs(args, 1, {});
+    const network = fixedArgs[0] || 'localhost';
+    const env = getEnv(network);
+    await execute(`${env}npm --prefix contracts run fork:execute ${network} ${extra.join(' ')}`);
   } else if (firstArg === 'subgraph:dev') {
     await execute(`dotenv -- npm --prefix subgraph run setup`);
     await execute(`wait-on web/src/lib/contracts.json`);

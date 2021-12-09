@@ -13,6 +13,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [allianceRegistry.address],
     log: true,
     autoMine: true,
+    skipIfAlreadyDeployed: true,
   });
 };
 export default func;
