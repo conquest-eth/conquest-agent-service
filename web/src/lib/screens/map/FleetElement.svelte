@@ -10,6 +10,7 @@
   import {planets} from '$lib/space/planets';
   import {playersQuery} from '$lib/space/playersQuery';
   import fleetselection from '$lib/map/fleetselection';
+  import {wallet} from '$lib/blockchain/wallet';
   export let fleet: Fleet;
 
   $: x1 = fleet.from.location.globalX;
@@ -58,7 +59,7 @@
   $: toPlanetState = planets.planetStateFor(toPlanetInfo);
 
   $: toPlayer = $playersQuery.data?.players[$toPlanetState?.owner];
-  $: fromPlayer = $playersQuery.data?.players[$fromPlanetState?.owner];
+  $: fromPlayer = $playersQuery.data?.players[fleet.owner];
 
   let prediction:
     | {
