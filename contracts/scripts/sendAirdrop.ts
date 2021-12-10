@@ -4,13 +4,14 @@ import {parseEther} from '@ethersproject/units';
 import {BigNumber} from '@ethersproject/bignumber';
 import fs from 'fs';
 
-const recipients: {address: string; amount: number}[] = JSON.parse(
-  fs.readFileSync('./airdrop.json').toString()
-);
-
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {claimKeyDistributor} = await hre.getNamedAccounts();
   const {execute} = hre.deployments;
+
+  const recipients: {address: string; amount: number}[] = JSON.parse(
+    await hre.deployments.readDotFile('.airdrop.json')
+  );
+
   const amounts: BigNumber[] = [];
   const addresses: string[] = [];
 
