@@ -10,6 +10,11 @@ import {node_url, accounts} from './utils/network';
 /* import './utils/tx-handler'; */
 import './utils/metadata';
 
+// While waiting for hardhat PR: https://github.com/nomiclabs/hardhat/pull/1542
+if (process.env.HARDHAT_FORK) {
+  process.env['HARDHAT_DEPLOY_FORK'] = process.env.HARDHAT_FORK;
+}
+
 const l1_pre_deploy_missing_contracts =
   'deploy_l1/00_pre_deploy_missing_contracts';
 const l1_deploy = 'deploy_l1/01_deploy';
