@@ -71,7 +71,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   );
 
   for (const planet of planetsChosen) {
-    console.log(`${planet.x},${planet.y}`);
+    console.log(`- (${planet.x},${planet.y})`);
   }
 }
 if (require.main === module) {

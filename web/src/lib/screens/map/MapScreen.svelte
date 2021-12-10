@@ -37,7 +37,7 @@
   import {contractsInfos} from '$lib/blockchain/contractsInfos';
   import {time} from '$lib/time';
 
-  // import Search from '$lib/components/utils/Search.svelte';
+  import Search from '$lib/components/utils/Search.svelte';
 
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
@@ -179,7 +179,7 @@
 {:else if $selection}
   <PlanetInfoPanel coords={$selection} />
 {:else}
-  <!-- <Search /> -->
+  <Search />
 {/if}
 <div class="flex right-0 bottom-0 md:top-0 absolute md:right-1/4 lists">
   <div class="md:flex ">

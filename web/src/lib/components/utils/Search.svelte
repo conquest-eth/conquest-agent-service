@@ -3,20 +3,32 @@
 
   import {spaceInfo} from '$lib/space/spaceInfo';
   import selection from '$lib/map/selection';
+  import {camera} from '$lib/map/camera';
 
   let coords: string;
   function go(e: Event): void {
     e.stopPropagation();
     e.preventDefault();
+    coords = coords.trim();
+    if (coords.startsWith('(')) {
+      coords = coords.slice(1);
+    }
+    if (coords.endsWith(')')) {
+      coords = coords.slice(0, coords.length - 1);
+    }
+    console.log({coords});
     const split = coords.split(',').map((v) => v.trim());
     if (split.length === 2) {
       const x = parseInt(split[0]);
       const y = parseInt(split[1]);
       if (!isNaN(x) && !isNaN(y)) {
-        (window as any).camera.navigate(x * 48 * 2 * 4, y * 48 * 2 * 4, 20);
         const planet = spaceInfo.getPlanetInfo(x, y);
         if (planet) {
-          selection.select(planet.location.id);
+          camera.navigate(planet.location.globalX, planet.location.globalY, 10);
+
+          if (planet) {
+            selection.select(planet.location.x, planet.location.y);
+          }
         }
       } else {
         console.log('invalid coords');

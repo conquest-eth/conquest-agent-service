@@ -4,9 +4,11 @@ import {OuterSpace} from '../typechain';
 import {locationToXY} from 'conquest-eth-common';
 
 const args = process.argv.slice(2);
-if (args.length === 0) {
-  throw new Error(`need to pass sponsor name`);
-}
+
+// if no giver, it just check validity
+// if (args.length === 0) {
+//   throw new Error(`need to pass sponsor name`);
+// }
 const sponsor = args[0];
 let giverAddress: string | undefined;
 if (sponsor === 'xaya') {
@@ -49,6 +51,11 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
       continue;
     } else if (state.state.lastUpdated > 0) {
       console.log(`planet already colonized: (${x},${y}) (${planet.location})`);
+      continue;
+    }
+
+    if (!giverAddress) {
+      console.log(`no giver specified`);
       continue;
     }
 
