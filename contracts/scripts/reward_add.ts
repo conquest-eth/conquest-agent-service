@@ -1,6 +1,7 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import hre from 'hardhat';
-import {xyToLocation} from 'conquest-eth-common';
+import {xyToLocation, locationToXY} from 'conquest-eth-common';
+import {OuterSpace} from '../typechain';
 
 const args = process.argv.slice(2);
 
@@ -34,6 +35,18 @@ if (location.indexOf(',') !== -1) {
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {deployer} = await hre.getNamedAccounts();
   const {execute} = hre.deployments;
+  const OuterSpace = <OuterSpace>await hre.ethers.getContract('OuterSpace');
+  const state = await OuterSpace.callStatic.getPlanet(location);
+
+  const {x, y} = locationToXY(location);
+  if (state.state.reward.gt(0)) {
+    console.log(`reward already added to (${x},${y}) (${location})`);
+    return;
+  } else if (state.state.lastUpdated > 0) {
+    console.log(`planet already colonized: (${x},${y}) (${location})`);
+    return;
+  }
+
   await execute(
     'OuterSpace',
     {from: deployer, log: true, autoMine: true},

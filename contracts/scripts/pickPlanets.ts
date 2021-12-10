@@ -48,7 +48,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   // fs.writeFileSync('../planets.json', data);
 
   const planetsChosen = [];
-  while (planetsChosen.length < 10) {
+  while (planetsChosen.length < 6) {
     const num = planetsInBound.length;
     const index = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) % num;
     const chosenPlanet = planetsInBound[index];
@@ -56,7 +56,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
 
     const state = await OuterSpace.callStatic.getPlanet(chosenPlanet.location);
 
-    if (state.state.lastUpdated == 0) {
+    if (state.state.reward.eq(0) && state.state.lastUpdated == 0) {
       console.log(
         `${chosenPlanet.x},${chosenPlanet.y}`,
         JSON.stringify(chosenPlanet, null, 2)
@@ -65,8 +65,8 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     }
   }
 
-  fs.writeFileSync(
-    'planets-chosen.json',
+  await deployments.saveDotFile(
+    '.planets-chosen.json',
     JSON.stringify(planetsChosen, null, 2)
   );
 

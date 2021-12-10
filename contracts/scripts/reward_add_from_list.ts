@@ -1,20 +1,64 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import hre from 'hardhat';
-import fs from 'fs';
+import {OuterSpace} from '../typechain';
+import {locationToXY} from 'conquest-eth-common';
 
-const planets = JSON.parse(fs.readFileSync('planets-chosen.json').toString());
+const args = process.argv.slice(2);
+if (args.length === 0) {
+  throw new Error(`need to pass sponsor name`);
+}
+const sponsor = args[0];
+let giverAddress: string | undefined;
+if (sponsor === 'xaya') {
+  giverAddress = '0xdddddddddddddddddddddddddddddddddddddddd';
+} else if (sponsor === 'pokt') {
+  giverAddress = '0x1111111111111111111111111111111111111111';
+} else if (sponsor === 'da') {
+  giverAddress = '0x2222222222222222222222222222222222222222';
+}
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
+  const planets = JSON.parse(
+    await hre.deployments.readDotFile('.planets-chosen.json')
+  );
+
+  if (planets.length !== 6) {
+    throw new Error(`6 required`);
+  }
+
   const {deployer} = await hre.getNamedAccounts();
   const {execute} = hre.deployments;
-  for (const planet of planets) {
+  for (let i = 0; i < planets.length; i++) {
+    const planet = planets[i];
+    // let giverAddress: string | undefined;
+    // if (i % 3 == 0) {
+    // } else if (i % 3 == 1) {
+    // } else if (i % 3 == 2) {
+    // }
+
+    // if (!giverAddress) {
+    //   throw new Error(`no giverAddress`);
+    // }
+
+    const OuterSpace = <OuterSpace>await hre.ethers.getContract('OuterSpace');
+    const state = await OuterSpace.callStatic.getPlanet(planet.location);
+
+    const {x, y} = locationToXY(planet.location);
+    if (state.state.reward.gt(0)) {
+      console.log(`reward already added to (${x},${y}) (${planet.location})`);
+      continue;
+    } else if (state.state.lastUpdated > 0) {
+      console.log(`planet already colonized: (${x},${y}) (${planet.location})`);
+      continue;
+    }
+
     console.log(planet.location);
     const receipt = await execute(
       'OuterSpace',
       {from: deployer, log: true, autoMine: true},
       'addReward',
       planet.location,
-      '0xdddddddddddddddddddddddddddddddddddddddd'
+      giverAddress
     );
     console.log(receipt.transactionHash);
   }
