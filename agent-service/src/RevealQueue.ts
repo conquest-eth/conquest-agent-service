@@ -664,9 +664,26 @@ export class RevealQueue extends DO {
   //   return createResponse({test: 'no', node: this.env.ETHEREUM_NODE});
   // }
 
-  async test(path: string[]): Promise<Response> {
+  async testChainId(path: string[]): Promise<Response> {
     const request = {
       method: 'eth_chainId',
+      params: [],
+      id: 1,
+      jsonrpc: '2.0',
+    };
+    const response = await fetch(this.env.ETHEREUM_NODE, {
+      method: 'POST',
+      body: JSON.stringify(request),
+      headers: {
+        'content-type': 'application/json;charset=UTF-8',
+      },
+    });
+    return createResponse({response: await response.json()});
+  }
+
+  async testBlockNumber(path: string[]): Promise<Response> {
+    const request = {
+      method: 'eth_blockNumber',
       params: [],
       id: 1,
       jsonrpc: '2.0',
@@ -688,6 +705,21 @@ export class RevealQueue extends DO {
     }
     return createResponse({lastSync});
   }
+
+  // async setSyncState(path: string[]): Promise<Response> {
+  //   if (path[0] !== 'booted-saffron-blatancy-poncho') {
+  //     return createResponse({success: false});
+  //   }
+  //   let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
+  //   if (!lastSync) {
+  //     lastSync = {blockNumber: 0, blockHash: '', paymentContractAddress: this.paymentContract.address};
+  //   }
+  //   if (path[1] && !isNaN(parseInt(path[1]))) {
+  //     lastSync.blockNumber = parseInt(path[1]);
+  //   }
+  //   await this.state.storage.put<SyncData>('sync', lastSync);
+  //   return createResponse({lastSync});
+  // }
 
   async syncAccountBalances(path: string[]): Promise<Response> {
     const network = await this.provider.getNetwork();
