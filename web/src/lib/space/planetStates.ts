@@ -241,6 +241,15 @@ export class PlanetStates {
     const pendingActions = pendingActionsPerPlanet[planetInfo.location.id];
     if (pendingActions) {
       for (const pendingAction of pendingActions) {
+        if (pendingAction.status === 'LOADING') {
+          continue;
+        }
+
+        // TODO ?
+        if (pendingAction.status === 'SUCCESS' && pendingAction.final) {
+          continue;
+        }
+
         // TODO
         if (pendingAction.status === 'FAILURE') {
           continue;
