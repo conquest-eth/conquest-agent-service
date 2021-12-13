@@ -141,6 +141,7 @@ type ListData = {
 type SyncData = {
   blockHash: string;
   blockNumber: number;
+  timestamp?: number; // TODO make it non-optional
   paymentContractAddress: string;
 };
 
@@ -701,25 +702,31 @@ export class RevealQueue extends DO {
   async getSyncState(path: string[]): Promise<Response> {
     let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
     if (!lastSync) {
-      lastSync = {blockNumber: 0, blockHash: '', paymentContractAddress: this.paymentContract.address};
+      lastSync = {
+        blockNumber: 0,
+        blockHash: '',
+        paymentContractAddress: this.paymentContract.address,
+        timestamp: 0,
+      };
     }
     return createResponse({lastSync});
   }
 
-  // async setSyncState(path: string[]): Promise<Response> {
-  //   if (path[0] !== 'booted-saffron-blatancy-poncho') {
-  //     return createResponse({success: false});
-  //   }
-  //   let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
-  //   if (!lastSync) {
-  //     lastSync = {blockNumber: 0, blockHash: '', paymentContractAddress: this.paymentContract.address};
-  //   }
-  //   if (path[1] && !isNaN(parseInt(path[1]))) {
-  //     lastSync.blockNumber = parseInt(path[1]);
-  //   }
-  //   await this.state.storage.put<SyncData>('sync', lastSync);
-  //   return createResponse({lastSync});
-  // }
+  async setSyncState(path: string[]): Promise<Response> {
+    if (path[0] !== 'booted-saffron-blatancy-poncho') {
+      return createResponse({success: false});
+    }
+    let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
+    if (!lastSync) {
+      lastSync = {blockNumber: 0, blockHash: '', paymentContractAddress: this.paymentContract.address, timestamp: 0};
+    }
+    if (path[1] && !isNaN(parseInt(path[1]))) {
+      lastSync.blockNumber = parseInt(path[1]);
+      // TODO set timestamp ?
+    }
+    await this.state.storage.put<SyncData>('sync', lastSync);
+    return createResponse({lastSync});
+  }
 
   async syncAccountBalances(path: string[]): Promise<Response> {
     const network = await this.provider.getNetwork();
@@ -735,7 +742,7 @@ export class RevealQueue extends DO {
 
     let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
     if (!lastSync) {
-      lastSync = {blockNumber: 0, blockHash: '', paymentContractAddress: this.paymentContract.address};
+      lastSync = {blockNumber: 0, blockHash: '', paymentContractAddress: this.paymentContract.address, timestamp: 0};
     }
     if (!lastSync.paymentContractAddress) {
       lastSync.paymentContractAddress = this.paymentContract.address;
@@ -755,12 +762,25 @@ export class RevealQueue extends DO {
       this.info(`no new block to fetch`);
       return createResponse('no new block to fetch'); // TODO ?
     }
-    const fromBlock = lastSync.blockNumber + 1;
+
+    if (lastSync.timestamp) {
+      // TODO use // blockTIme
+      const timeDiff = getTimestamp() - lastSync.timestamp;
+      // TODO // 100,000 just to make it safe
+      if (toBlockNumber - lastSync.blockNumber > 100000 + Math.floor(timeDiff / 15)) {
+        this.error(
+          `jumping of block number, from  ${lastSync.blockNumber} to ${toBlockNumber} in ${time2text(timeDiff)}`
+        );
+        return createResponse('jumping of block number'); // TODO ?
+      }
+    }
+
+    const fromBlockNumber = lastSync.blockNumber + 1;
 
     const accountsToUpdate: {[account: string]: {balanceUpdate: BigNumber}} = {};
     const events = await this.paymentContract.queryFilter(
       this.paymentContract.filters.Payment(),
-      fromBlock,
+      fromBlockNumber,
       toBlockNumber
     );
 
@@ -785,7 +805,12 @@ export class RevealQueue extends DO {
     }
     let lastSyncRefetched = await this.state.storage.get<SyncData | undefined>('sync');
     if (!lastSyncRefetched) {
-      lastSyncRefetched = {blockHash: '', blockNumber: 0, paymentContractAddress: this.paymentContract.address};
+      lastSyncRefetched = {
+        blockHash: '',
+        blockNumber: 0,
+        paymentContractAddress: this.paymentContract.address,
+        timestamp: 0,
+      };
     }
     if (!lastSyncRefetched.paymentContractAddress) {
       lastSyncRefetched.paymentContractAddress = this.paymentContract.address;
@@ -813,6 +838,7 @@ export class RevealQueue extends DO {
     }
     lastSyncRefetched.blockHash = toBlockObject.hash;
     lastSyncRefetched.blockNumber = toBlockNumber;
+    lastSyncRefetched.timestamp = toBlockObject.timestamp;
     this.state.storage.put<SyncData>('sync', lastSyncRefetched);
 
     // this.info({lastSyncRefetched});
@@ -826,6 +852,7 @@ export class RevealQueue extends DO {
         blockNumber: 0,
         blockHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
         paymentContractAddress: this.paymentContract.address,
+        timestamp: 0,
       };
     }
     if (!lastSync.paymentContractAddress) {
