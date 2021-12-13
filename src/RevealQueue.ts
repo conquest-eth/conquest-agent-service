@@ -683,6 +683,10 @@ export class RevealQueue extends DO {
   }
 
   async testBlockNumber(path: string[]): Promise<Response> {
+    return createResponse({response: await this._getBlockNumber()});
+  }
+
+  async _getBlockNumber(): Promise<any> {
     const request = {
       method: 'eth_blockNumber',
       params: [],
@@ -696,7 +700,7 @@ export class RevealQueue extends DO {
         'content-type': 'application/json;charset=UTF-8',
       },
     });
-    return createResponse({response: await response.json()});
+    return response.json();
   }
 
   async getSyncState(path: string[]): Promise<Response> {
@@ -771,6 +775,9 @@ export class RevealQueue extends DO {
         this.error(
           `jumping of block number, from  ${lastSync.blockNumber} to ${toBlockNumber} in ${time2text(timeDiff)}`
         );
+
+        const bRes = await this._getBlockNumber();
+        this.info(`block from node ${this.env.ETHEREUM_NODE} is ${BigNumber.from(bRes.result).toNumber()}`);
         return createResponse('jumping of block number'); // TODO ?
       }
     }
