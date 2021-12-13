@@ -6,7 +6,7 @@
       "__typename": "Owner",
       "id": "0x30a7923522d5f7e5a09f2e79a623d66377b4cfc2"
     },
-    "playTokenGiven": "400000000000000000000"
+    "playTokenGiven": "600000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -15,7 +15,7 @@
       "__typename": "Owner",
       "id": "0xd83663be167d0b4bed5e498b46a9b279e21e94c2"
     },
-    "playTokenGiven": "400000000000000000000"
+    "playTokenGiven": "600000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -24,7 +24,7 @@
       "__typename": "Owner",
       "id": "0xebf5639efb939d195a0f83b3e04346a16aaa675f"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -33,7 +33,7 @@
       "__typename": "Owner",
       "id": "0xdbe72cfaed476d7546333a1e7f91160328fe1689"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -42,7 +42,7 @@
       "__typename": "Owner",
       "id": "0xfbf6bec4d2873c5db011402c7b4877afcebdb025"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -51,7 +51,7 @@
       "__typename": "Owner",
       "id": "0x7d84b66f0f4ee69b12c60de95c4e4f684b6c28d7"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -60,7 +60,7 @@
       "__typename": "Owner",
       "id": "0x7916eac18b31d3d521600d25143bbf3afa7babc5"
     },
-    "playTokenGiven": "400000000000000000000"
+    "playTokenGiven": "600000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -69,7 +69,7 @@
       "__typename": "Owner",
       "id": "0x1ae1c7f78d299fe5933226500079474f8687a2aa"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -78,7 +78,7 @@
       "__typename": "Owner",
       "id": "0x8b276de85979538379b81a16f9f080727bf524f7"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -87,7 +87,7 @@
       "__typename": "Owner",
       "id": "0xbcb7a8a1f8ca5b990108771c05f33267f45329df"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -96,7 +96,7 @@
       "__typename": "Owner",
       "id": "0x71ff47ffff9100544353bcae7757a866a4869dc4"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -105,7 +105,7 @@
       "__typename": "Owner",
       "id": "0xcbc9ae6a90d73cfd4ca5868807fa5f28a3c85fd0"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -114,7 +114,7 @@
       "__typename": "Owner",
       "id": "0x2e433b53e3b099bdb48e6ebef1fdeeed428cc40a"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -123,7 +123,7 @@
       "__typename": "Owner",
       "id": "0x5a30f08da64f5967fb5b4d03a53797167d51156d"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -132,7 +132,7 @@
       "__typename": "Owner",
       "id": "0xe75f78cc37bccfc4e566672c381451e4e0e467dd"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -141,7 +141,7 @@
       "__typename": "Owner",
       "id": "0x849f9190dbe708112ccf32d1c4ebce8383c9a8d4"
     },
-    "playTokenGiven": "400000000000000000000"
+    "playTokenGiven": "600000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -150,7 +150,7 @@
       "__typename": "Owner",
       "id": "0xa3ff443e15264d775b161412e766af4bf0d1fedd"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -159,7 +159,7 @@
       "__typename": "Owner",
       "id": "0x0ebb54e91a88f1af4f564dce474ce7188d4e4b8d"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -168,7 +168,7 @@
       "__typename": "Owner",
       "id": "0x8cd6c2a545c81bf06d18d140673700971f0acff2"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -177,7 +177,7 @@
       "__typename": "Owner",
       "id": "0x03de5bc8200ae1a31ba73f9211e1b7aedf37154c"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -185,6 +185,15 @@
     "introducer": {
       "__typename": "Owner",
       "id": "0x97dcf17c4f820ce9e3383af9f29a44f868c8c024"
+    },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0x31ad4033ed83c4f50556213be7e285ce9f99d582",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0x90b66260152e84f236384b78c7b4b4249d3b262b"
     },
     "playTokenGiven": "200000000000000000000"
   },
@@ -195,6 +204,24 @@
       "__typename": "Owner",
       "id": "0xc19e3c8973644736631a1fd943d3ff42596198ee"
     },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0x367e9c3ac0e28c1536d5503de72bfea24fa4ed8a",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0x5cfa098483a146e5755e3d7855257f736648ca15"
+    },
+    "playTokenGiven": "200000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0x374fc67abcc9e14b9e27bcb99094bd9fe6903f21",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0x724e85938c294e7faf89f1795ee65026a91da4f7"
+    },
     "playTokenGiven": "200000000000000000000"
   },
   {
@@ -204,7 +231,7 @@
       "__typename": "Owner",
       "id": "0xd060805050dd0b7f42744fd4c3988c01c8ab29b1"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -213,7 +240,7 @@
       "__typename": "Owner",
       "id": "0x2a0aab1b903a26be7ec23138e08a3509457505bf"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -222,7 +249,7 @@
       "__typename": "Owner",
       "id": "0x48c7b1ba8e1b80dcb3a83453ad244a0c30797d22"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -231,7 +258,7 @@
       "__typename": "Owner",
       "id": "0x1b163067d005cf634d3d9522972a70f9ce3d398f"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -240,7 +267,16 @@
       "__typename": "Owner",
       "id": "0x3c050b244f94f2f7732110524327bb83541f8253"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0x3e2b3841225a2ad951bb84110fb399eb334e084c",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0xdd0702ffe1141cb55759a32b40ddd288bf040027"
+    },
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -249,7 +285,7 @@
       "__typename": "Owner",
       "id": "0x77266fc0004a9da3cda7804a9793ea1de72634d1"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -258,7 +294,7 @@
       "__typename": "Owner",
       "id": "0xf80d6fb418e2a4db7cb37cbd1c6fe36efea161b9"
     },
-    "playTokenGiven": "400000000000000000000"
+    "playTokenGiven": "600000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -267,7 +303,7 @@
       "__typename": "Owner",
       "id": "0xac443a7f65ae26a1235168653b0a00440e2f8083"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -276,7 +312,7 @@
       "__typename": "Owner",
       "id": "0x02b115fcb42cad0ef683cac7e2825d9c5fb410b0"
     },
-    "playTokenGiven": "400000000000000000000"
+    "playTokenGiven": "600000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -285,7 +321,7 @@
       "__typename": "Owner",
       "id": "0x46046940fb4d590120559c2509fe258238dd769f"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -294,7 +330,7 @@
       "__typename": "Owner",
       "id": "0x71e8cfee1c60af8d5c20a1839e9f109babd91e47"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -303,7 +339,16 @@
       "__typename": "Owner",
       "id": "0x0758145c4f8099b6700d833946403075168e12dd"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0x4ce81114c20b959eff5395ca7be453e7c3df7828",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0x51b6a95864d69abed879899d72c48eb0022fa4df"
+    },
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -312,7 +357,7 @@
       "__typename": "Owner",
       "id": "0xf6582856de3ed89ba68e494e57de70952c5e80c1"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -320,6 +365,15 @@
     "introducer": {
       "__typename": "Owner",
       "id": "0x18720dbc4729fe382bb465f21dc37d394b978d54"
+    },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0x526522bd4b958ae0192114b8c90c21da71af7461",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0xe2f08c9e62022c1e9a10e6c765a9f708dbae2893"
     },
     "playTokenGiven": "200000000000000000000"
   },
@@ -330,7 +384,7 @@
       "__typename": "Owner",
       "id": "0xf1ccb67bd8d8f6abb1d1d7db35bd841dadb52803"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -339,7 +393,7 @@
       "__typename": "Owner",
       "id": "0xc447c10b03100c430fcdad0bb6c26f88f4db2ce0"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -348,7 +402,7 @@
       "__typename": "Owner",
       "id": "0x330eae85e85d5247ad8b705fa8fb69c6cc308ac9"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -357,7 +411,7 @@
       "__typename": "Owner",
       "id": "0xef082e8a1a0bab9a5401bd8ad7321d5cf407dda4"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -366,7 +420,7 @@
       "__typename": "Owner",
       "id": "0xb1959749e6cec14b23f77cb38eabb3d7ead75843"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -375,7 +429,7 @@
       "__typename": "Owner",
       "id": "0xd7a78fae1b2efbf3adcd2e610e204f490eb28a23"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -384,7 +438,7 @@
       "__typename": "Owner",
       "id": "0xf2c7572f16ee52047370324612cb2485d9aaee87"
     },
-    "playTokenGiven": "400000000000000000000"
+    "playTokenGiven": "600000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -393,7 +447,7 @@
       "__typename": "Owner",
       "id": "0x41d4d8de03414440d34d80b142bfaf15551e376f"
     },
-    "playTokenGiven": "400000000000000000000"
+    "playTokenGiven": "600000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -402,7 +456,7 @@
       "__typename": "Owner",
       "id": "0x519cb7ef093e5b2884e6c381a4712cd56c3dee5b"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -411,7 +465,7 @@
       "__typename": "Owner",
       "id": "0x6b8e5637e729890de70c342979fb096305852088"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -420,7 +474,7 @@
       "__typename": "Owner",
       "id": "0xe058f94d1e07f1d72c8f6d10c7831a0b7a31501d"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -429,7 +483,7 @@
       "__typename": "Owner",
       "id": "0xba0ff36d439f80d89df0acc8fca736b5eb8bd9c3"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -438,7 +492,7 @@
       "__typename": "Owner",
       "id": "0xba20f40307be44456dc2236a35134622f5719823"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -447,7 +501,7 @@
       "__typename": "Owner",
       "id": "0x0b543f11dc8a63406d151085a961e746f3960140"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -456,7 +510,7 @@
       "__typename": "Owner",
       "id": "0xe3b28241f1b188f2d34b8d6bcf97fb90ea95e942"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -465,7 +519,7 @@
       "__typename": "Owner",
       "id": "0x99c9e25d68d754b37e4814142ad8b38ae2d02760"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -473,6 +527,15 @@
     "introducer": {
       "__typename": "Owner",
       "id": "0x3728b95d5beac42ed286b783252b3292d232a4a3"
+    },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0x7a2c5cc45aafe03c2c16593eb04e802e9ce529c1",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0xdc0aeb556dc61259ee2ab5a34fbf1015b3a9a6ff"
     },
     "playTokenGiven": "200000000000000000000"
   },
@@ -483,7 +546,7 @@
       "__typename": "Owner",
       "id": "0x2ce46cc9a28162b6fde19be21468573fb548fc4a"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -492,7 +555,7 @@
       "__typename": "Owner",
       "id": "0x2e6e1488fc9d98dc6c051b4d7f5463d55138e17d"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -501,7 +564,7 @@
       "__typename": "Owner",
       "id": "0x7c4069fe014ba909ef5e06cc911b62a081f392c0"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -510,7 +573,7 @@
       "__typename": "Owner",
       "id": "0x858cef55d0415de595d63ad71f118399040db011"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -519,7 +582,7 @@
       "__typename": "Owner",
       "id": "0x758bd05a707c5ceff2c3fcf52be7eb3d868545ba"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -528,7 +591,7 @@
       "__typename": "Owner",
       "id": "0x2a9ae7d45f91938833946f0c029a5e3537a708e3"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -537,7 +600,7 @@
       "__typename": "Owner",
       "id": "0x4c5285b4ef981ba61e7de5fea84bff262d251ad2"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -545,6 +608,15 @@
     "introducer": {
       "__typename": "Owner",
       "id": "0x0aee40b3502a348ddfa1d61fa23ecac8f6a22cdb"
+    },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0x92fde24b25e7d0dd83abea05bf925e47044d649e",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0xdc867de89ea27a04e3c92f9a2bee51d15be2684f"
     },
     "playTokenGiven": "200000000000000000000"
   },
@@ -555,7 +627,7 @@
       "__typename": "Owner",
       "id": "0xb47363cca0e6dbc2a1943e5d260558e9ec50c3d6"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -563,6 +635,15 @@
     "introducer": {
       "__typename": "Owner",
       "id": "0x94f6fcff7693f2a88d02cb6706152a522362bef6"
+    },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0x96469f1e59a6fd471361ed2074b2ab89e1c9a31f",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0xf2e42414fb0d432928c5e47a101fbcf7c38662a6"
     },
     "playTokenGiven": "200000000000000000000"
   },
@@ -573,6 +654,15 @@
       "__typename": "Owner",
       "id": "0xe070ca58647bad5de7c6040962321040bd2dd5dd"
     },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0x990e99d9fef9bb83e5854f3ce7e6846dcd9e5fd5",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0x485abdc4d212e3a28a57ad639f45dd1738ab18b3"
+    },
     "playTokenGiven": "200000000000000000000"
   },
   {
@@ -582,7 +672,7 @@
       "__typename": "Owner",
       "id": "0xf86f867082537a11b1f68719d8e1e52ec310ead0"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -590,6 +680,15 @@
     "introducer": {
       "__typename": "Owner",
       "id": "0x6f42d2e5ef825a65b53c8db1c74f74d4852edd1f"
+    },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0x9d375719442c8d57ca9658ede45336787648381f",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0x047757179461852dfbb0fa703f1bfff788673119"
     },
     "playTokenGiven": "200000000000000000000"
   },
@@ -600,7 +699,7 @@
       "__typename": "Owner",
       "id": "0x86da52f13eea34892aba12e82d55f4676a9ae17b"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -609,7 +708,7 @@
       "__typename": "Owner",
       "id": "0x1c50b784004224c302a6b1beff7021953beeec0c"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -618,7 +717,7 @@
       "__typename": "Owner",
       "id": "0xc8ee14b8cb679e7c15626ae21869b8780e5ae756"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -627,7 +726,7 @@
       "__typename": "Owner",
       "id": "0x4452f19ca49e6f56fa6f5cff01846237f8cab566"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -636,7 +735,7 @@
       "__typename": "Owner",
       "id": "0xf42e360e462fb3bf2aaba89475555ae8e4421e79"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -645,7 +744,7 @@
       "__typename": "Owner",
       "id": "0xb2b168d05389f7152e369ad56aefd840a2dbb7ce"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -653,6 +752,15 @@
     "introducer": {
       "__typename": "Owner",
       "id": "0xfb19240643609c37e4bbeb85403b0c24a9d65220"
+    },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0xb24156b92244c1541f916511e879e60710e30b84",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0xd0393e68f307fe8b27840bc47bce506b2cbc86d2"
     },
     "playTokenGiven": "200000000000000000000"
   },
@@ -663,7 +771,7 @@
       "__typename": "Owner",
       "id": "0x121817b97faaf80851bf375acb598a8559a5b7e2"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -672,7 +780,7 @@
       "__typename": "Owner",
       "id": "0x8875ea5fa774ee9d0c8edca715121df1504c4edb"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -681,7 +789,7 @@
       "__typename": "Owner",
       "id": "0x1c69b4ec079447a50c3d44e3fa0d680a3f207ff2"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -690,7 +798,7 @@
       "__typename": "Owner",
       "id": "0x15f17606fc60dd74202698ffb3a1eefeb19bd769"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -699,7 +807,7 @@
       "__typename": "Owner",
       "id": "0x180f23cb9b66d3dbf73434f50cfa7d028e7ac0d1"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -708,7 +816,7 @@
       "__typename": "Owner",
       "id": "0x6ab59de58733b6da693a95ca4ca8bcc9ac52f1ee"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -716,6 +824,24 @@
     "introducer": {
       "__typename": "Owner",
       "id": "0x5f5b89e19d6d6a58136cd54970123d52a3eb7996"
+    },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0xc779d5b720de5881a5492d83ff9a8d6b9c167154",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0xc22dd0a73965253aded261c323dd4c86010d54c1"
+    },
+    "playTokenGiven": "200000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0xcc52e4e272fdaa4863ade0aac23d8741ee4e2a07",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0x7c0dd711ef7fe9076a7701dc9621ff622ba8c2c0"
     },
     "playTokenGiven": "200000000000000000000"
   },
@@ -726,7 +852,7 @@
       "__typename": "Owner",
       "id": "0x94f40a8d73a4e676dbe25c2952dfb07570929f8c"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -735,7 +861,7 @@
       "__typename": "Owner",
       "id": "0xae79318ef4cd8bdfcaa55846975759a5cb48df55"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -744,7 +870,7 @@
       "__typename": "Owner",
       "id": "0x0910dc74b17783a457dde799acf7b28c6cf3c813"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -753,7 +879,7 @@
       "__typename": "Owner",
       "id": "0x6570fc173055c21e810ac5bc822c836c5bea3c19"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -762,7 +888,7 @@
       "__typename": "Owner",
       "id": "0xea542396b800cf741f73d012537f7ac95c9ef6cd"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -771,7 +897,7 @@
       "__typename": "Owner",
       "id": "0xb21d26b96823233ef099dd98f625d5284abb59a2"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -780,7 +906,7 @@
       "__typename": "Owner",
       "id": "0x394277b3044b8a22d29808025804fd59d38f7239"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -789,7 +915,7 @@
       "__typename": "Owner",
       "id": "0x627dab2d36b9cac91e854642d9d85b7afed313f1"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -798,7 +924,7 @@
       "__typename": "Owner",
       "id": "0x0bbdd84b541ad4386740e07062b09dc700b4b6e7"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -807,7 +933,7 @@
       "__typename": "Owner",
       "id": "0xbc3465b48dd59ad5b4d0d27bf70fef3efeee8237"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -816,7 +942,7 @@
       "__typename": "Owner",
       "id": "0x7d7e2435aa8bb99999c72344306618cbcdea9e72"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -825,7 +951,7 @@
       "__typename": "Owner",
       "id": "0x969616a40c508fcbdccea5093ca8348b6188a7e7"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -833,6 +959,24 @@
     "introducer": {
       "__typename": "Owner",
       "id": "0x8d1b12585f0eaf0f140e6ee2636f898806d96483"
+    },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0xeebc6016539e0bc60d35f527fefa414794854499",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0xa591d96b59901e351b95b09cb7016bd4b8dea5f6"
+    },
+    "playTokenGiven": "200000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0xf1659d0d37f4a3af2149d6262eb4182d14c2aea4",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0x9879aaad11745a207704ae76567c0c001f614919"
     },
     "playTokenGiven": "200000000000000000000"
   },
@@ -843,7 +987,7 @@
       "__typename": "Owner",
       "id": "0x1c9a72816ce83e97b789ea09e64534b688053866"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -852,7 +996,7 @@
       "__typename": "Owner",
       "id": "0x5b5f9a5437353d90a6143d34773af6f14f3d0b17"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -860,6 +1004,15 @@
     "introducer": {
       "__typename": "Owner",
       "id": "0xdbf60c7a7616803adb1dbb7ea867fb371000a3a4"
+    },
+    "playTokenGiven": "400000000000000000000"
+  },
+  {
+    "__typename": "Owner",
+    "id": "0xfb67e720c8d08060ad8893fa231be9640078350f",
+    "introducer": {
+      "__typename": "Owner",
+      "id": "0x1aebd409a1b1f8b4ee3476fd2865d154e111678b"
     },
     "playTokenGiven": "200000000000000000000"
   },
@@ -870,7 +1023,7 @@
       "__typename": "Owner",
       "id": "0xa282a1a7b5894a605ad113d1f445fbd50569c4f2"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -879,7 +1032,7 @@
       "__typename": "Owner",
       "id": "0x4abcb7f50512a2e034f7fd66dd1571621a96303f"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -888,7 +1041,7 @@
       "__typename": "Owner",
       "id": "0xecdbce825d96ac90dbcafe583c6ec0fc58d7aea0"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -897,7 +1050,7 @@
       "__typename": "Owner",
       "id": "0xb333f81dcaee41063cb1e6e8e91643ecf665f308"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -906,7 +1059,7 @@
       "__typename": "Owner",
       "id": "0xa63b705516e9cd7a3dd6dea34847034f075c962a"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   },
   {
     "__typename": "Owner",
@@ -915,6 +1068,6 @@
       "__typename": "Owner",
       "id": "0xb2914f41b6a5de6801adcd6406f12acd93566d39"
     },
-    "playTokenGiven": "200000000000000000000"
+    "playTokenGiven": "400000000000000000000"
   }
 ]

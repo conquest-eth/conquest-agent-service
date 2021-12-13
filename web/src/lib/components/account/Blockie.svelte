@@ -136,6 +136,8 @@
   afterUpdate(update);
 </script>
 
+<canvas class={_class} bind:this={canvas} alt={address} />
+
 <style>
   canvas {
     image-rendering: -moz-crisp-edges;
@@ -144,5 +146,3 @@
     image-rendering: crisp-edges;
   }
 </style>
-
-<canvas class={_class} bind:this={canvas} />

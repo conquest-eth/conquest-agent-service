@@ -18,7 +18,8 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   for (const recipient of recipients) {
     // amounts.push(BigNumber.from(recipient.amount).mul('1000000000000000000'));
     // give 200
-    amounts.push(BigNumber.from(200).mul('1000000000000000000'));
+    // amounts.push(BigNumber.from(200).mul('1000000000000000000'));
+    amounts.push(BigNumber.from(100).mul('1000000000000000000'));
     addresses.push(recipient.address);
   }
   const etherAmount = BigNumber.from(addresses.length).mul(parseEther('0.5'));
