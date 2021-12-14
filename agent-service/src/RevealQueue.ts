@@ -896,15 +896,14 @@ export class RevealQueue extends DO {
     const maxFeeAllowed = getMaxFeeAllowed(reveal.maxFeesSchedule);
     const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
     const account = await this.state.storage.get<AccountData | undefined>(`account_${reveal.player}`);
-    if (!account || BigNumber.from(account.paid).lt(minimumBalance)) {
-      if (!account) {
-        this.info(`no account registered for ${reveal.player}`);
-      } else {
-        this.info(`not enough fund for ${reveal.player}`);
-      }
-
+    if (!account) {
+      this.info(`no account registered for ${reveal.player}`);
       return;
-      // TODO delete ? or push it and increase retries count
+    }
+
+    if (BigNumber.from(account.paid).lt(minimumBalance)) {
+      this.info(`not enough fund for ${reveal.player}`);
+      // TODO return ?
     }
 
     const revealID = `l_${reveal.fleetID}`;
