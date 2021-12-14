@@ -738,6 +738,8 @@ export class RevealQueue extends DO {
       this.error(`Different chainId detected : ${network.chainId} vs expected ${chainId}`);
       return DifferentChainIdDetected();
     }
+    const bRes = await this._getBlockNumber();
+    this.info(`block number from node ${this.env.ETHEREUM_NODE} is ${BigNumber.from(bRes.result).toNumber()}`);
     const currentBlockNumber = await this.provider.getBlockNumber();
     this.info(`syncAccountBalances currentBlockNumber:${currentBlockNumber} (${this.env.ETHEREUM_NODE})`);
     const toBlockNumber = Math.max(0, currentBlockNumber - this.finality);
