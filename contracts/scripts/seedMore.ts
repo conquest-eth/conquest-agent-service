@@ -25,7 +25,7 @@ async function main() {
   const spaceInfo = new SpaceInfo(OuterSpaceDeployment.linkedData);
 
   let planetPointer;
-  for (let i = 0; i < 1001; i++) {
+  for (let i = 0; i < 1500; i++) {
     const outerSpaceContract = await deployments.get('OuterSpace');
     planetPointer = spaceInfo.findNextPlanet(planetPointer);
     const {state} = await deployments.read(
