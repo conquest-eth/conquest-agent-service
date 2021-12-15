@@ -216,6 +216,9 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       chainTempo, // replayTempo, //
       {
         list: {path: 'otherplanets'},
+        variables: {
+          first: 500,
+        },
       }
     );
 
