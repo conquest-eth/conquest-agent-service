@@ -161,7 +161,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
   }
   ?$owner?
   owner(id: $owner) {id}
-  myplanets: planets(where: {owner: $owner}) {
+  myplanets: planets(first: 1000 where: {owner: $owner}) {
     id
     owner {
       id
