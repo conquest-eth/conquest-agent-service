@@ -85,13 +85,21 @@
       spacesships
     {:else if attackCaptured}
       <p><Blockie class="w-6 h-6 inline-block" address={event.event.destinationOwner.id} /> captured your planet!</p>
-      <p>The fleet had {event.event.quantity - event.event.inFlightFleetLoss} spaceships</p>
+      <p>
+        The fleet had {event.event.quantity - event.event.inFlightFleetLoss} spaceships and planet had {event.event
+          .planetLoss + event.event.inFlightPlanetLoss}
+      </p>
     {:else}
       <p>
         <Blockie class="w-6 h-6 inline-block" address={event.event.owner.id} /> attempted to capture your planet but only
         managed to kill {event.event.planetLoss} spaceships
       </p>
-      <p>The fleet had {event.event.quantity - event.event.inFlightFleetLoss} spaceships and planet had {event.event.planetLoss + event.}</p>
+      <p>
+        The fleet had {event.event.quantity - event.event.inFlightFleetLoss} spaceships and planet had {event.event
+          .newNumspaceships +
+          event.event.planetLoss +
+          event.event.inFlightPlanetLoss}
+      </p>
     {/if}
     {#if event.event}
       <ul class="mt-10 text-white">
