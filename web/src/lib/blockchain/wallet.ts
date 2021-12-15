@@ -7,6 +7,7 @@ import {webWalletURL, finality, fallbackProviderOrUrl, chainId, localDev} from '
 import {isCorrected, correctTime} from '../time';
 import {base} from '$app/paths';
 import {chainTempo} from '$lib/blockchain/chainTempo';
+import * as Sentry from '@sentry/browser';
 
 const walletStores = initWeb3W({
   chainConfigs: contractsInfos,
@@ -100,6 +101,14 @@ fallback.subscribe(async (v) => {
         correctTime(latestBlock.timestamp);
       }
     }
+  }
+});
+
+let lastAddress: string | undefined;
+wallet.subscribe(async ($wallet) => {
+  if (lastAddress !== $wallet.address) {
+    lastAddress = $wallet.address;
+    Sentry.setUser({address: $wallet.address});
   }
 });
 
