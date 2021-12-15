@@ -58,7 +58,7 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
 
   async fetch(extraVariables?: Record<string, unknown>): Promise<void> {
     console.info('fetching....');
-    const first = this.options?.variables.first || 1000;
+    const first = this.options?.variables?.first || 1000;
     let numEntries = first;
     let lastId = '0x0';
     let data: T;
