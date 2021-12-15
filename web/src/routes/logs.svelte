@@ -86,31 +86,57 @@
                           <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                          fleet from
-                          <Coord location={event.from.id} />
-
                           {#if event.destinationOwner.id !== event.owner.id}
                             {#if event.won}
-                              captured planet
-                              <Coord location={event.planet.id} />
-                              {#if event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}
-                                from
-                                <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
-                              {/if}
+                              <p>
+                                fleet from
+                                <Coord location={event.from.id} />
+
+                                captured planet
+                                <Coord location={event.planet.id} />
+                                {#if event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}
+                                  from
+                                  <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
+                                {/if}
+                              </p>
+                              <p>
+                                The fleet had {parseInt(event.quantity) - parseInt(event.inFlightFleetLoss)} spaceships
+                              </p>
+                              <p>
+                                Planet had {parseInt(event.planetLoss) + parseInt(event.inFlightPlanetLoss)} spaceships
+                              </p>
                             {:else}
-                              destroyed
-                              {event.planetLoss}
-                              spaceships from
-                              <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
-                              at
-                              <Coord location={event.planet.id} />
+                              <p>
+                                fleet from
+                                <Coord location={event.from.id} />
+
+                                destroyed
+                                {event.planetLoss}
+                                spaceships from
+                                <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
+                                at
+                                <Coord location={event.planet.id} />
+                              </p>
+                              <p>
+                                The fleet had {parseInt(event.quantity) - parseInt(event.inFlightFleetLoss)} spaceships
+                              </p>
+                              <p>
+                                Planet had {parseInt(event.newNumspaceships) +
+                                  parseInt(event.planetLoss) +
+                                  parseInt(event.inFlightPlanetLoss)} spaceships
+                              </p>
                             {/if}
                           {:else}
-                            arrived at
-                            <Coord location={event.planet.id} />
-                            with
-                            {parseInt(event.quantity) - parseInt(event.inFlightFleetLoss)}
-                            spaceships
+                            <p>
+                              fleet from
+                              <Coord location={event.from.id} />
+
+                              arrived at
+                              <Coord location={event.planet.id} />
+                              with
+                              {parseInt(event.quantity) - parseInt(event.inFlightFleetLoss)}
+                              spaceships
+                            </p>
                           {/if}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">

@@ -61,6 +61,7 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericEvent[]> {
       from{id}
       won
       quantity
+      newNumspaceships
     }
     ... on FleetSentEvent{
       fleet{id}
