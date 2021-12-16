@@ -299,32 +299,55 @@ contract AllianceRegistry is Proxied {
     function _leaveAlliance(address player, IAlliance alliance) internal {
 
         Alliances storage alliances = _alliances[msg.sender];
-        uint256 slot = 0;
-        if (alliances.alliance0.alliance != alliance) {
-            slot ++;
-        }
-        if (alliances.alliance1.alliance != alliance) {
-            slot ++;
-        }
-        if (alliances.alliance2.alliance != alliance) {
-            slot ++;
-        }
-        require(alliances.alliance3.alliance == alliance, "NOT_PART_OF_THE_ALLIANCE");
+
+        IAlliance lastSlotAlliance;
+        uint96 lastSlotJoinTime;
 
 
-        if (slot == 0) {
+        require(address(alliances.alliance0.alliance) != address(0), "NOT_PART_OF_ANY_ALLIANCE");
+
+        if (address(alliances.alliance1.alliance) == address(0)) {
+            lastSlotAlliance = alliances.alliance0.alliance;
+            lastSlotJoinTime = alliances.alliance0.joinTime;
             alliances.alliance0.alliance = IAlliance(address(0));
             alliances.alliance0.joinTime = 0;
-        } else if (slot == 1) {
-            alliances.alliance1.alliance = IAlliance(address(0));
-            alliances.alliance1.joinTime = 0;
-        } else if (slot == 2) {
-            alliances.alliance2.alliance = IAlliance(address(0));
-            alliances.alliance2.joinTime = 0;
-        } else if (slot == 3) {
-            alliances.alliance3.alliance = IAlliance(address(0));
-            alliances.alliance3.joinTime = 0;
+        } else {
+            if (address(alliances.alliance2.alliance) == address(0)) {
+                lastSlotAlliance = alliances.alliance1.alliance;
+                lastSlotJoinTime = alliances.alliance1.joinTime;
+                alliances.alliance1.alliance = IAlliance(address(0));
+                alliances.alliance1.joinTime = 0;
+            } else {
+                if (address(alliances.alliance3.alliance) == address(0)) {
+                    lastSlotAlliance = alliances.alliance2.alliance;
+                    lastSlotJoinTime = alliances.alliance2.joinTime;
+                    alliances.alliance2.alliance = IAlliance(address(0));
+                    alliances.alliance2.joinTime = 0;
+                } else {
+                    lastSlotAlliance = alliances.alliance3.alliance;
+                    lastSlotJoinTime = alliances.alliance3.joinTime;
+                    alliances.alliance3.alliance = IAlliance(address(0));
+                    alliances.alliance3.joinTime = 0;
+                }
+            }
         }
+
+
+        if (alliance != lastSlotAlliance) {
+            if (alliances.alliance0.alliance == alliance) {
+                alliances.alliance0.alliance = lastSlotAlliance;
+                alliances.alliance0.joinTime = lastSlotJoinTime;
+            } else if (alliances.alliance1.alliance == alliance) {
+                alliances.alliance1.alliance =lastSlotAlliance;
+                alliances.alliance1.joinTime = lastSlotJoinTime;
+            } else if (alliances.alliance2.alliance == alliance) {
+                alliances.alliance2.alliance =lastSlotAlliance;
+                alliances.alliance2.joinTime = lastSlotJoinTime;
+            } else {
+                revert("NOT_PART_OF_THE_ALLIANCE");
+            }
+        }
+
 
         emit AllianceLink(alliance, player, false);
     }
