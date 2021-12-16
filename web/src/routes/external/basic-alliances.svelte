@@ -44,6 +44,12 @@
     signedMessage = wallet.address + ':' + message + `:` + signature;
   }
 
+  async function leave() {
+    await flow.execute(async (contracts) => {
+      await contracts.AllianceRegistry.leaveAlliance(id);
+    });
+  }
+
   async function addMember() {
     await flow.execute(async (contracts) => {
       const components = joinMessage.split(':');
@@ -156,6 +162,10 @@
           class="underline"
           on:click={() => messageFlow.show(admin)}>contact admin</button
         >)
+
+        <div>
+          <PanelButton on:click={leave} label="Join">Leave Alliance</PanelButton>
+        </div>
       {:else}
         <h2 class="text-xl text-green-500">You are the administrator of this alliance. do you want to add members?</h2>
         <p>Please copy their signed message into the box to add the members</p>
@@ -166,6 +176,10 @@
           <div>
             <PanelButton on:click={addMember} label="Add Member">Add Member</PanelButton>
           </div>
+        </div>
+
+        <div>
+          <PanelButton on:click={leave} label="Join">Leave Your Own Alliance</PanelButton>
         </div>
       {/if}
 
