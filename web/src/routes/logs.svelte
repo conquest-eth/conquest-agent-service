@@ -62,6 +62,9 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
+                          <div class="w-6 h-6 text-xs" style={`white-space: nowrap;overflow: hidden;`}>
+                            {event.owner.id}
+                          </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           sent
@@ -84,6 +87,9 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
+                          <div class="w-6 h-6 text-xs" style={`white-space: nowrap;overflow: hidden;`}>
+                            {event.owner.id}
+                          </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           {#if event.destinationOwner.id !== event.owner.id}
@@ -97,6 +103,9 @@
                                 {#if event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}
                                   from
                                   <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
+                                  <div class="w-6 h-6 text-xs" style={`white-space: nowrap;overflow: hidden;`}>
+                                    {event.owner.id}
+                                  </div>
                                 {/if}
                               </p>
                               <p>
@@ -114,6 +123,12 @@
                                 {event.planetLoss}
                                 spaceships from
                                 <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
+                                <span
+                                  class="w-6 h-6 text-xs inline-block -my-1/2 -ml-2"
+                                  style={`white-space: nowrap;overflow: hidden;`}
+                                >
+                                  {event.owner.id}
+                                </span>
                                 at
                                 <Coord location={event.planet.id} />
                               </p>
@@ -154,6 +169,9 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
+                          <div class="w-6 h-6 text-xs" style={`white-space: nowrap;overflow: hidden;`}>
+                            {event.owner.id}
+                          </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           attempting to exit planet
@@ -179,6 +197,9 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
+                          <div class="w-6 h-6 text-xs" style={`white-space: nowrap;overflow: hidden;`}>
+                            {event.owner.id}
+                          </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           claimed planet
