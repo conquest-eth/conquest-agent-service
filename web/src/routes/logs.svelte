@@ -104,7 +104,7 @@
                                   from
                                   <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
                                   <div class="w-6 h-6 text-xs" style={`white-space: nowrap;overflow: hidden;`}>
-                                    {event.owner.id}
+                                    {event.destinationOwner.id}
                                   </div>
                                 {/if}
                               </p>
@@ -127,7 +127,7 @@
                                   class="w-6 h-6 text-xs inline-block -my-1/2 -ml-2"
                                   style={`white-space: nowrap;overflow: hidden;`}
                                 >
-                                  {event.owner.id}
+                                  {event.destinationOwner.id}
                                 </span>
                                 at
                                 <Coord location={event.planet.id} />
