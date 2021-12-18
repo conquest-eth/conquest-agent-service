@@ -34,8 +34,9 @@
       <p>Top 18 Winning players</p>
       <hr class="my-4" />
       <ul>
-        {#each $highscores.data.slice(0, 18) as player}
+        {#each $highscores.data.slice(0, 18) as player, index}
           <li>
+            <span class="w-10 inline-block">{index + 1}:</span>
             <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={player.id} />
             <div class="w-6 h-6 text-xs mr-4 inline-block" style={`white-space: nowrap;overflow: hidden;`}>
               {player.id}
@@ -60,8 +61,9 @@
       <p>Non-winning players</p>
       <hr class="my-4" />
       <ul>
-        {#each $highscores.data.slice(18) as player}
+        {#each $highscores.data.slice(18) as player, index}
           <li>
+            <span class="w-10 inline-block">{index + 19}:</span>
             <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={player.id} />
             <div class="w-6 h-6 text-xs mr-4 inline-block" style={`white-space: nowrap;overflow: hidden;`}>
               {player.id}
