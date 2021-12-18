@@ -30,10 +30,42 @@
     {:else if $highscores.step === 'LOADING'}
       <span class="text-yellow-600">Loading...</span>
     {:else}
+      <hr class="my-4" />
+      <p>Top 18 Winning players</p>
+      <hr class="my-4" />
       <ul>
-        {#each $highscores.data as player}
+        {#each $highscores.data.slice(0, 18) as player}
           <li>
             <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={player.id} />
+            <div class="w-6 h-6 text-xs mr-4 inline-block" style={`white-space: nowrap;overflow: hidden;`}>
+              {player.id}
+            </div>
+            {Math.floor(player.score / 100)}
+            with
+            {player.total}
+            <PlayCoin class="w-4 h-4 inline" />
+            in control, including
+            {player.playTokenBalance}
+            <PlayCoin class="w-4 h-4 inline" />
+            left to spend and
+            {player.playTokenToWithdraw}
+            <PlayCoin class="w-4 h-4 inline" />
+            to withdraw (was given
+            {player.playTokenGiven}
+            <PlayCoin class="w-4 h-4 inline" />)
+          </li>
+        {/each}
+      </ul>
+      <hr class="my-4 mt-16" />
+      <p>Non-winning players</p>
+      <hr class="my-4" />
+      <ul>
+        {#each $highscores.data.slice(18) as player}
+          <li>
+            <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={player.id} />
+            <div class="w-6 h-6 text-xs mr-4 inline-block" style={`white-space: nowrap;overflow: hidden;`}>
+              {player.id}
+            </div>
             {Math.floor(player.score / 100)}
             with
             {player.total}

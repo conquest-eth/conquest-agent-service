@@ -40,7 +40,8 @@ class HighscoresStore extends BaseStoreWithData<Highscores, Highscore[]> {
     const query = `
 query($first: Int! $lastId: ID!) {
   owners(first: $first where: {
-    totalStaked_gt: 0
+    playTokenGiven_gt: 0
+    playTokenGiven_lt: "2000000000000000000000"
     id_gt: $lastId
     id_not_in: ["0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20", "0xe53cd71271acadbeb0f64d9c8c62bbddc8ca9e66"]
   }) {
@@ -86,7 +87,7 @@ query($first: Int! $lastId: ID!) {
         })
         .sort((a, b) => b.score - a.score);
 
-      this.setPartial({step: 'READY', data: highscores.slice(0, 18)});
+      this.setPartial({step: 'READY', data: highscores}); //.slice(0, 18)});
     } catch (e) {
       console.error(e);
     }
