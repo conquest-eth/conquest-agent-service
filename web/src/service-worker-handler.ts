@@ -16,6 +16,23 @@ function updateLoggingForWorker(worker: ServiceWorker | null) {
   }
 }
 
+const IDLE_DELAY_MS = 3 * 60 * 1000;
+const CHECK_DELAY_MS = 30 * 60 * 1000;
+
+function handleAutomaticUpdate(registration: ServiceWorkerRegistration) {
+  let lastFocusTime = performance.now();
+  function wakeup() {
+    const timePassed = performance.now();
+    if (timePassed - lastFocusTime > IDLE_DELAY_MS) {
+      registration.update();
+    }
+    lastFocusTime = timePassed;
+  }
+  ['focus', 'pointerdown'].forEach((evt) => window.addEventListener(evt, wakeup));
+
+  setInterval(() => registration.update(), CHECK_DELAY_MS);
+}
+
 function listenForWaitingServiceWorker(
   registration: ServiceWorkerRegistration,
   callback: (reg: ServiceWorkerRegistration) => void
@@ -58,6 +75,9 @@ if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
     navigator.serviceWorker
       .register(swLocation)
       .then((registration) => {
+        try {
+          handleAutomaticUpdate(registration);
+        } catch (e) {}
         serviceWorker.set({registration, updateAvailable: false}); // TODO keep updateAvailable if any ?
         updateLoggingForWorker(registration.installing);
         updateLoggingForWorker(registration.waiting);
