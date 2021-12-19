@@ -1,5 +1,5 @@
 import {Logger, logs} from 'named-logs';
-import {updateAvailable} from './lib/web/appUpdates';
+import {serviceWorker} from '$lib/web/serviceWorker';
 import {base} from '$app/paths';
 
 const log = logs('service-worker') as Logger & {level: number; enabled: boolean};
@@ -62,7 +62,7 @@ if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
         updateLoggingForWorker(registration.active);
         listenForWaitingServiceWorker(registration, () => {
           console.log('[Service Worker] Update found');
-          updateAvailable.set(registration);
+          serviceWorker.set({registration, updateAvailable: true});
         });
       })
       .catch((e) => {
