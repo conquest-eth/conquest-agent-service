@@ -18,7 +18,7 @@ self.addEventListener('message', function (event) {
   } else if (event.data === 'skipWaiting') {
     log(`skipWaiting received`);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (self as any).skipWaiting()();
+    (self as any).skipWaiting();
   }
 });
 
