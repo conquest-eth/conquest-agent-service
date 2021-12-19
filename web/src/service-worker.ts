@@ -12,6 +12,7 @@ function log(...args) {
     console.debug(...args);
   }
 }
+
 self.addEventListener('message', function (event) {
   if (event.data && event.data.type === 'debug') {
     _logEnabled = event.data.enabled && event.data.level >= 5;
