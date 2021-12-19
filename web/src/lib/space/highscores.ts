@@ -36,13 +36,14 @@ class HighscoresStore extends BaseStoreWithData<Highscores, Highscore[]> {
       step: 'IDLE',
     });
   }
+  // introducer_not: "0x9a3b0d0b08fb71f1a5e0f248ad3a42c341f7837c"
+  // playTokenGiven_lt: "2000000000000000000000"
   async fetch() {
     const query = `
 query($first: Int! $lastId: ID!) {
   owners(first: $first where: {
-    introducer_not: "0x9a3b0d0b08fb71f1a5e0f248ad3a42c341f7837c"
+    totalStaked_gt: 0
     playTokenGiven_gt: 0
-    playTokenGiven_lt: "2000000000000000000000"
     id_gt: $lastId
     id_not_in: ["0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20", "0xe53cd71271acadbeb0f64d9c8c62bbddc8ca9e66"]
   }) {
