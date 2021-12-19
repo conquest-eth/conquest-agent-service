@@ -126,42 +126,44 @@ const onlineOnly = {
   regexes: regexesOnlineOnly,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-self.addEventListener('fetch', (event: any) => {
+async function getResponse(event: {request: Request}): Promise<Response> {
   const request = event.request;
-  event.respondWith(async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const registration = (self as any).registration as ServiceWorkerRegistration;
+  if (
+    event.request.mode === 'navigate' &&
+    event.request.method === 'GET' &&
+    registration.waiting &&
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const registration = (self as any).registration as ServiceWorkerRegistration;
-    if (
-      event.request.mode === 'navigate' &&
-      event.request.method === 'GET' &&
-      registration.waiting &&
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (await (self as any).clients.matchAll()).length < 2
-    ) {
-      log('only one client, skipWaiting as we navigate the page');
-      registration.waiting.postMessage('skipWaiting');
-      const response = new Response('', {headers: {Refresh: '0'}});
-      log(`skip`, response);
-      return response;
-    }
+    (await (self as any).clients.matchAll()).length < 2
+  ) {
+    log('only one client, skipWaiting as we navigate the page');
+    registration.waiting.postMessage('skipWaiting');
+    const response = new Response('', {headers: {Refresh: '0'}});
+    log(`skip`, response);
+    return response;
+  }
 
-    // TODO remove query param from matching, query param are used as config (why not use hashes then ?) const normalizedUrl = normalizeUrl(event.request.url);
-    const response = await caches.match(request).then((cache) => {
-      // The order matters !
-      const patterns = [onlineFirst, onlineOnly, cacheFirst, cacheOnly];
+  // TODO remove query param from matching, query param are used as config (why not use hashes then ?) const normalizedUrl = normalizeUrl(event.request.url);
+  const response = await caches.match(request).then((cache) => {
+    // The order matters !
+    const patterns = [onlineFirst, onlineOnly, cacheFirst, cacheOnly];
 
-      for (const pattern of patterns) {
-        for (const regex of pattern.regexes) {
-          if (RegExp(regex).test(request.url)) {
-            return pattern.method(request, cache);
-          }
+    for (const pattern of patterns) {
+      for (const regex of pattern.regexes) {
+        if (RegExp(regex).test(request.url)) {
+          return pattern.method(request, cache);
         }
       }
+    }
 
-      return onlineFirst.method(request, cache);
-    });
-    console.log({response});
-    return response;
+    return onlineFirst.method(request, cache);
   });
+  console.log({response});
+  return response;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+self.addEventListener('fetch', (event: any) => {
+  event.respondWith(getResponse(event));
 });
