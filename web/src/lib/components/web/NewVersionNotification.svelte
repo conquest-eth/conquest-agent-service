@@ -4,6 +4,7 @@
 
   function skip() {
     $serviceWorker.updateAvailable = false;
+    //
   }
 
   function reload() {
