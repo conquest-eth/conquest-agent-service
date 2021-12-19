@@ -57,6 +57,7 @@ if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
     navigator.serviceWorker
       .register(swLocation)
       .then((registration) => {
+        serviceWorker.set({registration, updateAvailable: false}); // TODO keep updateAvailable if any ?
         updateLoggingForWorker(registration.installing);
         updateLoggingForWorker(registration.waiting);
         updateLoggingForWorker(registration.active);
