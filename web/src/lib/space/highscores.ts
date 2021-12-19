@@ -40,6 +40,7 @@ class HighscoresStore extends BaseStoreWithData<Highscores, Highscore[]> {
     const query = `
 query($first: Int! $lastId: ID!) {
   owners(first: $first where: {
+    introducer_not: "0x9a3b0d0b08fb71f1a5e0f248ad3a42c341f7837c"
     playTokenGiven_gt: 0
     playTokenGiven_lt: "2000000000000000000000"
     id_gt: $lastId
