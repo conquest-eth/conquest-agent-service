@@ -34,6 +34,7 @@ function handleAutomaticUpdate(registration: ServiceWorkerRegistration) {
   setInterval(() => registration.update(), CHECK_DELAY_MS);
 }
 
+// taken from: https://stackoverflow.com/a/50535316
 function listenForWaitingServiceWorker(
   registration: ServiceWorkerRegistration,
   callback: (reg: ServiceWorkerRegistration) => void
