@@ -3,16 +3,23 @@
   import {base} from '$app/paths';
 
   function skip() {
-    $updateAvailable = false;
+    $updateAvailable = undefined;
   }
 
   function reload() {
-    $updateAvailable = false;
-    window.location.reload(true);
+    if ($updateAvailable) {
+      if ($updateAvailable.waiting) {
+        $updateAvailable.waiting.postMessage('skipWaiting');
+      } else {
+        console.error(`not waiting..., todo reload`);
+        // window.location.reload();
+      }
+      $updateAvailable = undefined;
+    }
   }
 </script>
 
-<svelte:window on:click={skip} />
+<!-- <svelte:window on:click={skip} /> -->
 
 {#if $updateAvailable}
   <div
