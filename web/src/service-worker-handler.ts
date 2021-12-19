@@ -23,6 +23,7 @@ function handleAutomaticUpdate(registration: ServiceWorkerRegistration) {
   let lastFocusTime = performance.now();
   function wakeup() {
     const timePassed = performance.now();
+    console.log('wakeup ', lastFocusTime / 60 / 1000, 'vs', timePassed / 60 / 1000);
     if (timePassed - lastFocusTime > IDLE_DELAY_MS) {
       registration.update();
     }
