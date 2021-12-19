@@ -1,15 +1,17 @@
-import {logs} from 'named-logs';
+import {Logger, logs} from 'named-logs';
 import {updateAvailable} from './lib/web/appUpdates';
 import {base} from '$app/paths';
 
-const log = logs('sw.js');
+const log = logs('service-worker') as Logger & {level: number; enabled: boolean};
 function updateLoggingForWorker(worker: ServiceWorker | null) {
   if (worker) {
-    // TODO 1. uncomment
+    if (log.enabled) {
+      log.debug(`enabling logging for service worker, level: ${log.level}`);
+    } else {
+      log.debug(`disabling logging for service worker, level: ${log.level}`);
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // worker.postMessage({type: 'debug', level: (log as any).level, enabled: (log as any).enabled});
-    // TODO 2. remove
-    worker.postMessage({type: 'debug', level: 6, enabled: true});
+    worker.postMessage({type: 'debug', level: log.level, enabled: log.enabled});
   }
 }
 
