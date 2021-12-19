@@ -3,16 +3,16 @@ import {logs} from 'named-logs';
 import {serviceWorker} from '$lib/web/serviceWorker';
 import {base} from '$app/paths';
 
-const log = logs('service-worker') as Logger & {level: number; enabled: boolean};
+const console = logs('service-worker') as Logger & {level: number; enabled: boolean};
 function updateLoggingForWorker(worker: ServiceWorker | null) {
   if (worker) {
-    if (log.enabled) {
-      log.debug(`enabling logging for service worker, level: ${log.level}`);
+    if (console.enabled) {
+      console.debug(`enabling logging for service worker, level: ${console.level}`);
     } else {
-      log.debug(`disabling logging for service worker, level: ${log.level}`);
+      console.debug(`disabling logging for service worker, level: ${console.level}`);
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    worker.postMessage({type: 'debug', level: log.level, enabled: log.enabled});
+    worker.postMessage({type: 'debug', level: console.level, enabled: console.enabled});
   }
 }
 

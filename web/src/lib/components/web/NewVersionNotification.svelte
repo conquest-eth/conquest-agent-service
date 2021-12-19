@@ -11,7 +11,7 @@
       if ($serviceWorker.registration.waiting) {
         $serviceWorker.registration.waiting.postMessage('skipWaiting');
       } else {
-        console.error(`not waiting..., todo reload`);
+        console.error(`not waiting..., todo reload?`);
         // window.location.reload();
       }
       $serviceWorker.updateAvailable = false;
