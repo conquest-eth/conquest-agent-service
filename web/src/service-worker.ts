@@ -141,11 +141,13 @@ self.addEventListener('fetch', (event: any) => {
     ) {
       log('only one client, skipWaiting as we navigate the page');
       registration.waiting.postMessage('skipWaiting');
-      return new Response('', {headers: {Refresh: '0'}});
+      const response = new Response('', {headers: {Refresh: '0'}});
+      log(`skip`, response);
+      return response;
     }
 
     // TODO remove query param from matching, query param are used as config (why not use hashes then ?) const normalizedUrl = normalizeUrl(event.request.url);
-    return await caches.match(request).then((cache) => {
+    const response = await caches.match(request).then((cache) => {
       // The order matters !
       const patterns = [onlineFirst, onlineOnly, cacheFirst, cacheOnly];
 
@@ -159,5 +161,7 @@ self.addEventListener('fetch', (event: any) => {
 
       return onlineFirst.method(request, cache);
     });
+    console.log({response});
+    return response;
   });
 });
