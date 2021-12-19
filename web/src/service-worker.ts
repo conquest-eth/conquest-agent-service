@@ -141,7 +141,6 @@ async function getResponse(event: {request: Request}): Promise<Response> {
     log('only one client, skipWaiting as we navigate the page');
     registration.waiting.postMessage('skipWaiting');
     const response = new Response('', {headers: {Refresh: '0'}});
-    log(`skip`, response);
     return response;
   }
 
@@ -160,7 +159,6 @@ async function getResponse(event: {request: Request}): Promise<Response> {
 
     return onlineFirst.method(request, cache);
   });
-  console.log({response});
   return response;
 }
 
