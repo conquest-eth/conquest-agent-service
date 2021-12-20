@@ -6,6 +6,8 @@
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
 
   import {highscores} from '$lib/space/highscores';
+  import {now, time} from '$lib/time';
+  import {timeToText} from '$lib/utils';
   import {onMount} from 'svelte';
   onMount(() => {
     highscores.start();
@@ -16,13 +18,10 @@
   <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
   <div class="markdown text-white p-3">
     <h1 class="text-cyan-400"><span class="font-black">Highscores</span></h1>
-    <p class="text-gray-400">Note: ties are not resolved here</p>
-    <p class="text-gray-400">
-      Also note that more token will be given in the coming week based on the initial distribution.
-    </p>
-    <p class="text-gray-400">Player who received x tokens will receive x tokens more</p>
-    <p class="text-gray-400">The score will adjust on reception of these extra tokens.</p>
+    <p class="text-gray-400 text-xs">(Note: ties are not resolved here)</p>
     <p class="text-gray-400">score = 10000 + 10000 * (((token in control) - (token given)) / (token given))</p>
+    <p class="text-gray-400">Score will be frozen past December 23rd 10PM UTC</p>
+    <p class="text-yellow-400">Time Left: {timeToText(1640296800 - $time)}</p>
     {#if $highscores.error}
       <span class="text-red-600">{$highscores.error}</span>
     {:else if $highscores.step === 'IDLE'}
