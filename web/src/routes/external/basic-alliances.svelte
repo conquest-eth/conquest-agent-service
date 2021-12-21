@@ -15,6 +15,7 @@
   import messageFlow from '$lib/flows/message';
   import MessageFlow from '$lib/flows/MessageFlow.svelte';
   import {Wallet} from '@ethersproject/wallet';
+  import Index from '../index.svelte';
 
   function connect() {
     flow.connect();
@@ -39,9 +40,22 @@
   }
 
   async function join() {
-    const message = `Join Alliance ${hexZeroPad(id.toLowerCase(), 20)}`;
-    const signature = await wallet.provider.getSigner().signMessage(message);
-    signedMessage = wallet.address + ':' + message + `:` + signature;
+    await flow.execute(async (contracts) => {
+      const allianceData = await contracts.AllianceRegistry.callStatic.getAllianceData(wallet.address, id);
+      if (allianceData.joinTime.gt(0)) {
+        throw new Error('already in alliance');
+      }
+
+      let message = `Join Alliance ${hexZeroPad(id.toLowerCase(), 20)}`;
+      if (allianceData.nonce.gt(0)) {
+        message = `Join Alliance ${hexZeroPad(id.toLowerCase(), 20)} (nonce: ${(
+          '' + allianceData.nonce.toNumber()
+        ).padStart(10, ' ')})`;
+      }
+      console.log({message});
+      const signature = await wallet.provider.getSigner().signMessage(message);
+      signedMessage = wallet.address + ':' + message + `:` + signature;
+    });
   }
 
   async function leave() {
@@ -52,15 +66,28 @@
 
   async function addMember() {
     await flow.execute(async (contracts) => {
-      const components = joinMessage.split(':');
+      // TODO do not use : as separator
+      const components = joinMessage
+        .replace(`nonce:`, 'nonce$')
+        .split(':')
+        .map((v) => v.replace('nonce$', 'nonce:'));
+      let nonce = 0;
+      const indexOfNonce = joinMessage.indexOf('nonce:');
+      if (indexOfNonce >= 0) {
+        // const indexOfClosingParenthesis = joinMessage.indexOf(')');
+        const nonceStr = joinMessage.slice(indexOfNonce + 6, indexOfNonce + 6 + 11).trim();
+        console.log({nonceStr});
+        nonce = parseInt(nonceStr);
+      }
       const joinerAddress = components[0];
       const message = components[1];
       const signature = components[2];
+      console.log({message, signature});
       const contract = new Contract(id, contractsInfos.contracts.BasicAllianceFactory.abi, wallet.provider.getSigner());
       await contract.addMembers([
         {
           addr: joinerAddress,
-          nonce: 0, // TODO
+          nonce,
           signature: signature,
         },
       ]);
@@ -155,7 +182,7 @@
 
         {#if signedMessage}
           <p>Copy this string and send it to the admin:</p>
-          <p class="bg-blue-800 text-white" on:click={select}>{signedMessage}</p>
+          <pre class="bg-blue-800 text-white" on:click={select}>{signedMessage}</pre>
         {/if}
 
         The Administrator to contact : <Blockie class="w-6 h-6 m-1 inline" address={admin} />{admin} (<button
