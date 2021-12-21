@@ -67,19 +67,7 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
     while (numEntries === first) {
       try {
         const variables = {first, lastId, ...this.options?.variables, ...this.runtimeVariables, ...extraVariables};
-        const querySplitted = this.query.split('?');
-        let query = '';
-        for (let i = 0; i < querySplitted.length; i++) {
-          const split = querySplitted[i];
-          if (split.startsWith('$')) {
-            if (!variables[split.substr(1)]) {
-              i++; // skip
-            }
-          } else {
-            query += split;
-          }
-        }
-        const result = await this.endpoint.query<Record<string, unknown>, V>(query, {
+        const result = await this.endpoint.query<Record<string, unknown>, V>(this.query, {
           variables,
           context: {
             requestPolicy: 'cache-and-network', // required as cache-first will not try to get new data
