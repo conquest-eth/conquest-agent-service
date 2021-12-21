@@ -619,6 +619,12 @@ export class RevealQueue extends DO {
           sendConfirmed: reveal.sendConfirmed,
           duration: reveal.duration,
           revealTime: reveal.startTime + reveal.duration,
+          fleetSender: reveal.fleetSender,
+          operator: reveal.operator,
+          distance: reveal.distance,
+          gift: reveal.gift,
+          specific: reveal.specific,
+          potentialAlliances: reveal.potentialAlliances,
           // secretHash: reveal.secret,
         });
       }
