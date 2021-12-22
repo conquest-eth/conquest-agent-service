@@ -9,7 +9,7 @@
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import {url} from '$lib/utils/url';
   import {account} from '$lib/account/account';
-  import {params} from '$lib/config';
+  import {params, version} from '$lib/config';
 
   async function connect() {
     try {
@@ -135,6 +135,7 @@
         </NavButton>
       {/if}
       <PanelButton class="m-1" label="Disconnect" on:click={disconnect}>Disconnect</PanelButton>
+      <p class="mt-2">version: {version}</p>
     </div>
   {/if}
 {:else}

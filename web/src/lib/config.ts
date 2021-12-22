@@ -124,6 +124,8 @@ function setGetName(func: () => string): void {
   getName = func;
 }
 
+const version = __VERSION__;
+
 if (import.meta.env.MODE === 'production') {
   Sentry.init({
     release: __VERSION__,
@@ -188,4 +190,5 @@ export {
   dropTransactions,
   localDev,
   setGetName,
+  version,
 };
