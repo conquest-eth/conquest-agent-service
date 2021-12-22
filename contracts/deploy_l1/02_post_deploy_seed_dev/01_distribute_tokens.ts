@@ -56,3 +56,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 export default func;
 func.tags = ['StableToken', 'PlayToken'];
+func.skip = async (hre) => (await hre.deployments.getNetworkName()) === 'alpha'; // TODO fix claimKeyStributor balance = 0 (I guess all has been sent to L2 and it thus keep bign executed)

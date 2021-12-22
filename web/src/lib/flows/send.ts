@@ -205,11 +205,19 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         );
       }
     }
+    // TODO && destinationOwner !== '0x0000000000000000000000000000000000000000' ?
     if (destinationOwner && !gift && potentialAlliances.length > 0) {
       specific = destinationOwner.address; // specific to this particular enemy
       // TODO maybe instead target anyone ? '0x0000000000000000000000000000000000000000'; // no specific if an attack on an ally
       // TODO add option to specify: this address or any non-allies
       // or even : this alliance or any non-allies
+
+      // TODO add ahent-service option to not resolve under certain condition
+      // or switch to gifting based on a signature
+    } else if (destinationOwner && gift && potentialAlliances.length == 0) {
+      specific = destinationOwner.address; // specific to this particular address
+      // TODO maybe instead target anyone ? '0x0000000000000000000000000000000000000000';
+      // TODO add option to specify: this address or any allies
 
       // TODO add ahent-service option to not resolve under certain condition
       // or switch to gifting based on a signature

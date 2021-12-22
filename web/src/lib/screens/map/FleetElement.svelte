@@ -85,6 +85,7 @@
           toPlanetInfo,
           $toPlanetState,
           fleet.quantity,
+          fleet.launchTime,
           Math.min($time - fleet.launchTime, fleet.duration),
           fromPlayer,
           toPlayer,

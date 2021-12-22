@@ -42,7 +42,15 @@
       prediction = {
         arrivalTime: timeToText(spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo)),
         numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(fromPlanetInfo, toPlanetInfo, $toPlanetState),
-        outcome: spaceInfo.outcome(fromPlanetInfo, $fromPlanetState, toPlanetInfo, $toPlanetState, fleetAmount, 0),
+        outcome: spaceInfo.outcome(
+          fromPlanetInfo,
+          $fromPlanetState,
+          toPlanetInfo,
+          $toPlanetState,
+          fleetAmount,
+          $time,
+          0
+        ),
       };
     }
   }

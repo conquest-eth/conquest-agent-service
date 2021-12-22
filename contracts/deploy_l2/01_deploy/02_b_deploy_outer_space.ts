@@ -10,8 +10,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deployer} = await hre.getNamedAccounts();
   const {deploy} = hre.deployments;
 
-  const chainId = await hre.getChainId();
-  const localTesting = chainId === '1337' || chainId === '31337'; // TODO use network tags ?
+  // const chainId = await hre.getChainId();
+  const networkName = await hre.deployments.getNetworkName();
+  const localTesting = networkName === 'hardhat'; // chainId === '1337' || chainId === '31337'; // TODO use network tags ?
 
   const playToken_l2 = await hre.deployments.get('PlayToken_L2');
 
@@ -42,7 +43,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     resolveWindow /= 180;
   }
 
-  if (network.name === 'quick') {
+  if (networkName === 'quick') {
     // TODO remove when updating quick to a new contract
     genesisHash =
       '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
@@ -54,7 +55,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     // productionCapAsDuration /= 180;
   }
 
-  // if (network.name === 'coinfest') {
+  // if (networkName === 'coinfest') {
   //   genesisHash =
   //     '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
   //   timePerDistance /= 5;
@@ -64,15 +65,29 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   //   frontrunningDelay /= 5;
   // }
 
-  if (network.name === 'dev') {
+  if (networkName === 'dev') {
     genesisHash =
       '0x9e9e23df9a65ca95f7a3b613673c89db774d0cdaaa1850160a59406c0220d7f6';
   }
 
-  if (network.name === 'alpha') {
+  if (networkName === 'alpha') {
     genesisHash =
       '0x015e3b02f1bb647546a9856205a64f1c2263856de7acb3fe65aa303c9c8ce7fc';
   }
+
+  console.log({
+    playToken_l2: playToken_l2.address,
+    allianceRegistry: allianceRegistry.address,
+    genesisHash,
+    resolveWindow,
+    timePerDistance,
+    exitDuration,
+    acquireNumSpaceships,
+    productionSpeedUp,
+    frontrunningDelay,
+    productionCapAsDuration,
+    fleetSizeFactor6,
+  });
 
   await deploy('OuterSpace', {
     from: deployer,
@@ -101,7 +116,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       productionCapAsDuration,
       fleetSizeFactor6,
     ],
-    proxy: hre.network.name !== 'mainnet' ? 'postUpgrade' : undefined,
+    proxy: networkName !== 'mainnet' ? 'postUpgrade' : undefined,
     log: true,
     autoMine: true,
   });
