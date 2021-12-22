@@ -61,7 +61,7 @@
       <hr class="my-4" />
       <ul>
         {#each $highscores.data.slice(18) as player, index}
-          <li>
+          <li class={player.total == player.playTokenToWithdraw + player.playTokenBalance ? 'text-gray-500' : ''}>
             <span class="w-10 inline-block">{index + 19}:</span>
             <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={player.id} />
             <div class="w-6 h-6 text-xs mr-4 inline-block" style={`white-space: nowrap;overflow: hidden;`}>
