@@ -68,6 +68,7 @@
     await flow.execute(async (contracts) => {
       // TODO do not use : as separator
       const components = joinMessage
+        .replace(/^\s+|\s+$/g, '')
         .replace(`nonce:`, 'nonce$')
         .split(':')
         .map((v) => v.replace('nonce$', 'nonce:'));
