@@ -6,6 +6,7 @@ import 'hardhat-gas-reporter';
 import '@typechain/hardhat';
 import 'solidity-coverage';
 import 'hardhat-contract-sizer';
+import 'hardhat-deploy-tenderly';
 import {node_url, accounts} from './utils/network';
 /* import './utils/tx-handler'; */
 import './utils/metadata';
@@ -179,6 +180,11 @@ const config: HardhatUserConfig = {
         deploy: 'node_modules/ethereum-transfer-gateway/export/deploy',
       },
     ],
+  },
+
+  tenderly: {
+    project: 'conquest-eth',
+    username: process.env.TENDERLY_USERNAME as string,
   },
 };
 

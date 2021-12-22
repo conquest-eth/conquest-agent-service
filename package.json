@@ -34,6 +34,7 @@
     "seed": "node ./_scripts.js contracts:seed",
     "contracts:execute": "node ./_scripts.js contracts:execute",
     "contracts:fork:execute": "node ./_scripts.js contracts:fork:execute",
+    "tenderly:push": "node ./_scripts.js tenderly:push",
     "---------------------- agent-service ----------------------": "deploy agent-service",
     "agent-service:dev": "node ./_scripts.js agent-service:dev",
     "agent-service:build": "node ./_scripts.js agent-service:build",
