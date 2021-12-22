@@ -1,0 +1,42 @@
+export type PlayerData = {
+  id: string;
+  planets: {id: string}[];
+  totalStaked: string;
+  currentStake: string;
+  totalCollected: string;
+  playTokenBalance: string;
+  playTokenToWithdraw: string;
+  playTokenGiven: string;
+  introducer: {id: string};
+  stake_gas: string;
+  stake_num: string;
+  sending_gas: string;
+  sending_num: string;
+  resolving_gas: string;
+  resolving_num: string;
+  exit_attempt_gas: string;
+  exit_attempt_num: string;
+};
+export type BlockData<T = PlayerData> = {blockNumber: number; players: T[]};
+
+export type PlayerStats = {
+  id: string;
+  planets: {id: string}[];
+  total: number;
+  score: number;
+  totalStaked: number;
+  currentStake: number;
+  totalCollected: number;
+  playTokenBalance: number;
+  playTokenToWithdraw: number;
+  playTokenGiven: number;
+  introducer: {id: string};
+  stake_gas: number;
+  stake_num: number;
+  sending_gas: number;
+  sending_num: number;
+  resolving_gas: number;
+  resolving_num: number;
+  exit_attempt_gas: number;
+  exit_attempt_num: number;
+};

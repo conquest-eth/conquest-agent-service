@@ -1,7 +1,10 @@
 import {build, timestamp} from '$service-worker';
 
 ///////////////////////////////////////////////////////////////////////////////
-const URLS_TO_PRE_CACHE = build.concat(['_INJECT_PAGES_']);
+const URLS_TO_PRE_CACHE = build
+  .concat(['_INJECT_PAGES_'])
+  .filter((v) => !v.startsWith('/_app/pages/chart.svelte') && !v.startsWith('/_app/pages/charts.svelte'))
+  .filter((v) => v != '/chart/' && v != '/charts/');
 const CACHE_NAME = 'cache-name' + timestamp;
 const DEV = true;
 //////////////////////////////////////////////////////////////////////////////
