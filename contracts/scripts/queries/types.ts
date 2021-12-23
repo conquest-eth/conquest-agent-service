@@ -16,6 +16,17 @@ export type PlayerData = {
   resolving_num: string;
   exit_attempt_gas: string;
   exit_attempt_num: string;
+  spaceships_sent: string;
+  spaceships_arrived: string;
+  spaceships_self_transfered: string;
+  gift_spaceships_sent: string;
+  gift_spaceships_receieved: string;
+  attack_own_spaceships_destroyed: string;
+  attack_enemy_spaceships_destroyed: string;
+  defense_own_spaceships_destroyed: string;
+  defense_enemy_spaceships_destroyed: string;
+  planets_conquered: string;
+  planets_lost: string;
 };
 export type BlockData<T = PlayerData> = {blockNumber: number; players: T[]};
 
@@ -39,4 +50,15 @@ export type PlayerStats = {
   resolving_num: number;
   exit_attempt_gas: number;
   exit_attempt_num: number;
+  spaceships_sent: number;
+  spaceships_arrived: number;
+  spaceships_self_transfered: number;
+  gift_spaceships_sent: number;
+  gift_spaceships_receieved: number;
+  attack_own_spaceships_destroyed: number;
+  attack_enemy_spaceships_destroyed: number;
+  defense_own_spaceships_destroyed: number;
+  defense_enemy_spaceships_destroyed: number;
+  planets_conquered: number;
+  planets_lost: number;
 };

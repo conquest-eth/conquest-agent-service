@@ -4,6 +4,7 @@ import 'dotenv/config';
 import {BigNumber} from 'ethers';
 import {PlayerData, BlockData, PlayerStats} from './types';
 import fs from 'fs';
+import {SpaceInfo} from 'conquest-eth-common';
 
 const DECIMALS_18 = BigNumber.from('1000000000000000000');
 
@@ -12,6 +13,9 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const stats: BlockData<PlayerData>[] = JSON.parse(
     await deployments.readDotFile('.stats.json')
   );
+
+  const OuterSpace = await deployments.get('OuterSpace');
+  const spaceInfo = new SpaceInfo(OuterSpace.linkedData);
 
   const allPayersDict: {[id: string]: boolean} = {};
   const playerIds: string[] = [];
@@ -50,6 +54,9 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           ),
 
           planets: p.planets,
+          // planets: p.planets.map(p => {
+          //   numSpaceships: spaceInfo
+          // })
           totalStaked: totalStaked.div(DECIMALS_18).toNumber(),
           currentStake: currentStake.div(DECIMALS_18).toNumber(),
           totalCollected: totalCollected.div(DECIMALS_18).toNumber(),
@@ -65,6 +72,31 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           resolving_num: BigNumber.from(p.resolving_num).toNumber(),
           exit_attempt_gas: BigNumber.from(p.exit_attempt_gas).toNumber(),
           exit_attempt_num: BigNumber.from(p.exit_attempt_num).toNumber(),
+          spaceships_sent: BigNumber.from(p.spaceships_sent).toNumber(),
+          spaceships_arrived: BigNumber.from(p.spaceships_arrived).toNumber(),
+          spaceships_self_transfered: BigNumber.from(
+            p.spaceships_self_transfered
+          ).toNumber(),
+          gift_spaceships_sent: BigNumber.from(
+            p.gift_spaceships_sent
+          ).toNumber(),
+          gift_spaceships_receieved: BigNumber.from(
+            p.gift_spaceships_receieved
+          ).toNumber(),
+          attack_own_spaceships_destroyed: BigNumber.from(
+            p.attack_own_spaceships_destroyed
+          ).toNumber(),
+          attack_enemy_spaceships_destroyed: BigNumber.from(
+            p.attack_enemy_spaceships_destroyed
+          ).toNumber(),
+          defense_own_spaceships_destroyed: BigNumber.from(
+            p.defense_own_spaceships_destroyed
+          ).toNumber(),
+          defense_enemy_spaceships_destroyed: BigNumber.from(
+            p.defense_enemy_spaceships_destroyed
+          ).toNumber(),
+          planets_conquered: BigNumber.from(p.planets_conquered).toNumber(),
+          planets_lost: BigNumber.from(p.planets_lost).toNumber(),
         };
       }),
     };
@@ -116,6 +148,17 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           resolving_num: 0,
           exit_attempt_gas: 0,
           exit_attempt_num: 0,
+          spaceships_sent: 0,
+          spaceships_arrived: 0,
+          spaceships_self_transfered: 0,
+          gift_spaceships_sent: 0,
+          gift_spaceships_receieved: 0,
+          attack_own_spaceships_destroyed: 0,
+          attack_enemy_spaceships_destroyed: 0,
+          defense_own_spaceships_destroyed: 0,
+          defense_enemy_spaceships_destroyed: 0,
+          planets_conquered: 0,
+          planets_lost: 0,
         });
       }
     }

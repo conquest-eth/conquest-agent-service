@@ -75,13 +75,25 @@ query($first: Int! $lastId: ID! $blockNumber: Int!) {
       resolving_num
       exit_attempt_gas
       exit_attempt_num
+
+      spaceships_sent
+      spaceships_arrived
+      spaceships_self_transfered
+      gift_spaceships_sent
+      gift_spaceships_receieved
+      attack_own_spaceships_destroyed
+      attack_enemy_spaceships_destroyed
+      defense_own_spaceships_destroyed
+      defense_enemy_spaceships_destroyed
+      planets_conquered
+      planets_lost
     }
 }
 `;
 
   const stats: BlockData[] = [];
   const start = 5977167;
-  const end = 6067189;
+  const end = 6071837;
   let blockNumber = start;
   let lastPercent = 0;
   const bar = new ProgressBar('  fetching [:bar] :percent', {
@@ -91,7 +103,7 @@ query($first: Int! $lastId: ID! $blockNumber: Int!) {
     total: 100,
   });
   while (blockNumber <= end) {
-    // TODO replace : 6067189 with last block on December 23rd 10pm UTC
+    // TODO replace : 6071837 with last block on December 23rd 10pm UTC
     const players: PlayerData[] = await theGraph.query(queryString, {
       field: 'owners',
       variables: {blockNumber},
