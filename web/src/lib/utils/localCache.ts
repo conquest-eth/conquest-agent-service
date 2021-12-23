@@ -76,8 +76,15 @@ class LocalCache {
   }
 }
 
-export default new LocalCache(
+const localCache = new LocalCache(
   contractsInfos.contracts.OuterSpace.address + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
     ? ':' + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
     : ''
 );
+
+export default localCache;
+
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).localCache = localCache;
+}
