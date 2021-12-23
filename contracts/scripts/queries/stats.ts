@@ -1,5 +1,5 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
-import hre from 'hardhat';
+import hre, {ethers} from 'hardhat';
 import 'dotenv/config';
 import {TheGraph} from '../utils/thegraph';
 import ProgressBar from 'progress';
@@ -51,6 +51,9 @@ query($first: Int! $lastId: ID! $blockNumber: Int!) {
         id
         numSpaceships
         lastUpdated
+        owner {id}
+        active
+        exitTime
       }
 
       # rewards: [Reward]!
@@ -103,12 +106,13 @@ query($first: Int! $lastId: ID! $blockNumber: Int!) {
     total: 100,
   });
   while (blockNumber <= end) {
+    const block = await ethers.provider.getBlock(blockNumber);
     // TODO replace : 6071837 with last block on December 23rd 10pm UTC
     const players: PlayerData[] = await theGraph.query(queryString, {
       field: 'owners',
       variables: {blockNumber},
     });
-    stats.push({blockNumber, players});
+    stats.push({blockNumber, players, blockTime: block.timestamp});
 
     // await wait(0.3);
 
@@ -129,7 +133,10 @@ query($first: Int! $lastId: ID! $blockNumber: Int!) {
   }
   console.log();
 
-  await deployments.saveDotFile('.stats.json', JSON.stringify(stats, null, 2));
+  // avoid RangeError by stringify per elem, see: https://dev.to/madhunimmo/json-stringify-rangeerror-invalid-string-length-3977
+  const out = '[' + stats.map((el) => JSON.stringify(el)).join(',') + ']';
+
+  await deployments.saveDotFile('.stats.json', out);
   console.log({numDataPointsPerPlayer: stats.length});
 }
 

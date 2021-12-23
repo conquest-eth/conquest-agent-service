@@ -3,8 +3,8 @@ import hre from 'hardhat';
 import 'dotenv/config';
 import {BigNumber} from 'ethers';
 import {PlayerData, BlockData, PlayerStats} from './types';
-import fs from 'fs';
-import {SpaceInfo} from 'conquest-eth-common';
+import fs from 'fs-extra';
+import {PlanetState, SpaceInfo} from 'conquest-eth-common';
 
 const DECIMALS_18 = BigNumber.from('1000000000000000000');
 
@@ -23,6 +23,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   // transform
   const playerStats = stats.map((s) => {
     return {
+      blockTime: s.blockTime,
       blockNumber: s.blockNumber,
       players: s.players.map((p) => {
         if (!allPayersDict[p.id]) {
@@ -41,6 +42,48 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
         const totalStaked = BigNumber.from(p.totalStaked);
         const totalCollected = BigNumber.from(p.totalCollected);
 
+        const planets = p.planets.map((np) => {
+          const duration = Math.max(0, s.blockTime - parseInt(np.lastUpdated)); // TODO should not be negative, check
+          const toPlanet = spaceInfo.getPlanetInfoViaId(np.id);
+          if (!toPlanet) {
+            throw new Error(`cannot find planet ${np.id}`);
+          }
+          const toPlanetState: PlanetState = {
+            owner: np.owner.id,
+            numSpaceships: parseInt(np.numSpaceships),
+            active: np.active,
+            exiting: np.exitTime != '0',
+            exitTimeLeft: parseInt(np.exitTime), // TODO fix;
+            natives: !np.active, // TODO fix
+            capturing: false,
+            inReach: true, // TODO fix it
+            rewardGiver: '',
+          };
+          return {
+            id: np.id,
+            numSpaceshipsAtBlock:
+              parseInt(np.numSpaceships) +
+              spaceInfo.numSpaceshipsAfterDuration(
+                toPlanet,
+                toPlanetState,
+                duration
+              ),
+          };
+        });
+
+        const totalSpaceships = planets.reduce((prev, current) => {
+          return prev + current.numSpaceshipsAtBlock;
+        }, 0);
+
+        const stake_gas = BigNumber.from(p.stake_gas).toNumber();
+        const stake_num = BigNumber.from(p.stake_num).toNumber();
+        const sending_gas = BigNumber.from(p.sending_gas).toNumber();
+        const sending_num = BigNumber.from(p.sending_num).toNumber();
+        const resolving_gas = BigNumber.from(p.resolving_gas).toNumber();
+        const resolving_num = BigNumber.from(p.resolving_num).toNumber();
+        const exit_attempt_gas = BigNumber.from(p.exit_attempt_gas).toNumber();
+        const exit_attempt_num = BigNumber.from(p.exit_attempt_num).toNumber();
+
         return {
           id: p.id,
           total: total.div(DECIMALS_18).toNumber(),
@@ -53,10 +96,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
               .toNumber() / 100
           ),
 
-          planets: p.planets,
-          // planets: p.planets.map(p => {
-          //   numSpaceships: spaceInfo
-          // })
+          planets,
           totalStaked: totalStaked.div(DECIMALS_18).toNumber(),
           currentStake: currentStake.div(DECIMALS_18).toNumber(),
           totalCollected: totalCollected.div(DECIMALS_18).toNumber(),
@@ -64,14 +104,14 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           playTokenBalance: playTokenBalance.div(DECIMALS_18).toNumber(),
           playTokenGiven: playTokenGiven.div(DECIMALS_18).toNumber(),
           introducer: p.introducer,
-          stake_gas: BigNumber.from(p.stake_gas).toNumber(),
-          stake_num: BigNumber.from(p.stake_num).toNumber(),
-          sending_gas: BigNumber.from(p.sending_gas).toNumber(),
-          sending_num: BigNumber.from(p.sending_num).toNumber(),
-          resolving_gas: BigNumber.from(p.resolving_gas).toNumber(),
-          resolving_num: BigNumber.from(p.resolving_num).toNumber(),
-          exit_attempt_gas: BigNumber.from(p.exit_attempt_gas).toNumber(),
-          exit_attempt_num: BigNumber.from(p.exit_attempt_num).toNumber(),
+          stake_gas,
+          stake_num,
+          sending_gas,
+          sending_num,
+          resolving_gas,
+          resolving_num,
+          exit_attempt_gas,
+          exit_attempt_num,
           spaceships_sent: BigNumber.from(p.spaceships_sent).toNumber(),
           spaceships_arrived: BigNumber.from(p.spaceships_arrived).toNumber(),
           spaceships_self_transfered: BigNumber.from(
@@ -97,6 +137,11 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           ).toNumber(),
           planets_conquered: BigNumber.from(p.planets_conquered).toNumber(),
           planets_lost: BigNumber.from(p.planets_lost).toNumber(),
+          totalSpaceships,
+          numPlanets: planets.length,
+          gas: stake_gas + sending_gas + resolving_gas + exit_attempt_gas,
+          action_num:
+            stake_num + sending_num + resolving_num + exit_attempt_num,
         };
       }),
     };
@@ -116,6 +161,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   // sort every set based on that order
   const sortedPlayerStats = playerStats.map((s) => {
     return {
+      blockTime: s.blockTime,
       blockNumber: s.blockNumber,
       players: s.players.sort((a, b) => {
         return dict[b.id].score - dict[a.id].score;
@@ -159,11 +205,16 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           defense_enemy_spaceships_destroyed: 0,
           planets_conquered: 0,
           planets_lost: 0,
+          totalSpaceships: 0,
+          numPlanets: 0,
+          gas: 0,
+          action_num: 0,
         });
       }
     }
     return {
       blockNumber: s.blockNumber,
+      blockTime: s.blockTime,
       players: list,
     };
   });
@@ -183,17 +234,46 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     JSON.stringify(finalStats, null, 2)
   );
 
-  generateDataForPlotly(finalStats, 'score');
+  const statList = [
+    'score',
 
-  generateCSV(finalStats, 'score');
-  generateCSV(finalStats, 'sending_num');
+    'totalSpaceships',
+    'totalStaked',
+    'numPlanets',
+    'total',
+    'stake_num',
+    'sending_num',
+    'resolving_num',
+    'exit_attempt_num',
+    'gas',
+    'action_num',
+    'spaceships_sent',
+    'spaceships_arrived',
+    'spaceships_self_transfered',
+    'gift_spaceships_sent',
+    'gift_spaceships_receieved',
+    'attack_own_spaceships_destroyed',
+    'attack_enemy_spaceships_destroyed',
+    'defense_own_spaceships_destroyed',
+    'defense_enemy_spaceships_destroyed',
+    'planets_conquered',
+    'planets_lost',
+  ];
+
+  fs.emptyDirSync(`/home/wighawag/dev/python-test/charts`);
+  for (const statName of statList) {
+    // generateDataForPlotly(finalStats, statName);
+    generateCSV(finalStats, statName);
+  }
 }
 
 function generateDataForPlotly(stats: BlockData<PlayerStats>[], field: string) {
   const chart: {
+    title: string;
     blockNumbers: number[];
     players: {name: string; values: number[]}[];
   } = {
+    title: field,
     blockNumbers: [],
     players: [],
   };
@@ -217,6 +297,41 @@ function generateDataForPlotly(stats: BlockData<PlayerStats>[], field: string) {
   }
 
   fs.writeFileSync(`../web/src/lib/data/${field}.json`, JSON.stringify(chart));
+
+  const svelteFile = `
+<script lang="ts">
+  import {base} from '$app/paths';
+  import {onMount} from 'svelte';
+  import data from '$lib/data/${field}.json';
+
+  const chart: {name: string; x: number[]; y: number[]; stackgroup: string; type: 'scatter'}[] = data.players.map(
+    (v) => {
+      return {
+        x: data.blockNumbers,
+        y: v.values,
+        name: v.name,
+        stackgroup: 'one',
+        type: 'scatter',
+      };
+    }
+  );
+
+  onMount(() => {
+    (window as any).Plotly.newPlot('plotly', chart, {title: data.title}, {responsive: true, doubleClickDelay: 500});
+  });
+</script>
+
+<svelte:head>
+  <script src={\`\${base}/js/plotly-2.8.3.min.js\`}></script>
+</svelte:head>
+
+<div id="plotly" style="width:100%;height:100%;" />
+`;
+
+  try {
+    fs.mkdirSync('../web/src/routes/charts');
+  } catch (e) {}
+  fs.writeFileSync(`../web/src/routes/charts/${field}.svelte`, svelteFile);
 }
 
 function generateCSV(stats: BlockData<PlayerStats>[], field: string) {
@@ -235,7 +350,7 @@ function generateCSV(stats: BlockData<PlayerStats>[], field: string) {
     csv = csv.slice(0, csv.length - 1);
   }
 
-  fs.writeFileSync(`/home/wighawag/dev/python-test/${field}.csv`, csv);
+  fs.writeFileSync(`/home/wighawag/dev/python-test/charts/${field}.csv`, csv);
 }
 
 async function main() {

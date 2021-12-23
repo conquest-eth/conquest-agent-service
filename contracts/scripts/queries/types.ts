@@ -1,6 +1,13 @@
 export type PlayerData = {
   id: string;
-  planets: {id: string}[];
+  planets: {
+    id: string;
+    numSpaceships: string;
+    lastUpdated: string;
+    owner: {id: string};
+    active: boolean;
+    exitTime: string;
+  }[];
   totalStaked: string;
   currentStake: string;
   totalCollected: string;
@@ -28,11 +35,15 @@ export type PlayerData = {
   planets_conquered: string;
   planets_lost: string;
 };
-export type BlockData<T = PlayerData> = {blockNumber: number; players: T[]};
+export type BlockData<T = PlayerData> = {
+  blockNumber: number;
+  blockTime: number;
+  players: T[];
+};
 
 export type PlayerStats = {
   id: string;
-  planets: {id: string}[];
+  planets: {id: string; numSpaceshipsAtBlock: number}[];
   total: number;
   score: number;
   totalStaked: number;
@@ -61,4 +72,8 @@ export type PlayerStats = {
   defense_enemy_spaceships_destroyed: number;
   planets_conquered: number;
   planets_lost: number;
+  totalSpaceships: number;
+  numPlanets: number;
+  gas: number;
+  action_num: number;
 };
