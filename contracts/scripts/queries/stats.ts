@@ -96,7 +96,7 @@ query($first: Int! $lastId: ID! $blockNumber: Int!) {
 
   const stats: BlockData[] = [];
   const start = 5977167;
-  const end = 6071837;
+  const end = 6074693; // 6074693: last block on December 23rd 10pm UTC
   let blockNumber = start;
   let lastPercent = 0;
   const bar = new ProgressBar('  fetching [:bar] :percent', {
@@ -107,7 +107,7 @@ query($first: Int! $lastId: ID! $blockNumber: Int!) {
   });
   while (blockNumber <= end) {
     const block = await ethers.provider.getBlock(blockNumber);
-    // TODO replace : 6071837 with last block on December 23rd 10pm UTC
+
     const players: PlayerData[] = await theGraph.query(queryString, {
       field: 'owners',
       variables: {blockNumber},
