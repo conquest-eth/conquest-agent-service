@@ -41,7 +41,7 @@ class HighscoresStore extends BaseStoreWithData<Highscores, Highscore[]> {
   async fetch() {
     const query = `
 query($first: Int! $lastId: ID!) {
-  owners(first: $first where: {
+  owners(first: $first block: {number: 6074693} where: {
     totalStaked_gt: 0
     playTokenGiven_gt: 0
     id_gt: $lastId
