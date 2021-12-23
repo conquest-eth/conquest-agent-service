@@ -12,7 +12,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // const chainId = await hre.getChainId();
   const networkName = await hre.deployments.getNetworkName();
-  const localTesting = networkName === 'hardhat'; // chainId === '1337' || chainId === '31337'; // TODO use network tags ?
+  const localTesting = networkName === 'hardhat' || networkName === 'localhost'; // chainId === '1337' || chainId === '31337'; // TODO use network tags ?
+
+  // console.log({networkName, localTesting});
 
   const playToken_l2 = await hre.deployments.get('PlayToken_L2');
 

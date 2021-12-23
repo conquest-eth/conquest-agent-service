@@ -25,3 +25,23 @@ export function bitMaskMatch(value: number | undefined, bit: number): boolean {
 export function formatError(e: any): string {
   return e.message || (e.toString ? e.toString() : JSON.stringify(e));
 }
+
+export function decodeCoords(coords: string): {x: number; y: number} {
+  coords = coords.trim();
+  if (coords.startsWith('(')) {
+    coords = coords.slice(1);
+  }
+  if (coords.endsWith(')')) {
+    coords = coords.slice(0, coords.length - 1);
+  }
+  // console.log({coords});
+  const split = coords.split(',').map((v) => v.trim());
+  if (split.length === 2) {
+    const x = parseInt(split[0]);
+    const y = parseInt(split[1]);
+    if (!isNaN(x) && !isNaN(y)) {
+      return {x, y};
+    }
+  }
+  throw new Error(`invalid coords`);
+}
