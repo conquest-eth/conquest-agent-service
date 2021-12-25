@@ -263,22 +263,22 @@ contract OuterSpace is Proxied {
     // TODO : ERC20, ERC721, ERC1155
     // remove sponsor, use msg.sender and this could be special contracts
     // TODO : reenable, removed because of code size issue
-    // function addReward(uint256 location, address sponsor) external onlyProxyAdmin {
-    //     Planet memory planet = _planets[location];
-    //     if (_hasJustExited(planet.exitTime)) {
-    //         _setPlanetAfterExit(location, planet.owner, _planets[location], address(0), 0);
-    //     }
+    function addReward(uint256 location, address sponsor) external onlyProxyAdmin {
+        Planet memory planet = _planets[location];
+        if (_hasJustExited(planet.exitTime)) {
+            _setPlanetAfterExit(location, planet.owner, _planets[location], address(0), 0);
+        }
 
-    //     uint256 rewardId = _rewards[location];
-    //     if (rewardId == 0) {
-    //         rewardId = ++_prevRewardIds[sponsor];
-    //         _rewards[location] = (uint256(uint160(sponsor)) << 96) + rewardId;
-    //     }
-    //     // TODO should it fails if different sponsor added reward before
+        uint256 rewardId = _rewards[location];
+        if (rewardId == 0) {
+            rewardId = ++_prevRewardIds[sponsor];
+            _rewards[location] = (uint256(uint160(sponsor)) << 96) + rewardId;
+        }
+        // TODO should it fails if different sponsor added reward before
 
-    //     // TODO rewardId association with the actual rewards // probably contract address holding the reward
-    //     emit RewardSetup(location, sponsor, rewardId);
-    // }
+        // TODO rewardId association with the actual rewards // probably contract address holding the reward
+        emit RewardSetup(location, sponsor, rewardId);
+    }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // EXIT / WITHDRAWALS
@@ -821,20 +821,6 @@ contract OuterSpace is Proxied {
                 // or the specific specify any common alliances (1)
 
                 (, uint96 joinTime) = allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
-
-                // -------------------------------------------------------------------------------------------------------------------------------------
-                // TODO remove  exception to fix bug for player 0xb006c644258e01b437eff06e16e56e938a239712 and its sending gifts
-                // -------------------------------------------------------------------------------------------------------------------------------------
-                if (
-                    fleetLaunchTime < 1640165416 &&
-                    joinTime == 0 &&
-                    sender == 0xB006c644258e01b437eFF06e16E56e938a239712 &&
-                    (toPlanet.owner == 0x9dab5A6393eEf78eB36cd84bB9Bbb055189429A5 || toPlanet.owner == 0xF8b109aF18cfA614Bef1C2899e522d77b3C64c14))
-                {
-                    joinTime = uint96(block.timestamp);
-                }
-                // -------------------------------------------------------------------------------------------------------------------------------------
-
                 return (joinTime > 0, joinTime > fleetLaunchTime);
             }
 
