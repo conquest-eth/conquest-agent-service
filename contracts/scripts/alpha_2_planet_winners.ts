@@ -5,10 +5,30 @@ import fs from 'fs';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import hre from 'hardhat';
 
+type Winner = {
+  address: string;
+  signedMessage?: string;
+  signature?: string;
+  numTokens: number;
+  numWCHI: number;
+  numDollars: number;
+  // introducer: string;
+  discordName?: string;
+};
+
+const args = process.argv.slice(2);
+const discord = args[0] === 'discord';
 
 const theGraph = new TheGraph(
   `https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`
 );
+
+let discordMembers: {[id: string]: string} = {}
+let claims: {given: string, address: string;}[] = [];
+if (discord) {
+  discordMembers = JSON.parse(fs.readFileSync('discord_members.json').toString());
+  claims = JSON.parse(fs.readFileSync('.claimKeys').toString());
+}
 
 const rewards = [
   {sponsor: 'pokt', planets: [
@@ -204,15 +224,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   }
 
 
-  let winnersArray: {
-    address: string;
-    signedMessage?: string;
-    signature?: string;
-    numTokens: number;
-    numWCHI: number;
-    numDollars: number;
-    introducer: string;
-  }[] = [];
+  let winnersArray: Winner[] = [];
   try {
     winnersArray = JSON.parse(await deployments.readDotFile('.alpha_2_winners.json'));
   } catch (e) {}
@@ -220,18 +232,37 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     const found = winnersArray.findIndex(
       (v) => v.address.toLowerCase() === winner
     );
+
+    let discordName = '';
+    if (discord) {
+      const claimFound = claims.find(v => v.address.toLowerCase() === winners[winner].introducer.toLowerCase());
+      if (claimFound) {
+        discordName = discordMembers[claimFound.given];
+      }
+    }
+
     if (found !== -1) {
       winnersArray[found].numWCHI = winners[winner].wchi;
       winnersArray[found].numDollars = winners[winner].dollars;
       winnersArray[found].numTokens = winners[winner].playtoken;
+      // winnersArray[found].introducer = winners[winner].introducer;
+      if (discord) {
+        winnersArray[found].discordName = discordName;
+      } else {
+        delete winnersArray[found].discordName
+      }
     } else {
-      winnersArray.push({
+      const obj: Winner = {
         address: winner,
         numWCHI: winners[winner].wchi,
         numDollars: winners[winner].dollars,
         numTokens: winners[winner].playtoken,
-        introducer: winners[winner].introducer
-      });
+        // introducer: winners[winner].introducer,
+      };
+      if (discord) {
+        obj.discordName = discordName;
+      }
+      winnersArray.push(obj);
     }
   }
 

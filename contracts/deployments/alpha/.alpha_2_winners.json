@@ -3,182 +3,156 @@
     "address": "0x41a7ce9d735815f333d9969de8225a6477afca17",
     "numWCHI": 350,
     "numDollars": 480,
-    "numTokens": 1000,
-    "introducer": "0xf80d6fb418e2a4db7cb37cbd1c6fe36efea161b9"
+    "numTokens": 1000
   },
   {
     "address": "0x5a016b206d0314c7ec641c3a6fd89dac7fea010e",
     "numWCHI": 425,
     "numDollars": 240,
-    "numTokens": 400,
-    "introducer": "0x41d4d8de03414440d34d80b142bfaf15551e376f"
+    "numTokens": 400
   },
   {
     "address": "0x9dab5a6393eef78eb36cd84bb9bbb055189429a5",
     "numWCHI": 350,
     "numDollars": 180,
-    "numTokens": 200,
-    "introducer": "0x86da52f13eea34892aba12e82d55f4676a9ae17b"
+    "numTokens": 200
   },
   {
     "address": "0xf8b109af18cfa614bef1c2899e522d77b3c64c14",
     "numWCHI": 75,
     "numDollars": 160,
-    "numTokens": 100,
-    "introducer": "0xdbf60c7a7616803adb1dbb7ea867fb371000a3a4"
+    "numTokens": 100
   },
   {
     "address": "0x201e7ebafbed52e974414c08a8d81b607572c9c4",
     "numWCHI": 50,
     "numDollars": 140,
-    "numTokens": 50,
-    "introducer": "0xbcb7a8a1f8ca5b990108771c05f33267f45329df"
+    "numTokens": 50
   },
   {
     "address": "0x220de48091afa321299940feb04e6ba31f292f46",
     "numWCHI": 50,
     "numDollars": 40,
-    "numTokens": 20,
-    "introducer": "0xcbc9ae6a90d73cfd4ca5868807fa5f28a3c85fd0"
+    "numTokens": 20
   },
   {
     "address": "0xbd81bbcfd4f700199dc9fd6ed93b1f7be3232703",
     "numWCHI": 50,
     "numDollars": 40,
-    "numTokens": 20,
-    "introducer": "0x5f5b89e19d6d6a58136cd54970123d52a3eb7996"
+    "numTokens": 20
   },
   {
     "address": "0x59822bfbdbb179ef2be0ca35c44d9cf58af964bd",
     "numWCHI": 50,
     "numDollars": 40,
-    "numTokens": 20,
-    "introducer": "0xf2c7572f16ee52047370324612cb2485d9aaee87"
+    "numTokens": 20
   },
   {
     "address": "0x12bc2dfbd6339746b553bb13e473ea561bd39152",
     "numWCHI": 50,
     "numDollars": 40,
-    "numTokens": 20,
-    "introducer": "0xfbf6bec4d2873c5db011402c7b4877afcebdb025"
+    "numTokens": 20
   },
   {
     "address": "0xfe3865dd730eabfe973b2d9035c4eefed3076a36",
     "numWCHI": 300,
     "numDollars": 40,
-    "numTokens": 20,
-    "introducer": "0xecdbce825d96ac90dbcafe583c6ec0fc58d7aea0"
+    "numTokens": 20
   },
   {
     "address": "0xee2536be571efb5c97472a1b9007b969225b32ed",
     "numWCHI": 0,
     "numDollars": 0,
-    "numTokens": 20,
-    "introducer": "0x8d1b12585f0eaf0f140e6ee2636f898806d96483"
+    "numTokens": 20
   },
   {
     "address": "0xd01a2311ca001241502394d25bc08b0ad8cd2229",
     "numWCHI": 0,
     "numDollars": 0,
-    "numTokens": 20,
-    "introducer": "0xae79318ef4cd8bdfcaa55846975759a5cb48df55"
+    "numTokens": 20
   },
   {
     "address": "0x31ad4033ed83c4f50556213be7e285ce9f99d582",
     "numWCHI": 0,
     "numDollars": 0,
-    "numTokens": 20,
-    "introducer": "0x90b66260152e84f236384b78c7b4b4249d3b262b"
+    "numTokens": 20
   },
   {
     "address": "0xb24156b92244c1541f916511e879e60710e30b84",
     "numWCHI": 0,
     "numDollars": 0,
-    "numTokens": 20,
-    "introducer": "0xd0393e68f307fe8b27840bc47bce506b2cbc86d2"
+    "numTokens": 20
   },
   {
     "address": "0x5cf7d200b2d82b151d59446d9380682ae6d1ef91",
     "numWCHI": 0,
     "numDollars": 0,
-    "numTokens": 20,
-    "introducer": "0x6b8e5637e729890de70c342979fb096305852088"
+    "numTokens": 20
   },
   {
     "address": "0x2d7420690fd7d5faae7b1c1b15b5bb408eefd833",
     "numWCHI": 0,
     "numDollars": 0,
-    "numTokens": 20,
-    "introducer": "0x8cd6c2a545c81bf06d18d140673700971f0acff2"
+    "numTokens": 20
   },
   {
     "address": "0x92edc7a4d9e755469fde61815dd229eef7882433",
     "numWCHI": 0,
     "numDollars": 0,
-    "numTokens": 20,
-    "introducer": "0xc34cc4009b2766a2e92b0d051d4236d5f424e3a5"
+    "numTokens": 20
   },
   {
     "address": "0x3b6319fd9be47d27b02a8d9d356c4a44732f5166",
     "numWCHI": 0,
     "numDollars": 0,
-    "numTokens": 10,
-    "introducer": "0x1b163067d005cf634d3d9522972a70f9ce3d398f"
+    "numTokens": 10
   },
   {
     "address": "0x3a769a347da646c3e9015e1a262e4daca49ec495",
     "numWCHI": 0,
     "numDollars": 100,
-    "numTokens": 0,
-    "introducer": "0x1aafe4f25024839048def20333bdc5cb287c1725"
+    "numTokens": 0
   },
   {
     "address": "0x2ccbddf610dace745f5952bd7262b1853f1c5573",
     "numWCHI": 0,
     "numDollars": 100,
-    "numTokens": 0,
-    "introducer": "0x0ebb54e91a88f1af4f564dce474ce7188d4e4b8d"
+    "numTokens": 0
   },
   {
     "address": "0x60d38778adbbeeac88f741b833cbb9877228eea0",
     "numWCHI": 250,
     "numDollars": 0,
-    "numTokens": 0,
-    "introducer": "0x0b543f11dc8a63406d151085a961e746f3960140"
+    "numTokens": 0
   },
   {
     "address": "0x38b6f537832cf117a7ac525889f85d41dc3382b0",
     "numWCHI": 250,
     "numDollars": 100,
-    "numTokens": 0,
-    "introducer": "0x48c7b1ba8e1b80dcb3a83453ad244a0c30797d22"
+    "numTokens": 0
   },
   {
     "address": "0x1ca049ccd785d1400944070c665b3c3132684373",
     "numWCHI": 250,
     "numDollars": 0,
-    "numTokens": 0,
-    "introducer": "0x7916eac18b31d3d521600d25143bbf3afa7babc5"
+    "numTokens": 0
   },
   {
     "address": "0x62e27386ad3b0dac1835b0d40f515ad590146e68",
     "numWCHI": 0,
     "numDollars": 100,
-    "numTokens": 0,
-    "introducer": "0x9d45c061505c2b5db9581ba36dbd637ddb6c582d"
+    "numTokens": 0
   },
   {
     "address": "0x5028481d95df5f6a58a604a6b99ea16fccf47bb7",
     "numWCHI": 0,
     "numDollars": 100,
-    "numTokens": 0,
-    "introducer": "0x18720dbc4729fe382bb465f21dc37d394b978d54"
+    "numTokens": 0
   },
   {
     "address": "0xfeff33456de40aa9ffc85b796cb731b91ea6eb04",
     "numWCHI": 0,
     "numDollars": 100,
-    "numTokens": 0,
-    "introducer": "0xb333f81dcaee41063cb1e6e8e91643ecf665f308"
+    "numTokens": 0
   }
 ]
