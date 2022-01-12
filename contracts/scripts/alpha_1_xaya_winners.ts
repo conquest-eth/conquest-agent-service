@@ -130,7 +130,7 @@ async function main() {
     numWCHI: number;
   }[] = [];
   try {
-    winnersArray = JSON.parse(fs.readFileSync('winners.json').toString());
+    winnersArray = JSON.parse(fs.readFileSync('alpha_1_winners.json').toString());
   } catch (e) {}
   for (const winner of Object.keys(winners)) {
     const found = winnersArray.findIndex(
@@ -145,7 +145,7 @@ async function main() {
       });
     }
   }
-  fs.writeFileSync('winners.json', JSON.stringify(winnersArray, null, 2));
+  fs.writeFileSync('alpha_1_winners.json', JSON.stringify(winnersArray, null, 2));
 }
 
 main();
