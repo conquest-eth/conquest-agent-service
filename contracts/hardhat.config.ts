@@ -141,6 +141,17 @@ const config: HardhatUserConfig = {
         l2_dev_seed,
       ], // alpha inclues both
     },
+    forfun: {
+      url: node_url('goerli'),
+      accounts: accounts('goerli'),
+      deploy: [
+        l1_pre_deploy_missing_contracts,
+        l1_deploy,
+        l1_dev_seed,
+        l2_deploy,
+        l2_dev_seed,
+      ], // forfun inclues both
+    },
     production: {
       url: node_url('mainnet'),
       accounts: accounts('mainnet'),
