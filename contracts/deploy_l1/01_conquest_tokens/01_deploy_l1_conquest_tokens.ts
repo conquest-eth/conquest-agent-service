@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   for (const network of ['goerli']) {
     await deploy(`ConquestToken_L1_${network}`, {
       from: deployer,
-      contract: 'GenericL1Token',
+      contract: 'GenericL1ERC20Token',
       args: [AddressZero, AddressZero], // TODO
       deterministicDeployment: true, // TODO clone
       log: true,

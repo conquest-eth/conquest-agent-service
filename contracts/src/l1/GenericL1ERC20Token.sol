@@ -8,7 +8,7 @@ import "../base/erc20/WithPermitAndFixedDomain.sol";
 
 
 // TODO bridging
-contract GenericL1Token is UsingERC20Base, WithPermitAndFixedDomain {
+contract GenericL1ERC20Token is UsingERC20Base, WithPermitAndFixedDomain {
     using Address for address;
 
     address immutable internal _gateway; // TODO proper bridging
