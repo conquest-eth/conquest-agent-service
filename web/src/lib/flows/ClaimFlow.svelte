@@ -4,7 +4,7 @@
   import Button from '$lib/components/generic/PanelButton.svelte';
   import {planets} from '$lib/space/planets';
   import {wallet} from '$lib/blockchain/wallet';
-  import {playTokenAccount} from '$lib/account/playToken';
+  import {tokenAccount} from '$lib/account/token';
   import {BigNumber} from '@ethersproject/bignumber';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import {timeToText} from '$lib/utils';
@@ -36,27 +36,27 @@
   <!---->
 {:else if $claimFlow.step === 'CHOOSE_STAKE' && $wallet.state == 'Ready'}
   <Modal on:close={() => claimFlow.cancel()}>
-    {#if $playTokenAccount.status === 'Idle'}
+    {#if $tokenAccount.status === 'Idle'}
       Please wait...
-    {:else if $playTokenAccount.status === 'WaitingContracts'}
+    {:else if $tokenAccount.status === 'WaitingContracts'}
       Please wait...
-    {:else if $playTokenAccount.status === 'Ready'}
-      {#if !$playTokenAccount.balance}
+    {:else if $tokenAccount.status === 'Ready'}
+      {#if !$tokenAccount.balance}
         Fetching Balance...
-      {:else if $playTokenAccount.balance.eq(0)}
+      {:else if $tokenAccount.balance.eq(0)}
         You do not have any
         <PlayCoin class="inline w-4" />. You need
         {cost.toString()}
         <PlayCoin class="inline w-4" />. If you have never got any token, please visit our
         <a href="https://discord.gg/Qb4gr2ekfr" class="underline" target="_blank" rel="noopener">discord</a> and talk to
         our bot "Etherplay Discord Bot"
-      {:else if $playTokenAccount.balance.lt(cost.mul('1000000000000000000'))}
+      {:else if $tokenAccount.balance.lt(cost.mul('1000000000000000000'))}
         Not enough
         <PlayCoin class="inline w-4" />. You need
         <span class="text-yellow-400">{cost.toString()}</span>
         <PlayCoin class="inline w-4" />
         but you have only
-        <span class="text-yellow-400">{$playTokenAccount.balance.div('1000000000000000000').toString()}</span>
+        <span class="text-yellow-400">{$tokenAccount.balance.div('1000000000000000000').toString()}</span>
       {:else}
         <div class="text-center">
           <h2>

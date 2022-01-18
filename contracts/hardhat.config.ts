@@ -16,13 +16,19 @@ if (process.env.HARDHAT_FORK) {
   process.env['HARDHAT_DEPLOY_FORK'] = process.env.HARDHAT_FORK;
 }
 
-const l1_pre_deploy_missing_contracts =
-  'deploy_l1/00_pre_deploy_missing_contracts';
-const l1_deploy = 'deploy_l1/01_deploy';
-const l1_dev_seed = 'deploy_l1/02_post_deploy_seed_dev';
-
-const l2_deploy = 'deploy_l2/01_deploy';
-const l2_dev_seed = 'deploy_l2/02_post_deploy_seed_dev';
+const l1_deployments: string[] = ['deploy_l1/01_conquest_tokens'];
+const l1_deployments_dev: string[] = [];
+const l2_deployments: string[] = [
+  'deploy_l2/01_conquest_token',
+  'deploy_l2/02_alliance_registry',
+  'deploy_l2/03_outerspace',
+];
+const l2_deployments_dev: string[] = [
+  'deploy_l2/04_setup',
+  'deploy_l2/10_agent_service',
+  'deploy_l2/20_basic_alliances',
+  'deploy_l2/30_spaceship_markets',
+];
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -53,13 +59,6 @@ const config: HardhatUserConfig = {
       1337: '0x3bfa2f0888E7d87f9bb044EAE82CEb62290337B4', // see ../agent-service/.env(.default)
       31337: '0x3bfa2f0888E7d87f9bb044EAE82CEb62290337B4',
     },
-    stableTokenBeneficiary: {
-      hardhat: 9,
-      1337: 9,
-      31337: 9,
-      4: 1,
-      5: 1,
-    },
     claimKeyDistributor: {
       hardhat: 0,
       1337: 0,
@@ -81,13 +80,11 @@ const config: HardhatUserConfig = {
               : undefined,
           }
         : undefined,
-      deploy: [
-        l1_pre_deploy_missing_contracts,
-        l1_deploy,
-        l1_dev_seed,
-        l2_deploy,
-        l2_dev_seed,
-      ],
+      deploy: l1_deployments.concat(
+        l1_deployments_dev,
+        l2_deployments,
+        l2_deployments_dev
+      ),
       mining: process.env.MINING_INTERVAL
         ? {
             auto: false,
@@ -100,67 +97,57 @@ const config: HardhatUserConfig = {
     localhost: {
       url: node_url('localhost'),
       accounts: accounts(),
-      deploy: [
-        l1_pre_deploy_missing_contracts,
-        l1_deploy,
-        l1_dev_seed,
-        l2_deploy,
-        l2_dev_seed,
-      ],
+      deploy: l1_deployments.concat(
+        l1_deployments_dev,
+        l2_deployments,
+        l2_deployments_dev
+      ),
     },
     dev: {
       url: node_url('goerli'),
       accounts: accounts('goerli'),
-      deploy: [
-        l1_pre_deploy_missing_contracts,
-        l1_deploy,
-        l1_dev_seed,
-        l2_deploy,
-        l2_dev_seed,
-      ], // testing inclues both
+      deploy: l1_deployments.concat(
+        l1_deployments_dev,
+        l2_deployments,
+        l2_deployments_dev
+      ),
     },
     quick: {
       url: node_url('goerli'),
       accounts: accounts('goerli'),
-      deploy: [
-        l1_pre_deploy_missing_contracts,
-        l1_deploy,
-        l1_dev_seed,
-        l2_deploy,
-        l2_dev_seed,
-      ], // quick inclues both
+      deploy: l1_deployments.concat(
+        l1_deployments_dev,
+        l2_deployments,
+        l2_deployments_dev
+      ),
     },
     alpha: {
       url: node_url('goerli'),
       accounts: accounts('goerli'),
-      deploy: [
-        l1_pre_deploy_missing_contracts,
-        l1_deploy,
-        l1_dev_seed,
-        l2_deploy,
-        l2_dev_seed,
-      ], // alpha inclues both
+      deploy: l1_deployments.concat(
+        l1_deployments_dev,
+        l2_deployments,
+        l2_deployments_dev
+      ),
     },
     forfun: {
       url: node_url('goerli'),
       accounts: accounts('goerli'),
-      deploy: [
-        l1_pre_deploy_missing_contracts,
-        l1_deploy,
-        l1_dev_seed,
-        l2_deploy,
-        l2_dev_seed,
-      ], // forfun inclues both
+      deploy: l1_deployments.concat(
+        l1_deployments_dev,
+        l2_deployments,
+        l2_deployments_dev
+      ),
     },
     production: {
       url: node_url('mainnet'),
       accounts: accounts('mainnet'),
-      deploy: [l1_deploy],
+      deploy: l1_deployments.concat(l1_deployments_dev),
     },
   },
   paths: {
     sources: 'src',
-    deploy: [l1_deploy],
+    deploy: ['deploy_l1'],
   },
   gasReporter: {
     currency: 'USD',
@@ -194,7 +181,7 @@ const config: HardhatUserConfig = {
   },
 
   tenderly: {
-    project: 'conquest-eth',
+    project: 'conquest-eth', // TODO parameterize with network name
     username: process.env.TENDERLY_USERNAME as string,
   },
 };

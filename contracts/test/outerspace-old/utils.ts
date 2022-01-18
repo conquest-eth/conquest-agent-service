@@ -37,7 +37,7 @@ export async function setupOuterSpace(): Promise<{
   players: User[];
   provider: Provider;
 }> {
-  const {stableTokenBeneficiary} = await getNamedAccounts();
+  const {claimKeyDistributor} = await getNamedAccounts();
   const players = await getUnnamedAccounts();
   await deployments.fixture();
 
@@ -46,8 +46,8 @@ export async function setupOuterSpace(): Promise<{
     const account = players[i];
     const amount = distribution[i];
     await deployments.execute(
-      'PlayToken_L2',
-      {from: stableTokenBeneficiary, log: true, autoMine: true},
+      'ConquestToken',
+      {from: claimKeyDistributor, log: true, autoMine: true},
       'transfer',
       account,
       parseEther(amount.toString())
@@ -58,7 +58,7 @@ export async function setupOuterSpace(): Promise<{
   for (const player of players) {
     const playerObj = await createPlayerAsContracts(player, [
       'OuterSpace',
-      'PlayToken_L2',
+      'ConquestToken',
     ]);
     playersAsContracts.push(playerObj);
   }

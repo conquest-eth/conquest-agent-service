@@ -69,11 +69,11 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       return;
     }
 
-    const playToken_l2 = wallet.chain.contracts.PlayToken_L2;
-    const balance = await playToken_l2.balanceOf(claimWallet.address);
+    const ConquestToken = wallet.chain.contracts.ConquestToken;
+    const balance = await ConquestToken.balanceOf(claimWallet.address);
 
     if (wallet.address) {
-      const touched = await playToken_l2.touched(wallet.address);
+      const touched = await ConquestToken.touched(wallet.address);
       if (touched) {
         this.setPartial({state: 'AlreadyClaimedAnother'});
         return;
@@ -97,16 +97,16 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
 
     const claimWallet = this.getClaimtWallet().connect(wallet.provider);
 
-    const playToken_l2 = wallet.chain.contracts.PlayToken_L2.connect(claimWallet);
+    const ConquestToken = wallet.chain.contracts.ConquestToken.connect(claimWallet);
     const ethBalance = await wallet.provider.getBalance(claimWallet.address);
-    const tokenBalance = await playToken_l2.balanceOf(claimWallet.address);
+    const tokenBalance = await ConquestToken.balanceOf(claimWallet.address);
     if (tokenBalance.eq(0)) {
       // TODO
     }
 
     const nonce = await wallet.provider.getTransactionCount(claimWallet.address, 'latest');
 
-    const estimate = await playToken_l2.estimateGas.transferAlongWithETH(wallet.address, tokenBalance, {
+    const estimate = await ConquestToken.estimateGas.transferAlongWithETH(wallet.address, tokenBalance, {
       value: 1,
       nonce,
     });
@@ -128,7 +128,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
         provider = new JsonRpcProvider(url);
       }
       const claimWallet_forPortisBug = this.getClaimtWallet().connect(provider);
-      const playToken_l2_forPortisBug = wallet.chain.contracts.PlayToken_L2.connect(claimWallet_forPortisBug);
+      const ConquestToken_forPortisBug = wallet.chain.contracts.ConquestToken.connect(claimWallet_forPortisBug);
 
       const gasPrice = (await wallet.provider.getGasPrice()).mul(2); // TODO ?
 
@@ -137,7 +137,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
 
       let tx;
       try {
-        tx = await playToken_l2_forPortisBug.transferAlongWithETH(wallet.address, tokenBalance, {
+        tx = await ConquestToken_forPortisBug.transferAlongWithETH(wallet.address, tokenBalance, {
           value: ethLeft.toString(),
           nonce,
           gasPrice,
@@ -168,7 +168,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
 
       let tx;
       try {
-        tx = await playToken_l2.transferAlongWithETH(wallet.address, tokenBalance, {
+        tx = await ConquestToken.transferAlongWithETH(wallet.address, tokenBalance, {
           value: ethLeft.toString(),
           nonce,
           maxFeePerGas: gasPrice, // TODO won't sweep it all
@@ -213,7 +213,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
   //     });
   //     try {
   //       await this.fetchFor(this.$store.account, (address) =>
-  //         this.wallet.contracts.PlayToken_L2.balanceOf(address).then((b) => ({
+  //         this.wallet.contracts.ConquestToken.balanceOf(address).then((b) => ({
   //           balance: b,
   //         }))
   //       );
@@ -224,7 +224,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
   //     }
   //     try {
   //       await this.fetchFor(this.$store.account, (address) =>
-  //         this.wallet.contracts.PlayToken_L2.allowance(
+  //         this.wallet.contracts.ConquestToken.allowance(
   //           address,
   //           this.wallet.contracts.OuterSpace.address
   //         ).then((v) => ({allowanceForOuterSpace: v}))

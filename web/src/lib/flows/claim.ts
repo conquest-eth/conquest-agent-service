@@ -65,7 +65,7 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
 
       let tx;
       try {
-        tx = await wallet.contracts?.PlayToken_L2.transferAndCall(
+        tx = await wallet.contracts?.ConquestToken.transferAndCall(
           wallet.contracts?.OuterSpace.address,
           BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'),
           defaultAbiCoder.encode(

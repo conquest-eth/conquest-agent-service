@@ -8,7 +8,7 @@ import {
   ethers,
 } from 'hardhat';
 import {SpaceInfo} from 'conquest-eth-common';
-import {OuterSpace, PlayL2} from '../typechain';
+import {OuterSpace, ConquestToken} from '../typechain';
 import {setupUsers} from '../utils';
 
 async function main() {
@@ -17,7 +17,7 @@ async function main() {
 
   const contracts = {
     OuterSpace: <OuterSpace>await ethers.getContract('OuterSpace'),
-    PlayToken_L2: <PlayL2>await ethers.getContract('PlayToken_L2'),
+    ConquestToken: <ConquestToken>await ethers.getContract('ConquestToken'),
   };
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
   const players = await setupUsers(unNamedAccounts, contracts);
@@ -39,7 +39,7 @@ async function main() {
     }
     const player = deployer; // players[i % 4].address;
     await deployments.execute(
-      'PlayToken_L2',
+      'ConquestToken',
       {from: player, log: true, autoMine: true},
       'transferAndCall',
       outerSpaceContract.address,

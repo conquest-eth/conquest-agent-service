@@ -26,7 +26,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
 
   // console.log({amounts: amounts.map((v) => v.toString()), addresses, etherAmount: etherAmount.toString()});
   await execute(
-    'PlayToken_L2',
+    'ConquestToken',
     {from: claimKeyDistributor, value: etherAmount, log: true, autoMine: true},
     'distributeVariousAmountsAlongWithETH',
     addresses,

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-1.0
 pragma solidity 0.8.9;
 
-import "../OuterSpace.sol";
+import "../outerspace/OuterSpace.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract Agent {

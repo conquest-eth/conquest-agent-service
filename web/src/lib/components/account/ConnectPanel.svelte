@@ -2,7 +2,7 @@
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {wallet} from '$lib/blockchain/wallet';
-  import {playTokenAccount} from '$lib/account/playToken';
+  import {tokenAccount} from '$lib/account/token';
   import {privateWallet} from '$lib/account/privateWallet';
   import Blockie from '$lib/components/account/Blockie.svelte';
   import Help from '$lib/components/utils/Help.svelte';
@@ -45,8 +45,8 @@
   <div on:click={(e) => e.stopPropagation()} class="absolute right-0 bg-gray-900 bg-opacity-80 z-10">
     <div class="flex items-center">
       <span class="text-yellow-300 font-black pr-4">
-        {#if $playTokenAccount.balance}
-          {'' + $playTokenAccount.balance.div('10000000000000000').toNumber() / 100 + ''}
+        {#if $tokenAccount.balance}
+          {'' + $tokenAccount.balance.div('10000000000000000').toNumber() / 100 + ''}
           <PlayCoin class="inline w-4" />
         {:else}
           ...

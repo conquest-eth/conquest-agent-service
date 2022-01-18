@@ -10,7 +10,7 @@ import {defaultAbiCoder} from '@ethersproject/abi';
 import {User} from '../../utils';
 import {OuterSpace} from '../../typechain';
 
-export type Player = User<{PlayToken_L2: Contract; OuterSpace: Contract}>;
+export type Player = User<{ConquestToken: Contract; OuterSpace: Contract}>;
 
 export async function sendInSecret(
   spaceInfo: SpaceInfo,
@@ -117,7 +117,7 @@ export function acquire(
 ): Promise<ContractReceipt> {
   const amount = BigNumber.from(planet.stats.stake).mul('1000000000000000000');
   return waitFor(
-    player.PlayToken_L2.transferAndCall(
+    player.ConquestToken.transferAndCall(
       player.OuterSpace.address,
       amount,
       defaultAbiCoder.encode(

@@ -49,13 +49,13 @@
             {player.total}
             <PlayCoin class="w-4 h-4 inline" />
             in control, including
-            {player.playTokenBalance}
+            {player.tokenBalance}
             <PlayCoin class="w-4 h-4 inline" />
             left to spend and
-            {player.playTokenToWithdraw}
+            {player.tokenToWithdraw}
             <PlayCoin class="w-4 h-4 inline" />
             to withdraw (was given
-            {player.playTokenGiven}
+            {player.tokenGiven}
             <PlayCoin class="w-4 h-4 inline" />)
           </li>
         {/each}
@@ -65,7 +65,7 @@
       <hr class="my-4" />
       <ul>
         {#each $highscores.data.slice(18) as player, index}
-          <li class={player.total == player.playTokenToWithdraw + player.playTokenBalance ? 'text-gray-500' : ''}>
+          <li class={player.total == player.tokenToWithdraw + player.tokenBalance ? 'text-gray-500' : ''}>
             <span class="w-10 inline-block">{index + 19}:</span>
             <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={player.id} />
             <div class="w-6 h-6 text-xs mr-4 inline-block" style={`white-space: nowrap;overflow: hidden;`}>
@@ -76,13 +76,13 @@
             {player.total}
             <PlayCoin class="w-4 h-4 inline" />
             in control, including
-            {player.playTokenBalance}
+            {player.tokenBalance}
             <PlayCoin class="w-4 h-4 inline" />
             left to spend and
-            {player.playTokenToWithdraw}
+            {player.tokenToWithdraw}
             <PlayCoin class="w-4 h-4 inline" />
             to withdraw (was given
-            {player.playTokenGiven}
+            {player.tokenGiven}
             <PlayCoin class="w-4 h-4 inline" />)
           </li>
         {/each}

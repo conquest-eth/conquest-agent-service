@@ -9,7 +9,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const players: {
     id: string;
     introducer: {id: string};
-    playTokenGiven: string;
+    tokenGiven: string;
   }[] = JSON.parse(await deployments.readDotFile('.players.json'));
   console.log({numPlayers: players.length});
 

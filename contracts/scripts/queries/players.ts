@@ -18,7 +18,7 @@ query($first: Int! $lastId: ID!) {
     }) {
       id
       introducer { id }
-      playTokenGiven
+      tokenGiven
     }
 }
 `;

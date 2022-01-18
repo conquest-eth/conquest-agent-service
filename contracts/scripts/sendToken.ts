@@ -19,7 +19,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     throw new Error(`amount not divisble per number of addresses`);
   }
   await execute(
-    'PlayToken_L2',
+    'ConquestToken',
     {from: claimKeyDistributor, value: '0', log: true, autoMine: true},
     'distributeAlongWithETH',
     addresses,

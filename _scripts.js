@@ -109,6 +109,8 @@ async function performAction(rawArgs) {
     await execute(
       `${env}npm --prefix contracts run deploy ${network} -- --export ../web/src/lib/contracts.json ${extra.join(' ')}`
     );
+  } else if (firstArg === 'contracts:void:deploy') {
+    await execute(`dotenv -e .env -e contracts/.env -- npm --prefix contracts run void:deploy`);
   } else if (firstArg === 'contracts:fork:deploy') {
     const {fixedArgs, extra} = parseArgs(args, 1, {});
     const network = fixedArgs[0] || 'localhost';

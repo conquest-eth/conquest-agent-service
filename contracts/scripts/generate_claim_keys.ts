@@ -84,7 +84,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     claimKeyDistributor
   );
   const claimKeyDistributorTokenBalance = await read(
-    'PlayToken_L2',
+    'ConquestToken',
     'balanceOf',
     claimKeyDistributor
   );
@@ -98,7 +98,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     totalTokenAmount: totalTokenAmount.toString(),
   });
   const receipt = await execute(
-    'PlayToken_L2',
+    'ConquestToken',
     {
       from: claimKeyDistributor,
       value: totalETHAmount.toString(),

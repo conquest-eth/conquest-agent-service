@@ -12,9 +12,9 @@ type QueryPlayer = {
   totalStaked: string;
   currentStake: string;
   totalCollected: string;
-  playTokenBalance: string;
-  playTokenToWithdraw: string;
-  playTokenGiven: string;
+  tokenBalance: string;
+  tokenToWithdraw: string;
+  tokenGiven: string;
   stake_gas: string;
   stake_num: string;
   sending_gas: string;
@@ -52,9 +52,9 @@ query($first: Int! $lastId: ID!) {
     totalStaked
     currentStake
     totalCollected
-    playTokenBalance
-    playTokenToWithdraw
-    playTokenGiven
+    tokenBalance
+    tokenToWithdraw
+    tokenGiven
     stake_gas
     stake_num
     sending_gas
@@ -90,9 +90,9 @@ async function main() {
   //   const winners = result.owners
   //     .map((p) => {
   //       const currentStake = BigNumber.from(p.currentStake);
-  //       const playTokenToWithdraw = BigNumber.from(p.playTokenToWithdraw);
-  //       const playTokenBalance = BigNumber.from(p.playTokenBalance);
-  //       const playTokenGiven = BigNumber.from(p.playTokenGiven);
+  //       const tokenToWithdraw = BigNumber.from(p.tokenToWithdraw);
+  //       const tokenBalance = BigNumber.from(p.tokenBalance);
+  //       const tokenGiven = BigNumber.from(p.tokenGiven);
 
   //       if (BigNumber.from(p.totalStaked).eq(0)) {
   //         return {
@@ -100,28 +100,28 @@ async function main() {
   //           total: 0,
   //           score: 0,
   //           currentStake: currentStake.div(DECIMALS_18).toNumber(),
-  //           playTokenToWithdraw: playTokenToWithdraw
+  //           tokenToWithdraw: tokenToWithdraw
   //             .div(DECIMALS_18)
   //             .toNumber(),
-  //           playTokenBalance: playTokenBalance.div(DECIMALS_18).toNumber(),
-  //           playTokenGiven: playTokenGiven.div(DECIMALS_18).toNumber(),
+  //           tokenBalance: tokenBalance.div(DECIMALS_18).toNumber(),
+  //           tokenGiven: tokenGiven.div(DECIMALS_18).toNumber(),
   //         };
   //       }
   //       const total = currentStake
-  //         .add(playTokenToWithdraw)
-  //         .add(playTokenBalance);
+  //         .add(tokenToWithdraw)
+  //         .add(tokenBalance);
   //       return {
   //         id: p.id,
   //         total: total.div(DECIMALS_18).toNumber(),
   //         score: total
-  //           .sub(playTokenGiven)
+  //           .sub(tokenGiven)
   //           .mul(1000000)
-  //           .div(playTokenGiven)
+  //           .div(tokenGiven)
   //           .toNumber(),
   //         currentStake: currentStake.div(DECIMALS_18).toNumber(),
-  //         playTokenToWithdraw: playTokenToWithdraw.div(DECIMALS_18).toNumber(),
-  //         playTokenBalance: playTokenBalance.div(DECIMALS_18).toNumber(),
-  //         playTokenGiven: playTokenGiven.div(DECIMALS_18).toNumber(),
+  //         tokenToWithdraw: tokenToWithdraw.div(DECIMALS_18).toNumber(),
+  //         tokenBalance: tokenBalance.div(DECIMALS_18).toNumber(),
+  //         tokenGiven: tokenGiven.div(DECIMALS_18).toNumber(),
   //       };
   //     })
   //     .sort((a, b) => b.score - a.score);

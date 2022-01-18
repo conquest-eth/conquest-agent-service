@@ -10,13 +10,13 @@ import {
   AllianceRegistry,
   BasicAlliance,
   OuterSpace,
-  PlayL2,
+  ConquestToken,
 } from '../../typechain';
 import {setupUsers} from '../../utils';
 
 export const setup = deployments.createFixture(async () => {
   await deployments.fixture(); // TODO only OuterSpace
-  const {stableTokenBeneficiary} = await getNamedAccounts();
+  const {claimKeyDistributor} = await getNamedAccounts();
   const unNamedAccounts = await getUnnamedAccounts();
 
   const distribution = [1000, 500, 3000, 100];
@@ -24,8 +24,8 @@ export const setup = deployments.createFixture(async () => {
     const account = unNamedAccounts[i];
     const amount = distribution[i];
     await deployments.execute(
-      'PlayToken_L2',
-      {from: stableTokenBeneficiary, log: true, autoMine: true},
+      'ConquestToken',
+      {from: claimKeyDistributor, log: true, autoMine: true},
       'transfer',
       account,
       parseEther(amount.toString())
@@ -40,7 +40,7 @@ export const setup = deployments.createFixture(async () => {
       await ethers.getContract('AllianceRegistry')
     ),
     OuterSpace: <OuterSpace>await ethers.getContract('OuterSpace'),
-    PlayToken_L2: <PlayL2>await ethers.getContract('PlayToken_L2'),
+    ConquestToken: <ConquestToken>await ethers.getContract('ConquestToken'),
   };
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
   const players = await setupUsers(unNamedAccounts, contracts);

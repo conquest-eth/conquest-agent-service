@@ -8,17 +8,17 @@ import {
   ethers,
 } from 'hardhat';
 import {SpaceInfo} from 'conquest-eth-common';
-import {OuterSpace, PlayL2} from '../typechain';
+import {OuterSpace, ConquestToken} from '../typechain';
 import {setupUsers} from '../utils';
 import {hexZeroPad} from '@ethersproject/bytes';
 
 async function main() {
-  const {stableTokenBeneficiary} = await getNamedAccounts();
+  const {claimKeyDistributor} = await getNamedAccounts();
   const unNamedAccounts = await getUnnamedAccounts();
 
   const contracts = {
     OuterSpace: <OuterSpace>await ethers.getContract('OuterSpace'),
-    PlayToken_L2: <PlayL2>await ethers.getContract('PlayToken_L2'),
+    ConquestToken: <ConquestToken>await ethers.getContract('ConquestToken'),
   };
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
   const players = await setupUsers(unNamedAccounts, contracts);
@@ -28,8 +28,8 @@ async function main() {
     const account = players[i].address;
     const amount = distribution[i];
     await deployments.execute(
-      'PlayToken_L2',
-      {from: stableTokenBeneficiary, log: true, autoMine: true},
+      'ConquestToken',
+      {from: claimKeyDistributor, log: true, autoMine: true},
       'transfer',
       account,
       parseEther(amount.toString())
@@ -43,7 +43,7 @@ async function main() {
     const outerSpaceContract = await deployments.get('OuterSpace');
     planetPointer = spaceInfo.findNextPlanet(planetPointer);
     await deployments.execute(
-      'PlayToken_L2',
+      'ConquestToken',
       {from: players[i].address, log: true, autoMine: true},
       'transferAndCall',
       outerSpaceContract.address,

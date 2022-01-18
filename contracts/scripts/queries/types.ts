@@ -11,9 +11,9 @@ export type PlayerData = {
   totalStaked: string;
   currentStake: string;
   totalCollected: string;
-  playTokenBalance: string;
-  playTokenToWithdraw: string;
-  playTokenGiven: string;
+  tokenBalance: string;
+  tokenToWithdraw: string;
+  tokenGiven: string;
   introducer: {id: string};
   stake_gas: string;
   stake_num: string;
@@ -49,9 +49,9 @@ export type PlayerStats = {
   totalStaked: number;
   currentStake: number;
   totalCollected: number;
-  playTokenBalance: number;
-  playTokenToWithdraw: number;
-  playTokenGiven: number;
+  tokenBalance: number;
+  tokenToWithdraw: number;
+  tokenGiven: number;
   introducer: {id: string};
   stake_gas: number;
   stake_num: number;

@@ -8,9 +8,9 @@ type Highscore = {
   total: number;
   score: number;
   currentStake: number;
-  playTokenToWithdraw: number;
-  playTokenBalance: number;
-  playTokenGiven: number;
+  tokenToWithdraw: number;
+  tokenBalance: number;
+  tokenGiven: number;
 };
 
 export type Highscores = {
@@ -22,9 +22,9 @@ export type Highscores = {
 type QueryOwner = {
   id: string;
   currentStake: string;
-  playTokenToWithdraw: string;
-  playTokenBalance: string;
-  playTokenGiven: string;
+  tokenToWithdraw: string;
+  tokenBalance: string;
+  tokenGiven: string;
 };
 
 const DECIMALS_18 = BigNumber.from('1000000000000000000');
@@ -37,21 +37,21 @@ class HighscoresStore extends BaseStoreWithData<Highscores, Highscore[]> {
     });
   }
   // introducer_not: "0x9a3b0d0b08fb71f1a5e0f248ad3a42c341f7837c"
-  // playTokenGiven_lt: "2000000000000000000000"
+  // tokenGiven_lt: "2000000000000000000000"
   async fetch() {
     const query = `
 query($first: Int! $lastId: ID!) {
   owners(first: $first block: {number: 6074693} where: {
     totalStaked_gt: 0
-    playTokenGiven_gt: 0
+    tokenGiven_gt: 0
     id_gt: $lastId
     id_not_in: ["0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20", "0xe53cd71271acadbeb0f64d9c8c62bbddc8ca9e66"]
   }) {
     id
     currentStake
-    playTokenToWithdraw
-    playTokenBalance
-    playTokenGiven
+    tokenToWithdraw
+    tokenBalance
+    tokenGiven
   }
 }
 `;
@@ -73,18 +73,18 @@ query($first: Int! $lastId: ID!) {
       const highscores = highscoreQueryResult
         .map((p) => {
           const currentStake = BigNumber.from(p.currentStake);
-          const playTokenToWithdraw = BigNumber.from(p.playTokenToWithdraw);
-          const playTokenBalance = BigNumber.from(p.playTokenBalance);
-          const playTokenGiven = BigNumber.from(p.playTokenGiven);
-          const total = currentStake.add(playTokenToWithdraw).add(playTokenBalance);
+          const tokenToWithdraw = BigNumber.from(p.tokenToWithdraw);
+          const tokenBalance = BigNumber.from(p.tokenBalance);
+          const tokenGiven = BigNumber.from(p.tokenGiven);
+          const total = currentStake.add(tokenToWithdraw).add(tokenBalance);
           return {
             id: p.id,
             total: total.div(DECIMALS_18).toNumber(),
-            score: total.sub(playTokenGiven).mul(1000000).div(playTokenGiven).add(1000000).toNumber(),
+            score: total.sub(tokenGiven).mul(1000000).div(tokenGiven).add(1000000).toNumber(),
             currentStake: currentStake.div(DECIMALS_18).toNumber(),
-            playTokenToWithdraw: playTokenToWithdraw.div(DECIMALS_18).toNumber(),
-            playTokenBalance: playTokenBalance.div(DECIMALS_18).toNumber(),
-            playTokenGiven: playTokenGiven.div(DECIMALS_18).toNumber(),
+            tokenToWithdraw: tokenToWithdraw.div(DECIMALS_18).toNumber(),
+            tokenBalance: tokenBalance.div(DECIMALS_18).toNumber(),
+            tokenGiven: tokenGiven.div(DECIMALS_18).toNumber(),
           };
         })
         .sort((a, b) => b.score - a.score);

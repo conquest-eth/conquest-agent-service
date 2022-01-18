@@ -21,7 +21,7 @@ describe('OuterSpace Basic', function () {
       '1000000000000000000'
     );
     await waitFor(
-      players[0].PlayToken_L2.transferAndCall(
+      players[0].ConquestToken.transferAndCall(
         outerSpaceContract.address,
         amount,
         defaultAbiCoder.encode(
@@ -39,7 +39,7 @@ describe('OuterSpace Basic', function () {
       '1000000000000000000'
     );
     await waitFor(
-      players[0].PlayToken_L2.transferAndCall(
+      players[0].ConquestToken.transferAndCall(
         outerSpaceContract.address,
         amount,
         defaultAbiCoder.encode(
@@ -49,7 +49,7 @@ describe('OuterSpace Basic', function () {
       )
     );
     await expectRevert(
-      players[1].PlayToken_L2.transferAndCall(
+      players[1].ConquestToken.transferAndCall(
         outerSpaceContract.address,
         amount,
         defaultAbiCoder.encode(
@@ -74,7 +74,7 @@ describe('OuterSpace Basic', function () {
       '1000000000000000000'
     );
     await waitFor(
-      players[0].PlayToken_L2.transferAndCall(
+      players[0].ConquestToken.transferAndCall(
         outerSpaceContract.address,
         amount0,
         defaultAbiCoder.encode(
@@ -87,7 +87,7 @@ describe('OuterSpace Basic', function () {
       '1000000000000000000'
     );
     await waitFor(
-      players[1].PlayToken_L2.transferAndCall(
+      players[1].ConquestToken.transferAndCall(
         outerSpaceContract.address,
         amount1,
         defaultAbiCoder.encode(
@@ -147,7 +147,7 @@ describe('OuterSpace Basic', function () {
       '1000000000000000000'
     );
     await waitFor(
-      players[0].PlayToken_L2.transferAndCall(
+      players[0].ConquestToken.transferAndCall(
         outerSpaceContract.address,
         amount,
         defaultAbiCoder.encode(

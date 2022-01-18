@@ -9,7 +9,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const keys = JSON.parse(fs.readFileSync('./.alpha.claimKeys').toString());
 
   for (const key of keys) {
-    const amount = await read('PlayToken_L2', 'balanceOf', key.address);
+    const amount = await read('ConquestToken', 'balanceOf', key.address);
     if (!amount.eq(BigNumber.from(key.amount).mul('1000000000000000000'))) {
       console.log({address: key.address});
     }

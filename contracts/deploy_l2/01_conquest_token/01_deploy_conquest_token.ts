@@ -1,0 +1,18 @@
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
+import {DeployFunction} from 'hardhat-deploy/types';
+
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  const {deployer} = await hre.getNamedAccounts();
+  const {deploy} = hre.deployments;
+
+  await deploy('ConquestToken', {
+    from: deployer,
+    contract: 'ConquestToken',
+    args: [deployer], // TODO
+    proxy: hre.network.name !== 'mainnet' ? 'postUpgrade' : undefined, // TODO l2 network mainnet
+    log: true,
+    autoMine: true,
+  });
+};
+export default func;
+func.tags = ['ConquestToken', 'ConquestToken_deploy'];

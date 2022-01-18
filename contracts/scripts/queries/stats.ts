@@ -66,9 +66,9 @@ query($first: Int! $lastId: ID! $blockNumber: Int!) {
       totalStaked
       currentStake
       totalCollected
-      playTokenBalance
-      playTokenToWithdraw
-      playTokenGiven
+      tokenBalance
+      tokenToWithdraw
+      tokenGiven
       introducer { id }
       stake_gas
       stake_num

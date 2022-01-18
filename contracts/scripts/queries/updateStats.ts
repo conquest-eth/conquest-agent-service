@@ -32,12 +32,10 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
         }
 
         const currentStake = BigNumber.from(p.currentStake);
-        const playTokenToWithdraw = BigNumber.from(p.playTokenToWithdraw);
-        const playTokenBalance = BigNumber.from(p.playTokenBalance);
-        const playTokenGiven = BigNumber.from(p.playTokenGiven);
-        const total = currentStake
-          .add(playTokenToWithdraw)
-          .add(playTokenBalance);
+        const tokenToWithdraw = BigNumber.from(p.tokenToWithdraw);
+        const tokenBalance = BigNumber.from(p.tokenBalance);
+        const tokenGiven = BigNumber.from(p.tokenGiven);
+        const total = currentStake.add(tokenToWithdraw).add(tokenBalance);
 
         const totalStaked = BigNumber.from(p.totalStaked);
         const totalCollected = BigNumber.from(p.totalCollected);
@@ -89,9 +87,9 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           total: total.div(DECIMALS_18).toNumber(),
           score: Math.floor(
             total
-              .sub(playTokenGiven)
+              .sub(tokenGiven)
               .mul(1000000)
-              .div(playTokenGiven)
+              .div(tokenGiven)
               .add(1000000)
               .toNumber() / 100
           ),
@@ -100,9 +98,9 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           totalStaked: totalStaked.div(DECIMALS_18).toNumber(),
           currentStake: currentStake.div(DECIMALS_18).toNumber(),
           totalCollected: totalCollected.div(DECIMALS_18).toNumber(),
-          playTokenToWithdraw: playTokenToWithdraw.div(DECIMALS_18).toNumber(),
-          playTokenBalance: playTokenBalance.div(DECIMALS_18).toNumber(),
-          playTokenGiven: playTokenGiven.div(DECIMALS_18).toNumber(),
+          tokenToWithdraw: tokenToWithdraw.div(DECIMALS_18).toNumber(),
+          tokenBalance: tokenBalance.div(DECIMALS_18).toNumber(),
+          tokenGiven: tokenGiven.div(DECIMALS_18).toNumber(),
           introducer: p.introducer,
           stake_gas,
           stake_num,
@@ -182,9 +180,9 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           totalStaked: 0,
           currentStake: 0,
           totalCollected: 0,
-          playTokenBalance: 0,
-          playTokenGiven: 0,
-          playTokenToWithdraw: 0,
+          tokenBalance: 0,
+          tokenGiven: 0,
+          tokenToWithdraw: 0,
           introducer: {id: '0x0000000000000000000000000000000000000000'},
           stake_gas: 0,
           stake_num: 0,

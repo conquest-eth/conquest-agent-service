@@ -21,8 +21,8 @@ export type PlanetExitEvent = {
 export type ExitsQueryResult = {
   planetExitEvents: PlanetExitEvent[];
   owner: {
-    playTokenBalance: string;
-    playTokenToWithdraw: string;
+    tokenBalance: string;
+    tokenToWithdraw: string;
   };
 };
 
@@ -50,8 +50,8 @@ export class ExitQueryStore implements QueryStore<ExitsState> {
     stake
   }
   owner(id: $owner) {
-    playTokenBalance
-    playTokenToWithdraw
+    tokenBalance
+    tokenToWithdraw
   }
 }`,
       chainTempo, // replayTempo, //
@@ -157,7 +157,7 @@ export class ExitQueryStore implements QueryStore<ExitsState> {
     return {
       loading: false,
       exits: data.planetExitEvents,
-      balanceToWithdraw: data.owner ? BigNumber.from(data.owner.playTokenToWithdraw) : BigNumber.from(0),
+      balanceToWithdraw: data.owner ? BigNumber.from(data.owner.tokenToWithdraw) : BigNumber.from(0),
     };
   }
 

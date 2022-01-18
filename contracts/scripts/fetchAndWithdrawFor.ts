@@ -9,7 +9,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const owner = '0x1e61cf58e9f9b273a3e13ddec1a4b4c34bae5a8b';
 
   console.log({
-    balance: formatEther(await read('PlayToken_L2', 'balanceOf', owner)),
+    balance: formatEther(await read('ConquestToken', 'balanceOf', owner)),
   });
 
   await catchUnknownSigner(
@@ -23,7 +23,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   );
 
   console.log({
-    balance: formatEther(await read('PlayToken_L2', 'balanceOf', owner)),
+    balance: formatEther(await read('ConquestToken', 'balanceOf', owner)),
   });
 }
 if (require.main === module) {
