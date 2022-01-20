@@ -8,7 +8,7 @@ import {
   ethers,
 } from 'hardhat';
 import {SpaceInfo} from 'conquest-eth-common';
-import {OuterSpace, ConquestToken} from '../typechain';
+import {ConquestToken} from '../typechain';
 import {setupUsers} from '../utils';
 
 async function main() {
@@ -16,7 +16,7 @@ async function main() {
   const unNamedAccounts = await getUnnamedAccounts();
 
   const contracts = {
-    OuterSpace: <OuterSpace>await ethers.getContract('OuterSpace'),
+    OuterSpace: await ethers.getContract('OuterSpace'),
     ConquestToken: <ConquestToken>await ethers.getContract('ConquestToken'),
   };
   const OuterSpaceDeployment = await deployments.get('OuterSpace');

@@ -1,12 +1,11 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import hre from 'hardhat';
-import {OuterSpace} from '../typechain';
 import {SpaceInfo, xyToLocation} from 'conquest-eth-common';
 import fs from 'fs';
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {ethers, deployments} = hre;
-  const OuterSpace = <OuterSpace>await ethers.getContract('OuterSpace');
+  const OuterSpace = await ethers.getContract('OuterSpace');
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
   const spaceInfo = new SpaceInfo(OuterSpaceDeployment.linkedData);
 

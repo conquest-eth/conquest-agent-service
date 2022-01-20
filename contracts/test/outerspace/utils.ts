@@ -8,7 +8,6 @@ import type {PlanetInfo} from 'conquest-eth-common/';
 import {Contract, ContractReceipt} from '@ethersproject/contracts';
 import {defaultAbiCoder} from '@ethersproject/abi';
 import {User} from '../../utils';
-import {OuterSpace} from '../../typechain';
 
 export type Player = User<{ConquestToken: Contract; OuterSpace: Contract}>;
 
@@ -72,7 +71,7 @@ type PlanetState = PlanetInfo & {
 };
 
 export async function fetchPlanetState(
-  contract: OuterSpace,
+  contract: Contract,
   planet: PlanetInfo
 ): Promise<PlanetState> {
   const planetData = await contract.callStatic.getPlanet(planet.location.id);

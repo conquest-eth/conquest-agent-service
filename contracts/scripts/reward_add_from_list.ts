@@ -1,6 +1,5 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import hre from 'hardhat';
-import {OuterSpace} from '../typechain';
 import {locationToXY} from 'conquest-eth-common';
 
 const args = process.argv.slice(2);
@@ -42,7 +41,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     //   throw new Error(`no giverAddress`);
     // }
 
-    const OuterSpace = <OuterSpace>await hre.ethers.getContract('OuterSpace');
+    const OuterSpace = await hre.ethers.getContract('OuterSpace');
     const state = await OuterSpace.callStatic.getPlanet(planet.location);
 
     const {x, y} = locationToXY(planet.location);

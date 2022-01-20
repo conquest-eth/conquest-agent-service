@@ -1,39 +1,26 @@
 // SPDX-License-Identifier: AGPL-1.0
 
 pragma solidity 0.8.9;
-pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../libraries/Extraction.sol";
-import "../libraries/Math.sol";
-import "hardhat-deploy/solc_0.8/proxy/Proxied.sol";
-import "../interfaces/IAlliance.sol";
-import "../alliances/AllianceRegistry.sol";
+import "../base/ImportingOuterSpaceTypes.sol";
+import "../base/ImportingOuterSpaceConstants.sol";
+import "../base/ImportingOuterSpaceEvents.sol";
+import "../base/UsingOuterSpaceDataLayout.sol";
 
-contract OuterSpace is Proxied {
+
+import "../../libraries/Extraction.sol";
+import "../../libraries/Math.sol";
+
+import "../../interfaces/IAlliance.sol";
+import "../../alliances/AllianceRegistry.sol";
+
+contract OuterSpaceOriginalFacet is ImportingOuterSpaceTypes, ImportingOuterSpaceConstants, ImportingOuterSpaceEvents, UsingOuterSpaceDataLayout {
     using Extraction for bytes32;
 
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // CONSTANTS
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    uint256 internal constant DECIMALS_18 = 1e18;
-    uint32 internal constant ACTIVE_MASK = 2**31;
-    int256 internal constant UINT32_MAX = 2**32 - 1;
-
-    int256 internal constant EXPANSION = 8;
-    uint32 internal constant INITIAL_SPACE = 16;
-    uint256 internal constant GIFT_TAX_PER_10000 = 2500;
-
-    uint256 internal constant COMBAT_RULE_SWITCH_TIME = 1620144000; // Tuesday, 4 May 2021 16:00:00 GMT
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // CONFIGURATION / IMMUTABLE
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+    IERC20 internal immutable _stakingToken;
     AllianceRegistry public immutable allianceRegistry;
     bytes32 internal immutable _genesis;
-    IERC20 internal immutable _stakingToken;
     uint256 internal immutable _resolveWindow;
     uint256 internal immutable _timePerDistance;
     uint256 internal immutable _exitDuration;
@@ -43,176 +30,34 @@ contract OuterSpace is Proxied {
     uint256 internal immutable _productionCapAsDuration;
     uint256 internal immutable _fleetSizeFactor6;
 
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // STORAGE
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    mapping(uint256 => Planet) internal _planets;
-    mapping(uint256 => Fleet) internal _fleets;
-
-    // struct AccountData {
-    //     uint128 stakeReadyToBeWithdrawn;
-    //     uint8 numAlliances;
-    // }
-    // mapping(address => AccountData) internal _accounts;
-    mapping(address => uint256) internal _stakeReadyToBeWithdrawn;
-
-    mapping(address => mapping(address => bool)) internal _operators;
-
-    // mapping(address => mapping(IAlliance => uint256)) internal _alliances;
-
-    // front running protection : _frontruunningDelay / 2 slots
-    struct InFlight {
-        uint64 flying;
-        uint64 destroyed;
+    struct Config {
+        IERC20 stakingToken;
+        AllianceRegistry theAllianceRegistry;
+        bytes32 genesis;
+        uint256 resolveWindow;
+        uint256 timePerDistance;
+        uint256 exitDuration;
+        uint32 acquireNumSpaceships;
+        uint32 productionSpeedUp;
+        uint256 frontrunningDelay;
+        uint256 productionCapAsDuration;
+        uint256 fleetSizeFactor6;
     }
-    // TODO make it namespaces per user, currently it is possible (though unlikely) for 2 users to share a slot if one attack another and quickly send away spaceships
-    mapping(uint256 => mapping(uint256 => InFlight)) internal _inFlight;
+    constructor(Config memory config) {
+        uint32 t = uint32(config.timePerDistance) / 4; // the coordinates space is 4 times bigger
+        require(t * 4 == config.timePerDistance, "TIME_PER_DIST_NOT_DIVISIBLE_4");
 
-    struct Discovered {
-        uint32 minX;
-        uint32 maxX;
-        uint32 minY;
-        uint32 maxY;
-    }
-
-    Discovered internal _discovered;
-
-    struct Planet {
-        address owner;
-        uint32 exitTime; // could be used as startTime with first bit telling whether it is exit or startTime => means exiting would produce spacehips / or not, but not based on startTime
-        uint32 numSpaceships; // uint31 + first bit => active
-        uint32 lastUpdated; // also used as native-destruction indicator
-    }
-
-    struct Fleet {
-        address owner;
-        uint32 launchTime;
-        uint32 quantity;
-        // TODO uint32 delay
-    }
-
-    // rewards
-    mapping(address => uint256) internal _prevRewardIds;
-    mapping(uint256 => uint256) internal _rewards;
-    mapping(address => mapping(uint256 => bool)) internal _rewardsToWithdraw;
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // EVENTS
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    event PlanetStake(address indexed acquirer, uint256 indexed location, uint32 numSpaceships, uint256 stake);
-    event FleetSent(
-        address indexed fleetSender,
-        address indexed fleetOwner,
-        uint256 indexed from,
-        address operator,
-        uint256 fleet,
-        uint32 quantity,
-        uint32 newNumSpaceships
-    );
-
-    // TODO add fromPlanet to the event ?
-    event FleetArrived(
-        uint256 indexed fleet,
-        address indexed fleetOwner,
-        address indexed destinationOwner,
-        uint256 destination,
-        bool gift,
-        uint32 fleetLoss,
-        uint32 planetLoss,
-        uint32 inFlightFleetLoss,
-        uint32 inFlightPlanetLoss,
-        bool won,
-        uint32 newNumspaceships
-    );
-
-    // event AllianceLink(IAlliance indexed alliance, address indexed player, bool joining);
-
-    event PlanetReset(uint256 indexed location);
-
-    event PlanetExit(address indexed owner, uint256 indexed location);
-
-    event ExitComplete(address indexed owner, uint256 indexed location, uint256 stake);
-
-    event RewardSetup(uint256 indexed location, address indexed giver, uint256 rewardId);
-    event RewardToWithdraw(address indexed owner, uint256 indexed location, uint256 indexed rewardId);
-
-    event StakeToWithdraw(address indexed owner, uint256 newStake);
-
-    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
-
-    event Initialized(uint32 minX, uint32 maxX, uint32 minY, uint32 maxY, bytes32 genesis);
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // CONSTRUCTOR / INITIALIZATION
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    constructor(
-        IERC20 stakingToken,
-        AllianceRegistry theAllianceRegistry,
-        bytes32 genesis,
-        uint32 resolveWindow,
-        uint32 timePerDistance,
-        uint32 exitDuration,
-        uint32 acquireNumSpaceships,
-        uint32 productionSpeedUp,
-        uint32 frontrunningDelay,
-        uint32 productionCapAsDuration,
-        uint32 fleetSizeFactor6
-    ) {
-        uint32 t = timePerDistance / 4; // the coordinates space is 4 times bigger
-        require(t * 4 == timePerDistance, "TIME_PER_DIST_NOT_DIVISIBLE_4");
-
-        _stakingToken = stakingToken;
-        allianceRegistry = theAllianceRegistry;
-        _genesis = genesis;
-        _resolveWindow = resolveWindow;
+        _stakingToken = config.stakingToken;
+        allianceRegistry = config.theAllianceRegistry;
+        _genesis = config.genesis;
+        _resolveWindow = config.resolveWindow;
         _timePerDistance = t;
-        _exitDuration = exitDuration;
-        _acquireNumSpaceships = acquireNumSpaceships;
-        _productionSpeedUp = productionSpeedUp;
-        _frontrunningDelay = frontrunningDelay;
-        _productionCapAsDuration = productionCapAsDuration;
-        _fleetSizeFactor6 = fleetSizeFactor6;
-
-        postUpgrade(
-            stakingToken,
-            theAllianceRegistry,
-            genesis,
-            resolveWindow,
-            timePerDistance,
-            exitDuration,
-            acquireNumSpaceships,
-            productionSpeedUp,
-            frontrunningDelay,
-            productionCapAsDuration,
-            fleetSizeFactor6
-        );
-    }
-
-    function postUpgrade(
-        IERC20,
-        AllianceRegistry,
-        bytes32 genesis,
-        uint32,
-        uint32,
-        uint32,
-        uint32,
-        uint32,
-        uint32,
-        uint32,
-        uint32
-    ) public proxied {
-        if (_discovered.minX == 0) {
-            _discovered = Discovered({
-                minX: INITIAL_SPACE,
-                maxX: INITIAL_SPACE,
-                minY: INITIAL_SPACE,
-                maxY: INITIAL_SPACE
-            });
-            emit Initialized(_discovered.minX, _discovered.maxX, _discovered.minY, _discovered.maxY, genesis);
-        }
+        _exitDuration = config.exitDuration;
+        _acquireNumSpaceships = config.acquireNumSpaceships;
+        _productionSpeedUp = config.productionSpeedUp;
+        _frontrunningDelay = config.frontrunningDelay;
+        _productionCapAsDuration = config.productionCapAsDuration;
+        _fleetSizeFactor6 = config.fleetSizeFactor6;
     }
 
 
@@ -249,7 +94,7 @@ contract OuterSpace is Proxied {
         _stakingToken.transferFrom(sender, address(this), amount);
     }
 
-    function resetPlanet(uint256 location) external onlyProxyAdmin {
+    function resetPlanet(uint256 location) external { // TODO onlyProxyAdmin {
         _planets[location].owner = address(0);
         _planets[location].exitTime = 0;
         _planets[location].numSpaceships = 0;
@@ -263,7 +108,7 @@ contract OuterSpace is Proxied {
     // TODO : ERC20, ERC721, ERC1155
     // remove sponsor, use msg.sender and this could be special contracts
     // TODO : reenable, removed because of code size issue
-    function addReward(uint256 location, address sponsor) external onlyProxyAdmin {
+    function addReward(uint256 location, address sponsor) external { // TODO onlyProxyAdmin {
         Planet memory planet = _planets[location];
         if (_hasJustExited(planet.exitTime)) {
             _setPlanetAfterExit(location, planet.owner, _planets[location], address(0), 0);

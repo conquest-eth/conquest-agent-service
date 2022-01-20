@@ -8,7 +8,7 @@ function hours(num: number): number {
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deployer} = await hre.getNamedAccounts();
-  const {deploy} = hre.deployments;
+  const {diamond} = hre.deployments;
 
   // const chainId = await hre.getChainId();
   const networkName = await hre.deployments.getNetworkName();
@@ -91,7 +91,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     fleetSizeFactor6,
   });
 
-  await deploy('OuterSpace', {
+  await diamond.deploy('OuterSpace', {
     from: deployer,
     linkedData: {
       genesisHash,
@@ -105,20 +105,26 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       productionCapAsDuration,
       fleetSizeFactor6,
     },
-    args: [
-      ConquestToken.address,
-      allianceRegistry.address,
-      genesisHash,
-      resolveWindow,
-      timePerDistance,
-      exitDuration,
-      acquireNumSpaceships,
-      productionSpeedUp,
-      frontrunningDelay,
-      productionCapAsDuration,
-      fleetSizeFactor6,
+    facets: ['OuterSpaceOriginalFacet', 'OuterSpaceInitializationFacet'],
+    facetsArgs: [
+      {
+        stakingToken: ConquestToken.address,
+        theAllianceRegistry: allianceRegistry.address,
+        genesis: genesisHash,
+        resolveWindow,
+        timePerDistance,
+        exitDuration,
+        acquireNumSpaceships,
+        productionSpeedUp,
+        frontrunningDelay,
+        productionCapAsDuration,
+        fleetSizeFactor6,
+      },
     ],
-    proxy: networkName !== 'mainnet' ? 'postUpgrade' : undefined,
+    execute: {
+      methodName: 'init',
+      args: [],
+    },
     log: true,
     autoMine: true,
   });

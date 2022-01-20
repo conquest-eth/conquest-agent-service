@@ -6,12 +6,7 @@ import {
   deployments,
   getNamedAccounts,
 } from 'hardhat';
-import {
-  AllianceRegistry,
-  BasicAlliance,
-  OuterSpace,
-  ConquestToken,
-} from '../../typechain';
+import {AllianceRegistry, BasicAlliance, ConquestToken} from '../../typechain';
 import {setupUsers} from '../../utils';
 
 export const setup = deployments.createFixture(async () => {
@@ -39,7 +34,7 @@ export const setup = deployments.createFixture(async () => {
     AllianceRegistry: <AllianceRegistry>(
       await ethers.getContract('AllianceRegistry')
     ),
-    OuterSpace: <OuterSpace>await ethers.getContract('OuterSpace'),
+    OuterSpace: await ethers.getContract('OuterSpace'),
     ConquestToken: <ConquestToken>await ethers.getContract('ConquestToken'),
   };
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
