@@ -31,4 +31,44 @@ contract ImportingOuterSpaceTypes {
         uint32 quantity;
         // TODO uint32 delay
     }
+
+
+    struct PlanetStats {
+        int8 subX;
+        int8 subY;
+        uint16 stake;
+        uint16 production;
+        uint16 attack;
+        uint16 defense;
+        uint16 speed;
+        uint16 natives;
+    }
+
+    struct ExternalPlanet {
+        address owner;
+        uint32 exitTime;
+        uint32 numSpaceships;
+        uint32 lastUpdated;
+        bool active;
+        uint256 reward;
+    }
+
+
+    struct FleetLaunch {
+        address fleetSender;
+        address fleetOwner;
+        uint256 from;
+        uint32 quantity;
+        bytes32 toHash;
+    }
+    struct FleetResolution {
+        uint256 from;
+        uint256 to;
+        uint256 distance;
+        bool gift;
+        address specific;
+        bytes32 secret;
+        address fleetSender;
+        address operator;
+    }
 }

@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-1.0
-
 pragma solidity 0.8.9;
 
 import "../base/ImportingOuterSpaceTypes.sol";
@@ -7,19 +6,18 @@ import "../base/ImportingOuterSpaceConstants.sol";
 import "../base/ImportingOuterSpaceEvents.sol";
 import "../base/UsingOuterSpaceDataLayout.sol";
 
-
 import "../../libraries/Extraction.sol";
 import "../../libraries/Math.sol";
 
 import "../../interfaces/IAlliance.sol";
 import "../../alliances/AllianceRegistry.sol";
 
-contract OuterSpaceOriginalFacet is ImportingOuterSpaceTypes, ImportingOuterSpaceConstants, ImportingOuterSpaceEvents, UsingOuterSpaceDataLayout {
+
+contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceConstants, ImportingOuterSpaceEvents, UsingOuterSpaceDataLayout {
     using Extraction for bytes32;
 
-
     IERC20 internal immutable _stakingToken;
-    AllianceRegistry public immutable allianceRegistry;
+    AllianceRegistry internal immutable _allianceRegistry;
     bytes32 internal immutable _genesis;
     uint256 internal immutable _resolveWindow;
     uint256 internal immutable _timePerDistance;
@@ -32,7 +30,7 @@ contract OuterSpaceOriginalFacet is ImportingOuterSpaceTypes, ImportingOuterSpac
 
     struct Config {
         IERC20 stakingToken;
-        AllianceRegistry theAllianceRegistry;
+        AllianceRegistry allianceRegistry;
         bytes32 genesis;
         uint256 resolveWindow;
         uint256 timePerDistance;
@@ -48,7 +46,7 @@ contract OuterSpaceOriginalFacet is ImportingOuterSpaceTypes, ImportingOuterSpac
         require(t * 4 == config.timePerDistance, "TIME_PER_DIST_NOT_DIVISIBLE_4");
 
         _stakingToken = config.stakingToken;
-        allianceRegistry = config.theAllianceRegistry;
+        _allianceRegistry = config.allianceRegistry;
         _genesis = config.genesis;
         _resolveWindow = config.resolveWindow;
         _timePerDistance = t;
@@ -61,284 +59,7 @@ contract OuterSpaceOriginalFacet is ImportingOuterSpaceTypes, ImportingOuterSpac
     }
 
 
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // STAKING / PRODUCTION CAPTURE
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    function onTokenTransfer(
-        address,
-        uint256 amount,
-        bytes calldata data
-    ) public returns (bool) {
-        require(msg.sender == address(_stakingToken), "INVALID_ERC20");
-        (address acquirer, uint256 location) = abi.decode(data, (address, uint256));
-        _acquire(acquirer, amount, location); // we do not care of who the payer is
-        return true;
-    }
-
-    function onTokenPaidFor(
-        address,
-        address forAddress,
-        uint256 amount,
-        bytes calldata data
-    ) external returns (bool) {
-        require(msg.sender == address(_stakingToken), "INVALID_ERC20");
-        uint256 location = abi.decode(data, (uint256));
-        _acquire(forAddress, amount, location); // we do not care of who the payer is
-        return true;
-    }
-
-    function acquireViaTransferFrom(uint256 location, uint256 amount) public {
-        address sender = _msgSender();
-        _acquire(sender, amount, location);
-        _stakingToken.transferFrom(sender, address(this), amount);
-    }
-
-    function resetPlanet(uint256 location) external { // TODO onlyProxyAdmin {
-        _planets[location].owner = address(0);
-        _planets[location].exitTime = 0;
-        _planets[location].numSpaceships = 0;
-        _planets[location].lastUpdated = 0;
-        emit PlanetReset(location);
-    }
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // REWARD SETUP
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // TODO : ERC20, ERC721, ERC1155
-    // remove sponsor, use msg.sender and this could be special contracts
-    // TODO : reenable, removed because of code size issue
-    function addReward(uint256 location, address sponsor) external { // TODO onlyProxyAdmin {
-        Planet memory planet = _planets[location];
-        if (_hasJustExited(planet.exitTime)) {
-            _setPlanetAfterExit(location, planet.owner, _planets[location], address(0), 0);
-        }
-
-        uint256 rewardId = _rewards[location];
-        if (rewardId == 0) {
-            rewardId = ++_prevRewardIds[sponsor];
-            _rewards[location] = (uint256(uint160(sponsor)) << 96) + rewardId;
-        }
-        // TODO should it fails if different sponsor added reward before
-
-        // TODO rewardId association with the actual rewards // probably contract address holding the reward
-        emit RewardSetup(location, sponsor, rewardId);
-    }
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // EXIT / WITHDRAWALS
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    function exitFor(address owner, uint256 location) external {
-        Planet storage planet = _getPlanet(location);
-        require(owner == planet.owner, "NOT_OWNER");
-        require(planet.exitTime == 0, "EXITING_ALREADY"); // if you own the planet again, you ll need to first withdraw
-        planet.exitTime = uint32(block.timestamp);
-        emit PlanetExit(owner, location);
-    }
-
-    function fetchAndWithdrawFor(address owner, uint256[] calldata locations) external {
-        uint256 addedStake = 0;
-        for (uint256 i = 0; i < locations.length; i++) {
-            Planet storage planet = _getPlanet(locations[i]);
-            if (_hasJustExited(planet.exitTime)) {
-                require(owner == planet.owner, "NOT_OWNER");
-                addedStake += _setPlanetAfterExitWithoutUpdatingStake(locations[i], owner, planet, address(0), 0); // no need of event as exitTime passed basically mean owner zero and spaceships zero
-            }
-        }
-        uint256 newStake = _stakeReadyToBeWithdrawn[owner] + addedStake;
-        _withdrawAll(owner, newStake);
-    }
-
-    function balanceToWithdraw(address owner) external view returns (uint256) {
-        return _stakeReadyToBeWithdrawn[owner];
-    }
-
-    function withdrawFor(address owner) external {
-        uint256 amount = _stakeReadyToBeWithdrawn[owner];
-        _withdrawAll(owner, amount);
-    }
-
-    function _withdrawAll(address owner, uint256 amount) internal {
-        _updateStake(owner, 0);
-        require(_stakingToken.transfer(owner, amount), "FAILED_TRANSFER"); // TODO FundManager
-    }
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // FLEET RESOLUTION, ATTACK / REINFORCEMENT
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    struct FleetResolution {
-        uint256 from;
-        uint256 to;
-        uint256 distance;
-        bool gift;
-        address specific;
-        bytes32 secret;
-        address fleetSender;
-        address operator;
-    }
-
-    function resolveFleet(uint256 fleetId, FleetResolution calldata resolution) external {
-         require(
-            uint256(keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked(resolution.secret, resolution.to, resolution.gift, resolution.specific)),
-                    resolution.from, resolution.fleetSender, resolution.operator
-                )
-            )) == fleetId,
-            "INVALID_FLEET_DATA_OR_SECRET"
-        );
-        _resolveFleet(fleetId, resolution);
-    }
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // FLEET SENDING
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-    struct FleetLaunch {
-        address fleetSender;
-        address fleetOwner;
-        uint256 from;
-        uint32 quantity;
-        bytes32 toHash;
-    }
-
-    function send(
-        uint256 from,
-        uint32 quantity,
-        bytes32 toHash
-    ) external {
-        address sender = _msgSender();
-        uint256 fleetId = uint256(keccak256(abi.encodePacked(toHash, from, sender, sender)));
-        _sendFor(fleetId, sender, FleetLaunch({
-            fleetSender: sender,
-            fleetOwner: sender,
-            from: from,
-            quantity: quantity,
-            toHash: toHash
-        }));
-    }
-
-    function sendFor(FleetLaunch calldata launch) external { //  bytes calldata fleetSignature // TODO for fleetOwner's signature ?
-
-        address operator = _msgSender();
-        if (operator != launch.fleetSender) {
-            require(_operators[launch.fleetSender][operator], "NOT_AUTHORIZED_TO_SEND");
-        }
-        uint256 fleetId = uint256(keccak256(abi.encodePacked(launch.toHash, launch.from, launch.fleetSender, operator)));
-
-        if (launch.fleetOwner != launch.fleetSender && launch.fleetOwner != operator) {
-            // TODO use signature from fleetOwner instead?
-            require(_operators[launch.fleetOwner][operator], "NOT_AUTHORIZED_TO_FLEET");
-        }
-
-        _sendFor(fleetId, operator, launch);
-    }
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // GETTERS
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    function getFleet(uint256 fleetId, uint256 from)
-        external
-        view
-        returns (
-            address owner,
-            uint32 launchTime,
-            uint32 quantity,
-            uint64 flyingAtLaunch, // can be more than quantity if multiple fleet were launched around the same time from the same planet
-            uint64 destroyedAtLaunch
-        )
-    {
-        launchTime = _fleets[fleetId].launchTime;
-        quantity = _fleets[fleetId].quantity;
-        owner = _fleets[fleetId].owner;
-
-        uint256 timeSlot = launchTime / (_frontrunningDelay / 2);
-        destroyedAtLaunch = _inFlight[from][timeSlot].destroyed;
-        flyingAtLaunch = _inFlight[from][timeSlot].flying;
-    }
-
-    function getGeneisHash() external view returns (bytes32) {
-        return _genesis;
-    }
-
-    struct PlanetStats {
-        int8 subX;
-        int8 subY;
-        uint16 stake;
-        uint16 production;
-        uint16 attack;
-        uint16 defense;
-        uint16 speed;
-        uint16 natives;
-    }
-
-    struct ExternalPlanet {
-        address owner;
-        uint32 exitTime;
-        uint32 numSpaceships;
-        uint32 lastUpdated;
-        bool active;
-        uint256 reward;
-    }
-
-    function getPlanet(uint256 location) external view returns (ExternalPlanet memory state, PlanetStats memory stats) {
-        Planet storage planet = _getPlanet(location);
-        (bool active, uint32 numSpaceships) = _activeNumSpaceships(planet.numSpaceships);
-        state = ExternalPlanet({
-            owner: planet.owner,
-            exitTime: planet.exitTime,
-            numSpaceships: numSpaceships,
-            lastUpdated: planet.lastUpdated,
-            active: active,
-            reward: _rewards[location]
-        });
-        stats = _getPlanetStats(location);
-    }
-
-    function getPlanetStates(uint256[] calldata locations)
-        external
-        view
-        returns (ExternalPlanet[] memory planetStates, Discovered memory discovered)
-    {
-        planetStates = new ExternalPlanet[](locations.length);
-        for (uint256 i = 0; i < locations.length; i++) {
-            Planet storage planet = _getPlanet(locations[i]);
-            (bool active, uint32 numSpaceships) = _activeNumSpaceships(planet.numSpaceships);
-            planetStates[i] = ExternalPlanet({
-                owner: planet.owner,
-                exitTime: planet.exitTime,
-                numSpaceships: numSpaceships,
-                lastUpdated: planet.lastUpdated,
-                active: active,
-                reward: _rewards[locations[i]]
-            });
-        }
-        discovered = _discovered;
-    }
-
-    function getDiscovered() external view returns (Discovered memory) {
-        return _discovered;
-    }
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // ERC721 : // TODO
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    function setApprovalForAll(address operator, bool approved) external {
-        address sender = _msgSender();
-        _operators[sender][operator] = approved;
-        emit ApprovalForAll(sender, operator, approved);
-    }
-
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // INTERNALS
-    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    // function _actualiseExit(uint256 location) internal {
+   // function _actualiseExit(uint256 location) internal {
     //     Planet storage planet = _getPlanet(location);
     //     if (planet.exitTime > 0 && block.timestamp > planet.exitTime + _exitDuration) {
     //         uint16 stake = _stake(location);
@@ -658,24 +379,24 @@ contract OuterSpaceOriginalFacet is ImportingOuterSpaceTypes, ImportingOuterSpac
             if (resolution.specific == address(0) || resolution.specific == toPlanet.owner) {
                 // and it was for anyone or specific destination owner that is the same as the current one
 
-                (, uint96 joinTime) = allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
+                (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
                 return (true, joinTime == 0 || joinTime > fleetLaunchTime);
             }
 
             if (resolution.specific == address(1)) {
                 // or the specific specify any common alliances (1)
 
-                (, uint96 joinTime) = allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
+                (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
                 return (joinTime > 0, joinTime > fleetLaunchTime);
             }
 
             if (uint160(resolution.specific) > 1) {
                 // or a specific one that matches
 
-                (uint96 joinTimeToSpecific,) = allianceRegistry.getAllianceData(toPlanet.owner, IAlliance(resolution.specific));
+                (uint96 joinTimeToSpecific,) = _allianceRegistry.getAllianceData(toPlanet.owner, IAlliance(resolution.specific));
 
                 if (joinTimeToSpecific > 0) {
-                    (, uint96 joinTime) = allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
+                    (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
                     return (true, joinTime == 0 || joinTime > fleetLaunchTime);
                 }
             }
@@ -685,18 +406,18 @@ contract OuterSpaceOriginalFacet is ImportingOuterSpaceTypes, ImportingOuterSpac
                 // and the attack was on any non-allies
 
                 // make it a gift if the destination owner is actually an ally
-                (, uint96 joinTime) = allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
+                (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
                 return (joinTime > 0, joinTime > fleetLaunchTime);
             }
 
             if (uint160(resolution.specific) > 1 && resolution.specific != toPlanet.owner) {
                 // but specific not matching current owner
 
-                (uint96 joinTimeToSpecific,) = allianceRegistry.getAllianceData(toPlanet.owner, IAlliance(resolution.specific));
+                (uint96 joinTimeToSpecific,) = _allianceRegistry.getAllianceData(toPlanet.owner, IAlliance(resolution.specific));
 
                 // make it a gift if the destination is not matching the specific alliance (or owner, in which case since it is not an alliance, it will also not match)
                 if (joinTimeToSpecific == 0) {
-                    (, uint96 joinTime) = allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
+                    (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
                     return (true, joinTime == 0 || joinTime > fleetLaunchTime);
                 }
             }

@@ -105,11 +105,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       productionCapAsDuration,
       fleetSizeFactor6,
     },
-    facets: ['OuterSpaceOriginalFacet', 'OuterSpaceInitializationFacet'],
+    facets: [
+      'OuterSpaceInitializationFacet',
+      'OuterSpaceAdminFacet',
+      'OuterSpaceFleetsFacet',
+      'OuterSpaceInformationFacet',
+      'OuterSpaceStakingFacet',
+    ],
     facetsArgs: [
       {
         stakingToken: ConquestToken.address,
-        theAllianceRegistry: allianceRegistry.address,
+        allianceRegistry: allianceRegistry.address,
         genesis: genesisHash,
         resolveWindow,
         timePerDistance,
