@@ -12,10 +12,10 @@ contract ConquestStakingPool {
     event StakeTransfered(address indexed from, address indexed to, uint256 amount);
 
     uint256 internal _lastUpdateTime;
-    uint256 internal _rewardPerTokenPerSecondAtLastUpdate;
+    uint256 internal _totalRewardPerTokenAtLastUpdate;
     uint256 internal _totalStaked;
     mapping(address => uint256) internal _amountStakedPerAccount;
-    mapping(address => uint256) internal _rewardPerTokenPerSecondAccountedPerAccount;
+    mapping(address => uint256) internal _totalRewardPerTokenAccountedPerAccount;
     mapping(address => uint256) internal _rewardsToWithdrawPerAccount;
 
     ConquestToken immutable internal _conquestToken;
@@ -75,12 +75,12 @@ contract ConquestStakingPool {
             return;
         }
 
-        (uint256 totalStakedSoFar, uint256 rewardPerTokenPerSecond, ) = _updateGlobal();
+        (uint256 totalStakedSoFar, uint256 totalRewardPerToken, ) = _updateGlobal();
         uint256 amountStakedSoFar;
         unchecked {
-            amountStakedSoFar = _updateAccount(from, rewardPerTokenPerSecond);
+            amountStakedSoFar = _updateAccount(from, totalRewardPerToken);
             _amountStakedPerAccount[from] = amountStakedSoFar - amount;
-            amountStakedSoFar = _updateAccount(to, rewardPerTokenPerSecond);
+            amountStakedSoFar = _updateAccount(to, totalRewardPerToken);
             _amountStakedPerAccount[to] = amountStakedSoFar + amount;
         }
 
@@ -96,14 +96,14 @@ contract ConquestStakingPool {
     function getReward() external {
         uint256 amountStakedSoFar = _amountStakedPerAccount[msg.sender];
 
-        (uint256 totalStakedSoFar, uint256 rewardPerTokenPerSecond, ) = _updateGlobal();
+        (uint256 totalStakedSoFar, uint256 totalRewardPerToken, ) = _updateGlobal();
         uint256 reward = _computeTokenEarned(
-            _rewardPerTokenPerSecondAccountedPerAccount[msg.sender],
+            _totalRewardPerTokenAccountedPerAccount[msg.sender],
             amountStakedSoFar,
-            rewardPerTokenPerSecond,
+            totalRewardPerToken,
             _rewardsToWithdrawPerAccount[msg.sender]
         );
-        _rewardPerTokenPerSecondAccountedPerAccount[msg.sender] = rewardPerTokenPerSecond;
+        _totalRewardPerTokenAccountedPerAccount[msg.sender] = totalRewardPerToken;
 
         if (reward > 0) {
             _rewardsToWithdrawPerAccount[msg.sender] = 0;
@@ -121,9 +121,9 @@ contract ConquestStakingPool {
     // ... ?
 
     /// @notice The amount of reward tokens each staked token has earned so far
-    function rewardPerTokenPerSecond() external view returns (uint256) {
+    function totalRewardPerToken() external view returns (uint256) {
         return
-            _computeNewRewardPerTokenPerSecond(
+            _computeNewTotalRewardPerToken(
                 _totalStaked,
                 0, // TODO rewardRate,
                 _lastUpdateTime
@@ -134,9 +134,9 @@ contract ConquestStakingPool {
     function earned(address account) external view returns (uint256) {
         return
             _computeTokenEarned(
-                _rewardPerTokenPerSecondAccountedPerAccount[account],
+                _totalRewardPerTokenAccountedPerAccount[account],
                 _amountStakedPerAccount[account],
-                _computeNewRewardPerTokenPerSecond(
+                _computeNewTotalRewardPerToken(
                     _totalStaked,
                     0, // TODO rewardRate
                     _lastUpdateTime
@@ -151,46 +151,46 @@ contract ConquestStakingPool {
     // ---------------------------------------------------------------------------------------------------------------
 
     function _computeTokenEarned(
-        uint256 rewardPerTokenPerSecondAccountedSoFar,
+        uint256 totalRewardPerTokenAccountedSoFar,
         uint256 accountStakedAmount,
-        uint256 currentRewardPerTokenPerSecond,
+        uint256 currentTotalRewardPerToken,
         uint256 accountRewardsSoFar
     ) internal pure returns(uint256) {
-        return accountRewardsSoFar + ((accountStakedAmount * (currentRewardPerTokenPerSecond - rewardPerTokenPerSecondAccountedSoFar)) / PRECISION);
+        return accountRewardsSoFar + ((accountStakedAmount * (currentTotalRewardPerToken - totalRewardPerTokenAccountedSoFar)) / PRECISION);
     }
 
     // TODO make it pure and totalStaked == 0 check outside ?
-    function _computeNewRewardPerTokenPerSecond(uint256 totalStaked, uint256 rewardRate, uint256 lastUpdateTime) internal view returns(uint256) {
+    function _computeNewTotalRewardPerToken(uint256 totalStaked, uint256 rewardRate, uint256 lastUpdateTime) internal view returns(uint256) {
         if (totalStaked == 0) {
-            return _rewardPerTokenPerSecondAtLastUpdate;
+            return _totalRewardPerTokenAtLastUpdate;
         }
         return ((block.timestamp - lastUpdateTime) * rewardRate * PRECISION) / totalStaked;
     }
 
-    function _updateGlobal() internal returns(uint256 totalStakedSoFar, uint256 rewardPerTokenPerSecond, uint256 rewardRate) {
+    function _updateGlobal() internal returns(uint256 totalStakedSoFar, uint256 totalRewardPerToken, uint256 rewardRate) {
         totalStakedSoFar = _totalStaked;
         rewardRate = 0; // TODO compute
-        rewardPerTokenPerSecond = _computeNewRewardPerTokenPerSecond(totalStakedSoFar, rewardRate, _lastUpdateTime);
+        totalRewardPerToken = _computeNewTotalRewardPerToken(totalStakedSoFar, rewardRate, _lastUpdateTime);
 
-        _rewardPerTokenPerSecondAtLastUpdate = rewardPerTokenPerSecond;
+        _totalRewardPerTokenAtLastUpdate = totalRewardPerToken;
         _lastUpdateTime = block.timestamp;
     }
 
-    function _updateAccount(address account, uint256 rewardPerTokenPerSecond) internal returns (uint256 amountStakedSoFar) {
+    function _updateAccount(address account, uint256 totalRewardPerToken) internal returns (uint256 amountStakedSoFar) {
         amountStakedSoFar = _amountStakedPerAccount[account];
 
         _rewardsToWithdrawPerAccount[account] = _computeTokenEarned(
-            _rewardPerTokenPerSecondAccountedPerAccount[account],
+            _totalRewardPerTokenAccountedPerAccount[account],
             amountStakedSoFar,
-            rewardPerTokenPerSecond,
+            totalRewardPerToken,
             _rewardsToWithdrawPerAccount[account]
         );
-        _rewardPerTokenPerSecondAccountedPerAccount[account] = rewardPerTokenPerSecond;
+        _totalRewardPerTokenAccountedPerAccount[account] = totalRewardPerToken;
     }
 
     function _update(address account) internal returns (uint256, uint256) {
-        (uint256 totalStakedSoFar, uint256 rewardPerTokenPerSecond, ) = _updateGlobal();
-        uint256 amountStakedSoFar = _updateAccount(account, rewardPerTokenPerSecond);
+        (uint256 totalStakedSoFar, uint256 totalRewardPerToken, ) = _updateGlobal();
+        uint256 amountStakedSoFar = _updateAccount(account, totalRewardPerToken);
         return (totalStakedSoFar, amountStakedSoFar);
     }
 
