@@ -18,9 +18,17 @@ contract ConquestStakingPool {
     mapping(address => uint256) internal _totalRewardPerTokenAccountedPerAccount;
     mapping(address => uint256) internal _rewardsToWithdrawPerAccount;
 
+    uint256 internal _maxInflation;
+    // 0 and the curve is linear, means inflation moves with the stake and staker win the same ratio at all time
+    // > 0 , means inflation start higher giving more to early stakers
+    uint256 internal _startInflation;
+    uint256 internal _extraTokenGenerated;
+
     ConquestToken immutable internal _conquestToken;
+    uint256 immutable internal _originalTotalSupply;
     constructor(ConquestToken conquestToken) {
         _conquestToken = conquestToken;
+        _originalTotalSupply = _conquestToken.totalSupply();
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -122,23 +130,33 @@ contract ConquestStakingPool {
 
     /// @notice The amount of reward tokens each staked token has earned so far
     function totalRewardPerToken() external view returns (uint256) {
+        uint256 totalStakedSoFar = _totalStaked;
+        uint256 extraTokenGenerated = _extraTokenGenerated;
+        uint256 totalSupplySoFar = _originalTotalSupply + extraTokenGenerated;
+        // TODO add in extraTokenGenerated based on previous rewardRate ?
+        uint256 rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar);
         return
             _computeNewTotalRewardPerToken(
-                _totalStaked,
-                0, // TODO rewardRate,
+                totalStakedSoFar,
+                rewardRate,
                 _lastUpdateTime
             );
     }
 
     /// @notice The amount of reward tokens an account has accrued so far. Does not include already withdrawn rewards.
     function earned(address account) external view returns (uint256) {
+        uint256 totalStakedSoFar = _totalStaked;
+        uint256 extraTokenGenerated = _extraTokenGenerated;
+        uint256 totalSupplySoFar = _originalTotalSupply + extraTokenGenerated;
+        // TODO add in extraTokenGenerated based on previous rewardRate ?
+        uint256 rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar);
         return
             _computeTokenEarned(
                 _totalRewardPerTokenAccountedPerAccount[account],
                 _amountStakedPerAccount[account],
                 _computeNewTotalRewardPerToken(
-                    _totalStaked,
-                    0, // TODO rewardRate
+                    totalStakedSoFar,
+                    rewardRate,
                     _lastUpdateTime
                 ),
                 _rewardsToWithdrawPerAccount[account]
@@ -149,6 +167,15 @@ contract ConquestStakingPool {
     // ---------------------------------------------------------------------------------------------------------------
     // Internal
     // ---------------------------------------------------------------------------------------------------------------
+
+
+    function _computeRewardRate(uint256 totalStakedSoFar, uint256 totalSupplySoFar) internal view returns (uint256 rewardRate) {
+        // assume this is the only generator of token
+        // TODO separate role and have a central place to reserve tokens in ConquestToken
+        // claiming reward fro reserve will reduce the reserve while increasing the token minted, keeping total supply adjusted
+        uint256 targetRate = (_maxInflation - _startInflation) * (totalStakedSoFar / totalSupplySoFar) + _startInflation;
+        rewardRate = (targetRate * totalSupplySoFar) / totalStakedSoFar;
+    }
 
     function _computeTokenEarned(
         uint256 totalRewardPerTokenAccountedSoFar,
@@ -169,9 +196,13 @@ contract ConquestStakingPool {
 
     function _updateGlobal() internal returns(uint256 totalStakedSoFar, uint256 totalRewardPerToken, uint256 rewardRate) {
         totalStakedSoFar = _totalStaked;
-        rewardRate = 0; // TODO compute
+        uint256 extraTokenGenerated = _extraTokenGenerated;
+        uint256 totalSupplySoFar = _originalTotalSupply + extraTokenGenerated;
+        // TODO add in extraTokenGenerated based on previous rewardRate ?
+        rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar);
         totalRewardPerToken = _computeNewTotalRewardPerToken(totalStakedSoFar, rewardRate, _lastUpdateTime);
 
+        _extraTokenGenerated = extraTokenGenerated + (totalRewardPerToken - _totalRewardPerTokenAtLastUpdate) * totalStakedSoFar;
         _totalRewardPerTokenAtLastUpdate = totalRewardPerToken;
         _lastUpdateTime = block.timestamp;
     }
