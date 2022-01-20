@@ -18,6 +18,9 @@ contract ConquestStakingPool {
     mapping(address => uint256) internal _totalRewardPerTokenAccountedPerAccount;
     mapping(address => uint256) internal _rewardsToWithdrawPerAccount;
 
+    mapping(address => uint256) internal _games;
+    address public owner;
+
     uint256 internal _maxInflation;
     // 0 and the curve is linear, means inflation moves with the stake and staker win the same ratio at all time
     // > 0 , means inflation start higher giving more to early stakers
@@ -26,10 +29,24 @@ contract ConquestStakingPool {
 
     ConquestToken immutable internal _conquestToken;
     uint256 immutable internal _originalTotalSupply;
-    constructor(ConquestToken conquestToken) {
+    constructor(ConquestToken conquestToken, address initialOwner) {
         _conquestToken = conquestToken;
         _originalTotalSupply = _conquestToken.totalSupply();
+        owner = initialOwner;
     }
+
+    // TODO implement game weight
+    function setGame(address game, uint256 weight) external {
+        require(msg.sender == owner);
+        _games[game] = weight;
+    }
+
+    // TODO Ownable with Event
+    function transferOwnership(address newOwner) external {
+        require(msg.sender == owner);
+        owner = newOwner;
+    }
+
 
     // ---------------------------------------------------------------------------------------------------------------
     // For Authorized Games
@@ -54,7 +71,7 @@ contract ConquestStakingPool {
     /// @notice Withdraws ${amount} staked tokens from account ${account}.
     /// @param account The account whose token are withdrawn.
     /// @param amount The amount of tokens to withdraw.
-    function withdraw(address account, uint256 amount) external {
+    function withdraw(address account, uint256 amount) external onlyGames {
         if (amount == 0) {
             return;
         }
@@ -75,7 +92,7 @@ contract ConquestStakingPool {
     /// @param from account to transfer from
     /// @param to account to transfer to
     /// @param amount The amount of staked tokens to transfer
-    function transfer(address from, address to, uint256 amount) external {
+    function transfer(address from, address to, uint256 amount) external onlyGames {
         if (amount == 0) {
             return;
         }
@@ -230,7 +247,7 @@ contract ConquestStakingPool {
     // ---------------------------------------------------------------------------------------------------------------
 
     modifier onlyGames() {
-        // TODO
+        require(_games[msg.sender] > 0, "NOT_AUTHORIZED_GAME");
         _;
     }
 }
