@@ -192,3 +192,7 @@ export {
   setGetName,
   version,
 };
+
+if (typeof window !== 'undefined') {
+  (window as any).env = import.meta.env;
+}

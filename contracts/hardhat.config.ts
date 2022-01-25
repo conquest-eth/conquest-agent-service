@@ -7,15 +7,7 @@ import '@typechain/hardhat';
 import 'solidity-coverage';
 import 'hardhat-contract-sizer';
 import 'hardhat-deploy-tenderly';
-import {node_url, accounts} from './utils/network';
-/* import './utils/tx-handler'; */
-import './utils/metadata';
-
-// While waiting for hardhat PR: https://github.com/nomiclabs/hardhat/pull/1542
-if (process.env.HARDHAT_FORK) {
-  process.env['HARDHAT_DEPLOY_FORK'] = process.env.HARDHAT_FORK;
-}
-
+import {node_url, accounts, addForkConfiguration} from './utils/network';
 const l1_deployments: string[] = ['deploy_l1/01_conquest_tokens'];
 const l1_deployments_dev: string[] = [];
 const l2_deployments: string[] = [
@@ -67,19 +59,9 @@ const config: HardhatUserConfig = {
       5: 2,
     },
   },
-  networks: {
+  networks: addForkConfiguration({
     hardhat: {
-      // process.env.HARDHAT_FORK will specify the network that the fork is made from.
-      // this line ensure the use of the corresponding accounts
-      accounts: accounts(process.env.HARDHAT_FORK),
-      forking: process.env.HARDHAT_FORK
-        ? {
-            url: node_url(process.env.HARDHAT_FORK),
-            blockNumber: process.env.HARDHAT_FORK_NUMBER
-              ? parseInt(process.env.HARDHAT_FORK_NUMBER)
-              : undefined,
-          }
-        : undefined,
+      initialBaseFeePerGas: 0, // to fix : https://github.com/sc-forks/solidity-coverage/issues/652, see https://github.com/sc-forks/solidity-coverage/issues/652#issuecomment-896330136
       deploy: l1_deployments.concat(
         l1_deployments_dev,
         l2_deployments,
@@ -144,7 +126,7 @@ const config: HardhatUserConfig = {
       accounts: accounts('mainnet'),
       deploy: l1_deployments.concat(l1_deployments_dev),
     },
-  },
+  }),
   paths: {
     sources: 'src',
     deploy: ['deploy_l1'],

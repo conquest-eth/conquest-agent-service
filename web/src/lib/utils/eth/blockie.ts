@@ -21,6 +21,9 @@ export class Blockie {
   }
 
   static getURI(address: string, offset = 0): string {
+    if (typeof document === 'undefined') {
+      return '';
+    }
     const key = address.toLowerCase() + '_' + offset;
     if (!Blockie.blockieStringsCache[key]) {
       const blockie = Blockie.get(address);

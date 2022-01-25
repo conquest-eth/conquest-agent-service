@@ -1,6 +1,6 @@
 <script lang="ts">
   export let title = '';
-  import {chainName} from '$lib/config';
+  import {chainId, chainName, fallbackProviderOrUrl, webWalletURL} from '$lib/config';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import Button from '$lib/components/generic/PanelButton.svelte';
   import Modal from '$lib/components/generic/Modal.svelte';
@@ -61,6 +61,22 @@
   }
 
   let onSharedStorage = !!(base && (base.startsWith('/ipfs/') || base.startsWith('/ipns/')));
+
+  async function switchChain() {
+    let blockExplorerUrls: string[] | undefined;
+    const explorerTXURL = import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION as string;
+    if (explorerTXURL) {
+      blockExplorerUrls.push(explorerTXURL.slice(0, explorerTXURL.length - 2));
+    }
+    const rpcUrls = [];
+    if (webWalletURL) {
+      rpcUrls.push(webWalletURL);
+    }
+    if (fallbackProviderOrUrl) {
+      rpcUrls.push(fallbackProviderOrUrl);
+    }
+    await chain.switchChain(chainId, {chainName, rpcUrls, blockExplorerUrls});
+  }
 </script>
 
 <slot />
@@ -79,8 +95,9 @@
 {:else if $chain.notSupported}
   <div class="w-full flex items-center justify-center fixed top-0 pointer-events-none" style="z-index: 5;">
     <p class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
-      Wrong network, use
+      Wrong network, switch to
       {chainName}
+      <button class="border-2 border-white p-2" on:click={switchChain}>OK</button>
     </p>
   </div>
 {:else if $chain.genesisChanged}
@@ -94,7 +111,19 @@
   </div>
 {/if}
 
-{#if $flow.inProgress}
+{#if $wallet.error}
+  <Modal title="An Error Happened" on:close={() => wallet.acknowledgeError()}>
+    <p class="w-64 text-center text-red-500 p-1">
+      {$wallet.error.message}
+    </p>
+  </Modal>
+{:else if $chain.error}
+  <Modal title="An Error Happened" on:close={() => chain.acknowledgeError()}>
+    <p class="w-64 text-center text-red-500 p-1">
+      {$chain.error.message}
+    </p>
+  </Modal>
+{:else if $flow.inProgress}
   <Modal {title} cancelable={!$wallet.connecting} on:close={() => privateWallet.cancel()} closeButton={false}>
     {#if $wallet.state === 'Idle'}
       {#if $wallet.loadingModule}
@@ -157,6 +186,7 @@
         Please switch to
         {chainName}
         <!-- ({$chain.chainId}) -->
+        <Button label="Unlock Wallet" on:click={switchChain}>Switch</Button>
       {/if}
     {:else if executionError}
       <div class="text-center">
@@ -213,7 +243,7 @@
     {:else}
       <div class="text-center">
         <p>Flow aborted {$privateWallet.step}</p>
-        <Button class="mt-4" label="Retry" on:click={() => privateWallet.cancel()}>OK</Button>
+        <Button class="mt-4" label="Cancel" on:click={() => privateWallet.cancel()}>OK</Button>
       </div>
     {/if}
   </Modal>

@@ -58,7 +58,8 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
 
   async fetch(extraVariables?: Record<string, unknown>): Promise<void> {
     console.info('fetching....');
-    const first = this.options?.variables?.first || 1000;
+    const first =
+      typeof this.options?.variables?.first === 'number' ? (this.options?.variables?.first as number) : 1000;
     let numEntries = first;
     let lastId = '0x0';
     let data: T;
@@ -67,7 +68,19 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
     while (numEntries === first) {
       try {
         const variables = {first, lastId, ...this.options?.variables, ...this.runtimeVariables, ...extraVariables};
-        const result = await this.endpoint.query<Record<string, unknown>, V>(this.query, {
+        const querySplitted = this.query.split('?');
+        let query = '';
+        for (let i = 0; i < querySplitted.length; i++) {
+          const split = querySplitted[i];
+          if (split.startsWith('$')) {
+            if (!variables[split.substr(1)]) {
+              i++; // skip
+            }
+          } else {
+            query += split;
+          }
+        }
+        const result = await this.endpoint.query<Record<string, unknown>, V>(query, {
           variables,
           context: {
             requestPolicy: 'cache-and-network', // required as cache-first will not try to get new data
@@ -145,7 +158,7 @@ export class TimedQueryStore<T, V extends Record<string, unknown> = Record<strin
     this.setPartial({error: undefined});
   }
 
-  protected async fetch(): Promise<void> {
+  async fetch(): Promise<void> {
     await super.fetch();
     this.timeout = setTimeout(this.fetch.bind(this), (this.extraOptions?.frequency || 1) * 1000);
   }

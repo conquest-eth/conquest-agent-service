@@ -51,23 +51,7 @@ export class EndPoint {
       // TODO path?: string
     }
   ): Promise<OperationResult<Data, Variables>> {
-    let actualQuery = query;
-    if (typeof query === 'string') {
-      actualQuery = '';
-      const querySplitted = query.split('?');
-      for (let i = 0; i < querySplitted.length; i++) {
-        const split = querySplitted[i];
-        if (split.startsWith('$')) {
-          if (!args?.variables[split.substr(1)]) {
-            i++; // skip
-          }
-        } else {
-          actualQuery += split;
-        }
-      }
-    }
-
-    return this.client.query(actualQuery, args?.variables, args?.context).toPromise();
+    return this.client.query(query, args?.variables, args?.context).toPromise();
   }
 
   async queryList<T, Variables extends Record<string, unknown> = Record<string, unknown>>(
@@ -79,31 +63,13 @@ export class EndPoint {
       getLastId?: (entries: T[]) => string;
     }
   ): Promise<T[]> {
-    let actualQuery = query;
-    if (typeof query === 'string') {
-      actualQuery = '';
-      const querySplitted = query.split('?');
-      for (let i = 0; i < querySplitted.length; i++) {
-        const split = querySplitted[i];
-        if (split.startsWith('$')) {
-          if (!args?.variables[split.substr(1)]) {
-            i++; // skip
-          }
-        } else {
-          actualQuery += split;
-        }
-      }
-    }
-
     const fields = args.path.split('.');
     const first = 100;
     let lastId = '0x0';
     let numEntries = first;
     let entries: T[] = [];
     while (numEntries === first) {
-      const result = await this.client
-        .query(actualQuery, {first, lastId, ...args?.variables}, args?.context)
-        .toPromise();
+      const result = await this.client.query(query, {first, lastId, ...args?.variables}, args?.context).toPromise();
       if (result.error) {
         throw new Error(result.error.message);
       }
