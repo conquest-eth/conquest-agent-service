@@ -30,7 +30,16 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 2000,
+            runs: 999999,
+          },
+        },
+      },
+      {
+        version: '0.5.16', // for uniswap
+        settings: {
+          optimizer: {
+            enabled: false,
+            runs: 999999,
           },
         },
       },

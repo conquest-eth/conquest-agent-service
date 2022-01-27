@@ -30,6 +30,8 @@
     "@types/qrcode": "1.4.2",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
+    "@uniswap/v2-core": "^1.0.1",
+    "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "@urql/core": "^2.3.3",
     "chai": "^4.2.0",
     "chai-ethers": "^0.0.1",
