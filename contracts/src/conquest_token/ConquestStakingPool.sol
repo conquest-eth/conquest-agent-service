@@ -153,7 +153,7 @@ contract ConquestStakingPool {
         // TODO add in extraTokenGenerated based on previous rewardRate ?
         uint256 rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar);
         return
-            _computeNewTotalRewardPerToken(
+            _totalRewardPerTokenAtLastUpdate + _computeExtraTotalRewardPerTokenSinceLastTime(
                 totalStakedSoFar,
                 rewardRate,
                 _lastUpdateTime
@@ -171,7 +171,7 @@ contract ConquestStakingPool {
             _computeTokenEarned(
                 _totalRewardPerTokenAccountedPerAccount[account],
                 _amountStakedPerAccount[account],
-                _computeNewTotalRewardPerToken(
+                _totalRewardPerTokenAtLastUpdate + _computeExtraTotalRewardPerTokenSinceLastTime(
                     totalStakedSoFar,
                     rewardRate,
                     _lastUpdateTime
@@ -204,9 +204,9 @@ contract ConquestStakingPool {
     }
 
     // TODO make it pure and totalStaked == 0 check outside ?
-    function _computeNewTotalRewardPerToken(uint256 totalStaked, uint256 rewardRate, uint256 lastUpdateTime) internal view returns(uint256) {
+    function _computeExtraTotalRewardPerTokenSinceLastTime(uint256 totalStaked, uint256 rewardRate, uint256 lastUpdateTime) internal view returns(uint256) {
         if (totalStaked == 0) {
-            return _totalRewardPerTokenAtLastUpdate;
+            return 0;
         }
         return ((block.timestamp - lastUpdateTime) * rewardRate * PRECISION) / totalStaked;
     }
@@ -215,11 +215,20 @@ contract ConquestStakingPool {
         totalStakedSoFar = _totalStaked;
         uint256 extraTokenGenerated = _extraTokenGenerated;
         uint256 totalSupplySoFar = _originalTotalSupply + extraTokenGenerated;
-        // TODO add in extraTokenGenerated based on previous rewardRate ?
-        rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar);
-        totalRewardPerToken = _computeNewTotalRewardPerToken(totalStakedSoFar, rewardRate, _lastUpdateTime);
 
-        _extraTokenGenerated = extraTokenGenerated + (totalRewardPerToken - _totalRewardPerTokenAtLastUpdate) * totalStakedSoFar;
+        // reward rate for players based on past data, do not consider the compounding effect that should reduce its rate
+        // TODO apply it twice? see below
+        rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar);
+
+        // recompute rewardRate based on aproximate computation of extraTotalRewardPerToken
+        // uint256 extraTotalRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate, _lastUpdateTime);
+        // rewardRate = _computeRewardRate(totalStakedSoFar + extraTotalRewardPerToken * totalStakedSoFar, totalSupplySoFar);
+
+        uint256 extraTotalRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate, _lastUpdateTime);
+
+        totalRewardPerToken = _totalRewardPerTokenAtLastUpdate + extraTotalRewardPerToken; // need for returns
+
+        _extraTokenGenerated = extraTokenGenerated + (extraTotalRewardPerToken * totalStakedSoFar);
         _totalRewardPerTokenAtLastUpdate = totalRewardPerToken;
         _lastUpdateTime = block.timestamp;
     }
