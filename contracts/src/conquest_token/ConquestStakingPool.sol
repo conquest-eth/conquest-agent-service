@@ -4,6 +4,15 @@ pragma solidity 0.8.9;
 import "./ConquestToken.sol";
 
 contract ConquestStakingPool {
+
+    struct Config {
+        uint64 maxInflation;
+        // 0 and the curve is linear, means inflation moves with the stake and staker win the same ratio at all time
+        // > 0 , means inflation start higher giving more to early stakers
+        uint64 startInflation;
+        uint64 liquidityRewardRatio;
+    }
+
     uint256 internal constant PRECISION = 1e24;
 
     event Staked(address indexed account, uint256 amount);
@@ -14,6 +23,9 @@ contract ConquestStakingPool {
     uint256 internal _lastUpdateTime;
     uint256 internal _totalRewardPerTokenAtLastUpdate;
     uint256 internal _totalStaked;
+    uint256 internal _extraTokenGenerated;
+    uint256 internal _totalLiquidityRewardGenerated;
+
     mapping(address => uint256) internal _amountStakedPerAccount;
     mapping(address => uint256) internal _totalRewardPerTokenAccountedPerAccount;
     mapping(address => uint256) internal _rewardsToWithdrawPerAccount;
@@ -21,11 +33,12 @@ contract ConquestStakingPool {
     mapping(address => uint256) internal _games;
     address public owner;
 
-    uint256 internal _maxInflation;
-    // 0 and the curve is linear, means inflation moves with the stake and staker win the same ratio at all time
-    // > 0 , means inflation start higher giving more to early stakers
-    uint256 internal _startInflation;
-    uint256 internal _extraTokenGenerated;
+    // ---------------------------------------------------------------------------------------------------------------
+    // CONFIG
+    // ---------------------------------------------------------------------------------------------------------------
+    Config public config;
+    // ---------------------------------------------------------------------------------------------------------------
+
 
     ConquestToken immutable internal _conquestToken;
     uint256 immutable internal _originalTotalSupply;
@@ -33,18 +46,32 @@ contract ConquestStakingPool {
         _conquestToken = conquestToken;
         _originalTotalSupply = _conquestToken.totalSupply();
         owner = initialOwner;
+
+        // -----------------------------------------------------------------------------------------------------------
+        // CONFIG
+        // -----------------------------------------------------------------------------------------------------------
+        config.startInflation = 0; // TODO configure 10000th
+        config.maxInflation = 2000; // TODO configure 10000th
+        config.liquidityRewardRatio = 5000; // TODO configure 10000th
+        // -----------------------------------------------------------------------------------------------------------
     }
 
     // TODO implement game weight
     function setGame(address game, uint256 weight) external {
-        require(msg.sender == owner);
+        require(msg.sender == owner, "NOT_OWNER");
         _games[game] = weight;
     }
 
     // TODO Ownable with Event
     function transferOwnership(address newOwner) external {
-        require(msg.sender == owner);
+        require(msg.sender == owner, "NOT_OWNER");
         owner = newOwner;
+    }
+
+    function setConfig(Config calldata newConfig) external {
+        require(msg.sender == owner, "NOT_OWNER");
+        _updateGlobal();
+        config = newConfig;
     }
 
 
@@ -156,7 +183,7 @@ contract ConquestStakingPool {
         uint256 extraTokenGenerated = _extraTokenGenerated;
         uint256 totalSupplySoFar = _originalTotalSupply + extraTokenGenerated;
         // TODO add in extraTokenGenerated based on previous rewardRate ?
-        uint256 rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar);
+        uint256 rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar, config.startInflation, config.maxInflation);
         return
             _totalRewardPerTokenAtLastUpdate + _computeExtraTotalRewardPerTokenSinceLastTime(
                 totalStakedSoFar,
@@ -171,7 +198,7 @@ contract ConquestStakingPool {
         uint256 extraTokenGenerated = _extraTokenGenerated;
         uint256 totalSupplySoFar = _originalTotalSupply + extraTokenGenerated;
         // TODO add in extraTokenGenerated based on previous rewardRate ?
-        uint256 rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar);
+        uint256 rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar, config.startInflation, config.maxInflation);
         return
             _computeTokenEarned(
                 _totalRewardPerTokenAccountedPerAccount[account],
@@ -191,12 +218,12 @@ contract ConquestStakingPool {
     // ---------------------------------------------------------------------------------------------------------------
 
 
-    function _computeRewardRate(uint256 totalStakedSoFar, uint256 totalSupplySoFar) internal view returns (uint256 rewardRate) {
+    function _computeRewardRate(uint256 totalStakedSoFar, uint256 totalSupplySoFar, uint256 startInflation, uint256 maxInflation) internal pure returns (uint256 rewardRate) {
         // assume this is the only generator of token
         // TODO separate role and have a central place to reserve tokens in ConquestToken
         // claiming reward fro reserve will reduce the reserve while increasing the token minted, keeping total supply adjusted
-        uint256 targetRate = (_maxInflation - _startInflation) * (totalStakedSoFar / totalSupplySoFar) + _startInflation; // READ + 2 (_startInflation, _maxInflation)
-        rewardRate = (targetRate * totalSupplySoFar) / totalStakedSoFar;
+        uint256 targetRate = (maxInflation - startInflation) * (totalStakedSoFar / totalSupplySoFar) + startInflation;
+        rewardRate = (targetRate * totalSupplySoFar) / 315360000000; // number of seconds in a year multiple by 10,000
     }
 
     function _computeTokenEarned(
@@ -221,9 +248,10 @@ contract ConquestStakingPool {
         uint256 extraTokenGenerated = _extraTokenGenerated; // READ + 1
         uint256 totalSupplySoFar = _originalTotalSupply + extraTokenGenerated; // READ + 1
 
+
         // reward rate for players based on past data, do not consider the compounding effect that should reduce its rate
         // TODO apply it twice? see below
-        rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar);
+        rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar, config.startInflation, config.maxInflation); // READ config
 
         // recompute rewardRate based on aproximate computation of extraTotalRewardPerToken
         // uint256 extraTotalRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate, _lastUpdateTime);
@@ -231,9 +259,14 @@ contract ConquestStakingPool {
 
         uint256 extraTotalRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate, _lastUpdateTime); // READ + 1
 
+        // liquidity reward
+        uint256 liquidityRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate * config.liquidityRewardRatio / 10000, _lastUpdateTime); // READ + 1 // READ config?
+        uint256 liquidityRewardGenerated = liquidityRewardPerToken * totalStakedSoFar;
+        _totalLiquidityRewardGenerated = _totalLiquidityRewardGenerated + liquidityRewardGenerated; // WRITE + 1
+
         totalRewardPerTokenAllocatedSoFar = _totalRewardPerTokenAtLastUpdate + extraTotalRewardPerToken; // READ + 1 // need for returns params
 
-        _extraTokenGenerated = extraTokenGenerated + (extraTotalRewardPerToken * totalStakedSoFar); // WRITE + 1 // TODO use mint ? => _conquestToken.totalSupply
+        _extraTokenGenerated = extraTokenGenerated + (extraTotalRewardPerToken * totalStakedSoFar) + liquidityRewardGenerated; // WRITE + 1 // TODO use mint ? => _conquestToken.totalSupply
 
         // TODO group these 2 in a struct
         _totalRewardPerTokenAtLastUpdate = totalRewardPerTokenAllocatedSoFar; // WRITE + 1
