@@ -61,10 +61,13 @@ contract ConquestStakingPool {
         }
 
         (uint256 totalStakedSoFar, uint256 amountStakedSoFar) = _update(account);
-        _totalStaked = totalStakedSoFar + amount;
-        _amountStakedPerAccount[account] = amountStakedSoFar + amount;
 
-        _conquestToken.transferFrom(account, address(this), amount);
+        // update staked amount, their reward will be counted on next interaction.
+        _totalStaked = totalStakedSoFar + amount; // WRITE + 1 // TODO remove that line because _conquestToken.balanceOf(address(this)) should be equivalent
+        _amountStakedPerAccount[account] = amountStakedSoFar + amount; // WRITE + 1
+
+
+        _conquestToken.transferFrom(account, address(this), amount); // WRITE + 2 + ?
         emit Staked(account, amount);
     }
 
@@ -226,11 +229,13 @@ contract ConquestStakingPool {
         // uint256 extraTotalRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate, _lastUpdateTime);
         // rewardRate = _computeRewardRate(totalStakedSoFar + extraTotalRewardPerToken * totalStakedSoFar, totalSupplySoFar);
 
-        uint256 extraTotalRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate, _lastUpdateTime);
+        uint256 extraTotalRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate, _lastUpdateTime); // READ + 1
 
         totalRewardPerTokenAllocatedSoFar = _totalRewardPerTokenAtLastUpdate + extraTotalRewardPerToken; // READ + 1 // need for returns params
 
-        _extraTokenGenerated = extraTokenGenerated + (extraTotalRewardPerToken * totalStakedSoFar); // WRITE + 1
+        _extraTokenGenerated = extraTokenGenerated + (extraTotalRewardPerToken * totalStakedSoFar); // WRITE + 1 // TODO use mint ? => _conquestToken.totalSupply
+
+        // TODO group these 2 in a struct
         _totalRewardPerTokenAtLastUpdate = totalRewardPerTokenAllocatedSoFar; // WRITE + 1
         _lastUpdateTime = block.timestamp; // WRITE + 1
     }
