@@ -27,6 +27,27 @@ export type Registration = {
   update?: UpdateSubmission;
 };
 
+export type StoredMessage = {
+  message: string;
+  from: string;
+};
+
+export type MessageSubmission = {
+  to: string;
+  message: string;
+  // TODO signature ?
+  // encryption ?
+  // TODO burnProof ?
+};
+
+function getTimestamp10ThSeconds(): number {
+  return Math.floor(Date.now() / 100);
+}
+
+function lexicographicNumber12(num: number): string {
+  return num.toString().padStart(12, '0');
+}
+
 export class Account extends DO {
   constructor(state: State, env: Env) {
     super(state, env);
@@ -116,5 +137,41 @@ export class Account extends DO {
     currentProfile.description = json.description;
     this.state.storage.put<ProfileData>(accountID, currentProfile);
     return createResponse({success: true});
+  }
+
+  async send(path: string[], messageSubmission: MessageSubmission): Promise<Response> {
+    const timestamp10Th = getTimestamp10ThSeconds();
+    const toAddress = messageSubmission.to.toLowerCase();
+    const toID = `_${toAddress}`;
+    const fromID = ''; // TODO message signature // encryption ?
+
+    await this.state.storage.put<StoredMessage>(`${toID}_t${lexicographicNumber12(timestamp10Th)}_f${fromID}`, {
+      from: fromID,
+      message: messageSubmission.message,
+    });
+    return createResponse({success: true});
+  }
+
+  async messages(path: string[]): Promise<Response> {
+    const limit = 1000;
+    const accountAddress = path[0].toLowerCase();
+    const accountID = `_${accountAddress}`;
+
+    // if not encrypted, require signature from request ? (path ? header ?)
+
+    const messageEntries = (await this.state.storage.list({prefix: `${accountID}_t`, limit})) as
+      | Map<string, StoredMessage>
+      | undefined;
+
+    const messages = [];
+    if (messageEntries) {
+      for (const messageEntry of messageEntries.entries()) {
+        const message = messageEntry[1];
+        // const messageId = messageEntry[0];
+        messages.push(message);
+      }
+    }
+
+    return createResponse({success: true, messages});
   }
 }

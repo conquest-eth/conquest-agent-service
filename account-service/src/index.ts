@@ -73,6 +73,18 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     }
     let resp = await obj.fetch(url.toString(), request);
     return resp;
+  } else if (fnc === 'send') {
+    if (method !== 'POST') {
+      return InvalidMethod();
+    }
+    let resp = await obj.fetch(url.toString(), request);
+    return resp;
+  } else if (fnc === 'messages') {
+    if (method !== 'GET') {
+      return InvalidMethod();
+    }
+    let resp = await obj.fetch(url.toString(), request);
+    return resp;
   }
   return UnknownRequestType();
 }
