@@ -98,10 +98,30 @@ contract ConquestStakingPool {
         emit Staked(account, amount);
     }
 
+    // /// @notice Withdraws ${amount} staked tokens from account ${account}.
+    // /// @param account The account whose token are withdrawn.
+    // /// @param amount The amount of tokens to withdraw.
+    // function withdraw(address account, uint256 amount) external onlyGames {
+    //     if (amount == 0) {
+    //         return;
+    //     }
+
+    //     // update the amount generated, store it in
+    //     (uint256 totalStakedSoFar, uint256 amountStakedSoFar) = _update(account);
+
+    //     unchecked {
+    //         _amountStakedPerAccount[account] = amountStakedSoFar - amount;
+    //         _totalStaked = totalStakedSoFar - amount;
+    //     }
+
+    //     _conquestToken.transfer(account, amount);
+    //     emit Withdrawn(account, amount);
+    // }
+
     /// @notice Withdraws ${amount} staked tokens from account ${account}.
     /// @param account The account whose token are withdrawn.
     /// @param amount The amount of tokens to withdraw.
-    function withdraw(address account, uint256 amount) external onlyGames {
+    function exit(address account, uint256 amount) external onlyGames {
         if (amount == 0) {
             return;
         }
@@ -114,9 +134,21 @@ contract ConquestStakingPool {
             _totalStaked = totalStakedSoFar - amount;
         }
 
+        // TODO exit reserve (if someone capture)
+        // _conquestToken.transfer(account, amount);
+
+        // emit Withdrawn(account, amount);
+    }
+
+    /// @notice Withdraws ${amount} staked tokens from account ${account}.
+    /// @param account The account whose token are withdrawn.
+    /// @param amount The amount of tokens to withdraw.
+    function withdraw(address account, uint256 amount) external onlyGames {
+        // TODO  take from exit reserve
         _conquestToken.transfer(account, amount);
         emit Withdrawn(account, amount);
     }
+
 
     // TODO variant where you can withdraw an amount of token + an amount of reward at the same time (not full exit)
 
