@@ -19,8 +19,8 @@
   onMount(() => {
     logo.start();
 
-    let x = parseInt($page.query.get('x'));
-    let y = parseInt($page.query.get('y'));
+    let x = parseInt($page.url.searchParams.get('x'));
+    let y = parseInt($page.url.searchParams.get('y'));
 
     // console.log({
     //   search: window.location.search,
