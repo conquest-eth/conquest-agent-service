@@ -4,7 +4,7 @@
 
 ### Sign-in
 
-> In order to play conquest, a signing key need to be generated on your web browser. THis is to allow the signing and encryption of your data.
+> In order to play conquest, a signing key need to be generated on your web browser. This is to allow the signing and encryption of your data.
 
 - choose whether you want that secret key to be saved on your browser (trusting your machine)
 - choose whether you want the data to be synced across your multiple device
@@ -21,9 +21,9 @@
 
 ### Register for the agent-service
 
-> The agent-service will remove the need for the 2nd transaction when sending spaceships (See [here](#sending-spaceships-from-one-planet-to-another))
+> The agent-service will remove the need for the 2nd transaction when sending spaceships (See [here](#sending-spaceships-from-one-planet-to-another)) (sending spaceships require normally 2 txs, one to send and one to execute when the fleet arrive (could be days later))
 
-- you need to register, this is a signing message. This only need to be done once.
+- To use the agent-service you need to register, this is a signing message. This only need to be done once.
 - this will trigger a wallet popup to sign (no tx involved)
 - Then you need to top-up the agent with native token (ETH) for the agent to work on your behalf
 - this will trigger a wallet popup to perform a tx with ETH (you thus need some ETH here)
@@ -33,10 +33,10 @@
 
 > a.k.a. Claiming planets and make them produce spaceship for you
 
-- Select planet
-- Perform transaction to claim with Etherplay token
+- Select planet (with no player on it)
+- Perform transaction to claim with Etherplay token (need Etherplay token)
 - Wait for tx to be mined
-- Tx mined => it is your planet, allow acknowledgement ?
+- Tx mined => the planet is now your and start producing spaceships, show notification.
 - tx failed => show failure, acknowledge
 - tx never mined => show timeout, acknowledge/retry, accept it can happen later if not overriden with another tx (could propose to send a null tx to cancel it)
 
@@ -48,6 +48,8 @@
 >
 > Or sending spaceships to a friend (see [alliances](#join-public-alliances))
 
+#### sending tx
+
 - Select origin planet and destination planet
 - Select amount of planet, see prediction of combat (if attacking)
 - Select whether you want to use the [agent-service](#register-for-the-agent-service) for that fleet. A reason for not selecting it is that you do not trust the agent-service and want to keep that fleet secret.
@@ -57,13 +59,16 @@
 - tx is mined, fleet is on its way for good (fleet move on the map slowly)
 - tx failed => show failure, acknowledge
 - tx never mined => show timeout, acknowledge/retry, accept it can happen later if not overriden with another tx (could propose to send a null tx to cancel it)
+
+#### resolution tx
+
 - show arrival (when the fleet finally reaches destination, can take days)
 - show when reveal tx is possible
   > note that if the agent-service is used (see [agent-service](#register-for-the-agent-service)) the reveal tx is delayed to leave time for the agent to do it automatically
-- if too late, show that => (can we deal with return spaceships ?)
-- allow to resolve, choose friendly send or attack choice
+- if too late, your fleet is lost in space
+- if still time, allow to resolve, tx confirmation
 - show that resolution is pending
-- resolution mined: show result, allow acknowledgement
+- tx mined: show result, allow acknowledgement
 - tx failed => show failure, acknowledge
 - tx never mined => show timeout, acknowledge/retry, accept it can happen later if not overriden with another tx (could propose to send a null tx to cancel it)
 
