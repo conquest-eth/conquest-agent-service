@@ -19,17 +19,27 @@ class LogoStore extends BaseStore<{stage: number}> {
   }
 
   start() {
-    this.stageTime = now();
+    if (!this.stageTime) {
+      this.stageTime = now();
 
-    // TODO  investigate, for now: to ensure logo goes through
-    if (!params['logo']) {
-      setTimeout(
-        () => {
-          this.set({stage: MAX_STAGE});
-        },
-        this.visited ? 3000 : 4000
-      );
+      // TODO  investigate, for now: to ensure logo goes through
+      if (!params['logo']) {
+        setTimeout(
+          () => {
+            this.set({stage: MAX_STAGE});
+          },
+          this.visited ? 3000 : 4000
+        );
+      }
     }
+  }
+
+  stop() {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
+    this.stageTime = 1;
+    this.set({stage: MAX_STAGE});
   }
 
   gameLogoReady() {

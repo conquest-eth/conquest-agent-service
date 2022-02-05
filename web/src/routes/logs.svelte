@@ -20,6 +20,8 @@
   }
 </script>
 
+<!-- TODO https://tailwindui.com/components/application-ui/lists/feeds ?-->
+
 <div class="w-full h-full bg-black text-white">
   <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
   <div class="markdown text-white p-3">

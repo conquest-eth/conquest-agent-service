@@ -14,9 +14,7 @@ export function url(path: string, hash?: string): string {
   return `${base}/${pathname}${queryStringifyNoArray(paramFromPath)}${hash ? `#${hash}` : ''}`;
 }
 
-export function urlOfPath(url: string, path: string): boolean {
-  // console.log({url, path, base});
-
+export function relativePathname(path: string): string {
   // hmm, svelte-kit is prepending "//prerender" when using adapter-static
   if (path.startsWith('//prerender')) {
     path = path.slice(11);
@@ -25,6 +23,12 @@ export function urlOfPath(url: string, path: string): boolean {
     path = path.slice(base.length);
   }
 
+  return path.replace(/^\/+|\/+$/g, '');
+}
+
+export function urlOfPath(url: string, path: string): boolean {
+  const relPath = relativePathname(path);
+
   const basicUrl = url.split('?')[0].split('#')[0];
-  return basicUrl.replace(base, '').replace(/^\/+|\/+$/g, '') === path.replace(/^\/+|\/+$/g, '');
+  return basicUrl.replace(base, '').replace(/^\/+|\/+$/g, '') === relPath;
 }

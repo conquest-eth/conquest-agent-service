@@ -24,6 +24,8 @@
   }
 </script>
 
+<!-- TODO https://tailwindui.com/components/application-ui/page-examples/settings-screens-->
+
 <div class="w-full h-full bg-black">
   <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
 

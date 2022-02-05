@@ -58,6 +58,8 @@
 
 <svelte:window on:keydown={handle_keydown} />
 
+<!-- TODO check new tailwind : https://tailwindui.com/components/application-ui/overlays/modals -->
+
 <!-- container -->
 <div class="z-50 fixed w-full h-full top-0 left-0 flex items-center justify-center">
   <!-- clickable dark overlay -->

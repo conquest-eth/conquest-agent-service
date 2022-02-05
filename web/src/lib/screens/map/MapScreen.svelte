@@ -112,7 +112,7 @@
 
 {#if $messageFlow.error || $messageFlow.step !== 'IDLE'}
   <MessageFlow />
-{/if} -->
+{/if}
 
 {#if $showPlanetDepartures.error || $showPlanetDepartures.step !== 'IDLE'}
   <ShowPlanetDeparturesFlow />

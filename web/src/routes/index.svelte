@@ -17,8 +17,6 @@
   import {url} from '$lib/utils/url';
 
   onMount(() => {
-    logo.start();
-
     let x = parseInt($page.url.searchParams.get('x'));
     let y = parseInt($page.url.searchParams.get('y'));
 
