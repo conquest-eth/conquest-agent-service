@@ -6,8 +6,16 @@
   import NewVersionNotification from '$lib/components/web/NewVersionNotification.svelte';
   import {initDebug} from '$lib/utils/debug';
   import {onMount} from 'svelte';
+  import {relativePathname, url} from '$lib/utils/url';
+  import {logo} from '$lib/screens/loading/logo';
+  import {page} from '$app/stores';
   // import Install from './components/Install.svelte';
   onMount(() => {
+    const relPath = relativePathname($page.url.pathname);
+    // console.log({relPath});
+    if (!(relPath === '' || relPath === '/')) {
+      logo.stop();
+    }
     initDebug();
   });
 </script>
