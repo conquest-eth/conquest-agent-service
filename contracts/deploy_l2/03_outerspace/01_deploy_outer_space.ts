@@ -25,8 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const earliestBlock = await ethers.provider.getBlock('earliest');
     chainGenesisHash = earliestBlock.hash;
   }
-  let genesisHash =
-    '0xcce77b122615b6093c0df0c7392bec6f537eb7a0595c337a573ee6d96d1107c8';
+  let genesisHash = '0xcce77b122615b6093c0df0c7392bec6f537eb7a0595c337a573ee6d96d1107c8';
   let resolveWindow = hours(12);
   let timePerDistance = hours(2);
   let exitDuration = hours(3 * 24);
@@ -42,13 +41,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     exitDuration /= 180;
     productionSpeedUp = 180;
     frontrunningDelay /= 180;
-    resolveWindow /= 180;
+    resolveWindow /= 6use0; // 180;
   }
 
   if (networkName === 'quick') {
     // TODO remove when updating quick to a new contract
-    genesisHash =
-      '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
+    genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
     timePerDistance /= 180;
     exitDuration /= 180;
     productionSpeedUp = 180;
@@ -68,13 +66,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // }
 
   if (networkName === 'dev') {
-    genesisHash =
-      '0x9e9e23df9a65ca95f7a3b613673c89db774d0cdaaa1850160a59406c0220d7f6';
+    genesisHash = '0x9e9e23df9a65ca95f7a3b613673c89db774d0cdaaa1850160a59406c0220d7f6';
   }
 
   if (networkName === 'alpha') {
-    genesisHash =
-      '0x015e3b02f1bb647546a9856205a64f1c2263856de7acb3fe65aa303c9c8ce7fc';
+    genesisHash = '0x015e3b02f1bb647546a9856205a64f1c2263856de7acb3fe65aa303c9c8ce7fc';
   }
 
   console.log({

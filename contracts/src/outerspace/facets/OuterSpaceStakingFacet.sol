@@ -4,7 +4,6 @@ pragma solidity 0.8.9;
 import "./OuterSpaceFacetBase.sol";
 
 contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
-
     constructor(Config memory config) OuterSpaceFacetBase(config) {}
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -39,8 +38,6 @@ contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
         _acquire(sender, amount, location);
         _stakingToken.transferFrom(sender, address(this), amount);
     }
-
-
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // EXIT / WITHDRAWALS
@@ -80,5 +77,4 @@ contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
         _updateStake(owner, 0);
         require(_stakingToken.transfer(owner, amount), "FAILED_TRANSFER"); // TODO FundManager
     }
-
 }

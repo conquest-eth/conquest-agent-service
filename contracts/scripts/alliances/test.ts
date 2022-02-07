@@ -14,12 +14,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
 
   async function readSlots(player: string): Promise<void> {
     for (let i = 0; i < 4; i++) {
-      const slot = await read(
-        'AllianceRegistry',
-        'getAllianceDataAtSlot',
-        player,
-        i
-      );
+      const slot = await read('AllianceRegistry', 'getAllianceDataAtSlot', player, i);
       console.log(`slot ${i}: ${slot.alliance}, ${slot.joinTime}`);
     }
   }
@@ -32,28 +27,12 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
 
   await deployRegistry(hre);
 
-  const alliances = await read(
-    'AllianceRegistry',
-    'havePlayersAnAllianceInCommon',
-    p1,
-    p2,
-    1638948141
-  );
+  const alliances = await read('AllianceRegistry', 'havePlayersAnAllianceInCommon', p1, p2, 1638948141);
 
   console.log(alliances);
 
-  const p1Data = await read(
-    'AllianceRegistry',
-    'getAllianceData',
-    p1,
-    alliance
-  );
-  const p2Data = await read(
-    'AllianceRegistry',
-    'getAllianceData',
-    p2,
-    alliance
-  );
+  const p1Data = await read('AllianceRegistry', 'getAllianceData', p1, alliance);
+  const p2Data = await read('AllianceRegistry', 'getAllianceData', p2, alliance);
 
   console.log({
     alliances,

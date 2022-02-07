@@ -14,9 +14,7 @@ async function main() {
     winnersArray = JSON.parse(fs.readFileSync('data/winners.json').toString());
   } catch (e) {}
 
-  const signatures: string[] = JSON.parse(
-    fs.readFileSync('data/near.signatures.json').toString()
-  );
+  const signatures: string[] = JSON.parse(fs.readFileSync('data/near.signatures.json').toString());
 
   for (const signature of signatures) {
     const splitted = signature.split(':');
@@ -36,9 +34,7 @@ async function main() {
       throw new Error(`invalid near signing for sig: ${signature}`);
     }
 
-    const found = winnersArray.find(
-      (v) => v.address.toLowerCase() === signer.toLowerCase()
-    );
+    const found = winnersArray.find((v) => v.address.toLowerCase() === signer.toLowerCase());
     if (!found) {
       console.error(`notfound : ${signer}`);
     } else {

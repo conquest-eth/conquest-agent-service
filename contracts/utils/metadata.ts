@@ -20,11 +20,7 @@ task('export-metadata')
       const deployment = deployments[deploymentName];
       if (deployment.metadata) {
         fs.writeFileSync(
-          path.join(
-            exportPath,
-            network,
-            `${deploymentName}_${deployment.address}.json`
-          ),
+          path.join(exportPath, network, `${deploymentName}_${deployment.address}.json`),
           deployment.metadata
         );
       }

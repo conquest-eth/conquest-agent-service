@@ -3,9 +3,7 @@ import {TheGraph} from './utils/thegraph';
 import {BigNumber} from '@ethersproject/bignumber';
 import fs from 'fs';
 
-const theGraph = new TheGraph(
-  `https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`
-);
+const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
 // query($blockNumber: Int! $first: Int! $lastId: ID! $id: ID!) {
 const queryString = `
@@ -43,11 +41,7 @@ async function main() {
       return {
         id: p.id,
         total: total.div(DECIMALS_18).toNumber(),
-        score: total
-          .sub(playTokenGiven)
-          .mul(1000000)
-          .div(playTokenGiven)
-          .toNumber(),
+        score: total.sub(playTokenGiven).mul(1000000).div(playTokenGiven).toNumber(),
         currentStake: currentStake.div(DECIMALS_18).toNumber(),
         playTokenToWithdraw: playTokenToWithdraw.div(DECIMALS_18).toNumber(),
         playTokenBalance: playTokenBalance.div(DECIMALS_18).toNumber(),
@@ -62,9 +56,7 @@ async function main() {
   console.log(top18.map((v) => v.id));
 
   const winnersWithReward: {[id: string]: number} = {};
-  const tokenDistribution = [
-    500, 200, 100, 50, 25, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 5,
-  ];
+  const tokenDistribution = [500, 200, 100, 50, 25, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 5];
   for (let i = 0; i < top18.length; i++) {
     winnersWithReward[top18[i].id] = tokenDistribution[i];
   }
@@ -81,9 +73,7 @@ async function main() {
     winnersArray = JSON.parse(fs.readFileSync('winners.json').toString());
   } catch (e) {}
   for (const winner of Object.keys(winnersWithReward)) {
-    const found = winnersArray.findIndex(
-      (v) => v.address.toLowerCase() === winner
-    );
+    const found = winnersArray.findIndex((v) => v.address.toLowerCase() === winner);
     if (found !== -1) {
       winnersArray[found].numTokens = winnersWithReward[winner];
     } else {

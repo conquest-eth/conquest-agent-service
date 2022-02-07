@@ -19,12 +19,18 @@ contract LiquidityEngine {
     IUniswapV2Factory internal immutable _factory;
     address internal immutable _liquidityReserve;
 
-
     // receive() external payable {
     //     assert(msg.sender == WETH); // only accept ETH via fallback from the WETH contract
     // }
 
-    constructor(IWETH weth, IUniswapV2Factory factory, IERC20 userProvidedToken, IERC20 systemProvidedToken, uint256 tokenRatio18, address liquidityReserve) {
+    constructor(
+        IWETH weth,
+        IUniswapV2Factory factory,
+        IERC20 userProvidedToken,
+        IERC20 systemProvidedToken,
+        uint256 tokenRatio18,
+        address liquidityReserve
+    ) {
         _WETH = weth;
         _factory = factory;
         _userProvidedToken = userProvidedToken;
@@ -33,21 +39,27 @@ contract LiquidityEngine {
         _liquidityReserve = liquidityReserve;
     }
 
-
     function addLiquidity(
         uint256 upToAmountA,
         address to,
         uint256 deadline
-    ) external ensure(deadline) returns (uint256 amountA, uint256 amountB, uint liquidity) {
-        uint256 upToAmountB = upToAmountA * _tokenRatio18 / DECIMALS_18;
+    )
+        external
+        ensure(deadline)
+        returns (
+            uint256 amountA,
+            uint256 amountB,
+            uint256 liquidity
+        )
+    {
+        uint256 upToAmountB = (upToAmountA * _tokenRatio18) / DECIMALS_18;
         uint256 balance = _systemProvidedToken.balanceOf(address(this));
         if (balance < upToAmountB) {
             amountB = balance;
         } else {
             amountB = upToAmountB;
         }
-        amountA = amountB * DECIMALS_18 / _tokenRatio18;
-
+        amountA = (amountB * DECIMALS_18) / _tokenRatio18;
 
         address pair = _factory.getPair(address(_userProvidedToken), address(_systemProvidedToken));
         if (pair == address(0)) {
@@ -56,22 +68,31 @@ contract LiquidityEngine {
 
         _userProvidedToken.safeTransferFrom(msg.sender, pair, amountA);
         _systemProvidedToken.safeTransferFrom(address(this), pair, amountB);
-        liquidity = IUniswapV2PairWithRawLiquidityProvisionOption(pair).mintWithRawLiquidityProvision(to, _liquidityReserve);
+        liquidity = IUniswapV2PairWithRawLiquidityProvisionOption(pair).mintWithRawLiquidityProvision(
+            to,
+            _liquidityReserve
+        );
     }
 
-    function addLiquidityETH(
-        address to,
-        uint256 deadline
-    ) external payable ensure(deadline) returns (uint256 amountA, uint256 amountB, uint liquidity) {
+    function addLiquidityETH(address to, uint256 deadline)
+        external
+        payable
+        ensure(deadline)
+        returns (
+            uint256 amountA,
+            uint256 amountB,
+            uint256 liquidity
+        )
+    {
         require(address(_userProvidedToken) == address(_WETH), "NO_ETH_EXPECTED");
-        uint256 upToAmountB = msg.value * _tokenRatio18 / DECIMALS_18;
+        uint256 upToAmountB = (msg.value * _tokenRatio18) / DECIMALS_18;
         uint256 balance = _systemProvidedToken.balanceOf(address(this));
         if (balance < upToAmountB) {
             amountB = balance;
         } else {
             amountB = upToAmountB;
         }
-        amountA = amountB * DECIMALS_18 / _tokenRatio18;
+        amountA = (amountB * DECIMALS_18) / _tokenRatio18;
 
         address pair = _factory.getPair(address(_userProvidedToken), address(_systemProvidedToken));
         if (pair == address(0)) {
@@ -82,16 +103,18 @@ contract LiquidityEngine {
         require(_WETH.transfer(pair, amountA), "WETH_FAILED");
         _systemProvidedToken.safeTransferFrom(address(this), pair, amountB);
 
-        liquidity = IUniswapV2PairWithRawLiquidityProvisionOption(pair).mintWithRawLiquidityProvision(to, _liquidityReserve);
+        liquidity = IUniswapV2PairWithRawLiquidityProvisionOption(pair).mintWithRawLiquidityProvision(
+            to,
+            _liquidityReserve
+        );
 
         if (msg.value > amountA) {
             payable(msg.sender).transfer(msg.value - amountA);
         }
     }
 
-
-    modifier ensure(uint deadline) {
-        require(deadline >= block.timestamp, 'LiquidityEngine: EXPIRED');
+    modifier ensure(uint256 deadline) {
+        require(deadline >= block.timestamp, "LiquidityEngine: EXPIRED");
         _;
     }
 }

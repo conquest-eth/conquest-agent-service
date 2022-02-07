@@ -2,7 +2,6 @@
 pragma solidity 0.8.9;
 
 contract ImportingOuterSpaceEvents {
-
     event PlanetStake(address indexed acquirer, uint256 indexed location, uint32 numSpaceships, uint256 stake);
     event FleetSent(
         address indexed fleetSender,
@@ -43,5 +42,4 @@ contract ImportingOuterSpaceEvents {
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 
     event Initialized(uint32 minX, uint32 maxX, uint32 minY, uint32 maxY, bytes32 genesis);
-
 }

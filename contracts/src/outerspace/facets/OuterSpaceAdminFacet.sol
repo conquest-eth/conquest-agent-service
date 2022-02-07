@@ -5,7 +5,6 @@ import "./OuterSpaceFacetBase.sol";
 import "hardhat-deploy/solc_0.8/diamond/UsingDiamondOwner.sol";
 
 contract OuterSpaceAdminFacet is UsingDiamondOwner, OuterSpaceFacetBase {
-
     constructor(Config memory config) OuterSpaceFacetBase(config) {}
 
     // TODO : ERC20, ERC721, ERC1155
@@ -28,8 +27,7 @@ contract OuterSpaceAdminFacet is UsingDiamondOwner, OuterSpaceFacetBase {
         emit RewardSetup(location, sponsor, rewardId);
     }
 
-
-     function resetPlanet(uint256 location) external onlyOwner {
+    function resetPlanet(uint256 location) external onlyOwner {
         _planets[location].owner = address(0);
         _planets[location].exitTime = 0;
         _planets[location].numSpaceships = 0;

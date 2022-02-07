@@ -71,64 +71,38 @@ const config: HardhatUserConfig = {
   networks: addForkConfiguration({
     hardhat: {
       initialBaseFeePerGas: 0, // to fix : https://github.com/sc-forks/solidity-coverage/issues/652, see https://github.com/sc-forks/solidity-coverage/issues/652#issuecomment-896330136
-      deploy: l1_deployments.concat(
-        l1_deployments_dev,
-        l2_deployments,
-        l2_deployments_dev
-      ),
+      deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
       mining: process.env.MINING_INTERVAL
         ? {
             auto: false,
-            interval: process.env.MINING_INTERVAL.split(',').map((v) =>
-              parseInt(v)
-            ) as [number, number],
+            interval: process.env.MINING_INTERVAL.split(',').map((v) => parseInt(v)) as [number, number],
           }
         : undefined,
     },
     localhost: {
       url: node_url('localhost'),
       accounts: accounts(),
-      deploy: l1_deployments.concat(
-        l1_deployments_dev,
-        l2_deployments,
-        l2_deployments_dev
-      ),
+      deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
     },
     dev: {
       url: node_url('goerli'),
       accounts: accounts('goerli'),
-      deploy: l1_deployments.concat(
-        l1_deployments_dev,
-        l2_deployments,
-        l2_deployments_dev
-      ),
+      deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
     },
     quick: {
       url: node_url('goerli'),
       accounts: accounts('goerli'),
-      deploy: l1_deployments.concat(
-        l1_deployments_dev,
-        l2_deployments,
-        l2_deployments_dev
-      ),
+      deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
     },
     alpha: {
       url: node_url('goerli'),
       accounts: accounts('goerli'),
-      deploy: l1_deployments.concat(
-        l1_deployments_dev,
-        l2_deployments,
-        l2_deployments_dev
-      ),
+      deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
     },
     forfun: {
       url: node_url('goerli'),
       accounts: accounts('goerli'),
-      deploy: l1_deployments.concat(
-        l1_deployments_dev,
-        l2_deployments,
-        l2_deployments_dev
-      ),
+      deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
     },
     production: {
       url: node_url('mainnet'),

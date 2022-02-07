@@ -14,9 +14,7 @@ async function main() {
     winnersArray = JSON.parse(fs.readFileSync('data/winners.json').toString());
   } catch (e) {}
 
-  const signatures: string[] = JSON.parse(
-    fs.readFileSync('data/signatures.json').toString()
-  );
+  const signatures: string[] = JSON.parse(fs.readFileSync('data/signatures.json').toString());
 
   for (const signature of signatures) {
     const splitted = signature.split(':');
@@ -38,9 +36,7 @@ async function main() {
       console.log({signer});
     }
 
-    const found = winnersArray.find(
-      (v) => v.address.toLowerCase() === signer.toLowerCase()
-    );
+    const found = winnersArray.find((v) => v.address.toLowerCase() === signer.toLowerCase());
     if (!found) {
       console.error(`notfound : ${signer}`);
     } else {

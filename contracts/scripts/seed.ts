@@ -1,12 +1,7 @@
 import {BigNumber} from '@ethersproject/bignumber';
 import {parseEther} from '@ethersproject/units';
 import {defaultAbiCoder} from '@ethersproject/abi';
-import {
-  getUnnamedAccounts,
-  deployments,
-  getNamedAccounts,
-  ethers,
-} from 'hardhat';
+import {getUnnamedAccounts, deployments, getNamedAccounts, ethers} from 'hardhat';
 import {SpaceInfo} from 'conquest-eth-common';
 import {ConquestToken} from '../typechain';
 import {setupUsers} from '../utils';
@@ -48,10 +43,7 @@ async function main() {
       'transferAndCall',
       outerSpaceContract.address,
       BigNumber.from(planetPointer.data.stats.stake).mul('1000000000000000000'),
-      defaultAbiCoder.encode(
-        ['address', 'uint256'],
-        [players[i].address, planetPointer.data.location.id]
-      )
+      defaultAbiCoder.encode(['address', 'uint256'], [players[i].address, planetPointer.data.location.id])
     );
     console.log(
       `staked: ${planetPointer.data.location.id}, (${planetPointer.data.location.x},${planetPointer.data.location.y})`
@@ -66,17 +58,15 @@ async function main() {
   );
 
   const nonce0 = 0;
-  const message0 = `Join Alliance ${hexZeroPad(
-    allianceAddress.toLowerCase(),
-    20
-  )}${nonce0 === 0 ? '' : ` (nonce: ${('' + nonce0).padStart(10)})`}`;
+  const message0 = `Join Alliance ${hexZeroPad(allianceAddress.toLowerCase(), 20)}${
+    nonce0 === 0 ? '' : ` (nonce: ${('' + nonce0).padStart(10)})`
+  }`;
   const player0Signature = players[0].signer.signMessage(message0);
 
   const nonce1 = 0;
-  const message1 = `Join Alliance ${hexZeroPad(
-    allianceAddress.toLowerCase(),
-    20
-  )}${nonce1 === 0 ? '' : ` (nonce: ${('' + nonce0).padStart(10)})`}`;
+  const message1 = `Join Alliance ${hexZeroPad(allianceAddress.toLowerCase(), 20)}${
+    nonce1 === 0 ? '' : ` (nonce: ${('' + nonce0).padStart(10)})`
+  }`;
   const player1Signature = players[1].signer.signMessage(message1);
 
   console.log({message0, message1});

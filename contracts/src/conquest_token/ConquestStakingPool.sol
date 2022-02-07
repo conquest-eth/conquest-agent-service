@@ -4,7 +4,6 @@ pragma solidity 0.8.9;
 import "./ConquestToken.sol";
 
 contract ConquestStakingPool {
-
     struct Config {
         uint64 maxInflation;
         // 0 and the curve is linear, means inflation moves with the stake and staker win the same ratio at all time
@@ -39,9 +38,9 @@ contract ConquestStakingPool {
     Config public config;
     // ---------------------------------------------------------------------------------------------------------------
 
+    ConquestToken internal immutable _conquestToken;
+    uint256 internal immutable _originalTotalSupply;
 
-    ConquestToken immutable internal _conquestToken;
-    uint256 immutable internal _originalTotalSupply;
     constructor(ConquestToken conquestToken, address initialOwner) {
         _conquestToken = conquestToken;
         _originalTotalSupply = _conquestToken.totalSupply();
@@ -74,7 +73,6 @@ contract ConquestStakingPool {
         config = newConfig;
     }
 
-
     // ---------------------------------------------------------------------------------------------------------------
     // For Authorized Games
     // ---------------------------------------------------------------------------------------------------------------
@@ -92,7 +90,6 @@ contract ConquestStakingPool {
         // update staked amount, their reward will be counted on next interaction.
         _totalStaked = totalStakedSoFar + amount; // WRITE + 1 // TODO remove that line because _conquestToken.balanceOf(address(this)) should be equivalent
         _amountStakedPerAccount[account] = amountStakedSoFar + amount; // WRITE + 1
-
 
         _conquestToken.transferFrom(account, address(this), amount); // WRITE + 2 + ?
         emit Staked(account, amount);
@@ -149,14 +146,17 @@ contract ConquestStakingPool {
         emit Withdrawn(account, amount);
     }
 
-
     // TODO variant where you can withdraw an amount of token + an amount of reward at the same time (not full exit)
 
     /// @notice Transfers ${amount} staked token to another account. Rewards acrrued are given to account ${from} first.
     /// @param from account to transfer from
     /// @param to account to transfer to
     /// @param amount The amount of staked tokens to transfer
-    function transfer(address from, address to, uint256 amount) external onlyGames {
+    function transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) external onlyGames {
         if (amount == 0) {
             return;
         }
@@ -175,7 +175,6 @@ contract ConquestStakingPool {
 
         emit StakeTransfered(from, to, amount);
     }
-
 
     // ---------------------------------------------------------------------------------------------------------------
     // For Accounts
@@ -215,13 +214,15 @@ contract ConquestStakingPool {
         uint256 extraTokenGenerated = _extraTokenGenerated;
         uint256 totalSupplySoFar = _originalTotalSupply + extraTokenGenerated;
         // TODO add in extraTokenGenerated based on previous rewardRate ?
-        uint256 rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar, config.startInflation, config.maxInflation);
+        uint256 rewardRate = _computeRewardRate(
+            totalStakedSoFar,
+            totalSupplySoFar,
+            config.startInflation,
+            config.maxInflation
+        );
         return
-            _totalRewardPerTokenAtLastUpdate + _computeExtraTotalRewardPerTokenSinceLastTime(
-                totalStakedSoFar,
-                rewardRate,
-                _lastUpdateTime
-            );
+            _totalRewardPerTokenAtLastUpdate +
+            _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate, _lastUpdateTime);
     }
 
     /// @notice The amount of reward tokens an account has accrued so far. Does not include already withdrawn rewards.
@@ -230,27 +231,32 @@ contract ConquestStakingPool {
         uint256 extraTokenGenerated = _extraTokenGenerated;
         uint256 totalSupplySoFar = _originalTotalSupply + extraTokenGenerated;
         // TODO add in extraTokenGenerated based on previous rewardRate ?
-        uint256 rewardRate = _computeRewardRate(totalStakedSoFar, totalSupplySoFar, config.startInflation, config.maxInflation);
+        uint256 rewardRate = _computeRewardRate(
+            totalStakedSoFar,
+            totalSupplySoFar,
+            config.startInflation,
+            config.maxInflation
+        );
         return
             _computeTokenEarned(
                 _totalRewardPerTokenAccountedPerAccount[account],
                 _amountStakedPerAccount[account],
-                _totalRewardPerTokenAtLastUpdate + _computeExtraTotalRewardPerTokenSinceLastTime(
-                    totalStakedSoFar,
-                    rewardRate,
-                    _lastUpdateTime
-                ),
+                _totalRewardPerTokenAtLastUpdate +
+                    _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate, _lastUpdateTime),
                 _rewardsToWithdrawPerAccount[account]
             );
     }
-
 
     // ---------------------------------------------------------------------------------------------------------------
     // Internal
     // ---------------------------------------------------------------------------------------------------------------
 
-
-    function _computeRewardRate(uint256 totalStakedSoFar, uint256 totalSupplySoFar, uint256 startInflation, uint256 maxInflation) internal pure returns (uint256 rewardRate) {
+    function _computeRewardRate(
+        uint256 totalStakedSoFar,
+        uint256 totalSupplySoFar,
+        uint256 startInflation,
+        uint256 maxInflation
+    ) internal pure returns (uint256 rewardRate) {
         // assume this is the only generator of token
         // TODO separate role and have a central place to reserve tokens in ConquestToken
         // claiming reward fro reserve will reduce the reserve while increasing the token minted, keeping total supply adjusted
@@ -263,23 +269,35 @@ contract ConquestStakingPool {
         uint256 accountStakedAmount,
         uint256 currentTotalRewardPerToken,
         uint256 accountRewardsSoFar
-    ) internal pure returns(uint256) {
-        return accountRewardsSoFar + ((accountStakedAmount * (currentTotalRewardPerToken - totalRewardPerTokenAccountedSoFar)) / PRECISION);
+    ) internal pure returns (uint256) {
+        return
+            accountRewardsSoFar +
+            ((accountStakedAmount * (currentTotalRewardPerToken - totalRewardPerTokenAccountedSoFar)) / PRECISION);
     }
 
     // TODO make it pure and totalStaked == 0 check outside ?
-    function _computeExtraTotalRewardPerTokenSinceLastTime(uint256 totalStaked, uint256 rewardRate, uint256 lastUpdateTime) internal view returns(uint256) {
+    function _computeExtraTotalRewardPerTokenSinceLastTime(
+        uint256 totalStaked,
+        uint256 rewardRate,
+        uint256 lastUpdateTime
+    ) internal view returns (uint256) {
         if (totalStaked == 0) {
             return 0;
         }
         return ((block.timestamp - lastUpdateTime) * rewardRate * PRECISION) / totalStaked;
     }
 
-    function _updateGlobal() internal returns(uint256 totalStakedSoFar, uint256 totalRewardPerTokenAllocatedSoFar, uint256 rewardRate) {
+    function _updateGlobal()
+        internal
+        returns (
+            uint256 totalStakedSoFar,
+            uint256 totalRewardPerTokenAllocatedSoFar,
+            uint256 rewardRate
+        )
+    {
         totalStakedSoFar = _totalStaked; // READ + 1
         uint256 extraTokenGenerated = _extraTokenGenerated; // READ + 1
         uint256 totalSupplySoFar = _originalTotalSupply + extraTokenGenerated; // READ + 1
-
 
         // reward rate for players based on past data, do not consider the compounding effect that should reduce its rate
         // TODO apply it twice? see below
@@ -289,23 +307,37 @@ contract ConquestStakingPool {
         // uint256 extraTotalRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate, _lastUpdateTime);
         // rewardRate = _computeRewardRate(totalStakedSoFar + extraTotalRewardPerToken * totalStakedSoFar, totalSupplySoFar);
 
-        uint256 extraTotalRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate, _lastUpdateTime); // READ + 1
+        uint256 extraTotalRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(
+            totalStakedSoFar,
+            rewardRate,
+            _lastUpdateTime
+        ); // READ + 1
 
         // liquidity reward
-        uint256 liquidityRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(totalStakedSoFar, rewardRate * config.liquidityRewardRatio / 10000, _lastUpdateTime); // READ + 1 // READ config?
+        uint256 liquidityRewardPerToken = _computeExtraTotalRewardPerTokenSinceLastTime(
+            totalStakedSoFar,
+            (rewardRate * config.liquidityRewardRatio) / 10000,
+            _lastUpdateTime
+        ); // READ + 1 // READ config?
         uint256 liquidityRewardGenerated = liquidityRewardPerToken * totalStakedSoFar;
         _totalLiquidityRewardGenerated = _totalLiquidityRewardGenerated + liquidityRewardGenerated; // WRITE + 1
 
         totalRewardPerTokenAllocatedSoFar = _totalRewardPerTokenAtLastUpdate + extraTotalRewardPerToken; // READ + 1 // need for returns params
 
-        _extraTokenGenerated = extraTokenGenerated + (extraTotalRewardPerToken * totalStakedSoFar) + liquidityRewardGenerated; // WRITE + 1 // TODO use mint ? => _conquestToken.totalSupply
+        _extraTokenGenerated =
+            extraTokenGenerated +
+            (extraTotalRewardPerToken * totalStakedSoFar) +
+            liquidityRewardGenerated; // WRITE + 1 // TODO use mint ? => _conquestToken.totalSupply
 
         // TODO group these 2 in a struct
         _totalRewardPerTokenAtLastUpdate = totalRewardPerTokenAllocatedSoFar; // WRITE + 1
         _lastUpdateTime = block.timestamp; // WRITE + 1
     }
 
-    function _updateAccount(address account, uint256 totalRewardPerTokenAllocatedSoFar) internal returns (uint256 amountStakedSoFar) {
+    function _updateAccount(address account, uint256 totalRewardPerTokenAllocatedSoFar)
+        internal
+        returns (uint256 amountStakedSoFar)
+    {
         amountStakedSoFar = _amountStakedPerAccount[account]; // READ: +1 (the amount staked so far)
 
         _rewardsToWithdrawPerAccount[account] = _computeTokenEarned( // WRITE: +1 (update the reward that can be withdrawn, catching up account state to global)

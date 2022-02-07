@@ -1,10 +1,7 @@
 // import {ProviderWrapper} from 'hardhat/internal/core/providers/wrapper';
 import {BackwardsCompatibilityProviderAdapter} from 'hardhat/internal/core/providers/backwards-compatibility';
 import {EIP1193Provider, RequestArguments} from 'hardhat/types';
-import {
-  parse as parseTransaction,
-  Transaction,
-} from '@ethersproject/transactions';
+import {parse as parseTransaction, Transaction} from '@ethersproject/transactions';
 import {EthereumProvider, HardhatRuntimeEnvironment} from 'hardhat/types';
 import {extendEnvironment} from 'hardhat/config';
 import {lazyObject} from 'hardhat/plugins';
@@ -24,10 +21,7 @@ import {InvalidInputError} from 'hardhat/internal/core/providers/errors';
 export class EventEmitterWrapper implements EventEmitter {
   constructor(private readonly _wrapped: EventEmitter) {}
 
-  public addListener(
-    event: string | symbol,
-    listener: (...args: any[]) => void
-  ): this {
+  public addListener(event: string | symbol, listener: (...args: any[]) => void): this {
     this._wrapped.addListener(event, listener);
     return this;
   }
@@ -37,34 +31,22 @@ export class EventEmitterWrapper implements EventEmitter {
     return this;
   }
 
-  public once(
-    event: string | symbol,
-    listener: (...args: any[]) => void
-  ): this {
+  public once(event: string | symbol, listener: (...args: any[]) => void): this {
     this._wrapped.once(event, listener);
     return this;
   }
 
-  public prependListener(
-    event: string | symbol,
-    listener: (...args: any[]) => void
-  ): this {
+  public prependListener(event: string | symbol, listener: (...args: any[]) => void): this {
     this._wrapped.prependListener(event, listener);
     return this;
   }
 
-  public prependOnceListener(
-    event: string | symbol,
-    listener: (...args: any[]) => void
-  ): this {
+  public prependOnceListener(event: string | symbol, listener: (...args: any[]) => void): this {
     this._wrapped.prependOnceListener(event, listener);
     return this;
   }
 
-  public removeListener(
-    event: string | symbol,
-    listener: (...args: any[]) => void
-  ): this {
+  public removeListener(event: string | symbol, listener: (...args: any[]) => void): this {
     this._wrapped.removeListener(event, listener);
     return this;
   }
@@ -111,19 +93,14 @@ export class EventEmitterWrapper implements EventEmitter {
   }
 }
 
-export abstract class ProviderWrapper
-  extends EventEmitterWrapper
-  implements EIP1193Provider
-{
+export abstract class ProviderWrapper extends EventEmitterWrapper implements EIP1193Provider {
   constructor(protected readonly _wrappedProvider: EIP1193Provider) {
     super(_wrappedProvider);
   }
 
   public abstract request(args: RequestArguments): Promise<unknown>;
 
-  protected _getParams<ParamsT extends any[] = any[]>(
-    args: RequestArguments
-  ): ParamsT | [] {
+  protected _getParams<ParamsT extends any[] = any[]>(args: RequestArguments): ParamsT | [] {
     const params = args.params;
 
     if (params === undefined) {
@@ -132,9 +109,7 @@ export abstract class ProviderWrapper
 
     if (!Array.isArray(params)) {
       // eslint-disable-next-line @nomiclabs/hardhat-internal-rules/only-hardhat-error
-      throw new InvalidInputError(
-        "Hardhat Network doesn't support JSON-RPC params sent as an object"
-      );
+      throw new InvalidInputError("Hardhat Network doesn't support JSON-RPC params sent as an object");
     }
 
     return params as ParamsT;

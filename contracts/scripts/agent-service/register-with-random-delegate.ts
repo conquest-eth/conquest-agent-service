@@ -27,9 +27,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const messageString = `conquest-agent-service: register ${registrationSubmission.delegate.toLowerCase()} as delegate for ${registrationSubmission.player.toLowerCase()} (nonce: ${
     registrationSubmission.nonceMsTimestamp
   })`;
-  const registerSignature = await (
-    await ethers.getSigner(player)
-  ).signMessage(messageString);
+  const registerSignature = await (await ethers.getSigner(player)).signMessage(messageString);
 
   await request('register', 'POST', {
     ...registrationSubmission,

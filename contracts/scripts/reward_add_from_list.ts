@@ -19,9 +19,7 @@ if (sponsor === 'xaya') {
 }
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
-  const planets = JSON.parse(
-    await hre.deployments.readDotFile('.planets-chosen.json')
-  );
+  const planets = JSON.parse(await hre.deployments.readDotFile('.planets-chosen.json'));
 
   if (planets.length !== 6) {
     throw new Error(`6 required`);

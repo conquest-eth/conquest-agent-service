@@ -3,9 +3,7 @@ import 'dotenv/config';
 import {TheGraph} from './utils/thegraph';
 import fs from 'fs';
 
-const theGraph = new TheGraph(
-  `https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`
-);
+const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
 const xayaPlanetsStrings = [
   '129,-177',
@@ -133,9 +131,7 @@ async function main() {
     winnersArray = JSON.parse(fs.readFileSync('alpha_1_winners.json').toString());
   } catch (e) {}
   for (const winner of Object.keys(winners)) {
-    const found = winnersArray.findIndex(
-      (v) => v.address.toLowerCase() === winner
-    );
+    const found = winnersArray.findIndex((v) => v.address.toLowerCase() === winner);
     if (found !== -1) {
       winnersArray[found].numWCHI = winners[winner];
     } else {

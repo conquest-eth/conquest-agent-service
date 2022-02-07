@@ -30,9 +30,7 @@ function wait(numSec: number): Promise<void> {
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {deployments} = hre;
-  const theGraph = new TheGraph(
-    `https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`
-  );
+  const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
   // query($blockNumber: Int! $first: Int! $lastId: ID! $id: ID!) {
   const queryString = `
@@ -116,9 +114,7 @@ query($first: Int! $lastId: ID! $blockNumber: Int!) {
 
     // await wait(0.3);
 
-    const percentage = Math.floor(
-      ((blockNumber - start) / (end - start)) * 100
-    );
+    const percentage = Math.floor(((blockNumber - start) / (end - start)) * 100);
     if (lastPercent != percentage) {
       // console.log(`${percentage}%`);
       // ld.increase();

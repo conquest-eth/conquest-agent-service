@@ -5,12 +5,16 @@ import "../base/ImportingOuterSpaceConstants.sol";
 import "../base/ImportingOuterSpaceEvents.sol";
 import "../base/UsingOuterSpaceDataLayout.sol";
 
-contract OuterSpaceInitializationFacet is ImportingOuterSpaceConstants, ImportingOuterSpaceEvents, UsingOuterSpaceDataLayout {
-
-    bytes32 immutable internal _genesis;
+contract OuterSpaceInitializationFacet is
+    ImportingOuterSpaceConstants,
+    ImportingOuterSpaceEvents,
+    UsingOuterSpaceDataLayout
+{
+    bytes32 internal immutable _genesis;
     struct Config {
         bytes32 genesis;
     }
+
     constructor(Config memory config) {
         _genesis = config.genesis;
     }

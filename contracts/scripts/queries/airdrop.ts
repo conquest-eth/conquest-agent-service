@@ -6,9 +6,7 @@ import {BigNumber} from 'ethers';
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {deployments} = hre;
-  const theGraph = new TheGraph(
-    `https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`
-  );
+  const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
   // query($blockNumber: Int! $first: Int! $lastId: ID! $id: ID!) {
   const queryString = `
 query($first: Int! $lastId: ID!) {
@@ -31,16 +29,11 @@ query($first: Int! $lastId: ID!) {
 
   const airdrop: {address: string; amount: number}[] = [];
   for (const player of players) {
-    const amount = BigNumber.from(player.playTokenGiven)
-      .div('1000000000000000000')
-      .toNumber();
+    const amount = BigNumber.from(player.playTokenGiven).div('1000000000000000000').toNumber();
     airdrop.push({address: player.id, amount});
   }
 
-  await deployments.saveDotFile(
-    '.airdrop.json',
-    JSON.stringify(airdrop, null, 2)
-  );
+  await deployments.saveDotFile('.airdrop.json', JSON.stringify(airdrop, null, 2));
 }
 
 async function main() {

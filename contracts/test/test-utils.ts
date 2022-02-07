@@ -1,22 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */ // TODO remove
 import {ethers} from 'hardhat';
 
-export async function expectRevert(
-  promise: Promise<any>,
-  expectedMessage?: string
-): Promise<boolean> {
+export async function expectRevert(promise: Promise<any>, expectedMessage?: string): Promise<boolean> {
   let receipt;
   try {
     receipt = await promise;
   } catch (e) {
     const error = e as {message?: string};
-    const isExpectedMessagePresent =
-      error.message &&
-      (!expectedMessage || error.message.search(expectedMessage) >= 0);
+    const isExpectedMessagePresent = error.message && (!expectedMessage || error.message.search(expectedMessage) >= 0);
     if (!isExpectedMessagePresent) {
-      throw new Error(
-        `Revert message : "${expectedMessage}" not present, instead got : "${error.message}"`
-      );
+      throw new Error(`Revert message : "${expectedMessage}" not present, instead got : "${error.message}"`);
     }
     return true;
   }

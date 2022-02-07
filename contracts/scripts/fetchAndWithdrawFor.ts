@@ -13,13 +13,9 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   });
 
   await catchUnknownSigner(
-    execute(
-      'OuterSpace',
-      {from: deployer, log: true},
-      'fetchAndWithdrawFor',
-      owner,
-      ['0xfffffffffffffffffffffffffffffff500000000000000000000000000000010']
-    )
+    execute('OuterSpace', {from: deployer, log: true}, 'fetchAndWithdrawFor', owner, [
+      '0xfffffffffffffffffffffffffffffff500000000000000000000000000000010',
+    ])
   );
 
   console.log({

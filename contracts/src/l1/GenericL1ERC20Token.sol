@@ -6,13 +6,12 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "../base/erc20/UsingERC20Base.sol";
 import "../base/erc20/WithPermitAndFixedDomain.sol";
 
-
 // TODO bridging
 contract GenericL1ERC20Token is UsingERC20Base, WithPermitAndFixedDomain {
     using Address for address;
 
-    address immutable internal _gateway; // TODO proper bridging
-    address immutable internal _l2Contract; // TODO proper bridging
+    address internal immutable _gateway; // TODO proper bridging
+    address internal immutable _l2Contract; // TODO proper bridging
 
     constructor(address gateway, address l2Contract) WithPermitAndFixedDomain("1") {
         _gateway = gateway;

@@ -1,11 +1,6 @@
 import {parseEther} from '@ethersproject/units';
 import {SpaceInfo} from 'conquest-eth-common';
-import {
-  ethers,
-  getUnnamedAccounts,
-  deployments,
-  getNamedAccounts,
-} from 'hardhat';
+import {ethers, getUnnamedAccounts, deployments, getNamedAccounts} from 'hardhat';
 import {AllianceRegistry, BasicAlliance, ConquestToken} from '../../typechain';
 import {setupUsers} from '../../utils';
 
@@ -28,12 +23,8 @@ export const setup = deployments.createFixture(async () => {
   }
 
   const contracts = {
-    BasicAllianceFactory: <BasicAlliance>(
-      await ethers.getContract('BasicAllianceFactory')
-    ),
-    AllianceRegistry: <AllianceRegistry>(
-      await ethers.getContract('AllianceRegistry')
-    ),
+    BasicAllianceFactory: <BasicAlliance>await ethers.getContract('BasicAllianceFactory'),
+    AllianceRegistry: <AllianceRegistry>await ethers.getContract('AllianceRegistry'),
     OuterSpace: await ethers.getContract('OuterSpace'),
     ConquestToken: <ConquestToken>await ethers.getContract('ConquestToken'),
   };

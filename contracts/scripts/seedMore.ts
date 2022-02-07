@@ -1,12 +1,7 @@
 import {BigNumber} from '@ethersproject/bignumber';
 import {parseEther} from '@ethersproject/units';
 import {defaultAbiCoder} from '@ethersproject/abi';
-import {
-  getUnnamedAccounts,
-  deployments,
-  getNamedAccounts,
-  ethers,
-} from 'hardhat';
+import {getUnnamedAccounts, deployments, getNamedAccounts, ethers} from 'hardhat';
 import {SpaceInfo} from 'conquest-eth-common';
 import {ConquestToken} from '../typechain';
 import {setupUsers} from '../utils';
@@ -28,11 +23,7 @@ async function main() {
   for (let i = 0; i < 1500; i++) {
     const outerSpaceContract = await deployments.get('OuterSpace');
     planetPointer = spaceInfo.findNextPlanet(planetPointer);
-    const {state} = await deployments.read(
-      'OuterSpace',
-      'getPlanet',
-      planetPointer.data.location.id
-    );
+    const {state} = await deployments.read('OuterSpace', 'getPlanet', planetPointer.data.location.id);
     if (state.owner !== '0x0000000000000000000000000000000000000000') {
       i--;
       continue;
@@ -44,10 +35,7 @@ async function main() {
       'transferAndCall',
       outerSpaceContract.address,
       BigNumber.from(planetPointer.data.stats.stake).mul('1000000000000000000'),
-      defaultAbiCoder.encode(
-        ['address', 'uint256'],
-        [player, planetPointer.data.location.id]
-      )
+      defaultAbiCoder.encode(['address', 'uint256'], [player, planetPointer.data.location.id])
     );
     console.log(
       `staked: ${planetPointer.data.location.id}, (${planetPointer.data.location.x},${planetPointer.data.location.y})`

@@ -1,11 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */ // TODO remove
 import {increaseTime, waitFor, objMap} from '../test-utils';
-import {
-  ethers,
-  getUnnamedAccounts,
-  deployments,
-  getNamedAccounts,
-} from 'hardhat';
+import {ethers, getUnnamedAccounts, deployments, getNamedAccounts} from 'hardhat';
 import {BigNumber} from '@ethersproject/bignumber';
 import {Wallet} from '@ethersproject/wallet';
 import {keccak256} from '@ethersproject/solidity';
@@ -18,10 +13,7 @@ import {parseEther} from '@ethersproject/units';
 type AnyContract = any; // TODO ?
 type User = {address: string; [contractName: string]: AnyContract};
 
-async function createPlayerAsContracts(
-  player: string,
-  contractNames: string[]
-): Promise<User> {
+async function createPlayerAsContracts(player: string, contractNames: string[]): Promise<User> {
   const obj: User = {address: player};
   for (const contractName of contractNames) {
     obj[contractName] = await ethers.getContract(contractName, player);
@@ -56,10 +48,7 @@ export async function setupOuterSpace(): Promise<{
 
   const playersAsContracts = [];
   for (const player of players) {
-    const playerObj = await createPlayerAsContracts(player, [
-      'OuterSpace',
-      'ConquestToken',
-    ]);
+    const playerObj = await createPlayerAsContracts(player, ['OuterSpace', 'ConquestToken']);
     playersAsContracts.push(playerObj);
   }
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
@@ -82,12 +71,7 @@ export async function setupOuterSpace(): Promise<{
 export async function sendInSecret(
   spaceInfo: SpaceInfo,
   player: User,
-  {
-    from,
-    quantity,
-    to,
-    gift,
-  }: {from: PlanetInfo; quantity: number; to: PlanetInfo; gift: boolean}
+  {from, quantity, to, gift}: {from: PlanetInfo; quantity: number; to: PlanetInfo; gift: boolean}
 ): Promise<{
   receipt: ContractReceipt;
   timeRequired: number;
@@ -99,17 +83,13 @@ export async function sendInSecret(
   secret: string;
 }> {
   const secret = Wallet.createRandom().privateKey;
-  const toHash = keccak256(
-    ['bytes32', 'uint256', 'bool'],
-    [secret, to.location.id, gift]
-  );
+  const toHash = keccak256(['bytes32', 'uint256', 'bool'], [secret, to.location.id, gift]);
   const fleetId = keccak256(['bytes32', 'uint256'], [toHash, from.location.id]);
   const receipt = await waitFor<ContractReceipt>(
     player.OuterSpace.send(from.location.id, quantity, toHash) // TODO subId
   );
   const distanceSquared =
-    Math.pow(to.location.globalX - from.location.globalX, 2) +
-    Math.pow(to.location.globalY - from.location.globalY, 2);
+    Math.pow(to.location.globalX - from.location.globalX, 2) + Math.pow(to.location.globalY - from.location.globalY, 2);
   const distance = Math.floor(Math.sqrt(distanceSquared));
   const timeRequired = BigNumber.from(distance)
     .mul(1 * spaceInfo.timePerDistance * 10000)
@@ -128,9 +108,7 @@ export async function sendInSecret(
 }
 
 // TODO get benefit from typescript
-export function convertPlanetCallData(
-  o: string | number | BigNumber
-): string | number {
+export function convertPlanetCallData(o: string | number | BigNumber): string | number {
   if (typeof o === 'number') {
     return o;
   }
@@ -148,21 +126,14 @@ type PlanetState = PlanetInfo & {
   getNumSpaceships: (time: number) => number;
 };
 
-export async function fetchPlanetState(
-  contract: AnyContract,
-  planet: PlanetInfo
-): Promise<PlanetState> {
+export async function fetchPlanetState(contract: AnyContract, planet: PlanetInfo): Promise<PlanetState> {
   const planetData = await contract.callStatic.getPlanet(planet.location.id);
   const statsFromContract = objMap(planet.stats, convertPlanetCallData);
   // check as validty assetion:
   for (const key of Object.keys(statsFromContract)) {
     const value = statsFromContract[key];
     if (value !== (planet as any).stats[key]) {
-      throw new Error(
-        `${key}: ${
-          (planet as any).stats[key]
-        } not equal to contract stats : ${value} `
-      );
+      throw new Error(`${key}: ${(planet as any).stats[key]} not equal to contract stats : ${value} `);
     }
   }
   const state = objMap(planetData.state, convertPlanetCallData);
@@ -179,9 +150,7 @@ export async function fetchPlanetState(
           numSpaceships: state.numSpaceships,
           production: planet.stats.production,
         });
-        newSpaceships = Math.floor(
-          ((time - state.lastUpdated) * planet.stats.production) / 3600
-        );
+        newSpaceships = Math.floor(((time - state.lastUpdated) * planet.stats.production) / 3600);
       }
       return state.numSpaceships + newSpaceships;
     },

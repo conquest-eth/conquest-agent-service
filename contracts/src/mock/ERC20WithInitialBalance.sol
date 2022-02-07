@@ -7,9 +7,8 @@ import "../interfaces/IERC2612.sol";
 
 ///@notice test ERC20 token that give initial balance to all accounts that can claim it in time.
 contract ERC20WithInitialBalance is UsingBaseERC20Mock, IERC2612 {
-    bytes32 internal constant PERMIT_TYPEHASH = keccak256(
-        "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
-    );
+    bytes32 internal constant PERMIT_TYPEHASH =
+        keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
 
     bytes32 internal immutable _DOMAIN_SEPARATOR;
     mapping(address => uint256) internal _nonces;

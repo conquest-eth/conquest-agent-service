@@ -17,12 +17,7 @@ if (location.indexOf(',') !== -1) {
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {deployer} = await hre.getNamedAccounts();
   const {execute} = hre.deployments;
-  await execute(
-    'OuterSpace',
-    {from: deployer, log: true, autoMine: true},
-    'resetPlanet',
-    location
-  );
+  await execute('OuterSpace', {from: deployer, log: true, autoMine: true}, 'resetPlanet', location);
 }
 if (require.main === module) {
   func(hre);

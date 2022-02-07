@@ -18,14 +18,8 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     const need = parseEther('1');
     if (balance.lt(parseEther('0.4'))) {
       const toSend = need.sub(balance);
-      console.log(
-        `(balance: ${formatEther(balance)}), sending ${formatEther(
-          toSend
-        )} ... `
-      );
-      const tx = await hre.ethers.provider
-        .getSigner(0)
-        .sendTransaction({to: player.id, value: toSend});
+      console.log(`(balance: ${formatEther(balance)}), sending ${formatEther(toSend)} ... `);
+      const tx = await hre.ethers.provider.getSigner(0).sendTransaction({to: player.id, value: toSend});
       console.log(`tx: ${tx.hash} ...`);
       await tx.wait();
     } else {

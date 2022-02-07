@@ -28,9 +28,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {claimKeyDistributor} = await hre.getNamedAccounts();
   const {execute} = hre.deployments;
 
-  const winners: Winner[] = JSON.parse(
-    await hre.deployments.readDotFile('.alpha_2_winners.json')
-  );
+  const winners: Winner[] = JSON.parse(await hre.deployments.readDotFile('.alpha_2_winners.json'));
 
   // check addresses
   // const winnersWithDifferentAddresses = winners.filter(
@@ -53,8 +51,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           amount = 0;
         }
         if (amount) {
-          const network = (perNetworks[winner.destination.network] =
-            perNetworks[winner.destination.network] || {});
+          const network = (perNetworks[winner.destination.network] = perNetworks[winner.destination.network] || {});
           const assetTransfers = (network[asset] = network[asset] || {
             addresses: {},
             total: 0,
@@ -62,8 +59,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
 
           assetTransfers.total += amount;
           assetTransfers.addresses[winner.destination.address] =
-            (assetTransfers.addresses[winner.destination.address] || 0) +
-            amount;
+            (assetTransfers.addresses[winner.destination.address] || 0) + amount;
         }
       }
     }

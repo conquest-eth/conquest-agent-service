@@ -15,17 +15,15 @@ describe('Basic Alliance', function () {
     );
 
     const nonce0 = 0;
-    const message0 = `Join Alliance ${hexZeroPad(
-      allianceAddress.toLowerCase(),
-      20
-    )}${nonce0 === 0 ? '' : ` (nonce: ${('' + nonce0).padStart(10)})`}`;
+    const message0 = `Join Alliance ${hexZeroPad(allianceAddress.toLowerCase(), 20)}${
+      nonce0 === 0 ? '' : ` (nonce: ${('' + nonce0).padStart(10)})`
+    }`;
     const player0Signature = players[0].signer.signMessage(message0);
 
     const nonce1 = 0;
-    const message1 = `Join Alliance ${hexZeroPad(
-      allianceAddress.toLowerCase(),
-      20
-    )}${nonce1 === 0 ? '' : ` (nonce: ${('' + nonce0).padStart(10)})`}`;
+    const message1 = `Join Alliance ${hexZeroPad(allianceAddress.toLowerCase(), 20)}${
+      nonce1 === 0 ? '' : ` (nonce: ${('' + nonce0).padStart(10)})`
+    }`;
     const player1Signature = players[1].signer.signMessage(message1);
 
     console.log({message0, message1});

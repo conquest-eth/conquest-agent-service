@@ -19,42 +19,19 @@ type Winner = {
 const args = process.argv.slice(2);
 const discord = args[0] === 'discord';
 
-const theGraph = new TheGraph(
-  `https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`
-);
+const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
-let discordMembers: {[id: string]: string} = {}
-let claims: {given: string, address: string;}[] = [];
+let discordMembers: {[id: string]: string} = {};
+let claims: {given: string; address: string}[] = [];
 if (discord) {
   discordMembers = JSON.parse(fs.readFileSync('discord_members.json').toString());
   claims = JSON.parse(fs.readFileSync('.claimKeys').toString());
 }
 
 const rewards = [
-  {sponsor: 'pokt', planets: [
-    '82,91',
-    '-118,105',
-    '-52,-142',
-    '139,-170',
-    '-35,-168',
-    '-82,-93',
-  ]},
-  {sponsor: 'xaya', planets: [
-    '-80,-105',
-    '50,39',
-    '85,24',
-    '138,28',
-    '45,41',
-    '-110,105',
-  ]},
-  {sponsor: 'da', planets: [
-    '-98,-122',
-    '-114,-11',
-    '73,13',
-    '-28,156',
-    '-78,-99',
-    '112,-76',
-  ]}
+  {sponsor: 'pokt', planets: ['82,91', '-118,105', '-52,-142', '139,-170', '-35,-168', '-82,-93']},
+  {sponsor: 'xaya', planets: ['-80,-105', '50,39', '85,24', '138,28', '45,41', '-110,105']},
+  {sponsor: 'da', planets: ['-98,-122', '-114,-11', '73,13', '-28,156', '-78,-99', '112,-76']},
 ];
 
 const top18 = [
@@ -78,21 +55,20 @@ const top18 = [
   '0x3b6319fd9be47d27b02a8d9d356c4a44732f5166',
 ];
 
-
-type Player = {id: string, introducer: {id: string}};
+type Player = {id: string; introducer: {id: string}};
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {deployments} = hre;
-  const winners: {[id: string]: {dollars: number; wchi: number, playtoken: number, introducer: string}} = {};
+  const winners: {[id: string]: {dollars: number; wchi: number; playtoken: number; introducer: string}} = {};
 
   const playerArray: Player[] = JSON.parse(await deployments.readDotFile('.players.json'));
-  const players: {[id:string]: Player} = {};
+  const players: {[id: string]: Player} = {};
   for (const player of playerArray) {
     players[player.id.toLowerCase()] = player;
   }
 
-  for (let i= 0; i < top18.length; i++) {
-    const topPlayer = top18[i]
+  for (let i = 0; i < top18.length; i++) {
+    const topPlayer = top18[i];
     let dollars = 0;
     let wchi = 0;
     let playtoken = 0;
@@ -100,43 +76,43 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     if (i === 0) {
       dollars = 280;
       wchi = 350;
-      playtoken= 1000;
-    } else if (i === 1){
+      playtoken = 1000;
+    } else if (i === 1) {
       dollars = 140;
       wchi = 175;
-      playtoken= 400;
-    } else if (i === 2){
+      playtoken = 400;
+    } else if (i === 2) {
       dollars = 80;
       wchi = 100;
       playtoken = 200;
-    } else if (i === 3){
+    } else if (i === 3) {
       dollars = 60;
       wchi = 75;
-      playtoken= 100;
-    } else if (i === 4){
+      playtoken = 100;
+    } else if (i === 4) {
       dollars = 40;
       wchi = 50;
-      playtoken= 50;
-    } else if (i >= 5 && i <= 9){
+      playtoken = 50;
+    } else if (i >= 5 && i <= 9) {
       dollars = 40;
       wchi = 50;
-      playtoken= 20;
-    } else if (i >= 10 && i <= 16){
+      playtoken = 20;
+    } else if (i >= 10 && i <= 16) {
       dollars = 0;
       wchi = 0;
-      playtoken= 20;
-    } else if (i === 17){
+      playtoken = 20;
+    } else if (i === 17) {
       dollars = 0;
       wchi = 0;
-      playtoken= 10;
+      playtoken = 10;
     }
 
     winners[topPlayer] = {
       dollars,
       wchi,
       playtoken,
-      introducer: players[topPlayer].introducer.id
-    }
+      introducer: players[topPlayer].introducer.id,
+    };
   }
 
   for (const reward of rewards) {
@@ -170,11 +146,15 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     const exited = data.exitCompleteEvents;
     const held = data.planets;
 
-
     const planetsCounted: {[id: string]: boolean} = {};
     for (const planetExited of exited) {
       if (!planetsCounted[planetExited.planet.id]) {
-        winners[planetExited.owner.id] = winners[planetExited.owner.id] || {dollars: 0, wchi: 0, playtoken: 0, introducer: players[planetExited.owner.id].introducer.id};
+        winners[planetExited.owner.id] = winners[planetExited.owner.id] || {
+          dollars: 0,
+          wchi: 0,
+          playtoken: 0,
+          introducer: players[planetExited.owner.id].introducer.id,
+        };
         if (reward.sponsor === 'xaya') {
           winners[planetExited.owner.id].wchi += 250;
         } else {
@@ -187,7 +167,12 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
 
     for (const planetHeld of held) {
       if (!planetsCounted[planetHeld.id]) {
-        winners[planetHeld.owner.id] = winners[planetHeld.owner.id] || {dollars: 0, wchi: 0, playtoken: 0, introducer: players[planetHeld.owner.id].introducer.id};
+        winners[planetHeld.owner.id] = winners[planetHeld.owner.id] || {
+          dollars: 0,
+          wchi: 0,
+          playtoken: 0,
+          introducer: players[planetHeld.owner.id].introducer.id,
+        };
         if (reward.sponsor === 'xaya') {
           winners[planetHeld.owner.id].wchi += 250;
         } else {
@@ -196,9 +181,6 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
         planetsCounted[planetHeld.id] = true;
       }
     }
-
-
-
 
     // console.log({
     //   winners,
@@ -223,19 +205,16 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     }
   }
 
-
   let winnersArray: Winner[] = [];
   try {
     winnersArray = JSON.parse(await deployments.readDotFile('.alpha_2_winners.json'));
   } catch (e) {}
   for (const winner of Object.keys(winners)) {
-    const found = winnersArray.findIndex(
-      (v) => v.address.toLowerCase() === winner
-    );
+    const found = winnersArray.findIndex((v) => v.address.toLowerCase() === winner);
 
     let discordName = '';
     if (discord) {
-      const claimFound = claims.find(v => v.address.toLowerCase() === winners[winner].introducer.toLowerCase());
+      const claimFound = claims.find((v) => v.address.toLowerCase() === winners[winner].introducer.toLowerCase());
       if (claimFound) {
         discordName = discordMembers[claimFound.given];
       }
@@ -249,7 +228,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
       if (discord) {
         winnersArray[found].discordName = discordName;
       } else {
-        delete winnersArray[found].discordName
+        delete winnersArray[found].discordName;
       }
     } else {
       const obj: Winner = {
@@ -269,7 +248,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   let totalToken = 0;
   let totalWCHI = 0;
   let totalDollars = 0;
-  for(const winner of winnersArray) {
+  for (const winner of winnersArray) {
     totalToken += winner.numTokens;
     totalWCHI += winner.numWCHI;
     totalDollars += winner.numDollars;
@@ -279,14 +258,11 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     totalToken,
     totalWCHI,
     totalDollars,
-  })
+  });
 
   const data = JSON.stringify(winnersArray, null, 2);
   // console.log(data);
-  await deployments.saveDotFile(
-    '.alpha_2_winners.json',
-    data
-  );
+  await deployments.saveDotFile('.alpha_2_winners.json', data);
 }
 
 async function main() {

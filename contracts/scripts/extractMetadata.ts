@@ -23,14 +23,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   if (!deployment.metadata) {
     throw new Error(`no metadata for ${name}`);
   }
-  fs.writeFileSync(
-    path.join(
-      'metadata',
-      network.name,
-      `${name}_at_${deployment.address}.json`
-    ),
-    deployment.metadata
-  );
+  fs.writeFileSync(path.join('metadata', network.name, `${name}_at_${deployment.address}.json`), deployment.metadata);
 }
 if (require.main === module) {
   func(hre);

@@ -10,9 +10,7 @@ const DECIMALS_18 = BigNumber.from('1000000000000000000');
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {deployments} = hre;
-  const stats: BlockData<PlayerData>[] = JSON.parse(
-    await deployments.readDotFile('.stats.json')
-  );
+  const stats: BlockData<PlayerData>[] = JSON.parse(await deployments.readDotFile('.stats.json'));
 
   const OuterSpace = await deployments.get('OuterSpace');
   const spaceInfo = new SpaceInfo(OuterSpace.linkedData);
@@ -60,12 +58,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           return {
             id: np.id,
             numSpaceshipsAtBlock:
-              parseInt(np.numSpaceships) +
-              spaceInfo.numSpaceshipsAfterDuration(
-                toPlanet,
-                toPlanetState,
-                duration
-              ),
+              parseInt(np.numSpaceships) + spaceInfo.numSpaceshipsAfterDuration(toPlanet, toPlanetState, duration),
           };
         });
 
@@ -85,14 +78,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
         return {
           id: p.id,
           total: total.div(DECIMALS_18).toNumber(),
-          score: Math.floor(
-            total
-              .sub(tokenGiven)
-              .mul(1000000)
-              .div(tokenGiven)
-              .add(1000000)
-              .toNumber() / 100
-          ),
+          score: Math.floor(total.sub(tokenGiven).mul(1000000).div(tokenGiven).add(1000000).toNumber() / 100),
 
           planets,
           totalStaked: totalStaked.div(DECIMALS_18).toNumber(),
@@ -112,34 +98,19 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           exit_attempt_num,
           spaceships_sent: BigNumber.from(p.spaceships_sent).toNumber(),
           spaceships_arrived: BigNumber.from(p.spaceships_arrived).toNumber(),
-          spaceships_self_transfered: BigNumber.from(
-            p.spaceships_self_transfered
-          ).toNumber(),
-          gift_spaceships_sent: BigNumber.from(
-            p.gift_spaceships_sent
-          ).toNumber(),
-          gift_spaceships_receieved: BigNumber.from(
-            p.gift_spaceships_receieved
-          ).toNumber(),
-          attack_own_spaceships_destroyed: BigNumber.from(
-            p.attack_own_spaceships_destroyed
-          ).toNumber(),
-          attack_enemy_spaceships_destroyed: BigNumber.from(
-            p.attack_enemy_spaceships_destroyed
-          ).toNumber(),
-          defense_own_spaceships_destroyed: BigNumber.from(
-            p.defense_own_spaceships_destroyed
-          ).toNumber(),
-          defense_enemy_spaceships_destroyed: BigNumber.from(
-            p.defense_enemy_spaceships_destroyed
-          ).toNumber(),
+          spaceships_self_transfered: BigNumber.from(p.spaceships_self_transfered).toNumber(),
+          gift_spaceships_sent: BigNumber.from(p.gift_spaceships_sent).toNumber(),
+          gift_spaceships_receieved: BigNumber.from(p.gift_spaceships_receieved).toNumber(),
+          attack_own_spaceships_destroyed: BigNumber.from(p.attack_own_spaceships_destroyed).toNumber(),
+          attack_enemy_spaceships_destroyed: BigNumber.from(p.attack_enemy_spaceships_destroyed).toNumber(),
+          defense_own_spaceships_destroyed: BigNumber.from(p.defense_own_spaceships_destroyed).toNumber(),
+          defense_enemy_spaceships_destroyed: BigNumber.from(p.defense_enemy_spaceships_destroyed).toNumber(),
           planets_conquered: BigNumber.from(p.planets_conquered).toNumber(),
           planets_lost: BigNumber.from(p.planets_lost).toNumber(),
           totalSpaceships,
           numPlanets: planets.length,
           gas: stake_gas + sending_gas + resolving_gas + exit_attempt_gas,
-          action_num:
-            stake_num + sending_num + resolving_num + exit_attempt_num,
+          action_num: stake_num + sending_num + resolving_num + exit_attempt_num,
         };
       }),
     };
@@ -147,9 +118,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
 
   // get the best player at the end
   const lastSet = playerStats[playerStats.length - 1].players;
-  const lastSortedSet: PlayerStats[] = lastSet.sort(
-    (a, b) => b.score - a.score
-  );
+  const lastSortedSet: PlayerStats[] = lastSet.sort((a, b) => b.score - a.score);
   const dict: {[id: string]: PlayerStats} = {};
   for (let i = 0; i < lastSortedSet.length; i++) {
     const player = lastSortedSet[i];
@@ -227,10 +196,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   //   };
   // });
 
-  await deployments.saveDotFile(
-    '.player_stats.json',
-    JSON.stringify(finalStats, null, 2)
-  );
+  await deployments.saveDotFile('.player_stats.json', JSON.stringify(finalStats, null, 2));
 
   const statList = [
     'score',
@@ -276,11 +242,7 @@ function generateDataForPlotly(stats: BlockData<PlayerStats>[], field: string) {
     players: [],
   };
 
-  for (
-    let blockNumberIndex = 0;
-    blockNumberIndex < stats.length;
-    blockNumberIndex++
-  ) {
+  for (let blockNumberIndex = 0; blockNumberIndex < stats.length; blockNumberIndex++) {
     const blockData = stats[blockNumberIndex];
     chart.blockNumbers.push(blockData.blockNumber);
     for (let i = 0; i < blockData.players.length; i++) {

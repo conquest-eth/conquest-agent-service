@@ -46,7 +46,7 @@
       />
       <!-- 1h45min event duration -->
     {:else}
-      <p class="mb-4">
+      <p class="mb-4 text-yellow-500">
         Remember you need to ensure to execute the "resolution" transaction at that time. See
         <a class="underline" href={`${base}/help/`} target="_blank">Help</a>
         for more details.

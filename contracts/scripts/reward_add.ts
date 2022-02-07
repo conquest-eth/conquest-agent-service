@@ -46,13 +46,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     return;
   }
 
-  await execute(
-    'OuterSpace',
-    {from: deployer, log: true, autoMine: true},
-    'addReward',
-    location,
-    giverAddress
-  );
+  await execute('OuterSpace', {from: deployer, log: true, autoMine: true}, 'addReward', location, giverAddress);
 }
 if (require.main === module) {
   func(hre);

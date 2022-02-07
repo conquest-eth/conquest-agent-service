@@ -4,7 +4,6 @@ pragma solidity 0.8.9;
 import "./OuterSpaceFacetBase.sol";
 
 contract OuterSpaceInformationFacet is OuterSpaceFacetBase {
-
     constructor(Config memory config) OuterSpaceFacetBase(config) {}
 
     function getGeneisHash() external view returns (bytes32) {
@@ -53,5 +52,4 @@ contract OuterSpaceInformationFacet is OuterSpaceFacetBase {
     function getDiscovered() external view returns (Discovered memory) {
         return _discovered;
     }
-
 }

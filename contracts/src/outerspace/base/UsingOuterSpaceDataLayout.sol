@@ -4,7 +4,6 @@ pragma solidity 0.8.9;
 import "./ImportingOuterSpaceTypes.sol";
 
 contract UsingOuterSpaceDataLayout is ImportingOuterSpaceTypes {
-
     mapping(uint256 => Planet) internal _planets;
     mapping(uint256 => Fleet) internal _fleets;
 

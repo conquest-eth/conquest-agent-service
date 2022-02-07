@@ -3,9 +3,7 @@ import {TheGraph} from '../utils/thegraph';
 import {BigNumber} from '@ethersproject/bignumber';
 import fs from 'fs';
 
-const theGraph = new TheGraph(
-  `https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`
-);
+const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
 type QueryPlayer = {
   id: string;

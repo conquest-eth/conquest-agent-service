@@ -4,7 +4,6 @@ pragma solidity 0.8.9;
 import "./OuterSpaceFacetBase.sol";
 
 contract OuterSpaceFleetsFacet is OuterSpaceFacetBase {
-
     constructor(Config memory config) OuterSpaceFacetBase(config) {}
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -17,20 +16,24 @@ contract OuterSpaceFleetsFacet is OuterSpaceFacetBase {
         emit ApprovalForAll(sender, operator, approved);
     }
 
-
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
     // FLEET RESOLUTION, ATTACK / REINFORCEMENT
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-
     function resolveFleet(uint256 fleetId, FleetResolution calldata resolution) external {
-         require(
-            uint256(keccak256(
-                abi.encodePacked(
-                    keccak256(abi.encodePacked(resolution.secret, resolution.to, resolution.gift, resolution.specific)),
-                    resolution.from, resolution.fleetSender, resolution.operator
+        require(
+            uint256(
+                keccak256(
+                    abi.encodePacked(
+                        keccak256(
+                            abi.encodePacked(resolution.secret, resolution.to, resolution.gift, resolution.specific)
+                        ),
+                        resolution.from,
+                        resolution.fleetSender,
+                        resolution.operator
+                    )
                 )
-            )) == fleetId,
+            ) == fleetId,
             "INVALID_FLEET_DATA_OR_SECRET"
         );
         _resolveFleet(fleetId, resolution);
@@ -47,22 +50,23 @@ contract OuterSpaceFleetsFacet is OuterSpaceFacetBase {
     ) external {
         address sender = _msgSender();
         uint256 fleetId = uint256(keccak256(abi.encodePacked(toHash, from, sender, sender)));
-        _sendFor(fleetId, sender, FleetLaunch({
-            fleetSender: sender,
-            fleetOwner: sender,
-            from: from,
-            quantity: quantity,
-            toHash: toHash
-        }));
+        _sendFor(
+            fleetId,
+            sender,
+            FleetLaunch({fleetSender: sender, fleetOwner: sender, from: from, quantity: quantity, toHash: toHash})
+        );
     }
 
-    function sendFor(FleetLaunch calldata launch) external { //  bytes calldata fleetSignature // TODO for fleetOwner's signature ?
+    function sendFor(FleetLaunch calldata launch) external {
+        //  bytes calldata fleetSignature // TODO for fleetOwner's signature ?
 
         address operator = _msgSender();
         if (operator != launch.fleetSender) {
             require(_operators[launch.fleetSender][operator], "NOT_AUTHORIZED_TO_SEND");
         }
-        uint256 fleetId = uint256(keccak256(abi.encodePacked(launch.toHash, launch.from, launch.fleetSender, operator)));
+        uint256 fleetId = uint256(
+            keccak256(abi.encodePacked(launch.toHash, launch.from, launch.fleetSender, operator))
+        );
 
         if (launch.fleetOwner != launch.fleetSender && launch.fleetOwner != operator) {
             // TODO use signature from fleetOwner instead?
@@ -95,5 +99,4 @@ contract OuterSpaceFleetsFacet is OuterSpaceFacetBase {
         destroyedAtLaunch = _inFlight[from][timeSlot].destroyed;
         flyingAtLaunch = _inFlight[from][timeSlot].flying;
     }
-
 }

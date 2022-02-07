@@ -12,8 +12,12 @@ import "../../libraries/Math.sol";
 import "../../interfaces/IAlliance.sol";
 import "../../alliances/AllianceRegistry.sol";
 
-
-contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceConstants, ImportingOuterSpaceEvents, UsingOuterSpaceDataLayout {
+contract OuterSpaceFacetBase is
+    ImportingOuterSpaceTypes,
+    ImportingOuterSpaceConstants,
+    ImportingOuterSpaceEvents,
+    UsingOuterSpaceDataLayout
+{
     using Extraction for bytes32;
 
     IERC20 internal immutable _stakingToken;
@@ -41,6 +45,7 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
         uint256 productionCapAsDuration;
         uint256 fleetSizeFactor6;
     }
+
     constructor(Config memory config) {
         uint32 t = uint32(config.timePerDistance) / 4; // the coordinates space is 4 times bigger
         require(t * 4 == config.timePerDistance, "TIME_PER_DIST_NOT_DIVISIBLE_4");
@@ -58,8 +63,7 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
         _fleetSizeFactor6 = config.fleetSizeFactor6;
     }
 
-
-   // function _actualiseExit(uint256 location) internal {
+    // function _actualiseExit(uint256 location) internal {
     //     Planet storage planet = _getPlanet(location);
     //     if (planet.exitTime > 0 && block.timestamp > planet.exitTime + _exitDuration) {
     //         uint16 stake = _stake(location);
@@ -278,7 +282,11 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
     // FLEET SENDING
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    function _sendFor(uint256 fleetId, address operator, FleetLaunch memory launch) internal {
+    function _sendFor(
+        uint256 fleetId,
+        address operator,
+        FleetLaunch memory launch
+    ) internal {
         Planet storage planet = _getPlanet(launch.from);
 
         require(planet.exitTime == 0, "PLANET_EXIT");
@@ -294,12 +302,24 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
         );
         require(currentNumSpaceships >= launch.quantity, "SPACESHIPS_NOT_ENOUGH");
 
-        (uint32 launchTime, uint32 numSpaceships) = _computeSpaceshipBeforeSending(currentNumSpaceships, active, launch.from, launch.quantity);
-
+        (uint32 launchTime, uint32 numSpaceships) = _computeSpaceshipBeforeSending(
+            currentNumSpaceships,
+            active,
+            launch.from,
+            launch.quantity
+        );
 
         _fleets[fleetId] = Fleet({launchTime: launchTime, owner: launch.fleetOwner, quantity: launch.quantity});
 
-        emit FleetSent(launch.fleetSender, launch.fleetOwner, launch.from, operator, fleetId, launch.quantity, numSpaceships);
+        emit FleetSent(
+            launch.fleetSender,
+            launch.fleetOwner,
+            launch.from,
+            operator,
+            fleetId,
+            launch.quantity,
+            numSpaceships
+        );
     }
 
     function _computeSpaceshipBeforeSending(
@@ -307,9 +327,9 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
         bool active,
         uint256 from,
         uint32 quantity
-    ) internal returns( uint32 launchTime, uint32 numSpaceships) {
+    ) internal returns (uint32 launchTime, uint32 numSpaceships) {
         Planet storage planet = _getPlanet(from);
-         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         // record flying fleets (to prevent front-running, see resolution)
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         uint256 timeSlot = block.timestamp / (_frontrunningDelay / 2);
@@ -323,7 +343,6 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
         numSpaceships = currentNumSpaceships - quantity;
         planet.numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
         planet.lastUpdated = launchTime;
-
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -340,31 +359,48 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
 
     function _resolveFleet(uint256 fleetId, FleetResolution memory resolution) internal {
         Fleet memory fleet = _fleets[fleetId];
-        (uint32 quantity, uint32 inFlightFleetLoss) = _checkFleetAndComputeQuantityLeft(
-            fleet,
-            resolution
-        );
+        (uint32 quantity, uint32 inFlightFleetLoss) = _checkFleetAndComputeQuantityLeft(fleet, resolution);
         Planet memory toPlanet = _getPlanet(resolution.to);
-        _resolveAndEmit(fleetId, toPlanet, _hasJustExited(toPlanet.exitTime) ? address(0) : toPlanet.owner, fleet, resolution, quantity, inFlightFleetLoss);
-    }
-
-    function _resolveAndEmit(uint256 fleetId, Planet memory toPlanet, address destinationOwner, Fleet memory fleet, FleetResolution memory resolution, uint32 quantity, uint32 inFlightFleetLoss) internal {
-        (bool gifting, bool taxed) = _checkGifting(fleet.owner, resolution, toPlanet, fleet.launchTime); // TODO fleet.owner or sender or origin (or seller) ?
-        FleetResult memory result = _performResolution(fleet, resolution.from, toPlanet, resolution.to, gifting, taxed, quantity);
-         emit_fleet_arrived(
-            fleet.owner,
+        _resolveAndEmit(
             fleetId,
-            destinationOwner,
-            resolution.to,
-            gifting,
-            result,
+            toPlanet,
+            _hasJustExited(toPlanet.exitTime) ? address(0) : toPlanet.owner,
+            fleet,
+            resolution,
+            quantity,
             inFlightFleetLoss
         );
+    }
+
+    function _resolveAndEmit(
+        uint256 fleetId,
+        Planet memory toPlanet,
+        address destinationOwner,
+        Fleet memory fleet,
+        FleetResolution memory resolution,
+        uint32 quantity,
+        uint32 inFlightFleetLoss
+    ) internal {
+        (bool gifting, bool taxed) = _checkGifting(fleet.owner, resolution, toPlanet, fleet.launchTime); // TODO fleet.owner or sender or origin (or seller) ?
+        FleetResult memory result = _performResolution(
+            fleet,
+            resolution.from,
+            toPlanet,
+            resolution.to,
+            gifting,
+            taxed,
+            quantity
+        );
+        emit_fleet_arrived(fleet.owner, fleetId, destinationOwner, resolution.to, gifting, result, inFlightFleetLoss);
         _fleets[fleetId].quantity = 0; // TODO reset all to get gas refund? // TODO ensure frontend can still easily check fleet status
     }
 
-
-    function _checkGifting(address sender, FleetResolution memory resolution, Planet memory toPlanet, uint256 fleetLaunchTime) internal returns(bool gifting, bool taxed) {
+    function _checkGifting(
+        address sender,
+        FleetResolution memory resolution,
+        Planet memory toPlanet,
+        uint256 fleetLaunchTime
+    ) internal returns (bool gifting, bool taxed) {
         if (toPlanet.owner == address(0)) {
             // destination has no owner : this is an attack
             return (false, false);
@@ -379,24 +415,39 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
             if (resolution.specific == address(0) || resolution.specific == toPlanet.owner) {
                 // and it was for anyone or specific destination owner that is the same as the current one
 
-                (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
+                (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                    sender,
+                    toPlanet.owner,
+                    fleetLaunchTime
+                );
                 return (true, joinTime == 0 || joinTime > fleetLaunchTime);
             }
 
             if (resolution.specific == address(1)) {
                 // or the specific specify any common alliances (1)
 
-                (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
+                (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                    sender,
+                    toPlanet.owner,
+                    fleetLaunchTime
+                );
                 return (joinTime > 0, joinTime > fleetLaunchTime);
             }
 
             if (uint160(resolution.specific) > 1) {
                 // or a specific one that matches
 
-                (uint96 joinTimeToSpecific,) = _allianceRegistry.getAllianceData(toPlanet.owner, IAlliance(resolution.specific));
+                (uint96 joinTimeToSpecific, ) = _allianceRegistry.getAllianceData(
+                    toPlanet.owner,
+                    IAlliance(resolution.specific)
+                );
 
                 if (joinTimeToSpecific > 0) {
-                    (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
+                    (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                        sender,
+                        toPlanet.owner,
+                        fleetLaunchTime
+                    );
                     return (true, joinTime == 0 || joinTime > fleetLaunchTime);
                 }
             }
@@ -406,22 +457,32 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
                 // and the attack was on any non-allies
 
                 // make it a gift if the destination owner is actually an ally
-                (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
+                (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                    sender,
+                    toPlanet.owner,
+                    fleetLaunchTime
+                );
                 return (joinTime > 0, joinTime > fleetLaunchTime);
             }
 
             if (uint160(resolution.specific) > 1 && resolution.specific != toPlanet.owner) {
                 // but specific not matching current owner
 
-                (uint96 joinTimeToSpecific,) = _allianceRegistry.getAllianceData(toPlanet.owner, IAlliance(resolution.specific));
+                (uint96 joinTimeToSpecific, ) = _allianceRegistry.getAllianceData(
+                    toPlanet.owner,
+                    IAlliance(resolution.specific)
+                );
 
                 // make it a gift if the destination is not matching the specific alliance (or owner, in which case since it is not an alliance, it will also not match)
                 if (joinTimeToSpecific == 0) {
-                    (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(sender, toPlanet.owner, fleetLaunchTime);
+                    (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                        sender,
+                        toPlanet.owner,
+                        fleetLaunchTime
+                    );
                     return (true, joinTime == 0 || joinTime > fleetLaunchTime);
                 }
             }
-
         }
     }
 
@@ -441,11 +502,10 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
         }
     }
 
-    function _checkFleetAndComputeQuantityLeft(
-        Fleet memory fleet,
-        FleetResolution memory resolution
-    ) internal returns (uint32 quantity, uint32 inFlightFleetLoss) {
-
+    function _checkFleetAndComputeQuantityLeft(Fleet memory fleet, FleetResolution memory resolution)
+        internal
+        returns (uint32 quantity, uint32 inFlightFleetLoss)
+    {
         quantity = fleet.quantity;
         require(quantity > 0, "FLEET_DO_NOT_EXIST");
 
@@ -761,7 +821,8 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
             return (0, 0); // this edge case need to be considered, as the result of this function cannot tell from it whos is winning here
         }
 
-        uint256 attackFactor = numAttack * ((1000000 - _fleetSizeFactor6) + (_fleetSizeFactor6 * numAttack / numDefense));
+        uint256 attackFactor = numAttack *
+            ((1000000 - _fleetSizeFactor6) + ((_fleetSizeFactor6 * numAttack) / numDefense));
         uint256 attackDamage = (attackFactor * attack) / defense / 1000000;
 
         if (numDefense > attackDamage) {
@@ -770,7 +831,8 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
             defenderLoss = uint32(attackDamage); // 1 spaceship will be left at least as attackDamage < numDefense
         } else {
             // attack succeed
-            uint256 defenseFactor = numDefense * ((1000000 - _fleetSizeFactor6) + (_fleetSizeFactor6 * numDefense / numAttack));
+            uint256 defenseFactor = numDefense *
+                ((1000000 - _fleetSizeFactor6) + ((_fleetSizeFactor6 * numDefense) / numAttack));
             uint256 defenseDamage = uint32((defenseFactor * defense) / attack / 1000000);
 
             if (defenseDamage >= numAttack) {
@@ -817,12 +879,14 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
         (int8 toSubX, int8 toSubY) = _subLocation(_planetData(to));
         // check input instead of compute sqrt
 
-        uint256 distanceSquared = uint256(int256( // check input instead of compute sqrt
-            ((int128(int256(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) * 4 + toSubX) -
-                (int128(int256(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) * 4 + fromSubX)) **
-                2 +
-                ((int128(int256(to >> 128)) * 4 + toSubY) - (int128(int256(from >> 128)) * 4 + fromSubY))**2
-        ));
+        uint256 distanceSquared = uint256(
+            int256( // check input instead of compute sqrt
+                ((int128(int256(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) * 4 + toSubX) -
+                    (int128(int256(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) * 4 + fromSubX)) **
+                    2 +
+                    ((int128(int256(to >> 128)) * 4 + toSubY) - (int128(int256(from >> 128)) * 4 + fromSubY))**2
+            )
+        );
         require(distance**2 <= distanceSquared && distanceSquared < (distance + 1)**2, "wrong distance");
     }
 
@@ -945,14 +1009,14 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
     ) internal view returns (bool active, uint32 currentNumSpaceships) {
         (active, currentNumSpaceships) = _activeNumSpaceships(numSpaceshipsData);
 
-        uint256 maxIncrease = ACTIVE_MASK -1;
+        uint256 maxIncrease = ACTIVE_MASK - 1;
         uint256 timePassed = block.timestamp - lastUpdated;
         uint256 newSpaceships = currentNumSpaceships;
         if (_productionCapAsDuration > 0) {
             uint256 decrease = 0;
-            uint256 cap = _acquireNumSpaceships + _productionCapAsDuration * uint256(production) / 1 hours;
+            uint256 cap = _acquireNumSpaceships + (_productionCapAsDuration * uint256(production)) / 1 hours;
             if (currentNumSpaceships > cap) {
-                decrease = timePassed * 1800 / 3600; // 1800 per hours
+                decrease = (timePassed * 1800) / 3600; // 1800 per hours
                 if (decrease > currentNumSpaceships - cap) {
                     decrease = currentNumSpaceships - cap;
                 }
@@ -982,7 +1046,6 @@ contract OuterSpaceFacetBase is ImportingOuterSpaceTypes, ImportingOuterSpaceCon
             newSpaceships = ACTIVE_MASK - 1;
         }
         currentNumSpaceships = uint32(newSpaceships);
-
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------

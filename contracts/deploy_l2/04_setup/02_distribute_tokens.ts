@@ -6,11 +6,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deployer, claimKeyDistributor} = await hre.getNamedAccounts();
   const {read, execute} = hre.deployments;
 
-  const claimKeyDistributorBalance = await read(
-    'ConquestToken',
-    'balanceOf',
-    claimKeyDistributor
-  );
+  const claimKeyDistributorBalance = await read('ConquestToken', 'balanceOf', claimKeyDistributor);
   if (claimKeyDistributorBalance.eq(0)) {
     await execute(
       'ConquestToken',

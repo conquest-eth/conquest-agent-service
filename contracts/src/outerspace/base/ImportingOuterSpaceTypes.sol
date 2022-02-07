@@ -4,7 +4,6 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract ImportingOuterSpaceTypes {
-
     // front running protection : _frontruunningDelay / 2 slots
     struct InFlight {
         uint64 flying;
@@ -32,7 +31,6 @@ contract ImportingOuterSpaceTypes {
         // TODO uint32 delay
     }
 
-
     struct PlanetStats {
         int8 subX;
         int8 subY;
@@ -52,7 +50,6 @@ contract ImportingOuterSpaceTypes {
         bool active;
         uint256 reward;
     }
-
 
     struct FleetLaunch {
         address fleetSender;

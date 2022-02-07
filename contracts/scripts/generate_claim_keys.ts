@@ -30,8 +30,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {network, getChainId, ethers} = hre;
   const {execute, read} = hre.deployments;
 
-  let mnemonic =
-    'curious erupt response napkin sick ketchup hard estate comic club female sudden';
+  let mnemonic = 'curious erupt response napkin sick ketchup hard estate comic club female sudden';
   // TODO check hardhat-deploy: if (network.live) {
   if (network.name !== 'hardhat' && network.name !== 'localhost') {
     mnemonic = Wallet.createRandom().mnemonic.phrase;
@@ -42,10 +41,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
       pastMnemonics = JSON.parse(mnemonicSrc);
     } catch (e) {}
     pastMnemonics.push(mnemonic);
-    await deployments.saveDotFile(
-      pastMnemonicsFilename,
-      JSON.stringify(pastMnemonics)
-    );
+    await deployments.saveDotFile(pastMnemonicsFilename, JSON.stringify(pastMnemonics));
   }
 
   const claimKeyETHAmount = parseEther('0.52');
@@ -80,14 +76,8 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     totalTokenAmount = totalTokenAmount.add(claimKeyTokenAmount);
   }
 
-  const claimKeyDistributorETHBalance = await ethers.provider.getBalance(
-    claimKeyDistributor
-  );
-  const claimKeyDistributorTokenBalance = await read(
-    'ConquestToken',
-    'balanceOf',
-    claimKeyDistributor
-  );
+  const claimKeyDistributorETHBalance = await ethers.provider.getBalance(claimKeyDistributor);
+  const claimKeyDistributorTokenBalance = await read('ConquestToken', 'balanceOf', claimKeyDistributor);
 
   console.log({
     claimKeyDistributor,
@@ -134,10 +124,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     try {
       previous = JSON.parse(await deployments.readDotFile(filename));
     } catch (e) {}
-    await deployments.saveDotFile(
-      filename,
-      JSON.stringify(previous.concat(claimKeys), null, 2)
-    );
+    await deployments.saveDotFile(filename, JSON.stringify(previous.concat(claimKeys), null, 2));
   } else {
     await deployments.saveDotFile(filename, JSON.stringify(claimKeys, null, 2));
   }

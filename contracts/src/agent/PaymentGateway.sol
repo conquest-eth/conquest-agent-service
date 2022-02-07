@@ -4,7 +4,6 @@ pragma solidity 0.8.9;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract PaymentGateway {
-
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event Payment(address indexed payer, uint256 amount, bool refund);
 
@@ -52,5 +51,4 @@ contract PaymentGateway {
             tokens[i].transfer(to, balance);
         }
     }
-
 }

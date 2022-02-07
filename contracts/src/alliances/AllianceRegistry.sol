@@ -9,8 +9,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 // import "hardhat/console.sol";
 
 contract AllianceRegistry is Proxied {
-     using ECDSA for bytes32;
-
+    using ECDSA for bytes32;
 
     uint8 internal constant MAX_NUM_ALLIANCES = 4;
 
@@ -27,12 +26,17 @@ contract AllianceRegistry is Proxied {
     }
     mapping(address => Alliances) internal _alliances;
 
-
     event AllianceLink(IAlliance indexed alliance, address indexed player, bool joining);
 
-
-    function getAllianceDataAtSlot(address player, uint8 slot) external view returns (IAlliance alliance, uint96 joinTime, uint256 nonce) {
-
+    function getAllianceDataAtSlot(address player, uint8 slot)
+        external
+        view
+        returns (
+            IAlliance alliance,
+            uint96 joinTime,
+            uint256 nonce
+        )
+    {
         Alliances storage alliances = _alliances[player];
         if (slot == 0) {
             alliance = alliances.alliance0.alliance;
@@ -51,7 +55,11 @@ contract AllianceRegistry is Proxied {
         nonce = _allianceNonces[player][alliance];
     }
 
-    function getAllianceData(address player, IAlliance alliance) external view returns (uint96 joinTime, uint256 nonce) {
+    function getAllianceData(address player, IAlliance alliance)
+        external
+        view
+        returns (uint96 joinTime, uint256 nonce)
+    {
         nonce = _allianceNonces[player][alliance];
 
         Alliances storage alliances = _alliances[player];
@@ -66,7 +74,11 @@ contract AllianceRegistry is Proxied {
         }
     }
 
-    function havePlayersAnAllianceInCommon(address player1, address player2, uint256 timestamp) external view returns (IAlliance alliance, uint96 joinTime) {
+    function havePlayersAnAllianceInCommon(
+        address player1,
+        address player2,
+        uint256 timestamp
+    ) external view returns (IAlliance alliance, uint96 joinTime) {
         Alliances storage p1Alliances = _alliances[player1];
         Alliances storage p2Alliances = _alliances[player2];
 
@@ -80,29 +92,29 @@ contract AllianceRegistry is Proxied {
                 AllianceRow memory allianceRow;
                 if (i == 0) {
                     allianceRow = p1Alliances.alliance0;
-                } else if(i==1) {
+                } else if (i == 1) {
                     allianceRow = p1Alliances.alliance1;
-                } else if(i==2) {
+                } else if (i == 2) {
                     allianceRow = p1Alliances.alliance2;
-                } else if(i==3) {
+                } else if (i == 3) {
                     allianceRow = p1Alliances.alliance3;
                 }
                 if (address(allianceRow.alliance) == address(0)) {
                     // console.log("p1 exhausted");
                     return (alliance, joinTime); // the alliance leave ensure that there is no gap // TODO
                 }
-                player1Alliances[num1 ++] = allianceRow;
+                player1Alliances[num1++] = allianceRow;
             }
             for (uint256 j = 0; j < 4; j++) {
                 if (j == num2) {
                     AllianceRow memory allianceRow;
                     if (j == 0) {
                         allianceRow = p2Alliances.alliance0;
-                    } else if(j==1) {
+                    } else if (j == 1) {
                         allianceRow = p2Alliances.alliance1;
-                    } else if(j==2) {
+                    } else if (j == 2) {
                         allianceRow = p2Alliances.alliance2;
-                    } else if(j==3) {
+                    } else if (j == 3) {
                         allianceRow = p2Alliances.alliance3;
                     }
                     if (address(allianceRow.alliance) == address(0)) {
@@ -110,7 +122,7 @@ contract AllianceRegistry is Proxied {
                         // return (alliance, joinTime); // the alliance leave ensure that there is no gap // TODO
                         break;
                     }
-                    player2Alliances[num2 ++] = allianceRow;
+                    player2Alliances[num2++] = allianceRow;
                 }
 
                 if (player1Alliances[i].alliance == player2Alliances[j].alliance) {
@@ -146,13 +158,13 @@ contract AllianceRegistry is Proxied {
         Alliances storage alliances = _alliances[msg.sender];
         uint256 slot = 0;
         if (address(alliances.alliance0.alliance) != address(0)) {
-            slot ++;
+            slot++;
         }
         if (address(alliances.alliance1.alliance) != address(0)) {
-            slot ++;
+            slot++;
         }
         if (address(alliances.alliance2.alliance) != address(0)) {
-            slot ++;
+            slot++;
         }
         require(address(alliances.alliance3.alliance) == address(0), "MAX_NUM_ALLIANCES_REACHED");
 
@@ -182,12 +194,15 @@ contract AllianceRegistry is Proxied {
         // TODO ensure callback not failed due to low gas (1/64 rule)
     }
 
-
     // -----------------------------------------------------------------------------------------------------
     // FROM ALLIANCE
     // -----------------------------------------------------------------------------------------------------
 
-    function addPlayerToAlliance(address player, uint32 nonce, bytes calldata signature) external {
+    function addPlayerToAlliance(
+        address player,
+        uint32 nonce,
+        bytes calldata signature
+    ) external {
         _addPlayerToAlliance(player, nonce, signature);
     }
 
@@ -197,56 +212,62 @@ contract AllianceRegistry is Proxied {
         bytes signature;
     }
 
-
     function addMultiplePlayersToAlliance(PlayerSubmission[] calldata playerSubmissions) external {
-       for(uint256 i = 0 ; i < playerSubmissions.length; i++) {
-           _addPlayerToAlliance(playerSubmissions[i].addr, playerSubmissions[i].nonce, playerSubmissions[i].signature);
-       }
+        for (uint256 i = 0; i < playerSubmissions.length; i++) {
+            _addPlayerToAlliance(playerSubmissions[i].addr, playerSubmissions[i].nonce, playerSubmissions[i].signature);
+        }
     }
 
     function ejectPlayerFromAlliance(address player) external {
         _leaveAlliance(player, IAlliance(msg.sender));
     }
 
-
     // -----------------------------------------------------------------------------------------------------
     // INTERNAL
     // -----------------------------------------------------------------------------------------------------
 
-    function _addPlayerToAlliance(address player, uint32 nonce, bytes calldata signature) internal {
+    function _addPlayerToAlliance(
+        address player,
+        uint32 nonce,
+        bytes calldata signature
+    ) internal {
         IAlliance alliance = IAlliance(msg.sender);
 
         Alliances storage alliances = _alliances[player];
         uint256 slot = 0;
         if (address(alliances.alliance0.alliance) != address(0)) {
             require(alliances.alliance0.alliance != alliance, "ALREADY_JOINED");
-            slot ++;
+            slot++;
         }
         if (address(alliances.alliance1.alliance) != address(0)) {
             require(alliances.alliance1.alliance != alliance, "ALREADY_JOINED");
-            slot ++;
+            slot++;
         }
         if (address(alliances.alliance2.alliance) != address(0)) {
             require(alliances.alliance2.alliance != alliance, "ALREADY_JOINED");
-            slot ++;
+            slot++;
         }
         require(alliances.alliance3.alliance != alliance, "ALREADY_JOINED");
         require(address(alliances.alliance3.alliance) == address(0), "MAX_NUM_ALLIANCES_REACHED");
-
 
         uint256 currentNonce = _allianceNonces[player][alliance];
         require(currentNonce == nonce, "INVALID_NONCE");
 
         bytes memory message;
         if (nonce == 0) {
-            message = abi.encodePacked("\x19Ethereum Signed Message:\n56", "Join Alliance 0x0000000000000000000000000000000000000000");
+            message = abi.encodePacked(
+                "\x19Ethereum Signed Message:\n56",
+                "Join Alliance 0x0000000000000000000000000000000000000000"
+            );
             _writeUintAsHex(message, 28 + 55, uint160(msg.sender));
         } else {
-            message = abi.encodePacked("\x19Ethereum Signed Message:\n76", "Join Alliance 0x0000000000000000000000000000000000000000 (nonce:          0)");
+            message = abi.encodePacked(
+                "\x19Ethereum Signed Message:\n76",
+                "Join Alliance 0x0000000000000000000000000000000000000000 (nonce:          0)"
+            );
             _writeUintAsHex(message, 28 + 55, uint160(msg.sender));
             _writeUintAsDecimal(message, 28 + 74, nonce);
         }
-
 
         // console.log(string(message));
 
@@ -275,6 +296,7 @@ contract AllianceRegistry is Proxied {
 
     bytes internal constant hexAlphabet = "0123456789abcdef";
     bytes internal constant decimalAlphabet = "0123456789";
+
     function _writeUintAsHex(
         bytes memory data,
         uint256 endPos,
@@ -285,6 +307,7 @@ contract AllianceRegistry is Proxied {
             num /= 16;
         }
     }
+
     function _writeUintAsDecimal(
         bytes memory data,
         uint256 endPos,
@@ -297,12 +320,10 @@ contract AllianceRegistry is Proxied {
     }
 
     function _leaveAlliance(address player, IAlliance alliance) internal {
-
         Alliances storage alliances = _alliances[msg.sender];
 
         IAlliance lastSlotAlliance;
         uint96 lastSlotJoinTime;
-
 
         require(address(alliances.alliance0.alliance) != address(0), "NOT_PART_OF_ANY_ALLIANCE");
 
@@ -332,27 +353,23 @@ contract AllianceRegistry is Proxied {
             }
         }
 
-
         if (alliance != lastSlotAlliance) {
             if (alliances.alliance0.alliance == alliance) {
                 alliances.alliance0.alliance = lastSlotAlliance;
                 alliances.alliance0.joinTime = lastSlotJoinTime;
             } else if (alliances.alliance1.alliance == alliance) {
-                alliances.alliance1.alliance =lastSlotAlliance;
+                alliances.alliance1.alliance = lastSlotAlliance;
                 alliances.alliance1.joinTime = lastSlotJoinTime;
             } else if (alliances.alliance2.alliance == alliance) {
-                alliances.alliance2.alliance =lastSlotAlliance;
+                alliances.alliance2.alliance = lastSlotAlliance;
                 alliances.alliance2.joinTime = lastSlotJoinTime;
             } else {
                 revert("NOT_PART_OF_THE_ALLIANCE");
             }
         }
 
-
         emit AllianceLink(alliance, player, false);
     }
-
-
 
     function _msgSender() internal view returns (address) {
         return msg.sender; // TODO metatx

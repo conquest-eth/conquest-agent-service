@@ -652,7 +652,12 @@ contract OuterSpaceTmp is Proxied {
         );
         require(currentNumSpaceships >= quantity, "SPACESHIPS_NOT_ENOUGH");
 
-        (uint32 launchTime, uint32 numSpaceships) = _computeSpaceshipBeforeSending(currentNumSpaceships, active, from, quantity);
+        (uint32 launchTime, uint32 numSpaceships) = _computeSpaceshipBeforeSending(
+            currentNumSpaceships,
+            active,
+            from,
+            quantity
+        );
 
         uint256 fleetId = uint256(keccak256(abi.encodePacked(toHash, from)));
         _fleets[fleetId] = Fleet({launchTime: launchTime, owner: owner, quantity: quantity});
@@ -665,9 +670,9 @@ contract OuterSpaceTmp is Proxied {
         bool active,
         uint256 from,
         uint32 quantity
-    ) internal returns( uint32 launchTime, uint32 numSpaceships) {
+    ) internal returns (uint32 launchTime, uint32 numSpaceships) {
         Planet storage planet = _getPlanet(from);
-         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         // record flying fleets (to prevent front-running, see resolution)
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         uint256 timeSlot = block.timestamp / (FRONT_RUNNING_DELAY / 2);
@@ -681,7 +686,6 @@ contract OuterSpaceTmp is Proxied {
         numSpaceships = currentNumSpaceships - quantity;
         planet.numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
         planet.lastUpdated = launchTime;
-
     }
 
     // --------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -698,11 +702,7 @@ contract OuterSpaceTmp is Proxied {
 
     function _resolveFleet(uint256 fleetId, FleetResolution memory resolution) internal {
         Fleet memory fleet = _fleets[fleetId];
-        (uint32 quantity, uint32 inFlightFleetLoss) = _checkFleetAndComputeQuantityLeft(
-            fleet,
-            fleetId,
-            resolution
-        );
+        (uint32 quantity, uint32 inFlightFleetLoss) = _checkFleetAndComputeQuantityLeft(fleet, fleetId, resolution);
         Planet memory toPlanet = _getPlanet(resolution.to);
         emit_fleet_arrived(
             fleet.owner,
@@ -724,7 +724,8 @@ contract OuterSpaceTmp is Proxied {
         bool gift,
         uint32 quantity
     ) internal returns (FleetResult memory result) {
-        if (gift && toPlanet.owner != address(0)) { // TODO || toPlanet.owner == fleet.owner ? // toPlanet.owner != address(0) => not able to send gift to unhabited planet
+        if (gift && toPlanet.owner != address(0)) {
+            // TODO || toPlanet.owner == fleet.owner ? // toPlanet.owner != address(0) => not able to send gift to unhabited planet
             return _performReinforcement(fleet.owner, toPlanet, to, quantity);
         } else {
             return _performAttack(fleet.owner, fleet.launchTime, from, toPlanet, to, quantity);
@@ -737,7 +738,14 @@ contract OuterSpaceTmp is Proxied {
         FleetResolution memory resolution
     ) internal returns (uint32 quantity, uint32 inFlightFleetLoss) {
         require(
-            uint256(keccak256(abi.encodePacked(keccak256(abi.encodePacked(resolution.secret, resolution.to, resolution.gift)), resolution.from))) == fleetId,
+            uint256(
+                keccak256(
+                    abi.encodePacked(
+                        keccak256(abi.encodePacked(resolution.secret, resolution.to, resolution.gift)),
+                        resolution.from
+                    )
+                )
+            ) == fleetId,
             "INVALID_FLEET_DATA_OR_SECRET'"
         );
 
@@ -1103,12 +1111,14 @@ contract OuterSpaceTmp is Proxied {
         (int8 toSubX, int8 toSubY) = _subLocation(_planetData(to));
         // check input instead of compute sqrt
 
-        uint256 distanceSquared = uint256(int256( // check input instead of compute sqrt
-            ((int128(int256(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) * 4 + toSubX) -
-                (int128(int256(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) * 4 + fromSubX)) **
-                2 +
-                ((int128(int256(to >> 128)) * 4 + toSubY) - (int128(int256(from >> 128)) * 4 + fromSubY))**2
-        ));
+        uint256 distanceSquared = uint256(
+            int256( // check input instead of compute sqrt
+                ((int128(int256(to & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) * 4 + toSubX) -
+                    (int128(int256(from & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)) * 4 + fromSubX)) **
+                    2 +
+                    ((int128(int256(to >> 128)) * 4 + toSubY) - (int128(int256(from >> 128)) * 4 + fromSubY))**2
+            )
+        );
         require(distance**2 <= distanceSquared && distanceSquared < (distance + 1)**2, "wrong distance");
     }
 

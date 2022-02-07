@@ -80,12 +80,8 @@ function oldRule(row: number[]): Result {
   }
 
   const numRound = Math.min(numAttackRound, numDefenseRound);
-  attackerLoss = Math.floor(
-    Math.min((numRound * defensePower) / 100000000, numAttack)
-  );
-  defenderLoss = Math.floor(
-    Math.min((numRound * attackPower) / 100000000, numDefense)
-  );
+  attackerLoss = Math.floor(Math.min((numRound * defensePower) / 100000000, numAttack));
+  defenderLoss = Math.floor(Math.min((numRound * attackPower) / 100000000, numDefense));
 
   if (defenderLoss >= numDefense) {
     win = true;
@@ -100,29 +96,17 @@ function oldRule(row: number[]): Result {
 async function main() {
   const datastr = fs.readFileSync(path.join(__dirname, 'data.json')).toString();
   const data = JSON.parse(datastr) as number[][];
-  console.log(
-    '---------------------------------------------------------------------------------------------------'
-  );
+  console.log('---------------------------------------------------------------------------------------------------');
   console.log('OLD RULE');
-  console.log(
-    '---------------------------------------------------------------------------------------------------'
-  );
+  console.log('---------------------------------------------------------------------------------------------------');
   data.map(oldRule).map((v) => console.log(v));
-  console.log(
-    '---------------------------------------------------------------------------------------------------'
-  );
+  console.log('---------------------------------------------------------------------------------------------------');
   console.log('CURRENT RULE');
-  console.log(
-    '---------------------------------------------------------------------------------------------------'
-  );
+  console.log('---------------------------------------------------------------------------------------------------');
   data.map(currentRule).map((v) => console.log(v));
-  console.log(
-    '---------------------------------------------------------------------------------------------------'
-  );
+  console.log('---------------------------------------------------------------------------------------------------');
   console.log('NEW RULE');
-  console.log(
-    '---------------------------------------------------------------------------------------------------'
-  );
+  console.log('---------------------------------------------------------------------------------------------------');
   data.map(newRule).map((v) => console.log(v));
 }
 
@@ -136,10 +120,7 @@ function newRule(row: number[]): Result {
     return {defenderLoss, attackerLoss, win, numSpaceships};
   }
 
-  const attackDamage = Math.floor(
-    (((numAttack + (numAttack / numDefense) * numAttack) / 2) * attack) /
-      defense
-  );
+  const attackDamage = Math.floor((((numAttack + (numAttack / numDefense) * numAttack) / 2) * attack) / defense);
 
   if (numDefense > attackDamage) {
     // attack fails
@@ -150,10 +131,7 @@ function newRule(row: number[]): Result {
     numSpaceships = numDefense - defenderLoss;
   } else {
     // attack succeed
-    let defenseDamage = Math.floor(
-      (((numDefense + (numDefense / numAttack) * numDefense) / 2) * defense) /
-        attack
-    );
+    let defenseDamage = Math.floor((((numDefense + (numDefense / numAttack) * numDefense) / 2) * defense) / attack);
     if (defenseDamage >= numAttack) {
       defenseDamage = numAttack - 1; // ensure 1 spaceship left
     }

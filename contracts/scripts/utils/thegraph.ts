@@ -17,10 +17,7 @@ export class TheGraph {
     });
   }
 
-  async complexQuery<
-    T,
-    Variables extends Record<string, unknown> = Record<string, unknown>
-  >(
+  async complexQuery<T, Variables extends Record<string, unknown> = Record<string, unknown>>(
     queryString: string,
     options?: {
       variables?: Variables;
@@ -61,9 +58,7 @@ export class TheGraph {
           throw new Error(`cannot fetch from thegraph node`);
         }
 
-        const freshData = (
-          options?.path ? result.data[options.path] : result.data
-        ) as T;
+        const freshData = (options?.path ? result.data[options.path] : result.data) as T;
         if (!data) {
           data = freshData;
         }
@@ -73,16 +68,13 @@ export class TheGraph {
           let freshList = freshData as unknown as any[];
           if (typeof options.list !== 'boolean' && options.list.path) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            freshList = (freshData as unknown as any)[
-              options.list.path
-            ] as any[];
+            freshList = (freshData as unknown as any)[options.list.path] as any[];
           }
 
           numEntries = freshList.length;
           if (numEntries > 0) {
             const newLastId =
-              typeof options.list !== 'boolean' &&
-              options.list.getLastId !== undefined
+              typeof options.list !== 'boolean' && options.list.getLastId !== undefined
                 ? options.list.getLastId(freshList)
                 : freshList[numEntries - 1].id;
             if (lastId === newLastId) {
@@ -122,9 +114,7 @@ export class TheGraph {
     let numEntries = first;
     let entries: T[] = [];
     while (numEntries === first) {
-      const result = await this.client
-        .query(queryString, {first, lastId, ...options?.variables})
-        .toPromise();
+      const result = await this.client.query(queryString, {first, lastId, ...options?.variables}).toPromise();
       if (result.error) {
         throw new Error(result.error.message);
       }
@@ -142,10 +132,7 @@ export class TheGraph {
 
       numEntries = newEntries.length;
       if (numEntries > 0) {
-        const newLastId =
-          options?.getLastId !== undefined
-            ? options.getLastId(entries)
-            : newEntries[numEntries - 1].id;
+        const newLastId = options?.getLastId !== undefined ? options.getLastId(entries) : newEntries[numEntries - 1].id;
         if (lastId === newLastId) {
           console.log('same query, stop');
           break;

@@ -7,4 +7,3 @@ interface IAlliance {
 
     function playerHasLeft(address player) external;
 }
-

@@ -56,18 +56,12 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     const state = await OuterSpace.callStatic.getPlanet(chosenPlanet.location);
 
     if (state.state.reward.eq(0) && state.state.lastUpdated == 0) {
-      console.log(
-        `${chosenPlanet.x},${chosenPlanet.y}`,
-        JSON.stringify(chosenPlanet, null, 2)
-      );
+      console.log(`${chosenPlanet.x},${chosenPlanet.y}`, JSON.stringify(chosenPlanet, null, 2));
       planetsChosen.push(chosenPlanet);
     }
   }
 
-  await deployments.saveDotFile(
-    '.planets-chosen.json',
-    JSON.stringify(planetsChosen, null, 2)
-  );
+  await deployments.saveDotFile('.planets-chosen.json', JSON.stringify(planetsChosen, null, 2));
 
   for (const planet of planetsChosen) {
     console.log(`- (${planet.x},${planet.y})`);
