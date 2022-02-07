@@ -41,7 +41,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     exitDuration /= 180;
     productionSpeedUp = 180;
     frontrunningDelay /= 180;
-    resolveWindow /= 60; // 180;
+    resolveWindow /= 30; // 180;
   }
 
   if (networkName === 'quick') {

@@ -97,10 +97,47 @@
   }
 
   $: lineColor = prediction?.outcome.giving ? '#34D399' : 'red';
+
+  $: renderScale = $camera ? $camera.renderScale : 1;
+  let selectionBorder = 4;
+  let adjustedRenderScale;
+  const multiplier = (toPlanetInfo?.stats.production || 3600) / 3600;
+  let blockieScale = 0.025 * multiplier;
+  let zoomIn = true;
+  $: if (renderScale < 10) {
+    adjustedRenderScale = 10 / renderScale;
+    blockieScale = 0.025 * multiplier * adjustedRenderScale;
+    zoomIn = false;
+    selectionBorder = 4;
+  } else {
+    selectionBorder = 4;
+    zoomIn = true;
+    blockieScale = 0.025 * multiplier;
+    adjustedRenderScale = 1;
+  }
 </script>
 
 {#if fleet.state === 'READY_TO_RESOLVE'}
-  <svg
+  <div
+    style={`z-index: 2; position: absolute; z-index: 3; transform: translate(${x - 48 / 2}px,${y - 48 / 2}px)  scale(${
+      blockieScale * 4
+    }, ${blockieScale * 4}); width: ${48}px;
+  height: ${48}px;`}
+  >
+    <div
+      style={`
+width: ${48}px;
+height: ${48}px;
+border: ${selectionBorder}px solid red;
+border-radius: 50%;
+animation-name: event-scale-up-down;
+animation-iteration-count: infinite;
+animation-duration: 1s;
+animation-timing-function: linear;
+`}
+    />
+  </div>
+  <!-- <svg
     viewBox="0 0 400 400"
     width={10}
     y={10}
@@ -134,7 +171,7 @@
     >
       <mpath xlink:href="#motionPath" />
     </animateMotion>
-  </svg>
+  </svg> -->
 {:else}
   <svg
     viewBox="0 0 500 500 "
