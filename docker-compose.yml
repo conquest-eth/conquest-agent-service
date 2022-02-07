@@ -15,7 +15,7 @@ services:
       - postgres
     environment:
       postgres_host: postgres
-      postgres_user: dbowner
+      postgres_user: root
       postgres_pass: let-me-in
       postgres_db: graph-node
       ipfs: 'ipfs:5001'
@@ -44,7 +44,7 @@ services:
       - ./docker-data:/docker-entrypoint-initdb.d
     environment:
       - POSTGRES_MULTIPLE_DATABASES="graph-node","explorer"
-      - POSTGRES_USER=dbowner
+      - POSTGRES_USER=root
       - POSTGRES_PASSWORD=let-me-in
       - PGDATA=/tmp
 
@@ -62,5 +62,5 @@ services:
       ETHEREUM_JSONRPC_TRACE_URL: http://host.docker.internal:8545
       #ETHEREUM_JSONRPC_WS_URL: ws://host.docker.internal:8545
       ETHEREUM_JSONRPC_VARIANT: ganache
-      DATABASE_URL: postgresql://dbowner:let-me-in@postgres:5432/explorer?ssl=false
+      DATABASE_URL: postgresql://root:let-me-in@postgres:5432/explorer?ssl=false
     entrypoint: '/bin/sh -c "mix do ecto.create, ecto.migrate; mix phx.server"'
