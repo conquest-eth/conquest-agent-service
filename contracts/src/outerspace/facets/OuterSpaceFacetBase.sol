@@ -392,15 +392,16 @@ contract OuterSpaceFacetBase is
             quantity
         );
         emit_fleet_arrived(fleet.owner, fleetId, destinationOwner, resolution.to, gifting, result, inFlightFleetLoss);
-        _fleets[fleetId].quantity = 0; // TODO reset all to get gas refund? // TODO ensure frontend can still easily check fleet status
+        _fleets[fleetId].quantity = 0; // TODO quantity should be kept ? so Alliance Contract can act on that value ?, could use 1st bit indicator
     }
 
+    // solhint-disable-next-line code-complexity
     function _checkGifting(
         address sender,
         FleetResolution memory resolution,
         Planet memory toPlanet,
         uint256 fleetLaunchTime
-    ) internal returns (bool gifting, bool taxed) {
+    ) internal view returns (bool gifting, bool taxed) {
         if (toPlanet.owner == address(0)) {
             // destination has no owner : this is an attack
             return (false, false);
@@ -636,6 +637,9 @@ contract OuterSpaceFacetBase is
         uint16 production,
         uint32 numAttack
     ) internal returns (FleetResult memory result) {
+        // TODO accumulate attacks in succession (30 min - 2h) so that attack arriving at the same time get combined in one big fleet
+        // basically store the last attack (fleet amount destroyed, amount destroyed on the defending planet, timestamp)
+        // retrieve that , add fleet amount destroyed to new attacking fleet quantity, perform the attack as if it was happening now, but recuded previously destroyed amount to that attack
         PreCombatState memory state = _getPlanetPreCombatState(toPlanet, to, production);
 
         if (state.numDefense == 0 && numAttack > 0) {

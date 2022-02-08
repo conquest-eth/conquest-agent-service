@@ -8,6 +8,7 @@ contract ImportingOuterSpaceTypes {
     struct InFlight {
         uint64 flying;
         uint64 destroyed;
+        // STORE last attack too, to compute combined attack on it ? uint128 is plainty enough
     }
 
     struct Discovered {
@@ -27,8 +28,8 @@ contract ImportingOuterSpaceTypes {
     struct Fleet {
         address owner;
         uint32 launchTime;
-        uint32 quantity;
-        // TODO uint32 delay
+        uint32 quantity; // TODO? first bit = done? to keep quantity value on-chain post resolution
+        // we got 32bit more to store if needed
     }
 
     struct PlanetStats {
