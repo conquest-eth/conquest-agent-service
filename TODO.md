@@ -4,6 +4,20 @@
 - [ ] when revealTIme come check agent-service for registered queueID and show broadcast status
 - [ ] Optimistic agent-serve registration and topups (later we could use pendingAction system)
 - [ ] SHow list of fleets on agent-service page and allow to register them each or all
+- [ ] Better agent-screen
+- [ ] Handle penind gagent topup tx
+- [ ] Better withdrawal screen
+- [ ] Uniswap screen ?
+- [ ] Farming Screen ?
+- [ ] Game Reward collection screen
+- [ ] Alliance Screen
+- [ ] Alliance website
+- [ ] Documentation for smart contract
+- [ ] Better event popups
+- [ ] Better planet/event/fleet list : do not get under "pick origin"
+- [ ] Better fleet to resolve fleet
+- [ ] Better handling of clicks => planet click take precedence ? => show list of fleets ?
+- [ ] fix Errors acknowledgements
 
 # ISSUES
 
