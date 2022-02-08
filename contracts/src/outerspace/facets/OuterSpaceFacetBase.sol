@@ -921,7 +921,7 @@ contract OuterSpaceFacetBase is
     // bytes32 constant stakeRange = 0x000400050005000A000A000F000F00140014001E001E00280028005000500064;
 
     // 6, 8, 10, 12, 14, 16, 18, 20, 20, 22, 24, 32, 40, 48, 56, 72
-    bytes32 constant stakeRange = 0x00060008000A000C000E00100012001400140016001800200028003000380048;
+    bytes32 internal constant stakeRange = 0x00060008000A000C000E00100012001400140016001800200028003000380048;
 
     function _stake(bytes32 data) internal pure returns (uint16) {
         require(_exists(data), "PLANET_NOT_EXISTS");
@@ -1006,6 +1006,7 @@ contract OuterSpaceFacetBase is
             });
     }
 
+    // solhint-disable-next-line code-complexity
     function _getCurrentNumSpaceships(
         uint32 numSpaceshipsData,
         uint256 lastUpdated,
