@@ -2,34 +2,51 @@
   import {myevents} from '$lib/space/myevents';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import type {MyEvent} from '$lib/space/myevents';
-  import EventInfo from '$lib/components/events/EventInfo.svelte';
   import {clickOutside} from '$lib/utils/clickOutside';
   import {errors} from '$lib/space/errors';
-  import ErrorInfo from './ErrorInfo.svelte';
   import type {SpaceError} from '$lib/space/errors';
+  import selection from '$lib/map/selection';
+  import {xyToLocation} from 'conquest-eth-common';
+  import {camera} from '$lib/map/camera';
 
   let isToggled = false;
-  let isShowInfo = false;
-  let selectedEvent: MyEvent;
-  let selectedError: SpaceError;
 
-  function onEventSelect(event: MyEvent) {
-    selectedEvent = event;
-    isShowInfo = true;
+  function onPlanetEventSelected(event: {location: string}) {
+    selection.selectViaId(event.location);
+    const planet = spaceInfo.getPlanetInfoViaId(event.location);
+    camera.navigate(planet.location.globalX, planet.location.globalY, 10);
   }
 
-  function onErrorSelected(error: SpaceError) {
-    selectedError = error;
-    isShowInfo = true;
+  let planetDict: {[id: string]: number};
+  let planetEvents: {location: string; error: boolean; length: number}[] = [];
+  $: {
+    planetDict = {};
+    planetEvents = [];
+    for (let error of $errors) {
+      const errorLocation = xyToLocation(error.location.x, error.location.y);
+      let index = planetDict[errorLocation];
+      if (!(index === 0 || index > 0)) {
+        index = planetEvents.length;
+        planetEvents.push({location: errorLocation, error: true, length: 1});
+        planetDict[errorLocation] = index;
+      } else {
+        planetEvents[index].error = true;
+        planetEvents[index].length++;
+      }
+    }
+    for (let event of $myevents) {
+      let index = planetDict[event.location];
+      if (!(index === 0 || index > 0)) {
+        index = planetEvents.length;
+        planetEvents.push({location: event.location, error: false, length: 1});
+        planetDict[event.location] = index;
+      } else {
+        planetEvents[index].length++;
+      }
+    }
   }
 </script>
 
-{#if selectedEvent}
-  <EventInfo bind:event={selectedEvent} bind:isShow={isShowInfo} />
-{/if}
-{#if selectedError}
-  <ErrorInfo bind:error={selectedError} bind:isShow={isShowInfo} />
-{/if}
 <div class="flex-col" use:clickOutside on:click_outside={() => (isToggled = false)}>
   <div
     class="top-0 md:p-3 p-1 w-32 text-center relative bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 mt-4 text-sm"
@@ -40,30 +57,18 @@
   </div>
   {#if isToggled}
     <div
-    class="top-0 md:p-3 text-center md:absolute bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 md:mt-16 text-sm"
+      class="top-0 md:p-3 text-center md:absolute bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 md:mt-16 text-sm"
     >
-      {#if $myevents.length || $errors.length}
+      {#if planetEvents.length > 0}
         <ul class="overflow-auto max-h-32 w-48" style="cursor: pointer;">
-          {#each $errors as error}
-            <li style="width: 100%" class="text-red-300 my-3" on:click={() => onErrorSelected(error)}>
-              * An error ocured on planet {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name}
-            </li>
-          {/each}
-          {#each $myevents as event}
-            {#if event.event.won}
-              <li class="text-yellow-300 my-3" on:click={() => onEventSelect(event)}>
-                * You captured {spaceInfo.getPlanetInfoViaId(event.event.planet.id).stats.name}
+          {#each planetEvents as planetEvent}
+            {#if planetEvent.error}
+              <li style="width: 100%" class="text-red-300 my-3" on:click={() => onPlanetEventSelected(planetEvent)}>
+                * An error ocured on planet {spaceInfo.getPlanetInfoViaId(planetEvent.location).stats.name} ({planetEvent.length})
               </li>
-            {:else if event.event.fleet}
-              <li class="text-yellow-300 my-3" on:click={() => onEventSelect(event)}>
-                * You received {event.event.quantity} spaceships from {spaceInfo.getPlanetInfoViaId(
-                  event.event.planet.id
-                ).stats.name}
-              </li>
-            {:else if !event.event.won}
-              <li class="text-yellow-300 my-3" on:click={() => onEventSelect(event)}>
-                {event.event.fleet}
-                * You didn't capture {spaceInfo.getPlanetInfoViaId(event.event.planet.id).stats.name}
+            {:else}
+              <li style="width: 100%" class="text-green-600 my-3" on:click={() => onPlanetEventSelected(planetEvent)}>
+                * {spaceInfo.getPlanetInfoViaId(planetEvent.location).stats.name} ({planetEvent.length})
               </li>
             {/if}
           {/each}

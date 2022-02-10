@@ -8,7 +8,19 @@ import type {Writable} from 'svelte/store';
 import {writable} from 'svelte/store';
 import type {AccountState} from '$lib/account/account';
 import {account} from '$lib/account/account';
-import type {FleetArrivedEvent} from './subgraphTypes';
+import type {
+  FleetArrivedEvent,
+  PlanetExitEvent,
+  PlanetInteruptedExitEvent,
+  planetTimePassedExitEvent,
+} from './subgraphTypes';
+import {deletionDelay, blockTime} from '$lib/config';
+import {now} from '$lib/time';
+import {BigNumber} from '@ethersproject/bignumber';
+import {spaceInfo} from './spaceInfo';
+
+const blockRange = Math.floor(deletionDelay / blockTime);
+const timeRange = deletionDelay;
 
 export type PlanetQueryState = {
   id: string;
@@ -41,7 +53,8 @@ export type GenericParsedEvent =
   | PlanetStakeParsedEvent
   | PlanetExitParsedEvent
   | FleetArrivedParsedEvent
-  | FleetSentParsedEvent; // | ExitCompleteEvent ?
+  | FleetSentParsedEvent
+  | PlanetExitParsedEvent;
 
 export type PlanetParsedEvent = OwnerParsedEvent & {
   __typename: 'PlanetStakeEvent' | 'PlanetExitEvent' | 'FleetSentEvent' | 'FleetArrivedEvent';
@@ -56,8 +69,18 @@ export type PlanetStakeParsedEvent = PlanetParsedEvent & {
 
 export type PlanetExitParsedEvent = PlanetParsedEvent & {
   __typename: 'PlanetExitEvent';
-  exitTime: string;
-  stake: string;
+  exitTime: number;
+  stake: BigNumber;
+  interupted: boolean;
+  complete: boolean;
+  success: boolean;
+};
+
+export type PlanetInteruptedExitParsedEvent = PlanetExitParsedEvent & {
+  interupted: true;
+};
+export type planetTimePassedExitParsedEvent = PlanetExitParsedEvent & {
+  interupted: false;
 };
 
 export type FleetArrivedParsedEvent = PlanetParsedEvent & {
@@ -90,6 +113,8 @@ export type SpaceQueryResult = {
   chain?: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou?: FleetArrivedEvent[]; // TODO
   fleetsArrivedToYou?: FleetArrivedEvent[]; // TODO
+  planetInteruptedExitEvents?: PlanetInteruptedExitEvent[];
+  planetTimePassedExitEvents?: planetTimePassedExitEvent[];
 };
 
 export type SpaceState = {
@@ -100,6 +125,8 @@ export type SpaceState = {
   chain: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou: FleetArrivedParsedEvent[]; // TODO
   fleetsArrivedToYou: FleetArrivedParsedEvent[]; // TODO
+  planetInteruptedExitEvents?: PlanetInteruptedExitParsedEvent[];
+  planetTimePassedExitEvents?: planetTimePassedExitParsedEvent[];
 };
 
 function parseFleetArrived(v: FleetArrivedEvent): FleetArrivedParsedEvent {
@@ -124,6 +151,30 @@ function parseFleetArrived(v: FleetArrivedEvent): FleetArrivedParsedEvent {
   };
 }
 
+function parsePlanetExitEvent(v: PlanetExitEvent, interupted: boolean): PlanetExitParsedEvent {
+  return {
+    __typename: v.__typename,
+    transaction: v.transaction,
+    owner: v.owner,
+    timestamp: parseInt(v.timestamp),
+    blockNumber: v.blockNumber,
+    planet: v.planet,
+    stake: BigNumber.from(v.stake),
+    exitTime: parseInt(v.exitTime),
+    complete: v.complete,
+    interupted, // : v.interupted,
+    success: v.success,
+  };
+}
+
+function parsePlanetInteruptedExitEvent(v: PlanetExitEvent): PlanetInteruptedExitParsedEvent {
+  return parsePlanetExitEvent(v, true) as PlanetInteruptedExitParsedEvent;
+}
+
+function parseplanetTimePassedExitEvent(v: PlanetExitEvent): planetTimePassedExitParsedEvent {
+  return parsePlanetExitEvent(v, false) as planetTimePassedExitParsedEvent;
+}
+
 // TODO fleetArrivedEvents need to be capped from 7 days / latest acknowledged block number
 export class SpaceQueryStore implements QueryStore<SpaceState> {
   private queryStore: QueryStoreWithRuntimeVariables<SpaceQueryResult>;
@@ -137,7 +188,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
   constructor(endpoint: EndPoint) {
     this.queryStore = new HookedQueryStore( // TODO full list
       endpoint,
-      `query($first: Int! $lastId: ID! $owner: String) {
+      `query($first: Int! $lastId: ID! $owner: String $fromTime: Int! $exitTimeEnd: Int!) {
   otherplanets: planets(first: $first where: {id_gt: $lastId ?$owner?owner_not: $owner?}) {
     id
     owner {
@@ -172,7 +223,23 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     active
     rewardGiver
   }
-  fleetsArrivedFromYou: fleetArrivedEvents(where: {owner: $owner} orderBy: timestamp, orderDirection: desc) {
+  planetInteruptedExitEvents: planetExitEvents(where: {owner: $owner exitTime_gt: $fromTime interupted: true} orderBy: timestamp, orderDirection: desc) {
+    planet {id}
+    exitTime
+    stake
+    interupted
+    complete
+    success
+  }
+  planetTimePassedExitEvents: planetExitEvents(where: {owner: $owner exitTime_gt: $fromTime exitTime_lt: $exitTimeEnd} orderBy: timestamp, orderDirection: desc) {
+    planet {id}
+    exitTime
+    stake
+    interupted
+    complete
+    success
+  }
+  fleetsArrivedFromYou: fleetArrivedEvents(where: {owner: $owner timestamp_gt: $fromTime} orderBy: timestamp, orderDirection: desc) {
     id
     blockNumber
     timestamp
@@ -192,7 +259,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     quantity
   }
 
-  fleetsArrivedToYou: fleetArrivedEvents(where: {destinationOwner: $owner owner_not: $owner} orderBy: timestamp, orderDirection: desc) {
+  fleetsArrivedToYou: fleetArrivedEvents(where: {destinationOwner: $owner owner_not: $owner timestamp_gt: $fromTime} orderBy: timestamp, orderDirection: desc) {
     id
     blockNumber
     timestamp
@@ -218,6 +285,13 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
         list: {path: 'otherplanets'},
         variables: {
           first: 500,
+        },
+        prefetchCallback: (variables) => {
+          // if (variables.blockNumber && typeof variables.blockNumber === 'number') {
+          //   variables.fromBlock = Math.max(0, variables.blockNumber - blockRange);
+          // }
+          variables.exitTimeEnd = Math.floor(Math.max(0, now() - spaceInfo.exitDuration));
+          variables.fromTime = Math.floor(Math.max(0, now() - timeRange));
         },
       }
     );
@@ -295,6 +369,12 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       },
       fleetsArrivedFromYou: !data.fleetsArrivedFromYou ? [] : data.fleetsArrivedFromYou.map(parseFleetArrived),
       fleetsArrivedToYou: !data.fleetsArrivedToYou ? [] : data.fleetsArrivedToYou.map(parseFleetArrived),
+      planetInteruptedExitEvents: !data.planetInteruptedExitEvents
+        ? []
+        : data.planetInteruptedExitEvents.map(parsePlanetInteruptedExitEvent),
+      planetTimePassedExitEvents: !data.planetTimePassedExitEvents
+        ? []
+        : data.planetTimePassedExitEvents.map(parseplanetTimePassedExitEvent),
     };
   }
 

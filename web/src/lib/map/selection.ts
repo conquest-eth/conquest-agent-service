@@ -1,4 +1,5 @@
 import {BaseStore} from '$lib/utils/stores/base';
+import {locationToXY} from 'conquest-eth-common';
 
 export type Selection = {
   x: number;
@@ -12,6 +13,10 @@ class SelectionStore extends BaseStore<Selection> {
 
   select(x: number, y: number): void {
     this.set({x, y});
+  }
+
+  selectViaId(id: string): void {
+    this.set(locationToXY(id));
   }
 
   unselect(): void {

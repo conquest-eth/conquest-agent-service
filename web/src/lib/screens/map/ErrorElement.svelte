@@ -1,12 +1,8 @@
 <script lang="ts">
-  import {account} from '$lib/account/account';
-
   import {camera} from '$lib/map/camera';
   import type {SpaceError} from '$lib/space/errors';
   import {spaceInfo} from '$lib/space/spaceInfo';
   export let error: SpaceError;
-  export let isShow;
-  export let selectedError;
 
   $: planetInfo = spaceInfo.getPlanetInfo(error.location.x, error.location.y);
   $: x = planetInfo.location.globalX - 48 / 2;
@@ -34,18 +30,11 @@
     blockieScale = scale;
     adjustedRenderScale = 1;
   }
-
-  const handleClick = () => {
-    selectedError = error;
-    console.log(selectedError);
-    isShow = true;
-  };
 </script>
 
 <div
   id={error.txHash}
-  on:click={handleClick}
-  style={`z-index: 5; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
+  style={`z-index: 5; pointer-events: none; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
     blockieScale * 3
   }); width: 48px; height: 48px;`}
 >

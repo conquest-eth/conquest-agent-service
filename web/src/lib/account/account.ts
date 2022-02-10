@@ -347,27 +347,43 @@ class Account implements Readable<AccountState> {
   }
 
   async acknowledgeEvent(event: MyEvent): Promise<void> {
-    const fleetId = BigNumber.from(event.event.fleet.id).toHexString(); // TODO remove BigNumber conversion by makign fleetId bytes32 on OuterSPace.sol
+    const eventId = event.id;
     if (event.type === 'internal_fleet') {
-      this.acknowledgeSuccess(event.event.transaction.id, fleetId);
-      return;
-    }
-    this.check();
-    const id = fleetId;
-    const stateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won; // TODO ensure we use same stateHash across code paths
-    const acknowledgement = this.state.data?.acknowledgements[id];
-    if (!acknowledgement) {
-      this.state.data.acknowledgements[id] = {
-        timestamp: now(),
-        stateHash,
-      };
-      await this.accountDB.save(this.state.data);
-      this._notify();
-    } else if (acknowledgement.stateHash !== stateHash) {
-      acknowledgement.timestamp = now();
-      acknowledgement.stateHash = stateHash;
-      await this.accountDB.save(this.state.data);
-      this._notify();
+      this.acknowledgeSuccess(event.event.transaction.id, eventId);
+    } else if (event.type === 'external_fleet') {
+      this.check();
+      const stateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won; // TODO ensure we use same stateHash across code paths
+      const acknowledgement = this.state.data?.acknowledgements[eventId];
+      if (!acknowledgement) {
+        this.state.data.acknowledgements[eventId] = {
+          timestamp: now(),
+          stateHash,
+        };
+        await this.accountDB.save(this.state.data);
+        this._notify();
+      } else if (acknowledgement.stateHash !== stateHash) {
+        acknowledgement.timestamp = now();
+        acknowledgement.stateHash = stateHash;
+        await this.accountDB.save(this.state.data);
+        this._notify();
+      }
+    } else if (event.type === 'exit_complete') {
+      this.check();
+      const stateHash = `${event.interupted}`; // TODO ensure we use same stateHash across code paths
+      const acknowledgement = this.state.data?.acknowledgements[eventId];
+      if (!acknowledgement) {
+        this.state.data.acknowledgements[eventId] = {
+          timestamp: now(),
+          stateHash,
+        };
+        await this.accountDB.save(this.state.data);
+        this._notify();
+      } else if (acknowledgement.stateHash !== stateHash) {
+        acknowledgement.timestamp = now();
+        acknowledgement.stateHash = stateHash;
+        await this.accountDB.save(this.state.data);
+        this._notify();
+      }
     }
   }
 

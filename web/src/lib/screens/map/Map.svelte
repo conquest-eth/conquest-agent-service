@@ -38,6 +38,25 @@
         pY: planetInfo && planetInfo.location.globalY,
       });
 
+      if (planetInfo) {
+        const multiplier = planetInfo.stats.production / 3600;
+
+        if (
+          Math.sqrt(Math.pow(planetInfo.location.globalX - x, 2) + Math.pow(planetInfo.location.globalY - y, 2)) <=
+          (camera.zoom < 3 ? 6 / camera.zoom : 2) * multiplier
+        ) {
+          // if error =>
+
+          // if event =>
+
+          // if fleet ?
+
+          // console.log(JSON.stringify(planet, null, '  '));
+          selection.select(planetInfo.location.x, planetInfo.location.y);
+          return;
+        }
+      }
+
       const fleets = fleetList.state.fleets;
       for (const fleet of fleets) {
         const x1 = fleet.from.location.globalX;
@@ -64,24 +83,7 @@
         }
       }
 
-      if (planetInfo) {
-        const multiplier = planetInfo.stats.production / 3600;
 
-        if (
-          Math.sqrt(Math.pow(planetInfo.location.globalX - x, 2) + Math.pow(planetInfo.location.globalY - y, 2)) <=
-          (camera.zoom < 3 ? 6 / camera.zoom : 2) * multiplier
-        ) {
-          // if error =>
-
-          // if event =>
-
-          // if fleet ?
-
-          // console.log(JSON.stringify(planet, null, '  '));
-          selection.select(planetInfo.location.x, planetInfo.location.y);
-          return;
-        }
-      }
     }
     selection.unselect();
     fleetselection.unselect();

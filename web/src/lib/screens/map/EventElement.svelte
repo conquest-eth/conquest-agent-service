@@ -1,11 +1,9 @@
 <script lang="ts">
-  import {account} from '$lib/account/account';
   import {camera} from '$lib/map/camera';
   import type {MyEvent} from '$lib/space/myevents';
   import {spaceInfo} from '$lib/space/spaceInfo';
   export let event: MyEvent;
-  export let selectedEvent: MyEvent;
-  export let isShow = false;
+
 
   $: planetInfo = spaceInfo.getPlanetInfoViaId(event.event.planet.id);
   $: x = planetInfo.location.globalX - 48 / 2;
@@ -14,7 +12,8 @@
   $: multiplier = planetInfo.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
   $: scale = 0.025 * multiplier;
 
-  $: color = event.type === 'external_fleet' ? 'blue' : ' #10B981'; // TODO
+  // $: color = event.type === 'external_fleet' ? 'blue' : event.type === 'exit_complete' ? '#FDE047' : ' #10B981'; // TODO
+  $: color = event.effect === 'neutral' ? 'blue' : event.effect === 'good' ? ' #10B981' : '#FDE047';
 
   $: renderScale = $camera ? $camera.renderScale : 1;
 
@@ -34,17 +33,12 @@
     adjustedRenderScale = 1;
   }
 
-  const handleClick = () => {
-    selectedEvent = event;
-    isShow = true;
-  };
 </script>
 
 <div
-  id={event.event.fleet.id}
-  on:click={handleClick}
+  id={event.id}
 
-  style={`z-index: 52; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
+  style={`z-index: 52; pointer-events: none; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
     blockieScale * 3
   }); width: 48px; height: 48px;`}
 >

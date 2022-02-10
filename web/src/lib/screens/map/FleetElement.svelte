@@ -172,6 +172,58 @@ animation-timing-function: linear;
       <mpath xlink:href="#motionPath" />
     </animateMotion>
   </svg> -->
+{:else if fleet.state === 'RESOLVE_BROADCASTED'}
+  <svg
+    viewBox="0 0 500 500 "
+    width={(400 / scale) * 6}
+    height={(400 / scale) * 6}
+    style={`
+    position: absolute;
+    z-index: 3;
+    overflow: visible;
+    transform: translate(${x - Math.cos(angle) * 0.2}px,${y - Math.sin(angle) * 0.2}px);
+    animation-name: animation-flash;
+    animation-iteration-count: infinite;
+    animation-delay:0.1s;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    `}
+  >
+    <!-- <g style={`transform: scale(${scale});`} > -->
+    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+    <path
+      style={`transform: rotate(${angle}rad); cursor: pointer; z-index: 99 `}
+      d="M -5 -2.5 L 0 0 L -5 2.5 z"
+      fill={color}
+    />
+
+    <!-- </g> -->
+  </svg>
+  <svg
+    viewBox="0 0 500 500 "
+    width={(400 / scale) * 6}
+    height={(400 / scale) * 6}
+    style={`
+    position: absolute;
+    z-index: 3;
+    overflow: visible;
+    transform: translate(${x + Math.cos(angle) * 0.1}px,${y + Math.sin(angle) * 0.1}px);
+    animation-name: animation-flash;
+    animation-iteration-count: infinite;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    `}
+  >
+    <!-- <g style={`transform: scale(${scale});`} > -->
+    <!-- svelte-ignore a11y-mouse-events-have-key-events -->
+    <path
+      style={`transform: rotate(${angle}rad); cursor: pointer; z-index: 99 `}
+      d="M -5 -2.5 L 0 0 L -5 2.5 z"
+      fill={color}
+    />
+
+    <!-- </g> -->
+  </svg>
 {:else}
   <svg
     viewBox="0 0 500 500 "

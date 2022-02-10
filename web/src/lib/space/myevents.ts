@@ -6,22 +6,35 @@ import type {SpaceQueryWithPendingState} from '$lib/space/optimisticSpace';
 import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
 import type {AccountState, Acknowledgements, PendingActions} from '$lib/account/account';
 import {account} from '$lib/account/account';
-import type {FleetArrivedParsedEvent} from './spaceQuery';
+import type {FleetArrivedParsedEvent, OwnerParsedEvent, PlanetExitParsedEvent} from './spaceQuery';
 import {BigNumber} from '@ethersproject/bignumber';
 
-export type ExternalFleetEvent = {
+export type MyEventBase = {
+  type: 'external_fleet' | 'internal_fleet' | 'exit_complete';
+  id: string;
+  effect: 'good' | 'bad' | 'neutral';
+  acknowledged?: 'NO' | 'YES' | 'UPDATED_SINCE';
+  event: OwnerParsedEvent;
+  location: string;
+};
+
+export type ExternalFleetEvent = MyEventBase & {
   type: 'external_fleet';
   event: FleetArrivedParsedEvent;
-  acknowledged?: 'NO' | 'YES' | 'UPDATED_SINCE';
 };
 
-export type InternalFleetEvent = {
+export type InternalFleetEvent = MyEventBase & {
   type: 'internal_fleet';
   event: FleetArrivedParsedEvent;
-  acknowledged?: 'NO' | 'YES' | 'UPDATED_SINCE';
 };
 
-export type MyEvent = ExternalFleetEvent | InternalFleetEvent;
+export type ExitCompleteEvent = MyEventBase & {
+  type: 'exit_complete';
+  event: PlanetExitParsedEvent;
+  interupted: boolean;
+};
+
+export type MyEvent = ExternalFleetEvent | InternalFleetEvent | ExitCompleteEvent;
 
 export class MyEventsStore implements Readable<MyEvent[]> {
   private readonly spaceInfo: SpaceInfo;
@@ -49,12 +62,44 @@ export class MyEventsStore implements Readable<MyEvent[]> {
         newEvents.push({
           type: 'internal_fleet',
           event: fleetArrived,
+          effect: fleetArrived.won || fleetArrived.gift ? 'good' : 'neutral',
+          id: BigNumber.from(fleetArrived.fleet.id).toHexString(), // TODO remove BigNumber conversion by makign fleetId bytes32 on OuterSPace.sol
+          location: fleetArrived.planet.id,
         });
       }
       for (const fleetArrived of update.queryState.data.fleetsArrivedToYou) {
         newEvents.push({
           type: 'external_fleet',
+          effect: fleetArrived.gift ? 'good' : 'bad',
           event: fleetArrived,
+          id: BigNumber.from(fleetArrived.fleet.id).toHexString(), // TODO remove BigNumber conversion by makign fleetId bytes32 on OuterSPace.sol
+          location: fleetArrived.planet.id,
+        });
+      }
+    }
+
+    if (update.queryState.data?.planetTimePassedExitEvents) {
+      for (const exitEvent of update.queryState.data.planetTimePassedExitEvents) {
+        newEvents.push({
+          type: 'exit_complete',
+          location: exitEvent.planet.id,
+          id: exitEvent.planet.id,
+          effect: 'good',
+          event: exitEvent,
+          interupted: false,
+        });
+      }
+    }
+
+    if (update.queryState.data?.planetInteruptedExitEvents) {
+      for (const exitEvent of update.queryState.data.planetInteruptedExitEvents) {
+        newEvents.push({
+          type: 'exit_complete',
+          location: exitEvent.planet.id,
+          id: exitEvent.planet.id,
+          event: exitEvent,
+          effect: 'bad',
+          interupted: true,
         });
       }
     }
@@ -74,43 +119,56 @@ export class MyEventsStore implements Readable<MyEvent[]> {
 
   private addAcknowledgements(events: MyEvent[]): MyEvent[] {
     for (const event of events) {
-      const fleetId = BigNumber.from(event.event.fleet.id).toHexString(); // TODO remove BigNumber conversion by makign fleetId bytes32 on OuterSPace.sol
-      const acknowledgment = this.acknowledgements && this.acknowledgements[fleetId];
-      if (!acknowledgment) {
-        if (event.type === 'internal_fleet') {
-          const pendingAction =
-            this.pendingActions && (this.pendingActions[event.event.transaction.id] || this.pendingActions[fleetId]);
-          if (!pendingAction) {
-            event.acknowledged = 'YES';
-            // const pendingAction = this.pendingActions && this.pendingActions[event.event.transaction.id];
-            // if (!pendingAction) {
-            //   event.acknowledged = 'YES';
-            //   for (const txId of Object.keys(this.pendingActions)) {
-            //     const pendingAction = this.pendingActions[txId];
-            //     if (typeof pendingAction !== 'number') {
-            //       if (pendingAction.type === 'SEND' && !pendingAction.resolution) {
-            //         if (pendingAction.fleetId === fleetId) {
-            //           event.acknowledged = 'NO';
-            //         }
-            //       }
-            //     }
-            //   }
-          } else if (typeof pendingAction === 'number') {
-            event.acknowledged = 'YES';
-          } else if (pendingAction.acknowledged) {
-            event.acknowledged = 'YES';
+      const eventId = event.id;
+      const acknowledgment = this.acknowledgements && this.acknowledgements[eventId];
+      if (event.type === 'internal_fleet' || event.type === 'external_fleet') {
+        if (!acknowledgment) {
+          if (event.type === 'internal_fleet') {
+            const pendingAction =
+              this.pendingActions && (this.pendingActions[event.event.transaction.id] || this.pendingActions[eventId]);
+            if (!pendingAction) {
+              event.acknowledged = 'YES';
+              // const pendingAction = this.pendingActions && this.pendingActions[event.event.transaction.id];
+              // if (!pendingAction) {
+              //   event.acknowledged = 'YES';
+              //   for (const txId of Object.keys(this.pendingActions)) {
+              //     const pendingAction = this.pendingActions[txId];
+              //     if (typeof pendingAction !== 'number') {
+              //       if (pendingAction.type === 'SEND' && !pendingAction.resolution) {
+              //         if (pendingAction.fleetId === fleetId) {
+              //           event.acknowledged = 'NO';
+              //         }
+              //       }
+              //     }
+              //   }
+            } else if (typeof pendingAction === 'number') {
+              event.acknowledged = 'YES';
+            } else if (pendingAction.acknowledged) {
+              event.acknowledged = 'YES';
+            } else {
+              event.acknowledged = 'NO';
+            }
           } else {
             event.acknowledged = 'NO';
           }
         } else {
-          event.acknowledged = 'NO';
+          const eventStateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won;
+          if (acknowledgment.stateHash !== eventStateHash) {
+            event.acknowledged = 'UPDATED_SINCE';
+          } else {
+            event.acknowledged = 'YES';
+          }
         }
-      } else {
-        const eventStateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won;
-        if (acknowledgment.stateHash !== eventStateHash) {
-          event.acknowledged = 'UPDATED_SINCE';
+      } else if (event.type === 'exit_complete') {
+        if (!acknowledgment) {
+          event.acknowledged = 'NO';
         } else {
-          event.acknowledged = 'YES';
+          const eventStateHash = `${event.interupted}`;
+          if (acknowledgment.stateHash !== eventStateHash) {
+            event.acknowledged = 'UPDATED_SINCE';
+          } else {
+            event.acknowledged = 'YES';
+          }
         }
       }
     }

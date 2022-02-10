@@ -38,6 +38,9 @@
   import {time} from '$lib/time';
 
   import Search from '$lib/components/utils/Search.svelte';
+import PlanetEventList from './PlanetEventList.svelte';
+import { xyToLocation } from 'conquest-eth-common';
+import { select_option } from 'svelte/internal';
 
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
@@ -178,6 +181,7 @@
   </Banner>
 {:else if $selection}
   <PlanetInfoPanel coords={$selection} />
+  <PlanetEventList location={xyToLocation($selection.x, $selection.y)}/>
 {:else}
   <Search />
 {/if}

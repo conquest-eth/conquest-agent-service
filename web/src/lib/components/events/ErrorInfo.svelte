@@ -7,7 +7,8 @@
   import {now} from '$lib/time';
 
   export let error: SpaceError;
-  export let isShow;
+  export let okLabel: string = 'OK';
+  export let closeButton: boolean;
   let title;
 
   $: if (error?.status === 'FAILURE') {
@@ -26,48 +27,37 @@
 
   async function acknowledge() {
     await account.acknowledgeError(error.txHash, null, error.late ? now() : undefined);
-    error = null;
-    isShow = isShow && false;
   }
 </script>
 
-{#if isShow}
-  <Modal
-    {title}
-    globalCloseButton={true}
-    on:close={() => {
-      isShow = false;
-      error = null;
-    }}
-  >
-    <ul class="mt-10 text-white">
-      {#if error.action.type === 'CAPTURE'}
-        <li>
-          You didn't capture planet {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error
-          ocurred on the transaction.
-        </li>
-      {:else if error.action.type === 'EXIT'}
-        <li>
-          You can't exit on {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error ocurred
-          on the transaction.
-        </li>
-      {:else if error.action.type === 'RESOLUTION'}
-        <li>
-          You didn't resolve on {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error
-          ocurred on the transaction.
-        </li>
-      {:else}
-        <li>
-          An error ocurred for for this <a
-            target="_blank"
-            class="underline text-cyan-100"
-            href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${error.txHash}`}>transaction</a
-          >
-        </li>
-      {/if}
-    </ul>
-    <div class="text-center">
-      <Button class="mt-4 text-center" label="Retry" on:click={acknowledge}>Ok</Button>
-    </div>
-  </Modal>
-{/if}
+<Modal {title} globalCloseButton={closeButton} cancelable={closeButton} on:close>
+  <ul class="mt-10 text-white">
+    {#if error.action.type === 'CAPTURE'}
+      <li>
+        You didn't capture planet {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error
+        ocurred on the transaction.
+      </li>
+    {:else if error.action.type === 'EXIT'}
+      <li>
+        You can't exit on {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error ocurred
+        on the transaction.
+      </li>
+    {:else if error.action.type === 'RESOLUTION'}
+      <li>
+        You didn't resolve on {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error ocurred
+        on the transaction.
+      </li>
+    {:else}
+      <li>
+        An error ocurred for for this <a
+          target="_blank"
+          class="underline text-cyan-100"
+          href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${error.txHash}`}>transaction</a
+        >
+      </li>
+    {/if}
+  </ul>
+  <div class="text-center">
+    <Button class="mt-4 text-center" label="Retry" on:click={acknowledge}>{okLabel}</Button>
+  </div>
+</Modal>

@@ -22,6 +22,16 @@ export type PlanetExitEvent = PlanetEvent & {
   __typename: 'PlanetExitEvent';
   exitTime: string;
   stake: string;
+  interupted: boolean;
+  complete: boolean;
+  success: boolean;
+};
+
+export type PlanetInteruptedExitEvent = PlanetExitEvent & {
+  interupted: true;
+};
+export type planetTimePassedExitEvent = PlanetExitEvent & {
+  interupted: false;
 };
 
 export type FleetArrivedEvent = PlanetEvent & {

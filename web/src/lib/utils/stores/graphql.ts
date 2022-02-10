@@ -45,6 +45,7 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
       variables?: V;
       path?: string;
       list?: ListOptions;
+      prefetchCallback?: (variables: Record<string, unknown>) => void;
     }
   ) {
     super({
@@ -54,6 +55,12 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
 
   acknowledgeError(): void {
     this.setPartial({error: undefined});
+  }
+
+  prefetch(variables: V) {
+    if (this.options.prefetchCallback) {
+      this.options.prefetchCallback(variables);
+    }
   }
 
   async fetch(extraVariables?: Record<string, unknown>): Promise<void> {
@@ -80,6 +87,7 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
             query += split;
           }
         }
+        this.prefetch(variables);
         const result = await this.endpoint.query<Record<string, unknown>, V>(query, {
           variables,
           context: {
@@ -196,6 +204,7 @@ export class HookedQueryStore<T, V extends Record<string, unknown> = Record<stri
       variables?: V;
       path?: string;
       list?: ListOptions;
+      prefetchCallback?: (variables: Record<string, unknown>) => void;
     }
   ) {
     super(endpoint, query, options);
