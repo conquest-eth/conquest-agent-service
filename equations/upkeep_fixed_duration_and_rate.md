@@ -37,11 +37,11 @@ where:
 $y$ is the new height of the area
 $R$ is the rate of decrease
 $t$ is the time left for $A_{n}$
-$D$ is the duration for the $A_{n+1}$ and $D = max(t,\frac{x}{R})$
+$D$ is the duration for the $A_{n+1}$ and $D = max(t,min(D,\frac{x}{R}))$
 $x$ is the extra spaceships to add to upkeep
 $u$ is the height of the existing area $A_{n}$
 
-![](figures/export/existing_area.png)
+![](figures/export/geometry.png)
 
 The equation for subtraction is
 
