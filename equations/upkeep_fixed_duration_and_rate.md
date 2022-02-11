@@ -16,7 +16,7 @@ $A_{n}$ is the existing area
 $A_{d}$ is the are to be added based on the extra upkeep
 
 $$A_{n} = \frac{t^2\cdot R}{2}+\left(u-t\cdot R\right)\cdot t$$
-$$A_{d} = \frac{D^2\cdot R}{2}+\left(x-D\cdot R\right)\cdot D$$
+$$A_{d} = x\cdot D$$
 $$A_{n+1} = \frac{D^2\cdot R}{2}+\left(y-D\cdot R\right)\cdot D$$
 
 Note that the function $(u-t\cdot R).t$ and the eqivalent, are to be zero if $u-t\cdot R < 0$
@@ -24,13 +24,13 @@ Note that the function $(u-t\cdot R).t$ and the eqivalent, are to be zero if $u-
 And so the equation is
 
 $$
-\frac{D^2\cdot R}{2}+\left(y-D\cdot R\right)\cdot D=\left(\frac{t^2\cdot R}{2}+\left(u-t\cdot R\right)\cdot t\right)+\left(\frac{D^2\cdot R}{2}+\left(x-D\cdot R\right)\cdot D\right)
+\frac{D^2\cdot R}{2}+\left(y-D\cdot R\right)\cdot D=\left(\frac{t^2\cdot R}{2}+\left(u-t\cdot R\right)\cdot t\right)+\left(x\cdot D\right)
 $$
 
 Wich simplifies to:
 
 $$
-y = \frac{-R\cdot t^2+2\cdot D\cdot x+2\cdot t\cdot u}{2\cdot D}
+y = \frac{D^2\cdot R - R\cdot t^2 + 2\cdot D\cdot x+2\cdot t\cdot u}{2\cdot D}
 $$
 
 where:
