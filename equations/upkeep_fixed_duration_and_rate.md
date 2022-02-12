@@ -45,8 +45,14 @@ $u$ is the height of the existing area $A_{n}$
 
 The equation for subtraction is
 
-TODO use proper variable name, D is not correct here
+Note that $D$ is here the equivalent to $t$ and $t$ is the length left for the fleet influance
 
 $$
-\frac{D^2\cdot R}{2}+\left(y-D\cdot R\right)\cdot D=\left(\frac{t^2\cdot R}{2}+\left(u-t\cdot R\right)\cdot t\right)-\left(\frac{D^2\cdot R}{2}+\left(x-D\cdot R\right)\cdot D\right)
+\frac{D^2\cdot R}{2}+\left(y-D\cdot R\right)\cdot D=\left(\frac{D^2\cdot R}{2}+\left(u-D\cdot R\right)\cdot D\right)-\left(x\cdot t\right)
+$$
+
+That equation simplify to
+
+$$
+y = \frac{D\cdot u - t\cdot x}{D}
 $$
