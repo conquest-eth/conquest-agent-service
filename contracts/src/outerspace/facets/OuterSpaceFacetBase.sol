@@ -68,10 +68,11 @@ contract OuterSpaceFacetBase is
     //     if (planet.exitTime > 0 && block.timestamp > planet.exitTime + _exitDuration) {
     //         uint16 stake = _stake(location);
     //         address owner = planet.owner;
+    //         address ownershipStartTime = block.timestamp;
     //         planet.exitTime = 0;
     //         planet.owner = address(0); // This is fine as long as _actualiseExit is called on every move
     //         planet.numSpaceships = 0; // This is fine as long as _actualiseExit is called on every move
-    //         planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move
+    //         planet.lastUpdated = uint40(block.timestamp); // This is fine as long as _actualiseExit is called on every move
     //         _stakeReadyToBeWithdrawn[owner] += stake * DECIMALS_18;
     //     }
     // }
@@ -113,8 +114,8 @@ contract OuterSpaceFacetBase is
         if (mplanet.lastUpdated == 0) {
             defense = _natives(data);
         } else {
-            if (mplanet.exitTime != 0) {
-                require(_hasJustExited(mplanet.exitTime), "STILL_EXITING");
+            if (mplanet.exitStartTime != 0) {
+                require(_hasJustExited(mplanet.exitStartTime), "STILL_EXITING");
                 justExited = true;
             } else {
                 require(!active, "STILL_ACTIVE");
@@ -140,14 +141,9 @@ contract OuterSpaceFacetBase is
             );
         } else {
             planet.owner = sender;
+            planet.ownershipStartTime = uint40(block.timestamp);
             if (defense != 0) {
-                uint32 attackerLoss;
-                if (block.timestamp > COMBAT_RULE_SWITCH_TIME) {
-                    (attackerLoss, ) = _computeFight(_acquireNumSpaceships, defense, 10000, _defense(data));
-                } else {
-                    (attackerLoss, ) = _old_computeFight(_acquireNumSpaceships, defense, 10000, _defense(data));
-                }
-
+                (uint32 attackerLoss, ) = _computeFight(_acquireNumSpaceships, defense, 10000, _defense(data));
                 // attacker alwasy win as defense (and stats.native) is restricted to 3500
                 // (attackerLoss: 0, defenderLoss: 0) would mean defense was zero
                 require(attackerLoss < _acquireNumSpaceships, "FAILED_CAPTURED");
@@ -158,7 +154,7 @@ contract OuterSpaceFacetBase is
 
             // planet.exitTime = 0; // should not be needed : // TODO actualiseExit
             planet.numSpaceships = _setActiveNumSpaceships(true, currentNumSpaceships);
-            planet.lastUpdated = uint32(block.timestamp);
+            planet.lastUpdated = uint40(block.timestamp);
         }
         return currentNumSpaceships;
     }
@@ -223,7 +219,7 @@ contract OuterSpaceFacetBase is
     // EXITS / WITHDRAWALS
     // ---------------------------------------------------------------------------------------------------------------
 
-    function _hasJustExited(uint32 exitTime) internal view returns (bool) {
+    function _hasJustExited(uint40 exitTime) internal view returns (bool) {
         return exitTime > 0 && block.timestamp > exitTime + _exitDuration;
     }
 
@@ -265,9 +261,15 @@ contract OuterSpaceFacetBase is
         }
         // --------------------------------------------------------
 
-        planet.exitTime = 0;
+        planet.exitStartTime = 0;
         planet.owner = newOwner; // This is fine as long as _actualiseExit is called on every move
-        planet.lastUpdated = uint32(block.timestamp); // This is fine as long as _actualiseExit is called on every move
+        if (newOwner == address(0)) {
+            planet.ownershipStartTime = 0;
+        } else {
+            planet.ownershipStartTime = uint40(block.timestamp); // TODO or leave it ?
+        }
+
+        planet.lastUpdated = uint40(block.timestamp); // This is fine as long as _actualiseExit is called on every move
         planet.numSpaceships = spaceshipsData;
         return stake;
     }
@@ -289,7 +291,7 @@ contract OuterSpaceFacetBase is
     ) internal {
         Planet storage planet = _getPlanet(launch.from);
 
-        require(planet.exitTime == 0, "PLANET_EXIT");
+        require(planet.exitStartTime == 0, "PLANET_EXIT");
         require(launch.fleetSender == planet.owner, "NOT_OWNER");
 
         bytes32 data = _planetData(launch.from);
@@ -302,7 +304,7 @@ contract OuterSpaceFacetBase is
         );
         require(currentNumSpaceships >= launch.quantity, "SPACESHIPS_NOT_ENOUGH");
 
-        (uint32 launchTime, uint32 numSpaceships) = _computeSpaceshipBeforeSending(
+        (uint40 launchTime, uint32 numSpaceships) = _computeSpaceshipBeforeSending(
             currentNumSpaceships,
             active,
             launch.from,
@@ -327,7 +329,7 @@ contract OuterSpaceFacetBase is
         bool active,
         uint256 from,
         uint32 quantity
-    ) internal returns (uint32 launchTime, uint32 numSpaceships) {
+    ) internal returns (uint40 launchTime, uint32 numSpaceships) {
         Planet storage planet = _getPlanet(from);
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
         // record flying fleets (to prevent front-running, see resolution)
@@ -339,7 +341,7 @@ contract OuterSpaceFacetBase is
         _inFlight[from][timeSlot].flying = flying;
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        launchTime = uint32(block.timestamp); // TODO allow delay : launchTime in future
+        launchTime = uint40(block.timestamp); // TODO allow delay : launchTime in future
         numSpaceships = currentNumSpaceships - quantity;
         planet.numSpaceships = _setActiveNumSpaceships(active, numSpaceships);
         planet.lastUpdated = launchTime;
@@ -364,7 +366,7 @@ contract OuterSpaceFacetBase is
         _resolveAndEmit(
             fleetId,
             toPlanet,
-            _hasJustExited(toPlanet.exitTime) ? address(0) : toPlanet.owner,
+            _hasJustExited(toPlanet.exitStartTime) ? address(0) : toPlanet.owner,
             fleet,
             resolution,
             quantity,
@@ -517,8 +519,10 @@ contract OuterSpaceFacetBase is
         inFlightFleetLoss = fleet.quantity - quantity;
         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        _checkDistance(resolution.distance, resolution.from, resolution.to);
-        _checkTime(resolution.distance, resolution.from, fleet.launchTime);
+        bytes32 fromPlanetData = _planetData(resolution.from);
+        bytes32 toPlanetData = _planetData(resolution.to);
+        _checkDistance(resolution.distance, resolution.from, resolution.to, fromPlanetData, toPlanetData);
+        _checkTime(resolution.distance, fleet.launchTime, fromPlanetData); // TODO delay
     }
 
     function emit_fleet_arrived(
@@ -548,7 +552,7 @@ contract OuterSpaceFacetBase is
     function _fleet_flying_at_origin(
         uint32 quantity,
         uint256 from,
-        uint32 launchTime
+        uint40 launchTime
     ) internal returns (uint32) {
         uint256 timeSlot = launchTime / (_frontrunningDelay / 2);
         uint64 destroyed = _inFlight[from][timeSlot].destroyed;
@@ -564,7 +568,7 @@ contract OuterSpaceFacetBase is
 
     function _performAttack(
         address attacker,
-        uint32 launchTime,
+        uint40 launchTime,
         uint256 from,
         Planet memory toPlanet,
         uint256 to,
@@ -574,7 +578,7 @@ contract OuterSpaceFacetBase is
             // Planet was never touched (previous attack could have failed to succeed attack on natives)
             bytes32 toPlanetData = _planetData(to);
             return _nativeAttack(attacker, launchTime, from, to, toPlanetData, numAttack);
-        } else if (_hasJustExited(toPlanet.exitTime)) {
+        } else if (_hasJustExited(toPlanet.exitStartTime)) {
             return _fleetAfterExit(to, toPlanet.owner, _planets[to], attacker, numAttack);
         } else {
             bytes32 toPlanetData = _planetData(to);
@@ -599,7 +603,7 @@ contract OuterSpaceFacetBase is
 
     function _nativeAttack(
         address attacker,
-        uint32 launchTime,
+        uint40 launchTime,
         uint256 from,
         uint256 to,
         bytes32 toData,
@@ -620,8 +624,9 @@ contract OuterSpaceFacetBase is
             // (attackerLoss: 0, defenderLoss: 0) means that numAttack was zero as natives cannot be zero
             result.numSpaceships = numAttack - attackerLoss;
             _planets[to].numSpaceships = _setActiveNumSpaceships(false, result.numSpaceships);
-            _planets[to].lastUpdated = uint32(block.timestamp);
+            _planets[to].lastUpdated = uint40(block.timestamp);
             _planets[to].owner = attacker;
+            _planets[to].ownershipStartTime = uint40(block.timestamp);
             result.defenderLoss = defenderLoss;
             result.won = true;
         }
@@ -629,7 +634,7 @@ contract OuterSpaceFacetBase is
 
     function _actualAttack(
         address attacker,
-        uint32 launchTime,
+        uint40 launchTime,
         uint16 attack,
         uint16 defense,
         Planet memory toPlanet,
@@ -644,9 +649,10 @@ contract OuterSpaceFacetBase is
 
         if (state.numDefense == 0 && numAttack > 0) {
             _planets[to].owner = attacker;
-            _planets[to].exitTime = 0;
+            _planets[to].ownershipStartTime = uint40(block.timestamp);
+            _planets[to].exitStartTime = 0;
             _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, numAttack);
-            _planets[to].lastUpdated = uint32(block.timestamp);
+            _planets[to].lastUpdated = uint40(block.timestamp);
             result.won = true;
             result.numSpaceships = numAttack;
             return result;
@@ -719,7 +725,7 @@ contract OuterSpaceFacetBase is
     function _completeCombatResult(
         PreCombatState memory state,
         address attacker,
-        uint32 launchTime,
+        uint40 launchTime,
         uint256 to,
         uint32 numAttack,
         uint16 attack,
@@ -767,14 +773,15 @@ contract OuterSpaceFacetBase is
             result.numSpaceships = numAttack - attackerLoss;
             result.won = true;
             _planets[to].owner = attacker;
-            _planets[to].exitTime = 0;
+            _planets[to].ownershipStartTime = uint40(block.timestamp);
+            _planets[to].exitStartTime = 0;
             _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, result.numSpaceships);
-            _planets[to].lastUpdated = uint32(block.timestamp);
+            _planets[to].lastUpdated = uint40(block.timestamp);
         } else if (result.attackerLoss == numAttack) {
             // always true as if attack won it will be going in the "if" above
             result.numSpaceships = state.currentNumSpaceships - defenderLoss;
             _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, result.numSpaceships);
-            _planets[to].lastUpdated = uint32(block.timestamp);
+            _planets[to].lastUpdated = uint40(block.timestamp);
         } else {
             assert(false); // should not happen
         }
@@ -786,9 +793,9 @@ contract OuterSpaceFacetBase is
         uint256 to,
         uint32 quantity,
         bool taxed,
-        uint32 launchTime
+        uint40 launchTime
     ) internal returns (FleetResult memory result) {
-        if (_hasJustExited(toPlanet.exitTime)) {
+        if (_hasJustExited(toPlanet.exitStartTime)) {
             address newOwner = toPlanet.owner;
             if (newOwner == address(0)) {
                 newOwner = sender;
@@ -809,7 +816,7 @@ contract OuterSpaceFacetBase is
             if (newNumSpaceships >= ACTIVE_MASK) {
                 newNumSpaceships = ACTIVE_MASK - 1;
             }
-            _planets[to].lastUpdated = uint32(block.timestamp);
+            _planets[to].lastUpdated = uint40(block.timestamp);
             _planets[to].numSpaceships = _setActiveNumSpaceships(active, uint32(newNumSpaceships));
             result.numSpaceships = uint32(newNumSpaceships);
         }
@@ -877,10 +884,12 @@ contract OuterSpaceFacetBase is
     function _checkDistance(
         uint256 distance,
         uint256 from,
-        uint256 to
+        uint256 to,
+        bytes32 fromPlanetData,
+        bytes32 toPlanetData
     ) internal view {
-        (int8 fromSubX, int8 fromSubY) = _subLocation(_planetData(from));
-        (int8 toSubX, int8 toSubY) = _subLocation(_planetData(to));
+        (int8 fromSubX, int8 fromSubY) = _subLocation(fromPlanetData);
+        (int8 toSubX, int8 toSubY) = _subLocation(toPlanetData);
         // check input instead of compute sqrt
 
         uint256 distanceSquared = uint256(
@@ -896,10 +905,10 @@ contract OuterSpaceFacetBase is
 
     function _checkTime(
         uint256 distance,
-        uint256 from,
-        uint32 launchTime
+        uint40 launchTime,
+        bytes32 fromPlanetData
     ) internal view {
-        uint256 reachTime = launchTime + (distance * (_timePerDistance * 10000)) / _speed(_planetData(from));
+        uint256 reachTime = launchTime + (distance * (_timePerDistance * 10000)) / _speed(fromPlanetData);
         require(block.timestamp >= reachTime, "too early");
         require(block.timestamp < reachTime + _resolveWindow, "too late, your spaceships are lost in space");
     }
@@ -1019,7 +1028,7 @@ contract OuterSpaceFacetBase is
         uint256 newSpaceships = currentNumSpaceships;
         if (_productionCapAsDuration > 0) {
             uint256 decrease = 0;
-            uint256 cap = _acquireNumSpaceships + (_productionCapAsDuration * uint256(production)) / 1 hours;
+            uint256 cap = _acquireNumSpaceships + (_productionCapAsDuration * uint256(production)) / 1 hours; // TODO if not active => cap  =0;
             if (currentNumSpaceships > cap) {
                 decrease = (timePassed * 1800) / 3600; // 1800 per hours
                 if (decrease > currentNumSpaceships - cap) {

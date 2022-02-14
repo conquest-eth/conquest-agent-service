@@ -12,7 +12,7 @@ contract OuterSpaceAdminFacet is UsingDiamondOwner, OuterSpaceFacetBase {
     // TODO : reenable, removed because of code size issue
     function addReward(uint256 location, address sponsor) external onlyOwner {
         Planet memory planet = _planets[location];
-        if (_hasJustExited(planet.exitTime)) {
+        if (_hasJustExited(planet.exitStartTime)) {
             _setPlanetAfterExit(location, planet.owner, _planets[location], address(0), 0);
         }
 
@@ -29,9 +29,14 @@ contract OuterSpaceAdminFacet is UsingDiamondOwner, OuterSpaceFacetBase {
 
     function resetPlanet(uint256 location) external onlyOwner {
         _planets[location].owner = address(0);
-        _planets[location].exitTime = 0;
+        _planets[location].ownershipStartTime = 0;
+        _planets[location].exitStartTime = 0;
+
         _planets[location].numSpaceships = 0;
         _planets[location].lastUpdated = 0;
+        _planets[location].travelingUpkeep = 0;
+        _planets[location].travelingUpkeepTimeLeft = 0;
+
         emit PlanetReset(location);
     }
 }

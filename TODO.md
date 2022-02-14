@@ -22,3 +22,8 @@
 # ISSUES
 
 - [ ] when not signed in, cannot acknowledge error or event: need to either force sign-in to see (same as fleets) orat least bring a popup to sign-in
+
+# NOTES
+
+- [ ] buying spaceships does not make you responsible for the attack, but you get to be the new owner in case of success, this could be implemented as transfer when planet is conquered
+- [ ] transfer planet ownership should be possible

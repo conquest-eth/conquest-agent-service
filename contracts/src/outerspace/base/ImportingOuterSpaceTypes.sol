@@ -18,18 +18,27 @@ contract ImportingOuterSpaceTypes {
         uint32 maxY;
     }
 
+    // TODO split in 2 structs ? PlanetOwnership and PlanetState ?
     struct Planet {
         address owner;
-        uint32 exitTime; // could be used as startTime with first bit telling whether it is exit or startTime => means exiting would produce spacehips / or not, but not based on startTime
-        uint32 numSpaceships; // uint31 + first bit => active
-        uint32 lastUpdated; // also used as native-destruction indicator
+        uint40 ownershipStartTime; // ~ 34865 years, should be enough :)
+        uint40 exitStartTime; // ~ 34865 years, should be enough :)
+        // TODO uint16 ?
+        ///
+        uint32 numSpaceships; // uint31 + first bit => active // TODO use bool active ?
+        uint32 travelingUpkeep;
+        uint32 travelingUpkeepTimeLeft; // 32 bit is plenty enough, can be less
+        uint40 lastUpdated; // ~ 34865 years, should be enough :)
+        // bool active; // TODO ?
+        // bool exiting; // TODO ?
     }
 
     struct Fleet {
         address owner;
-        uint32 launchTime;
+        uint40 launchTime; // ~ 34865 years, should be enough :)
         uint32 quantity; // TODO? first bit = done? to keep quantity value on-chain post resolution
-        // we got 32bit more to store if needed
+        // we got 24bit more to store if needed
+        // operator ? // signer ?
     }
 
     struct PlanetStats {
@@ -45,10 +54,14 @@ contract ImportingOuterSpaceTypes {
 
     struct ExternalPlanet {
         address owner;
-        uint32 exitTime;
+        uint40 ownershipStartTime; // ~ 34865 years, should be enough :)
+        uint40 exitStartTime; // ~ 34865 years, should be enough :)
         uint32 numSpaceships;
-        uint32 lastUpdated;
+        uint32 travelingUpkeep;
+        uint32 travelingUpkeepTimeLeft; // 32 bit is plenty enough, can be less
+        uint40 lastUpdated; // ~ 34865 years, should be enough :)
         bool active;
+        // bool exiting;
         uint256 reward;
     }
 
@@ -66,7 +79,7 @@ contract ImportingOuterSpaceTypes {
         bool gift;
         address specific;
         bytes32 secret;
-        address fleetSender;
-        address operator;
+        address fleetSender; // does not work ?
+        address operator; // should be saved ?
     }
 }

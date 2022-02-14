@@ -19,14 +19,30 @@ contract OuterSpaceInformationFacet is OuterSpaceFacetBase {
         (bool active, uint32 numSpaceships) = _activeNumSpaceships(planet.numSpaceships);
         state = ExternalPlanet({
             owner: planet.owner,
-            exitTime: planet.exitTime,
+            ownershipStartTime: planet.ownershipStartTime,
+            exitStartTime: planet.exitStartTime,
             numSpaceships: numSpaceships,
+            travelingUpkeep: planet.travelingUpkeep,
+            travelingUpkeepTimeLeft: planet.travelingUpkeepTimeLeft,
             lastUpdated: planet.lastUpdated,
             active: active,
             reward: _rewards[location]
         });
         stats = _getPlanetStats(location);
     }
+
+    /*
+    address owner;
+        uint40 ownershipStartTime; // ~ 34865 years, should be enough :)
+        uint40 exitStartTime; // ~ 34865 years, should be enough :)
+        uint32 numSpaceships;
+        uint32 travelingUpkeep;
+        uint32 travelingUpkeepTimeLeft; // 32 bit is plenty enough, can be less
+        uint40 lastUpdated; // ~ 34865 years, should be enough :)
+        bool active;
+        bool exiting;
+        uint256 reward;
+    */
 
     function getPlanetStates(uint256[] calldata locations)
         external
@@ -39,8 +55,11 @@ contract OuterSpaceInformationFacet is OuterSpaceFacetBase {
             (bool active, uint32 numSpaceships) = _activeNumSpaceships(planet.numSpaceships);
             planetStates[i] = ExternalPlanet({
                 owner: planet.owner,
-                exitTime: planet.exitTime,
+                ownershipStartTime: planet.ownershipStartTime,
+                exitStartTime: planet.exitStartTime,
                 numSpaceships: numSpaceships,
+                travelingUpkeep: planet.travelingUpkeep,
+                travelingUpkeepTimeLeft: planet.travelingUpkeepTimeLeft,
                 lastUpdated: planet.lastUpdated,
                 active: active,
                 reward: _rewards[locations[i]]

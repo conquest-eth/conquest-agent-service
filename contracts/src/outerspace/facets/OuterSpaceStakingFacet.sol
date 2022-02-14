@@ -46,8 +46,8 @@ contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
     function exitFor(address owner, uint256 location) external {
         Planet storage planet = _getPlanet(location);
         require(owner == planet.owner, "NOT_OWNER");
-        require(planet.exitTime == 0, "EXITING_ALREADY"); // if you own the planet again, you ll need to first withdraw
-        planet.exitTime = uint32(block.timestamp);
+        require(planet.exitStartTime == 0, "EXITING_ALREADY"); // if you own the planet again, you ll need to first withdraw
+        planet.exitStartTime = uint32(block.timestamp);
         emit PlanetExit(owner, location);
     }
 
@@ -55,7 +55,7 @@ contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
         uint256 addedStake = 0;
         for (uint256 i = 0; i < locations.length; i++) {
             Planet storage planet = _getPlanet(locations[i]);
-            if (_hasJustExited(planet.exitTime)) {
+            if (_hasJustExited(planet.exitStartTime)) {
                 require(owner == planet.owner, "NOT_OWNER");
                 addedStake += _setPlanetAfterExitWithoutUpdatingStake(locations[i], owner, planet, address(0), 0); // no need of event as exitTime passed basically mean owner zero and spaceships zero
             }

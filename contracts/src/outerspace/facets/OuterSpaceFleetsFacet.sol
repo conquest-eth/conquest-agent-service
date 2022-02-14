@@ -85,7 +85,7 @@ contract OuterSpaceFleetsFacet is OuterSpaceFacetBase {
         view
         returns (
             address owner,
-            uint32 launchTime,
+            uint40 launchTime,
             uint32 quantity,
             uint64 flyingAtLaunch, // can be more than quantity if multiple fleet were launched around the same time from the same planet
             uint64 destroyedAtLaunch
