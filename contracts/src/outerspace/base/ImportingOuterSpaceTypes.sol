@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract ImportingOuterSpaceTypes {
     // front running protection : _frontruunningDelay / 2 slots
     struct InFlight {
-        uint64 flying;
-        uint64 destroyed;
+        uint32 flying;
+        uint32 destroyed;
         // STORE last attack too, to compute combined attack on it ? uint128 is plainty enough
     }
 
