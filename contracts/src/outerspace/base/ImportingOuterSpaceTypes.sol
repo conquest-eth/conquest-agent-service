@@ -44,7 +44,7 @@ contract ImportingOuterSpaceTypes {
     struct Fleet {
         address owner;
         uint40 launchTime; // ~ 34865 years, should be enough :)
-        uint32 quantity; // TODO? first bit = done? to keep quantity value on-chain post resolution
+        uint32 quantity; // TODO? first bit = done? to keep quantity value on-chain post resolution, actually not needed, can be given in the hash
         // we got 24bit more to store if needed
         // operator ? // signer ?
     }

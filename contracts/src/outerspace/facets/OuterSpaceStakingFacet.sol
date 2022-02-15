@@ -44,28 +44,11 @@ contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
     // ---------------------------------------------------------------------------------------------------------------
 
     function exitFor(address owner, uint256 location) external {
-        Planet storage planet = _getPlanet(location);
-        require(owner == planet.owner, "NOT_OWNER");
-        require(planet.exitStartTime == 0, "EXITING_ALREADY"); // if you own the planet again, you ll need to first withdraw
-        planet.exitStartTime = uint32(block.timestamp);
-
-        // exit does not count, this is mostly to simplify calculation, as there is no trigger for when exit actually complete
-        _accounts[owner].totalProduction -= _production(_planetData(location));
-
-        emit PlanetExit(owner, location);
+        _exitFor(owner, location);
     }
 
     function fetchAndWithdrawFor(address owner, uint256[] calldata locations) external {
-        uint256 addedStake = 0;
-        for (uint256 i = 0; i < locations.length; i++) {
-            Planet storage planet = _getPlanet(locations[i]);
-            if (_hasJustExited(planet.exitStartTime)) {
-                require(owner == planet.owner, "NOT_OWNER");
-                addedStake += _setPlanetAfterExitWithoutUpdatingStake(locations[i], owner, planet, address(0), 0, 0); // no need of event as exitTime passed basically mean owner zero and spaceships zero
-            }
-        }
-        uint256 newStake = _stakeReadyToBeWithdrawn[owner] + addedStake;
-        _withdrawAll(owner, newStake);
+        _fetchAndWithdrawFor(owner, locations);
     }
 
     function balanceToWithdraw(address owner) external view returns (uint256) {
@@ -75,10 +58,5 @@ contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
     function withdrawFor(address owner) external {
         uint256 amount = _stakeReadyToBeWithdrawn[owner];
         _withdrawAll(owner, amount);
-    }
-
-    function _withdrawAll(address owner, uint256 amount) internal {
-        _updateStake(owner, 0);
-        require(_stakingToken.transfer(owner, amount), "FAILED_TRANSFER"); // TODO FundManager
     }
 }
