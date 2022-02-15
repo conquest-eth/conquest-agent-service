@@ -48,6 +48,10 @@ contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
         require(owner == planet.owner, "NOT_OWNER");
         require(planet.exitStartTime == 0, "EXITING_ALREADY"); // if you own the planet again, you ll need to first withdraw
         planet.exitStartTime = uint32(block.timestamp);
+
+        // exit does not count, this is mostly to simplify calculation, as there is no trigger for when exit actually complete
+        _accounts[owner].totalProduction -= _production(_planetData(location));
+
         emit PlanetExit(owner, location);
     }
 
@@ -57,7 +61,7 @@ contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
             Planet storage planet = _getPlanet(locations[i]);
             if (_hasJustExited(planet.exitStartTime)) {
                 require(owner == planet.owner, "NOT_OWNER");
-                addedStake += _setPlanetAfterExitWithoutUpdatingStake(locations[i], owner, planet, address(0), 0); // no need of event as exitTime passed basically mean owner zero and spaceships zero
+                addedStake += _setPlanetAfterExitWithoutUpdatingStake(locations[i], owner, planet, address(0), 0, 0); // no need of event as exitTime passed basically mean owner zero and spaceships zero
             }
         }
         uint256 newStake = _stakeReadyToBeWithdrawn[owner] + addedStake;

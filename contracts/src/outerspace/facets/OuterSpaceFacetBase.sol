@@ -30,6 +30,7 @@ contract OuterSpaceFacetBase is
     uint32 internal immutable _productionSpeedUp;
     uint256 internal immutable _frontrunningDelay;
     uint256 internal immutable _productionCapAsDuration;
+    uint256 internal immutable _productionDebtApplicationRate;
     uint256 internal immutable _fleetSizeFactor6;
 
     struct Config {
@@ -43,6 +44,7 @@ contract OuterSpaceFacetBase is
         uint32 productionSpeedUp;
         uint256 frontrunningDelay;
         uint256 productionCapAsDuration;
+        uint256 productionDebtApplicationRate;
         uint256 fleetSizeFactor6;
     }
 
@@ -60,6 +62,7 @@ contract OuterSpaceFacetBase is
         _productionSpeedUp = config.productionSpeedUp;
         _frontrunningDelay = config.frontrunningDelay;
         _productionCapAsDuration = config.productionCapAsDuration;
+        _productionDebtApplicationRate = config.productionDebtApplicationRate;
         _fleetSizeFactor6 = config.fleetSizeFactor6;
     }
 
@@ -90,12 +93,12 @@ contract OuterSpaceFacetBase is
         bytes32 data = _planetData(location);
         require(stake == uint256(_stake(data)) * (DECIMALS_18), "INVALID_AMOUNT");
 
-        uint32 numSpaceships = _handleSpaceships(sender, location, data);
+        uint32 numSpaceships = _handleAcquirement(sender, location, data);
         _handleDiscovery(location);
         emit PlanetStake(sender, location, numSpaceships, stake);
     }
 
-    function _handleSpaceships(
+    function _handleAcquirement(
         address sender,
         uint256 location,
         bytes32 data
@@ -137,7 +140,7 @@ contract OuterSpaceFacetBase is
                 mplanet.owner,
                 planet,
                 sender,
-                _setActiveNumSpaceships(true, currentNumSpaceships)
+                _setActiveNumSpaceships(true, currentNumSpaceships), 0
             );
         } else {
             planet.owner = sender;
@@ -154,8 +157,10 @@ contract OuterSpaceFacetBase is
 
             // planet.exitTime = 0; // should not be needed : // TODO actualiseExit
             planet.numSpaceships = _setActiveNumSpaceships(true, currentNumSpaceships);
+            planet.overflow = 0; // TODO currentNumSpaceships > cap, etc....
             planet.lastUpdated = uint40(block.timestamp);
         }
+        _accounts[sender].totalProduction += _production(data);
         return currentNumSpaceships;
     }
 
@@ -228,9 +233,10 @@ contract OuterSpaceFacetBase is
         address owner,
         Planet storage planet,
         address newOwner,
-        uint32 spaceshipsData
+        uint32 spaceshipsData,
+        uint32 overflow
     ) internal {
-        uint256 addedStake = _setPlanetAfterExitWithoutUpdatingStake(location, owner, planet, newOwner, spaceshipsData);
+        uint256 addedStake = _setPlanetAfterExitWithoutUpdatingStake(location, owner, planet, newOwner, spaceshipsData, overflow);
         _updateStake(owner, _stakeReadyToBeWithdrawn[owner] + addedStake);
     }
 
@@ -244,7 +250,8 @@ contract OuterSpaceFacetBase is
         address owner,
         Planet storage planet,
         address newOwner,
-        uint32 spaceshipsData
+        uint32 spaceshipsData,
+        uint32 overflow
     ) internal returns (uint256) {
         bytes32 data = _planetData(location);
         uint256 stake = uint256(_stake(data)) * (DECIMALS_18);
@@ -267,6 +274,7 @@ contract OuterSpaceFacetBase is
             planet.ownershipStartTime = 0;
         } else {
             planet.ownershipStartTime = uint40(block.timestamp); // TODO or leave it ?
+            _accounts[newOwner].totalProduction += _production(data);
         }
 
         planet.lastUpdated = uint40(block.timestamp); // This is fine as long as _actualiseExit is called on every move
@@ -579,6 +587,7 @@ contract OuterSpaceFacetBase is
             bytes32 toPlanetData = _planetData(to);
             return _nativeAttack(attacker, launchTime, from, to, toPlanetData, numAttack);
         } else if (_hasJustExited(toPlanet.exitStartTime)) {
+            bytes32 toPlanetData = _planetData(to);
             return _fleetAfterExit(to, toPlanet.owner, _planets[to], attacker, numAttack);
         } else {
             bytes32 toPlanetData = _planetData(to);
@@ -596,7 +605,7 @@ contract OuterSpaceFacetBase is
         address newOwner,
         uint32 numSpaceshipsArrived
     ) internal returns (FleetResult memory result) {
-        _setPlanetAfterExit(to, owner, planet, numSpaceshipsArrived > 0 ? newOwner : address(0), numSpaceshipsArrived);
+        _setPlanetAfterExit(to, owner, planet, numSpaceshipsArrived > 0 ? newOwner : address(0), numSpaceshipsArrived, numSpaceshipsArrived);
         result.numSpaceships = numSpaceshipsArrived;
         result.won = numSpaceshipsArrived > 0; // TODO does it make sense if reinforcement ?
     }
@@ -612,18 +621,15 @@ contract OuterSpaceFacetBase is
         uint16 attack = _attack(_planetData(from));
         uint16 defense = _defense(toData);
         uint16 natives = _natives(toData);
-        uint32 attackerLoss;
-        uint32 defenderLoss;
-        if (launchTime > COMBAT_RULE_SWITCH_TIME) {
-            (attackerLoss, defenderLoss) = _computeFight(numAttack, natives, attack, defense);
-        } else {
-            (attackerLoss, defenderLoss) = _old_computeFight(numAttack, natives, attack, defense);
-        }
+        (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, natives, attack, defense);
         result.attackerLoss = attackerLoss;
         if (defenderLoss == natives && numAttack > attackerLoss) {
             // (attackerLoss: 0, defenderLoss: 0) means that numAttack was zero as natives cannot be zero
             result.numSpaceships = numAttack - attackerLoss;
+
             _planets[to].numSpaceships = _setActiveNumSpaceships(false, result.numSpaceships);
+
+            _planets[to].overflow = uint32(result.numSpaceships); // TODO check all edge case about active / non-active planet and switches
             _planets[to].lastUpdated = uint40(block.timestamp);
             _planets[to].owner = attacker;
             _planets[to].ownershipStartTime = uint40(block.timestamp);
@@ -648,16 +654,33 @@ contract OuterSpaceFacetBase is
         PreCombatState memory state = _getPlanetPreCombatState(toPlanet, to, production);
 
         if (state.numDefense == 0 && numAttack > 0) {
+            // scenario where there is actually no defense on the place,
+            // TODO check if we could already assume active = false ?
             _planets[to].owner = attacker;
             _planets[to].ownershipStartTime = uint40(block.timestamp);
             _planets[to].exitStartTime = 0;
+
             _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, numAttack);
+            if (!state.active) {
+                _planets[to].overflow = numAttack; // numDefense = 0 so numAttack is the overflow, attacker took over
+            } else if (_productionCapAsDuration > 0 && numAttack > production * _productionCapAsDuration) {
+                _planets[to].overflow = uint32(numAttack - production * _productionCapAsDuration); // numDefense = 0 so numAttack is the overflow, attacker took over
+            } else {
+                _planets[to].overflow = 0;
+            }
+
             _planets[to].lastUpdated = uint40(block.timestamp);
+
+            if (toPlanet.owner != address(0)) {
+                _accounts[toPlanet.owner].totalProduction -= production;
+            }
+            _accounts[attacker].totalProduction += production;
             result.won = true;
             result.numSpaceships = numAttack;
             return result;
         }
 
+        // else continue with actual combat
         return _completeCombatResult(state, attacker, launchTime, to, numAttack, attack, defense);
     }
 
@@ -731,13 +754,8 @@ contract OuterSpaceFacetBase is
         uint16 attack,
         uint16 defense
     ) internal returns (FleetResult memory result) {
-        uint32 attackerLoss;
-        uint32 defenderLoss;
-        if (launchTime > COMBAT_RULE_SWITCH_TIME) {
-            (attackerLoss, defenderLoss) = _computeFight(numAttack, state.numDefense, attack, defense);
-        } else {
-            (attackerLoss, defenderLoss) = _old_computeFight(numAttack, state.numDefense, attack, defense);
-        }
+        (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(numAttack, state.numDefense, attack, defense);
+
         result.attackerLoss = attackerLoss;
         result.defenderLoss = defenderLoss;
 
@@ -776,11 +794,42 @@ contract OuterSpaceFacetBase is
             _planets[to].ownershipStartTime = uint40(block.timestamp);
             _planets[to].exitStartTime = 0;
             _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, result.numSpaceships);
+
+            if (!state.active) {
+                _planets[to].overflow = result.numSpaceships; // attack took over, overflow is numSpaceships
+            } else{
+                // TODO
+                // uint32 cap = uint32(production * _productionCapAsDuration);
+                // if (_productionCapAsDuration > 0 && newNumSpaceships > cap) {
+                //     if (newNumSpaceships - cap > toPlanet.overflow) {
+                //         _planets[to].overflow = uint32(result.numSpaceships) - cap;
+                //     }
+                // } else {
+                //     _planets[to].overflow = 0;
+                // }
+            }
+
             _planets[to].lastUpdated = uint40(block.timestamp);
         } else if (result.attackerLoss == numAttack) {
             // always true as if attack won it will be going in the "if" above
             result.numSpaceships = state.currentNumSpaceships - defenderLoss;
             _planets[to].numSpaceships = _setActiveNumSpaceships(state.active, result.numSpaceships);
+
+            if (!state.active) {
+                _planets[to].overflow -= defenderLoss;
+            } else{
+                // uint32 cap = uint32(production * _productionCapAsDuration);
+                // if (_productionCapAsDuration > 0 && result.numSpaceships > cap) {
+                //     if (defenderLoss <= toPlanet.overflow) {
+                //         _planets[to].overflow -= defenderLoss;
+                //     } else {
+                //         _planets[to].overflow = 0;
+                //     }
+                // } else {
+                //     _planets[to].overflow = 0;
+                // }
+            }
+
             _planets[to].lastUpdated = uint40(block.timestamp);
         } else {
             assert(false); // should not happen
@@ -817,6 +866,22 @@ contract OuterSpaceFacetBase is
                 newNumSpaceships = ACTIVE_MASK - 1;
             }
             _planets[to].lastUpdated = uint40(block.timestamp);
+
+            if (!active) {
+                if (newNumSpaceships > toPlanet.overflow) {
+                    _planets[to].overflow = uint32(newNumSpaceships);
+                }
+            } else{
+                uint32 cap = uint32(production * _productionCapAsDuration);
+                if (_productionCapAsDuration > 0 && newNumSpaceships > cap) {
+                    if (newNumSpaceships - cap > toPlanet.overflow) {
+                        _planets[to].overflow = uint32(newNumSpaceships - cap);
+                    }
+                } else {
+                    _planets[to].overflow = 0;
+                }
+            }
+
             _planets[to].numSpaceships = _setActiveNumSpaceships(active, uint32(newNumSpaceships));
             result.numSpaceships = uint32(newNumSpaceships);
         }
@@ -853,32 +918,6 @@ contract OuterSpaceFacetBase is
             attackerLoss = uint32(defenseDamage);
             defenderLoss = uint32(numDefense); // all defense destroyed
         }
-    }
-
-    function _old_computeFight(
-        uint256 numAttack,
-        uint256 numDefense,
-        uint256 attack,
-        uint256 defense
-    ) internal pure returns (uint32 attackerLoss, uint32 defenderLoss) {
-        if (numAttack == 0 || numDefense == 0) {
-            return (0, 0);
-        }
-        uint256 attackPower = (numAttack * attack);
-        uint256 defensePower = (numDefense * defense);
-
-        uint256 numAttackRound = (numDefense * 100000000) / attackPower;
-        if (numAttackRound * attackPower < (numDefense * 100000000)) {
-            numAttackRound++;
-        }
-        uint256 numDefenseRound = (numAttack * 100000000) / defensePower;
-        if (numDefenseRound * defensePower < (numAttack * 100000000)) {
-            numDefenseRound++;
-        }
-
-        uint256 numRound = Math.min(numAttackRound, numDefenseRound);
-        attackerLoss = uint32(Math.min((numRound * defensePower) / 100000000, numAttack));
-        defenderLoss = uint32(Math.min((numRound * attackPower) / 100000000, numDefense));
     }
 
     function _checkDistance(

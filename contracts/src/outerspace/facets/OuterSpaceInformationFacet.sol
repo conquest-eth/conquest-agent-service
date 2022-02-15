@@ -22,8 +22,7 @@ contract OuterSpaceInformationFacet is OuterSpaceFacetBase {
             ownershipStartTime: planet.ownershipStartTime,
             exitStartTime: planet.exitStartTime,
             numSpaceships: numSpaceships,
-            travelingUpkeep: planet.travelingUpkeep,
-            travelingUpkeepTimeLeft: planet.travelingUpkeepTimeLeft,
+            overflow: planet.overflow,
             lastUpdated: planet.lastUpdated,
             active: active,
             reward: _rewards[location]
@@ -58,8 +57,7 @@ contract OuterSpaceInformationFacet is OuterSpaceFacetBase {
                 ownershipStartTime: planet.ownershipStartTime,
                 exitStartTime: planet.exitStartTime,
                 numSpaceships: numSpaceships,
-                travelingUpkeep: planet.travelingUpkeep,
-                travelingUpkeepTimeLeft: planet.travelingUpkeepTimeLeft,
+                overflow: planet.overflow,
                 lastUpdated: planet.lastUpdated,
                 active: active,
                 reward: _rewards[locations[i]]

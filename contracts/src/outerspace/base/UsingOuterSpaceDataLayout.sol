@@ -7,6 +7,8 @@ contract UsingOuterSpaceDataLayout is ImportingOuterSpaceTypes {
     mapping(uint256 => Planet) internal _planets;
     mapping(uint256 => Fleet) internal _fleets;
 
+    mapping(address => Account) internal _accounts;
+
     mapping(address => uint256) internal _stakeReadyToBeWithdrawn;
 
     mapping(address => mapping(address => bool)) internal _operators;

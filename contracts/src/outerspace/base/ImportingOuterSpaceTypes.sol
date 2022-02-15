@@ -11,6 +11,15 @@ contract ImportingOuterSpaceTypes {
         // STORE last attack too, to compute combined attack on it ? uint128 is plainty enough
     }
 
+    struct Account {
+        // TODO add more info
+        // stake for example ? => coild it be used by staking ?
+        // numPlanets ?
+        // numSpaceships ? => probably too much ?
+        uint64 totalProduction;
+        uint64 productionDebt;
+    }
+
     struct Discovered {
         uint32 minX;
         uint32 maxX;
@@ -26,8 +35,7 @@ contract ImportingOuterSpaceTypes {
         // TODO uint16 ?
         ///
         uint32 numSpaceships; // uint31 + first bit => active // TODO use bool active ?
-        uint32 travelingUpkeep;
-        uint32 travelingUpkeepTimeLeft; // 32 bit is plenty enough, can be less
+        uint32 overflow;
         uint40 lastUpdated; // ~ 34865 years, should be enough :)
         // bool active; // TODO ?
         // bool exiting; // TODO ?
@@ -57,8 +65,7 @@ contract ImportingOuterSpaceTypes {
         uint40 ownershipStartTime; // ~ 34865 years, should be enough :)
         uint40 exitStartTime; // ~ 34865 years, should be enough :)
         uint32 numSpaceships;
-        uint32 travelingUpkeep;
-        uint32 travelingUpkeepTimeLeft; // 32 bit is plenty enough, can be less
+        uint32 overflow;
         uint40 lastUpdated; // ~ 34865 years, should be enough :)
         bool active;
         // bool exiting;

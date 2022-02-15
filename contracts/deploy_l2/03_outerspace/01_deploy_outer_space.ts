@@ -33,6 +33,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let productionSpeedUp = 1;
   let frontrunningDelay = 30 * 60;
   const productionCapAsDuration = 3 * 24 * 3600; // 3 days
+  const productionDebtApplicationRate = 1800; // TODO based on planet production ?
   const fleetSizeFactor6 = 500000;
 
   // use a command to increase time in 1337
@@ -84,6 +85,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     productionSpeedUp,
     frontrunningDelay,
     productionCapAsDuration,
+    productionDebtApplicationRate,
     fleetSizeFactor6,
   });
 
@@ -99,6 +101,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       chainGenesisHash,
       frontrunningDelay,
       productionCapAsDuration,
+      productionDebtApplicationRate,
       fleetSizeFactor6,
     },
     facets: [
@@ -120,6 +123,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         productionSpeedUp,
         frontrunningDelay,
         productionCapAsDuration,
+        productionDebtApplicationRate,
         fleetSizeFactor6,
       },
     ],
