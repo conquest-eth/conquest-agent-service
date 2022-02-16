@@ -12,6 +12,8 @@ import "../../libraries/Math.sol";
 import "../../interfaces/IAlliance.sol";
 import "../../alliances/AllianceRegistry.sol";
 
+import "hardhat/console.sol";
+
 contract OuterSpaceFacetBase is
     ImportingOuterSpaceTypes,
     ImportingOuterSpaceConstants,
@@ -66,7 +68,6 @@ contract OuterSpaceFacetBase is
         _fleetSizeFactor6 = config.fleetSizeFactor6;
     }
 
-
     // ---------------------------------------------------------------------------------------------------------------
     // PLANET STATE
     // ---------------------------------------------------------------------------------------------------------------
@@ -85,7 +86,11 @@ contract OuterSpaceFacetBase is
         bytes32 data;
     }
 
-    function _createPlanetUpdateState(Planet memory planet, uint256 location) internal view returns (PlanetUpdateState memory planetUpdate) {
+    function _createPlanetUpdateState(Planet memory planet, uint256 location)
+        internal
+        view
+        returns (PlanetUpdateState memory planetUpdate)
+    {
         (bool active, uint32 currentNumSpaceships) = _activeNumSpaceships(planet.numSpaceships);
         planetUpdate.location = location;
         planetUpdate.active = active;
@@ -118,7 +123,11 @@ contract OuterSpaceFacetBase is
         uint256 newNumSpaceships = planetUpdate.numSpaceships;
         if (_productionCapAsDuration > 0) {
             uint256 decrease = 0;
-            uint256 cap = _acquireNumSpaceships + (_productionCapAsDuration * uint256(production)) / 1 hours; // TODO if not active => cap  =0;
+            // TODO if not active => cap  =0;
+            uint256 cap = _acquireNumSpaceships + (_productionCapAsDuration * uint256(production)) / 1 hours;
+
+            console.log("_productionCapAsDuration: %i, cap: %i", _productionCapAsDuration, cap);
+
             if (newNumSpaceships > cap) {
                 decrease = (timePassed * 1800) / 3600; // 1800 per hours
                 if (decrease > newNumSpaceships - cap) {
@@ -130,6 +139,7 @@ contract OuterSpaceFacetBase is
             }
 
             if (planetUpdate.active) {
+                console.log("timePassed: %i, :_productionSpeedUp %i", timePassed, _productionSpeedUp);
                 uint256 increase = (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
                 if (increase > maxIncrease) {
                     increase = maxIncrease;
@@ -152,10 +162,10 @@ contract OuterSpaceFacetBase is
         planetUpdate.numSpaceships = uint32(newNumSpaceships);
     }
 
-
     function _setPlanet(Planet storage planet, PlanetUpdateState memory planetUpdate) internal {
         if (planetUpdate.exitStartTime > 0 && planetUpdate.newExitStartTime == 0) {
-            // exit has completed, newExitStartTime is not set to zero for interuption, interuption is taken care below (owner changes)
+            // exit has completed, newExitStartTime is not set to zero for interuption,
+            // interuption is taken care below (owner changes)
             _handleExitComplete(planetUpdate);
         }
         if (planetUpdate.owner != planetUpdate.newOwner) {
@@ -229,10 +239,7 @@ contract OuterSpaceFacetBase is
         emit PlanetStake(player, location, planetUpdate.numSpaceships, stake);
     }
 
-    function _computePlanetUpdateForStaking(
-        address player,
-        PlanetUpdateState memory planetUpdate
-    ) internal view {
+    function _computePlanetUpdateForStaking(address player, PlanetUpdateState memory planetUpdate) internal view {
         uint32 defense;
         if (planetUpdate.lastUpdated == 0) {
             defense = _natives(planetUpdate.data);
@@ -240,7 +247,8 @@ contract OuterSpaceFacetBase is
             require(!planetUpdate.active, "STILL_ACTIVE");
 
             // Do not allow staking over occupied planets, they are going to zero at some point though
-            require(planetUpdate.owner == player || planetUpdate.numSpaceships == 0, "OCCUPIED"); // TODO owner == address(0) ? is it possible for address(0) + numSpaceships > 0 ?
+            // TODO owner == address(0) ? is it possible for address(0) + numSpaceships > 0 ?
+            require(planetUpdate.owner == player || planetUpdate.numSpaceships == 0, "OCCUPIED");
 
             // used to be the following (but this gave too many cons to send spaceships to non-active planets):
             // if (mplanet.owner != sender) {
@@ -270,6 +278,7 @@ contract OuterSpaceFacetBase is
                 }
             }
         }
+        planetUpdate.active = true;
     }
 
     // solhint-disable-next-line code-complexity
@@ -341,7 +350,11 @@ contract OuterSpaceFacetBase is
         emit StakeToWithdraw(planetUpdate.owner, newStake);
     }
 
-    function _completeExit(address owner, uint256 location, bytes32 data) internal returns (uint256 stake) {
+    function _completeExit(
+        address owner,
+        uint256 location,
+        bytes32 data
+    ) internal returns (uint256 stake) {
         stake = uint256(_stake(data)) * (DECIMALS_18);
         emit ExitComplete(owner, location, stake);
 
@@ -350,21 +363,25 @@ contract OuterSpaceFacetBase is
         // --------------------------------------------------------
         uint256 rewardId = _rewards[location];
         if (rewardId != 0) {
-            _rewardsToWithdraw[owner][rewardId] = true; // rewardId would contains the package. maybe this could be handled by an external contract
-            _rewards[location] = 0; // reset / if you had reward to a planet in he process of exiting, you are adding the reward to the player exiting unless _setPlanetAfterExit is called first
+            // rewardId would contains the package. maybe this could be handled by an external contract
+            _rewardsToWithdraw[owner][rewardId] = true;
+            _rewards[location] = 0; // reset
+            // if you had reward to a planet in he process of exiting,
+            // you are adding the reward to the player exiting unless _setPlanetAfterExit is called first
             emit RewardToWithdraw(owner, location, rewardId);
         }
         // --------------------------------------------------------
     }
 
-
     function _exitFor(address owner, uint256 location) internal {
         Planet storage planet = _getPlanet(location);
         require(owner == planet.owner, "NOT_OWNER");
-        require(planet.exitStartTime == 0, "EXITING_ALREADY"); // if you own the planet again, you ll need to first withdraw
+        // if you own the planet again, you ll need to first withdraw
+        require(planet.exitStartTime == 0, "EXITING_ALREADY");
         planet.exitStartTime = uint32(block.timestamp);
 
-        // exit does not count, this is mostly to simplify calculation, as there is no trigger for when exit actually complete
+        // exit does not count, this is mostly to simplify calculation,
+        // as there is no trigger for when exit actually complete
         _accounts[owner].totalProduction -= _production(_planetData(location));
 
         emit PlanetExit(owner, location);
@@ -389,7 +406,7 @@ contract OuterSpaceFacetBase is
         _withdrawAll(owner, newStake);
     }
 
-     function _withdrawAll(address owner, uint256 amount) internal {
+    function _withdrawAll(address owner, uint256 amount) internal {
         _stakeReadyToBeWithdrawn[owner] = 0;
         emit StakeToWithdraw(owner, amount);
         require(_stakingToken.transfer(owner, amount), "FAILED_TRANSFER"); // TODO FundManager
@@ -461,6 +478,9 @@ contract OuterSpaceFacetBase is
         // further requirements
         // -----------------------------------------------------------------------------------------------------------
 
+        if (!(planetUpdate.numSpaceships >= launch.quantity)) {
+            console.log("%i, %i", planetUpdate.numSpaceships, launch.quantity);
+        }
         require(planetUpdate.numSpaceships >= launch.quantity, "SPACESHIPS_NOT_ENOUGH");
 
         // -----------------------------------------------------------------------------------------------------------
@@ -477,7 +497,11 @@ contract OuterSpaceFacetBase is
         _setFleetFlyingSlot(launch.from, launch.quantity);
 
         // TODO add debt info
-        _fleets[fleetId] = Fleet({launchTime: uint40(block.timestamp), owner: launch.fleetOwner, quantity: launch.quantity});
+        _fleets[fleetId] = Fleet({
+            launchTime: uint40(block.timestamp),
+            owner: launch.fleetOwner,
+            quantity: launch.quantity
+        });
 
         emit FleetSent(
             launch.fleetSender,
@@ -492,7 +516,8 @@ contract OuterSpaceFacetBase is
 
     function _computePlanetUpdateForFleetLaunch(PlanetUpdateState memory planetUpdate, uint32 quantity) internal view {
         planetUpdate.numSpaceships -= quantity;
-        if (_productionCapAsDuration > 0) { // TODO extract
+        if (_productionCapAsDuration > 0) {
+            // TODO extract
             uint16 production = _production(planetUpdate.data);
             uint32 cap = uint32(production * _productionCapAsDuration);
             if (planetUpdate.numSpaceships > cap && planetUpdate.overflow > quantity) {
@@ -503,19 +528,18 @@ contract OuterSpaceFacetBase is
         }
     }
 
-
     function _setFleetFlyingSlot(uint256 from, uint32 quantity) internal {
-         // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------------------
         // record flying fleets (to prevent front-running, see resolution)
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------------------
         uint256 timeSlot = block.timestamp / (_frontrunningDelay / 2);
         uint32 flying = _inFlight[from][timeSlot].flying;
         flying = flying + quantity;
-        require(flying >= quantity, "OVERFLOW"); // unlikely to ever happen, would need a hug amount of spaceships to be received and each in turn being sent
+        require(flying >= quantity, "OVERFLOW"); // unlikely to ever happen,
+        // would need a huge amount of spaceships to be received and each in turn being sent
         // TODO could also cap, that would result in some fleet being able to escape.
         _inFlight[from][timeSlot].flying = flying;
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
-
+        // -----------------------------------------------------------------------------------------------------------
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -530,7 +554,8 @@ contract OuterSpaceFacetBase is
         uint32 inFlightPlanetLoss;
         bool gifting;
         bool taxed;
-        bool victory; // TODO ? and check old behavior, for example on fleet_after_Exit the victory is true if numSPaceshipArrived > 0
+        bool victory; // TODO ? and check old behavior,
+        // for example on fleet_after_Exit the victory is true if numSPaceshipArrived > 0
         bytes32 fromData;
         uint32 attackerLoss;
         uint32 defenderLoss;
@@ -553,7 +578,13 @@ contract OuterSpaceFacetBase is
         // -----------------------------------------------------------------------------------------------------------
 
         require(vFleet.quantity > 0, "FLEET_DO_NOT_EXIST");
-        _requireCorrectDistance(resolution.distance, resolution.from, resolution.to, vFleet.fromData, toPlanetUpdate.data);
+        _requireCorrectDistance(
+            resolution.distance,
+            resolution.from,
+            resolution.to,
+            vFleet.fromData,
+            toPlanetUpdate.data
+        );
         _requireCorrectTime(resolution.distance, vFleet.launchTime, vFleet.fromData); // TODO delay
 
         // -----------------------------------------------------------------------------------------------------------
@@ -564,7 +595,9 @@ contract OuterSpaceFacetBase is
         // -----------------------------------------------------------------------------------------------------------
         // Resolution logic...
         // -----------------------------------------------------------------------------------------------------------
-        _setInFlightDestructionResultAndUpdateFleetFromResolution(vFleet, resolution, toPlanetUpdate.owner);
+        _computeInFlightLossForFleet(vFleet, resolution);
+
+        _updateFleetForGifting(vFleet, resolution, toPlanetUpdate.owner);
 
         _computeResolutionResult(vFleet, toPlanetUpdate);
 
@@ -572,30 +605,33 @@ contract OuterSpaceFacetBase is
         // Write New State
         // -----------------------------------------------------------------------------------------------------------
 
-        _recordInFlightLosttForPlanet(vFleet, toPlanetUpdate);
+        _recordInOrbitLossAfterAttack(vFleet, toPlanetUpdate);
+
+        _recordOrbitLossAccountingForFleetOrigin(vFleet, resolution);
 
         _setPlanet(toPlanet, toPlanetUpdate);
         _setAccountFromPlanetUpdate(toPlanetUpdate); // TODO what about fromPlanet ?
 
-        _fleets[fleetId].quantity = 0; // TODO quantity should be kept ? so Alliance Contract can act on that value ?, could use 1st bit indicator
+        _fleets[fleetId].quantity = 0; // TODO quantity should be kept ?
+        // so Alliance Contract can act on that value ?, could use 1st bit indicator
 
         // -----------------------------------------------------------------------------------------------------------
         // Events
         // -----------------------------------------------------------------------------------------------------------
         // TODO
-        //  emit FleetArrived(
-        //     fleetID,
-        //     fleetOwner,
-        //     toOwner,
-        //     to,
-        //     gift,
-        //     result.attackerLoss,
-        //     result.defenderLoss,
-        //     inFlightFleetLoss,
-        //     result.inFlightPlanetLoss,
-        //     result.won,
-        //     result.numSpaceships
-        // );
+        emit FleetArrived(
+            fleetId,
+            resolution.fleetSender, // TODO sender vs owner
+            toPlanetUpdate.owner,
+            resolution.to,
+            vFleet.gifting,
+            vFleet.attackerLoss,
+            vFleet.defenderLoss,
+            vFleet.inFlightFleetLoss,
+            vFleet.inFlightPlanetLoss,
+            vFleet.victory,
+            toPlanetUpdate.numSpaceships
+        );
     }
 
     function _createVirtualFleet(Fleet storage fleet, uint256 from) internal view returns (VirtualFleet memory vFleet) {
@@ -605,29 +641,37 @@ contract OuterSpaceFacetBase is
         vFleet.fromData = _planetData(from);
     }
 
-
-    function _setInFlightDestructionResultAndUpdateFleetFromResolution(VirtualFleet memory vFleet, FleetResolution memory resolution, address destinationOwner) internal {
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+    function _computeInFlightLossForFleet(VirtualFleet memory vFleet, FleetResolution memory resolution) internal view {
+        // -----------------------------------------------------------------------------------------------------------
         // check if fleet was attacked while departing (used to prevent front-running, see fleet sending)
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------------------
         uint256 timeSlot = vFleet.launchTime / (_frontrunningDelay / 2);
         uint32 destroyed = _inFlight[resolution.from][timeSlot].destroyed;
         uint32 originalQuantity = vFleet.quantity;
         if (destroyed < vFleet.quantity) {
             vFleet.quantity -= uint32(destroyed);
-            _inFlight[resolution.from][timeSlot].destroyed = 0;
         } else {
             vFleet.quantity = 0;
-            _inFlight[resolution.from][timeSlot].destroyed = destroyed - vFleet.quantity;
         }
 
         vFleet.inFlightFleetLoss = originalQuantity - vFleet.quantity;
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
-
-        _updateFleetForGifting(vFleet, resolution, destinationOwner);
+        // -----------------------------------------------------------------------------------------------------------
     }
 
-    function _updateFleetForGifting(VirtualFleet memory vFleet, FleetResolution memory resolution, address destinationOwner) internal view {
+    function _recordOrbitLossAccountingForFleetOrigin(VirtualFleet memory vFleet, FleetResolution memory resolution)
+        internal
+    {
+        uint256 timeSlot = vFleet.launchTime / (_frontrunningDelay / 2);
+
+        // we already computed that destroyed cannot be smaller than inFlightFleetLoss
+        _inFlight[resolution.from][timeSlot].destroyed -= vFleet.inFlightFleetLoss;
+    }
+
+    function _updateFleetForGifting(
+        VirtualFleet memory vFleet,
+        FleetResolution memory resolution,
+        address destinationOwner
+    ) internal view {
         // TODO vFleet.owner  vs vFleet.sender
         (bool gifting, bool taxed) = _computeGifting(vFleet.owner, destinationOwner, resolution, vFleet.launchTime);
         vFleet.gifting = gifting;
@@ -713,7 +757,8 @@ contract OuterSpaceFacetBase is
                     IAlliance(resolution.specific)
                 );
 
-                // make it a gift if the destination is not matching the specific alliance (or owner, in which case since it is not an alliance, it will also not match)
+                // make it a gift if the destination is not matching the specific alliance
+                // (or owner, in which case since it is not an alliance, it will also not match)
                 if (joinTimeToSpecific == 0) {
                     (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
                         sender,
@@ -726,8 +771,10 @@ contract OuterSpaceFacetBase is
         }
     }
 
-
-    function _computeResolutionResult(VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate) internal view {
+    function _computeResolutionResult(VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate)
+        internal
+        view
+    {
         if (vFleet.gifting) {
             _computeGiftingResolutionResult(vFleet, toPlanetUpdate);
         } else {
@@ -735,18 +782,27 @@ contract OuterSpaceFacetBase is
         }
     }
 
-    function _computeAttackResolutionResult(VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate) internal view {
+    function _computeAttackResolutionResult(VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate)
+        internal
+        view
+    {
         if (toPlanetUpdate.lastUpdated == 0) {
-            // Planet was never touched (or do we allow attack to fail silently, see _updatePlanetUpdateStateAndVirtualFleetForNativeAttack)
+            // Planet was never touched (or do we allow attack to fail silently,
+            // see _updatePlanetUpdateStateAndVirtualFleetForNativeAttack)
             _updatePlanetUpdateStateAndVirtualFleetForNativeAttack(vFleet, toPlanetUpdate);
         } else {
             _updatePlanetUpdateStateAndVirtualFleetForPlanetAttack(vFleet, toPlanetUpdate);
         }
     }
 
-    function _computeGiftingResolutionResult(VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate) internal view {
+    function _computeGiftingResolutionResult(VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate)
+        internal
+        view
+    {
         if (vFleet.taxed) {
-            vFleet.quantity = uint32(uint256(vFleet.quantity) - (uint256(vFleet.quantity) * GIFT_TAX_PER_10000) / 10000);
+            vFleet.quantity = uint32(
+                uint256(vFleet.quantity) - (uint256(vFleet.quantity) * GIFT_TAX_PER_10000) / 10000
+            );
         }
         uint256 newNumSpaceships = toPlanetUpdate.numSpaceships + vFleet.quantity;
         if (newNumSpaceships >= ACTIVE_MASK) {
@@ -758,7 +814,7 @@ contract OuterSpaceFacetBase is
             if (toPlanetUpdate.numSpaceships > toPlanetUpdate.overflow) {
                 toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships;
             }
-        } else{
+        } else {
             uint32 cap = uint32(_production(toPlanetUpdate.data) * _productionCapAsDuration);
             if (_productionCapAsDuration > 0 && newNumSpaceships > cap) {
                 if (toPlanetUpdate.numSpaceships - cap > toPlanetUpdate.overflow) {
@@ -771,8 +827,9 @@ contract OuterSpaceFacetBase is
     }
 
     function _updatePlanetUpdateStateAndVirtualFleetForNativeAttack(
-        VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate
-    ) internal view{
+        VirtualFleet memory vFleet,
+        PlanetUpdateState memory toPlanetUpdate
+    ) internal view {
         uint16 attack = _attack(vFleet.fromData);
         uint16 defense = _defense(toPlanetUpdate.data);
         uint16 natives = _natives(toPlanetUpdate.data);
@@ -788,23 +845,26 @@ contract OuterSpaceFacetBase is
         }
     }
 
-
-    function _updateVirtualFleetFromOrbitDefense(VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate) internal view {
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+    function _updateVirtualFleetFromOrbitDefense(VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate)
+        internal
+        view
+    {
+        // -----------------------------------------------------------------------------------------------------------
         // consider fleets that just departed from the planet (used to prevent front-running, see fleet sending)
-        // // ----------------------------------------------------------------------------------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------------------
         uint256 timeSlot = block.timestamp / (_frontrunningDelay / 2);
         InFlight storage slot1 = _inFlight[toPlanetUpdate.location][timeSlot - 1];
-        vFleet.orbitDefense1 = slot1.flying > 2**31 ? 2**31-1 : uint32(slot1.flying);
-        vFleet.orbitDefenseDestroyed1 = slot1.destroyed > 2**31 ? 2**31-1 : uint32(slot1.destroyed);
+        vFleet.orbitDefense1 = slot1.flying > 2**31 ? 2**31 - 1 : uint32(slot1.flying);
+        vFleet.orbitDefenseDestroyed1 = slot1.destroyed > 2**31 ? 2**31 - 1 : uint32(slot1.destroyed);
         InFlight storage slot2 = _inFlight[toPlanetUpdate.location][timeSlot];
-        vFleet.orbitDefense2 = slot2.flying > 2**31 ? 2**31-1 : uint32(slot2.flying);
-        vFleet.orbitDefenseDestroyed2 = slot2.destroyed > 2**31 ? 2**31-1 : uint32(slot2.destroyed);
+        vFleet.orbitDefense2 = slot2.flying > 2**31 ? 2**31 - 1 : uint32(slot2.flying);
+        vFleet.orbitDefenseDestroyed2 = slot2.destroyed > 2**31 ? 2**31 - 1 : uint32(slot2.destroyed);
         // // numDefense = uint32(Math.min(flying1 + flying2 + numDefense, 2**32 - 1));
     }
 
     function _updatePlanetUpdateStateAndVirtualFleetForPlanetAttack(
-        VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate
+        VirtualFleet memory vFleet,
+        PlanetUpdateState memory toPlanetUpdate
     ) internal view {
         _updateVirtualFleetFromOrbitDefense(vFleet, toPlanetUpdate);
         uint256 numDefense = toPlanetUpdate.numSpaceships + vFleet.orbitDefense1 + vFleet.orbitDefense2;
@@ -817,35 +877,53 @@ contract OuterSpaceFacetBase is
             toPlanetUpdate.newOwner = vFleet.owner; // TODO attacker vs vFleet.owner
             toPlanetUpdate.numSpaceships = vFleet.quantity;
             if (!toPlanetUpdate.active) {
-                toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships; // numDefense = 0 so numAttack is the overflow, attacker took over
-            } else if (_productionCapAsDuration > 0 && toPlanetUpdate.numSpaceships > production * _productionCapAsDuration) {
-                toPlanetUpdate.overflow = uint32(toPlanetUpdate.numSpaceships - production * _productionCapAsDuration); // numDefense = 0 so numAttack is the overflow, attacker took over
+                // numDefense = 0 so numAttack is the overflow, attacker took over
+                toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships;
+            } else if (
+                _productionCapAsDuration > 0 && toPlanetUpdate.numSpaceships > production * _productionCapAsDuration
+            ) {
+                // numDefense = 0 so numAttack is the overflow, attacker took over
+                toPlanetUpdate.overflow = uint32(toPlanetUpdate.numSpaceships - production * _productionCapAsDuration);
             } else {
                 toPlanetUpdate.overflow = 0;
             }
 
             vFleet.victory = true;
         } else {
-            _computeAttack(vFleet, toPlanetUpdate);
+            _computeAttack(vFleet, toPlanetUpdate, numDefense);
         }
     }
 
-
-    function _computeAttack(VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate) internal view {
+    // solhint-disable-next-line code-complexity
+    function _computeAttack(
+        VirtualFleet memory vFleet,
+        PlanetUpdateState memory toPlanetUpdate,
+        uint256 numDefense
+    ) internal view {
         uint16 attack = _attack(vFleet.fromData);
         uint16 defense = _defense(toPlanetUpdate.data);
-        (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(vFleet.quantity, toPlanetUpdate.numSpaceships, attack, defense);
-
+        (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(
+            vFleet.quantity,
+            toPlanetUpdate.numSpaceships,
+            attack,
+            defense
+        );
+        vFleet.defenderLoss = defenderLoss;
+        vFleet.attackerLoss = attackerLoss;
 
         // (attackerLoss: 0, defenderLoss: 0) could either mean attack was zero or defense was zero :
-        if (vFleet.quantity > 0 && vFleet.defenderLoss == toPlanetUpdate.numSpaceships) {
+        if (vFleet.quantity > 0 && vFleet.defenderLoss == numDefense) {
+            // all orbiting fleets are destroyed, no need to compute
             toPlanetUpdate.numSpaceships = vFleet.quantity - attackerLoss;
             vFleet.victory = true;
-            toPlanetUpdate.newOwner = vFleet.owner; // TODO owner vs sender, here owner, sender is the one sending, guilty
+
+            // TODO owner vs sender, here owner, sender is the one sending, guilty
+            toPlanetUpdate.newOwner = vFleet.owner;
 
             if (!toPlanetUpdate.active) {
-                toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships; // attack took over, overflow is numSpaceships
-            } else{
+                // attack took over, overflow is numSpaceships
+                toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships;
+            } else {
                 // TODO
                 // uint32 cap = uint32(production * _productionCapAsDuration);
                 // if (_productionCapAsDuration > 0 && newNumSpaceships > cap) {
@@ -857,15 +935,36 @@ contract OuterSpaceFacetBase is
                 // }
             }
         } else if (vFleet.attackerLoss == vFleet.quantity) {
-            // always true as if attack won it will be going in the "if" above
-            toPlanetUpdate.numSpaceships = toPlanetUpdate.numSpaceships - defenderLoss;
+            if (defenderLoss > toPlanetUpdate.numSpaceships) {
+                vFleet.inFlightPlanetLoss = defenderLoss - toPlanetUpdate.numSpaceships;
+                vFleet.defenderLoss = toPlanetUpdate.numSpaceships; // defenderLoss represent only planet loss
+                toPlanetUpdate.numSpaceships = 0;
+
+                if (vFleet.orbitDefense1 >= vFleet.inFlightPlanetLoss) {
+                    vFleet.orbitDefense1 -= vFleet.inFlightPlanetLoss;
+                    vFleet.orbitDefenseDestroyed1 += vFleet.inFlightPlanetLoss;
+                } else {
+                    vFleet.orbitDefenseDestroyed1 += vFleet.orbitDefense1;
+                    uint32 extra = (vFleet.inFlightPlanetLoss - vFleet.orbitDefense1);
+                    if (vFleet.orbitDefense2 >= extra) {
+                        vFleet.orbitDefense2 -= extra;
+                        vFleet.orbitDefenseDestroyed2 += extra;
+                    } else {
+                        vFleet.orbitDefenseDestroyed2 += vFleet.orbitDefense2;
+                        vFleet.orbitDefense2 = 0; // should never reach minus but let simply set it to zero
+                    }
+                    vFleet.orbitDefense1 = 0;
+                }
+            } else {
+                toPlanetUpdate.numSpaceships = toPlanetUpdate.numSpaceships - defenderLoss;
+            }
             if (!toPlanetUpdate.active) {
                 if (defenderLoss > toPlanetUpdate.overflow) {
                     toPlanetUpdate.overflow = 0;
                 } else {
                     toPlanetUpdate.overflow -= defenderLoss;
                 }
-            } else{
+            } else {
                 // TODO
                 // uint32 cap = uint32(production * _productionCapAsDuration);
                 // if (_productionCapAsDuration > 0 && result.numSpaceships > cap) {
@@ -883,35 +982,18 @@ contract OuterSpaceFacetBase is
         }
     }
 
-    function _recordInFlightLosttForPlanet(VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate) internal {
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
-        // consider fleets that just departed from the planet (used to prevent front-running, see fleet sending)
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
-        if (vFleet.defenderLoss > toPlanetUpdate.numSpaceships) {
-            vFleet.inFlightPlanetLoss = vFleet.defenderLoss - toPlanetUpdate.numSpaceships;
-            vFleet.defenderLoss = toPlanetUpdate.numSpaceships;
-            if (vFleet.orbitDefense1 >= vFleet.inFlightPlanetLoss) {
-                vFleet.orbitDefense1 -= vFleet.inFlightPlanetLoss;
-                vFleet.orbitDefenseDestroyed1 += vFleet.inFlightPlanetLoss;
-            } else {
-                vFleet.orbitDefenseDestroyed1 += vFleet.orbitDefense1;
-                uint32 extra = (vFleet.inFlightPlanetLoss - vFleet.orbitDefense1);
-                if (vFleet.orbitDefense2 >= extra) {
-                    vFleet.orbitDefense2 -= extra;
-                    vFleet.orbitDefenseDestroyed2 += extra;
-                } else {
-                    vFleet.orbitDefenseDestroyed2 += vFleet.orbitDefense2;
-                    vFleet.orbitDefense2 = 0; // should never reach minus but let simply set it to zero
-                }
-                vFleet.orbitDefense1 = 0;
-            }
-            // TODO move to uint32 for all
-            _inFlight[toPlanetUpdate.location][block.timestamp / (_frontrunningDelay / 2) - 1].flying = vFleet.orbitDefense1;
-            _inFlight[toPlanetUpdate.location][block.timestamp / (_frontrunningDelay / 2) - 1].destroyed = vFleet.orbitDefenseDestroyed1;
-            _inFlight[toPlanetUpdate.location][block.timestamp / (_frontrunningDelay / 2)].flying = vFleet.orbitDefense2;
-            _inFlight[toPlanetUpdate.location][block.timestamp / (_frontrunningDelay / 2)].destroyed = vFleet.orbitDefenseDestroyed2;
+    function _recordInOrbitLossAfterAttack(VirtualFleet memory vFleet, PlanetUpdateState memory toPlanetUpdate)
+        internal
+    {
+        if (vFleet.inFlightPlanetLoss > 0) {
+            InFlight storage slot1 = _inFlight[toPlanetUpdate.location][block.timestamp / (_frontrunningDelay / 2) - 1];
+            slot1.flying = vFleet.orbitDefense1;
+            slot1.destroyed = vFleet.orbitDefenseDestroyed1;
+
+            InFlight storage slot2 = _inFlight[toPlanetUpdate.location][block.timestamp / (_frontrunningDelay / 2)];
+            slot2.flying = vFleet.orbitDefense2;
+            slot2.destroyed = vFleet.orbitDefenseDestroyed2;
         }
-        // ----------------------------------------------------------------------------------------------------------------------------------------------------------
     }
 
     function _computeFight(
@@ -921,7 +1003,9 @@ contract OuterSpaceFacetBase is
         uint256 defense
     ) internal view returns (uint32 attackerLoss, uint32 defenderLoss) {
         if (numAttack == 0 || numDefense == 0) {
-            return (0, 0); // this edge case need to be considered, as the result of this function cannot tell from it whos is winning here
+            // this edge case need to be considered,
+            // as the result of this function cannot tell from it whos is winning here
+            return (0, 0);
         }
 
         uint256 attackFactor = numAttack *
@@ -946,7 +1030,6 @@ contract OuterSpaceFacetBase is
             defenderLoss = uint32(numDefense); // all defense destroyed
         }
     }
-
 
     // ---------------------------------------------------------------------------------------------------------------
     // PLANET STATS
@@ -983,7 +1066,8 @@ contract OuterSpaceFacetBase is
         //     stakeIndex -= 4;
         // }
         uint16 stakeIndex = productionIndex;
-        return uint16(uint8(stakeRange[stakeIndex * 2 + 1])); // skip stakeIndex * 2 + 0 as it is always zero in stakeRange
+        // skip stakeIndex * 2 + 0 as it is always zero in stakeRange
+        return uint16(uint8(stakeRange[stakeIndex * 2 + 1]));
     }
 
     function _production(bytes32 data) internal pure returns (uint16) {
@@ -1050,12 +1134,9 @@ contract OuterSpaceFacetBase is
             });
     }
 
-
-
     // ---------------------------------------------------------------------------------------------------------------
     // UTILS
     // ---------------------------------------------------------------------------------------------------------------
-
 
     function _requireCorrectDistance(
         uint256 distance,
