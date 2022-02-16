@@ -11,14 +11,15 @@ contract ImportingOuterSpaceTypes {
         // STORE last attack too, to compute combined attack on it ? uint128 is plainty enough
     }
 
-    struct Account {
-        // TODO add more info
-        // stake for example ? => coild it be used by staking ?
-        // numPlanets ?
-        // numSpaceships ? => probably too much ?
-        uint64 totalProduction;
-        uint64 productionDebt;
-    }
+    // TODO remove
+    // struct Account {
+    //     // TODO add more info
+    //     // stake for example ? => coild it be used by staking ?
+    //     // numPlanets ?
+    //     // numSpaceships ? => probably too much ?
+    //     uint64 totalProduction;
+    //     uint64 productionDebt;
+    // }
 
     struct Discovered {
         uint32 minX;

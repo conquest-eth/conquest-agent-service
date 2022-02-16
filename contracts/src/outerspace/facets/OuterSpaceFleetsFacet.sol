@@ -68,10 +68,13 @@ contract OuterSpaceFleetsFacet is OuterSpaceFacetBase {
             keccak256(abi.encodePacked(launch.toHash, launch.from, launch.fleetSender, operator))
         );
 
-        if (launch.fleetOwner != launch.fleetSender && launch.fleetOwner != operator) {
-            // TODO use signature from fleetOwner instead?
-            require(_operators[launch.fleetOwner][operator], "NOT_AUTHORIZED_TO_FLEET");
-        }
+        // fleetOwner is basically the one receiving the planet if the attack succeed
+        // fleetSender is the one to be used for alliance resolution
+        // operator is just so alliance can consider fleetSender based on the rule of that operator
+        // if (launch.fleetOwner != launch.fleetSender && launch.fleetOwner != operator) {
+        //     // TODO use signature from fleetOwner instead?
+        //     require(_operators[launch.fleetOwner][operator], "NOT_AUTHORIZED_TO_FLEET");
+        // }
 
         _sendFor(fleetId, operator, launch);
     }
