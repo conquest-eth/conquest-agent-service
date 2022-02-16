@@ -869,6 +869,7 @@ contract OuterSpaceFacetBase is
             toPlanetUpdate.numSpaceships = rState.fleetQuantity - attackerLoss;
             rState.defenderLoss = defenderLoss;
             rState.victory = true;
+            // solhint-disable-next-line no-empty-blocks
         } else {
             // TODO revert ?
         }
