@@ -12,7 +12,8 @@ import "../../libraries/Math.sol";
 import "../../interfaces/IAlliance.sol";
 import "../../alliances/AllianceRegistry.sol";
 
-import "hardhat/console.sol";
+// TODO Remove
+// import "hardhat/console.sol";
 
 contract OuterSpaceFacetBase is
     ImportingOuterSpaceTypes,
@@ -127,8 +128,6 @@ contract OuterSpaceFacetBase is
             // TODO productionSpeedUp ?
             uint256 cap = _acquireNumSpaceships + (_productionCapAsDuration * uint256(production)) / 1 hours;
 
-            console.log("_productionCapAsDuration: %i, cap: %i", _productionCapAsDuration, cap);
-
             if (newNumSpaceships > cap) {
                 decrease = (timePassed * 1800) / 3600; // 1800 per hours
                 if (decrease > newNumSpaceships - cap) {
@@ -142,7 +141,6 @@ contract OuterSpaceFacetBase is
             // TODO use debt ?
 
             if (planetUpdate.active) {
-                console.log("timePassed: %i, :_productionSpeedUp %i", timePassed, _productionSpeedUp);
                 uint256 increase = (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
                 if (increase > maxIncrease) {
                     increase = maxIncrease;
@@ -261,7 +259,6 @@ contract OuterSpaceFacetBase is
             // Do not allow staking over occupied planets, they are going to zero at some point though
             // TODO owner == address(0) ? is it possible for address(0) + numSpaceships > 0 ?
             require(planetUpdate.owner == player || planetUpdate.numSpaceships == 0, "OCCUPIED");
-
 
             // used to be the following (but this gave too many cons to send spaceships to non-active planets):
             // TODO reconsider or remove natives entirely ?
@@ -427,13 +424,14 @@ contract OuterSpaceFacetBase is
             }
         }
         uint256 newStake = _stakeReadyToBeWithdrawn[owner] + addedStake;
-        _withdrawAll(owner, newStake);
+        _unsafe_withdrawAll(owner, newStake);
     }
 
-    function _withdrawAll(address owner, uint256 amount) internal {
+    function _unsafe_withdrawAll(address owner, uint256 amount) internal {
         _stakeReadyToBeWithdrawn[owner] = 0;
         emit StakeToWithdraw(owner, amount);
-        require(_stakingToken.transfer(owner, amount), "FAILED_TRANSFER"); // TODO FundManager
+        require(_stakingToken.transfer(owner, amount), "FAILED_TRANSFER");
+        // TODO Staking Pool
         emit StakeToWithdraw(owner, 0);
     }
 
@@ -454,6 +452,10 @@ contract OuterSpaceFacetBase is
     // ---------------------------------------------------------------------------------------------------------------
 
     function _addReward(uint256 location, address sponsor) internal {
+        // NOTE: not really needed
+        //  the planetUpdate could be skipped as we do not need to update number of spaceships
+        // BUG: actually, this would remove the fighting against native if we do
+
         Planet storage planet = _getPlanet(location);
         PlanetUpdateState memory planetUpdate = _createPlanetUpdateState(planet, location);
         _computePlanetUpdateForTimeElapsed(planetUpdate);
@@ -499,12 +501,9 @@ contract OuterSpaceFacetBase is
         _computePlanetUpdateForTimeElapsed(planetUpdate);
 
         // -----------------------------------------------------------------------------------------------------------
-        // further requirements
+        // Requirements post Planet Updates
         // -----------------------------------------------------------------------------------------------------------
 
-        if (!(planetUpdate.numSpaceships >= launch.quantity)) {
-            console.log("%i, %i", planetUpdate.numSpaceships, launch.quantity);
-        }
         require(planetUpdate.numSpaceships >= launch.quantity, "SPACESHIPS_NOT_ENOUGH");
 
         // -----------------------------------------------------------------------------------------------------------
@@ -561,7 +560,7 @@ contract OuterSpaceFacetBase is
         flying = flying + quantity;
         require(flying >= quantity, "OVERFLOW"); // unlikely to ever happen,
         // would need a huge amount of spaceships to be received and each in turn being sent
-        // TODO could also cap, that would result in some fleet being able to escape.
+        // TOEXPLORE could also cap, that would result in some fleet being able to escape.
         _inFlight[from][timeSlot].flying = flying;
         // -----------------------------------------------------------------------------------------------------------
     }
@@ -573,13 +572,13 @@ contract OuterSpaceFacetBase is
         address fleetOwner;
         uint40 fleetLaunchTime;
         uint32 fleetQuantity;
+        bytes32 fromData;
         uint32 inFlightFleetLoss;
         uint32 inFlightPlanetLoss;
         bool gifting;
         bool taxed;
         bool victory; // TODO ? and check old behavior,
         // for example on fleet_after_Exit the victory is true if numSPaceshipArrived > 0
-        bytes32 fromData;
         uint32 attackerLoss;
         uint32 defenderLoss;
         uint32 orbitDefense1;
@@ -633,7 +632,7 @@ contract OuterSpaceFacetBase is
         _recordOrbitLossAccountingForFleetOrigin(rState, resolution);
 
         _setPlanet(toPlanet, toPlanetUpdate);
-        // _setAccountFromPlanetUpdate(toPlanetUpdate); // TODO what about fromPlanet ?
+        // _setAccountFromPlanetUpdate(toPlanetUpdate); // TODO remove, else think about the fromPlanet ?
 
         _fleets[fleetId].quantity = 0; // TODO quantity should be kept ?
         // so Alliance Contract can act on that value ?, could use 1st bit indicator
@@ -690,10 +689,13 @@ contract OuterSpaceFacetBase is
     function _recordOrbitLossAccountingForFleetOrigin(ResolutionState memory rState, FleetResolution memory resolution)
         internal
     {
-        uint256 timeSlot = rState.fleetLaunchTime / (_frontrunningDelay / 2);
+        if (rState.inFlightFleetLoss > 0) {
+            uint256 timeSlot = rState.fleetLaunchTime / (_frontrunningDelay / 2);
 
-        // we already computed that destroyed cannot be smaller than inFlightFleetLoss
-        _inFlight[resolution.from][timeSlot].destroyed -= rState.inFlightFleetLoss;
+            // NOTE we already computed that destroyed cannot be smaller than inFlightFleetLoss
+            //  see _computeInFlightLossForFleet
+            _inFlight[resolution.from][timeSlot].destroyed -= rState.inFlightFleetLoss;
+        }
     }
 
     function _updateFleetForGifting(
@@ -940,7 +942,9 @@ contract OuterSpaceFacetBase is
 
         // (attackerLoss: 0, defenderLoss: 0) could either mean attack was zero or defense was zero :
         if (rState.fleetQuantity > 0 && rState.defenderLoss == numDefense) {
-            // all orbiting fleets are destroyed, no need to compute
+            // all orbiting fleets are destroyed, inFlightPlanetLoss is all that is left
+            rState.inFlightPlanetLoss = uint32(numDefense - toPlanetUpdate.numSpaceships);
+
             toPlanetUpdate.numSpaceships = rState.fleetQuantity - attackerLoss;
             rState.victory = true;
 
@@ -950,15 +954,15 @@ contract OuterSpaceFacetBase is
                 // attack took over, overflow is numSpaceships
                 toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships;
             } else {
-                // TODO
-                // uint32 cap = uint32(production * _productionCapAsDuration);
-                // if (_productionCapAsDuration > 0 && newNumSpaceships > cap) {
-                //     if (newNumSpaceships - cap > toPlanet.overflow) {
-                //         _planets[to].overflow = uint32(result.numSpaceships) - cap;
-                //     }
-                // } else {
-                //     _planets[to].overflow = 0;
-                // }
+                uint16 production = _production(toPlanetUpdate.data);
+                uint32 cap = uint32(production * _productionCapAsDuration);
+                if (_productionCapAsDuration > 0 && toPlanetUpdate.numSpaceships > cap) {
+                    if (toPlanetUpdate.numSpaceships - cap > toPlanetUpdate.overflow) {
+                        toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships - cap;
+                    }
+                } else {
+                    toPlanetUpdate.overflow = 0;
+                }
             }
         } else if (rState.attackerLoss == rState.fleetQuantity) {
             if (defenderLoss > toPlanetUpdate.numSpaceships) {
@@ -991,17 +995,17 @@ contract OuterSpaceFacetBase is
                     toPlanetUpdate.overflow -= defenderLoss;
                 }
             } else {
-                // TODO
-                // uint32 cap = uint32(production * _productionCapAsDuration);
-                // if (_productionCapAsDuration > 0 && result.numSpaceships > cap) {
-                //     if (defenderLoss <= toPlanet.overflow) {
-                //         _planets[to].overflow -= defenderLoss;
-                //     } else {
-                //         _planets[to].overflow = 0;
-                //     }
-                // } else {
-                //     _planets[to].overflow = 0;
-                // }
+                uint16 production = _production(toPlanetUpdate.data);
+                uint32 cap = uint32(production * _productionCapAsDuration);
+                if (_productionCapAsDuration > 0 && toPlanetUpdate.numSpaceships > cap) {
+                    if (defenderLoss <= toPlanetUpdate.overflow) {
+                        toPlanetUpdate.overflow -= defenderLoss;
+                    } else {
+                        toPlanetUpdate.overflow = 0;
+                    }
+                } else {
+                    toPlanetUpdate.overflow = 0;
+                }
             }
         } else {
             assert(false); // should not happen

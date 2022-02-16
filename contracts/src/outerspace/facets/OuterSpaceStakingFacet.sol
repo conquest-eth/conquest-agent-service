@@ -57,6 +57,6 @@ contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
 
     function withdrawFor(address owner) external {
         uint256 amount = _stakeReadyToBeWithdrawn[owner];
-        _withdrawAll(owner, amount);
+        _unsafe_withdrawAll(owner, amount);
     }
 }
