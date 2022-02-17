@@ -19,8 +19,11 @@ const l2_deployments_dev: string[] = [
   'deploy_l2/04_setup',
   'deploy_l2/10_agent_service',
   'deploy_l2/20_basic_alliances',
-  'deploy_l2/30_spaceship_markets',
+  // 'deploy_l2/30_spaceship_markets', // TODO
 ];
+
+const hardhatNetworkDeploymentFolders = l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev);
+// console.log({hardhatNetworkDeploymentFolders});
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -71,7 +74,7 @@ const config: HardhatUserConfig = {
   networks: addForkConfiguration({
     hardhat: {
       initialBaseFeePerGas: 0, // to fix : https://github.com/sc-forks/solidity-coverage/issues/652, see https://github.com/sc-forks/solidity-coverage/issues/652#issuecomment-896330136
-      deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
+      deploy: hardhatNetworkDeploymentFolders,
       mining: process.env.MINING_INTERVAL
         ? {
             auto: false,

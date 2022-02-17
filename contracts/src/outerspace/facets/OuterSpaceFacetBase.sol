@@ -13,7 +13,7 @@ import "../../interfaces/IAlliance.sol";
 import "../../alliances/AllianceRegistry.sol";
 
 // TODO Remove
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract OuterSpaceFacetBase is
     ImportingOuterSpaceTypes,
@@ -33,7 +33,7 @@ contract OuterSpaceFacetBase is
     uint32 internal immutable _productionSpeedUp;
     uint256 internal immutable _frontrunningDelay;
     uint256 internal immutable _productionCapAsDuration;
-    uint256 internal immutable _productionDebtApplicationRate;
+    uint256 internal immutable _upkeepProductionDecreaseRatePer10000th;
     uint256 internal immutable _fleetSizeFactor6;
 
     struct Config {
@@ -47,7 +47,7 @@ contract OuterSpaceFacetBase is
         uint32 productionSpeedUp;
         uint256 frontrunningDelay;
         uint256 productionCapAsDuration;
-        uint256 productionDebtApplicationRate;
+        uint256 upkeepProductionDecreaseRatePer10000th;
         uint256 fleetSizeFactor6;
     }
 
@@ -65,7 +65,7 @@ contract OuterSpaceFacetBase is
         _productionSpeedUp = config.productionSpeedUp;
         _frontrunningDelay = config.frontrunningDelay;
         _productionCapAsDuration = config.productionCapAsDuration;
-        _productionDebtApplicationRate = config.productionDebtApplicationRate;
+        _upkeepProductionDecreaseRatePer10000th = config.upkeepProductionDecreaseRatePer10000th;
         _fleetSizeFactor6 = config.fleetSizeFactor6;
     }
 
@@ -78,9 +78,9 @@ contract OuterSpaceFacetBase is
         uint40 lastUpdated;
         bool active; // do you need to get the old ?
         uint32 numSpaceships; // do you need to get the old ?
+        int40 travelingUpkeep;
         uint40 exitStartTime;
         uint40 newExitStartTime;
-        uint32 debtRepaid;
         uint32 overflow; // do you need to get the old ?
         address owner;
         address newOwner;
@@ -97,6 +97,7 @@ contract OuterSpaceFacetBase is
         planetUpdate.lastUpdated = planet.lastUpdated;
         planetUpdate.active = active;
         planetUpdate.numSpaceships = currentNumSpaceships;
+        planetUpdate.travelingUpkeep = planet.travelingUpkeep;
         planetUpdate.exitStartTime = planet.exitStartTime;
         planetUpdate.newExitStartTime = planet.exitStartTime;
         planetUpdate.overflow = planet.overflow;
@@ -111,52 +112,83 @@ contract OuterSpaceFacetBase is
             if (_hasJustExited(planetUpdate.exitStartTime)) {
                 planetUpdate.newExitStartTime = 0;
                 planetUpdate.numSpaceships = 0;
+                planetUpdate.travelingUpkeep = 0;
                 planetUpdate.newOwner = address(0);
                 planetUpdate.overflow = 0;
                 planetUpdate.active = false; // event is emitted at the endof each write function
+                // lastUpdated is set at the end directly on storage
                 return;
             }
         }
 
-        uint256 maxIncrease = ACTIVE_MASK - 1;
         uint256 timePassed = block.timestamp - planetUpdate.lastUpdated;
         uint16 production = _production(planetUpdate.data);
+        uint256 produce = (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
+
+        // NOTE: the repaypemnt of upkeep always happen at a fixed rate (per planet), it is fully predictable
+        uint256 upkeepRepaid = 0;
+        if (planetUpdate.travelingUpkeep > 0) {
+            // TODO add sufix: 10000th to _upkeepProductionDecreaseRatePer10000th
+            upkeepRepaid = ((produce * _upkeepProductionDecreaseRatePer10000th) / 10000);
+            if (upkeepRepaid > uint40(planetUpdate.travelingUpkeep)) {
+                upkeepRepaid = uint40(planetUpdate.travelingUpkeep);
+            }
+            planetUpdate.travelingUpkeep = planetUpdate.travelingUpkeep - int40(uint40(upkeepRepaid));
+        }
+
         uint256 newNumSpaceships = planetUpdate.numSpaceships;
+        uint256 extraUpkeepPaid = 0;
         if (_productionCapAsDuration > 0) {
-            uint256 decrease = 0;
-            // TODO if not active => cap = 0; // TODO overflow ?
-            // TODO productionSpeedUp ?
-            uint256 cap = _acquireNumSpaceships + (_productionCapAsDuration * uint256(production)) / 1 hours;
+            // NOTE no need of productionSpeedUp for the cap because _productionCapAsDuration can include it
+            uint256 cap = planetUpdate.active
+                ? _acquireNumSpaceships + (_productionCapAsDuration * uint256(production)) / 1 hours
+                : 0;
 
             if (newNumSpaceships > cap) {
-                decrease = (timePassed * 1800) / 3600; // 1800 per hours
+                // TODO overflow ?
+
+                // TODO tweak value ? (currently decrease is set to 1800 per hours)
+                uint256 decrease = (timePassed * 1800) / 1 hours;
                 if (decrease > newNumSpaceships - cap) {
                     decrease = newNumSpaceships - cap;
                 }
-                maxIncrease = 0;
-            } else {
-                maxIncrease = cap - newNumSpaceships;
-            }
-
-            // TODO use debt ?
-
-            if (planetUpdate.active) {
-                uint256 increase = (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
-                if (increase > maxIncrease) {
-                    increase = maxIncrease;
+                if (decrease > newNumSpaceships) {
+                    if (planetUpdate.active) {
+                        extraUpkeepPaid = produce - upkeepRepaid + newNumSpaceships;
+                    }
+                    newNumSpaceships = 0;
+                } else {
+                    if (planetUpdate.active) {
+                        extraUpkeepPaid = produce - upkeepRepaid + decrease;
+                    }
+                    newNumSpaceships -= decrease;
                 }
-                newNumSpaceships += increase;
+            } else {
+                if (planetUpdate.active) {
+                    uint256 maxIncrease = cap - newNumSpaceships;
+                    uint256 increase = produce - upkeepRepaid;
+                    if (increase > maxIncrease) {
+                        extraUpkeepPaid = increase - maxIncrease;
+                        increase = maxIncrease;
+                    }
+                    newNumSpaceships += increase;
+                } else {
+                    // not effect currently, when inactive, cap == 0, meaning zero spaceship here
+                    // NOTE: we could do the following assuming we act on upkeepRepaid when inactive, we do not do that currently
+                    //  extraUpkeepPaid = produce - upkeepRepaid;
+                }
             }
 
-            if (decrease > newNumSpaceships) {
-                newNumSpaceships = 0; // not possible // actually yes for non-active
-            } else {
-                newNumSpaceships -= decrease;
+            // travelingUpkeep can go negative allow you to charge up your planet for later use, up to 7 days
+            int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) - int256(extraUpkeepPaid);
+            if (newTravelingUpkeep < -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours)) {
+                newTravelingUpkeep = -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours);
             }
+            planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
         } else if (planetUpdate.active) {
             // TODO remove that else if or handle _productionCapAsDuration = 0 better,
             // for example non-active is not dealt with here
-            newNumSpaceships += (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
+            newNumSpaceships += (timePassed * uint256(production) * _productionSpeedUp) / 1 hours - upkeepRepaid;
         }
 
         if (newNumSpaceships >= ACTIVE_MASK) {
@@ -184,6 +216,7 @@ contract OuterSpaceFacetBase is
         }
 
         planet.numSpaceships = _setActiveNumSpaceships(planetUpdate.active, planetUpdate.numSpaceships);
+        planet.travelingUpkeep = planetUpdate.travelingUpkeep;
 
         planet.overflow = planetUpdate.overflow;
         planet.lastUpdated = uint40(block.timestamp);
@@ -540,8 +573,14 @@ contract OuterSpaceFacetBase is
     function _computePlanetUpdateForFleetLaunch(PlanetUpdateState memory planetUpdate, uint32 quantity) internal view {
         planetUpdate.numSpaceships -= quantity;
         if (_productionCapAsDuration > 0) {
-            // TODO extract
             uint16 production = _production(planetUpdate.data);
+
+            int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) + int256(uint256(quantity));
+            if (newTravelingUpkeep > int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours)) {
+                newTravelingUpkeep = int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours);
+            }
+            planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
+
             uint32 cap = uint32(production * _productionCapAsDuration);
             if (planetUpdate.numSpaceships > cap && planetUpdate.overflow > quantity) {
                 planetUpdate.overflow -= quantity;
@@ -615,9 +654,14 @@ contract OuterSpaceFacetBase is
         _computePlanetUpdateForTimeElapsed(toPlanetUpdate);
 
         // -----------------------------------------------------------------------------------------------------------
+        // Traveling logic...
+        // -----------------------------------------------------------------------------------------------------------
+
+        _computeInFlightLossForFleet(rState, resolution);
+
+        // -----------------------------------------------------------------------------------------------------------
         // Resolution logic...
         // -----------------------------------------------------------------------------------------------------------
-        _computeInFlightLossForFleet(rState, resolution);
 
         _updateFleetForGifting(rState, resolution, toPlanetUpdate.owner);
 
@@ -631,11 +675,14 @@ contract OuterSpaceFacetBase is
 
         _recordOrbitLossAccountingForFleetOrigin(rState, resolution);
 
+        _setTravelingUpkeepFromOrigin(rState, resolution.from);
+
         _setPlanet(toPlanet, toPlanetUpdate);
         // _setAccountFromPlanetUpdate(toPlanetUpdate); // TODO remove, else think about the fromPlanet ?
 
-        _fleets[fleetId].quantity = 0; // TODO quantity should be kept ?
-        // so Alliance Contract can act on that value ?, could use 1st bit indicator
+        // TODO quantity should be kept ?
+        //  so Alliance Contract can act on that value ?, could use 1st bit indicator
+        _fleets[fleetId].quantity = 0;
 
         // -----------------------------------------------------------------------------------------------------------
         // Events
@@ -653,6 +700,24 @@ contract OuterSpaceFacetBase is
             rState.victory,
             toPlanetUpdate.numSpaceships
         );
+    }
+
+    function _setTravelingUpkeepFromOrigin(ResolutionState memory rState, uint256 location) internal {
+        if (rState.attackerLoss > 0) {
+            // // we have to update the origin
+            Planet storage fromPlanet = _planets[location];
+            PlanetUpdateState memory fromPlanetUpdate = _createPlanetUpdateState(fromPlanet, location);
+            _computePlanetUpdateForTimeElapsed(fromPlanetUpdate);
+
+            uint32 production = _production(fromPlanetUpdate.data);
+            int256 newTravelingUpkeep = int256(fromPlanetUpdate.travelingUpkeep) - int256(int32(rState.attackerLoss));
+            if (newTravelingUpkeep < -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours)) {
+                newTravelingUpkeep = -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours);
+            }
+            fromPlanetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
+
+            _setPlanet(fromPlanet, fromPlanetUpdate);
+        }
     }
 
     function _createResolutionState(Fleet storage fleet, uint256 from)
@@ -921,7 +986,24 @@ contract OuterSpaceFacetBase is
             rState.victory = true;
         } else {
             _computeAttack(rState, toPlanetUpdate, numDefense);
+            _computeTravelingUpkeepReductionAfterAttack(rState, toPlanetUpdate, production);
         }
+    }
+
+    function _computeTravelingUpkeepReductionAfterAttack(
+        ResolutionState memory rState,
+        PlanetUpdateState memory toPlanetUpdate,
+        uint16 production
+    ) internal view {
+        // allow the attacker to pay for upkeep as part of the attack
+        // only get to keep the upkeep that was there as a result of spaceships sent away
+
+        int256 totalLoss = int256(uint256(rState.defenderLoss + rState.inFlightPlanetLoss + rState.attackerLoss));
+        int256 newTravelingUpkeep = int256(toPlanetUpdate.travelingUpkeep) - totalLoss;
+        if (newTravelingUpkeep < -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours)) {
+            newTravelingUpkeep = -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours);
+        }
+        toPlanetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
     }
 
     // solhint-disable-next-line code-complexity

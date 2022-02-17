@@ -36,8 +36,9 @@ contract ImportingOuterSpaceTypes {
         // TODO uint16 ?
         ///
         uint32 numSpaceships; // uint31 + first bit => active // TODO use bool active ?
-        uint32 overflow;
         uint40 lastUpdated; // ~ 34865 years, should be enough :)
+        int40 travelingUpkeep; // decrease per _upkeepProductionDecreaseRatePer10000th  * production
+        uint32 overflow;
         // bool active; // TODO ?
         // bool exiting; // TODO ?
     }

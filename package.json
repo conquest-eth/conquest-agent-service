@@ -66,6 +66,7 @@
     "externals:geth": "node ./_scripts.js externals:geth",
     "dev": "node ./_scripts.js dev",
     "start": "node ./_scripts.js start",
+    "start:nonode": "node ./_scripts.js start:nonode",
     "start:geth": "node ./_scripts.js start:geth"
   },
   "volta": {

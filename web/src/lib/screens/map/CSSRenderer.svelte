@@ -183,10 +183,13 @@ width:100%; height: 100%;
   }
 
   @keyframes -global-animation-flash {
-    0%, 50%, 100% {
+    0%,
+    50%,
+    100% {
       opacity: 1;
     }
-    25%, 75% {
+    25%,
+    75% {
       opacity: 0;
     }
   }
