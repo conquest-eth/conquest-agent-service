@@ -141,7 +141,7 @@ contract OuterSpaceFacetBase is
         if (_productionCapAsDuration > 0) {
             // NOTE no need of productionSpeedUp for the cap because _productionCapAsDuration can include it
             uint256 cap = planetUpdate.active
-                ? _acquireNumSpaceships + (_productionCapAsDuration * uint256(production)) / 1 hours
+                ? _acquireNumSpaceships + (uint256(production) * _productionCapAsDuration) / 1 hours
                 : 0;
 
             if (newNumSpaceships > cap) {
@@ -185,10 +185,19 @@ contract OuterSpaceFacetBase is
                 newTravelingUpkeep = -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours);
             }
             planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
-        } else if (planetUpdate.active) {
-            // TODO remove that else if or handle _productionCapAsDuration = 0 better,
-            // for example non-active is not dealt with here
-            newNumSpaceships += (timePassed * uint256(production) * _productionSpeedUp) / 1 hours - upkeepRepaid;
+        } else {
+            if (planetUpdate.active) {
+                newNumSpaceships += (timePassed * uint256(production) * _productionSpeedUp) / 1 hours - upkeepRepaid;
+            } else {
+                // NOTE no need to overflow here  as there is no production cap, so no incentive to regroup spaceships
+                uint256 decrease = (timePassed * 1800) / 1 hours;
+                if (decrease > newNumSpaceships) {
+                    decrease = newNumSpaceships;
+                    newNumSpaceships = 0;
+                } else {
+                    newNumSpaceships -= decrease;
+                }
+            }
         }
 
         if (newNumSpaceships >= ACTIVE_MASK) {
@@ -302,19 +311,22 @@ contract OuterSpaceFacetBase is
             // }
         }
 
-        planetUpdate.newOwner = player; // TODO ensure a player staking on a planet it previously exited work here
+        // TODO ensure a player staking on a planet it previously exited work here
+        planetUpdate.newOwner = player;
         if (defense != 0) {
             (uint32 attackerLoss, ) = _computeFight(_acquireNumSpaceships, defense, 10000, _defense(planetUpdate.data));
             // attacker alwasy win as defense (and stats.native) is restricted to 3500
             // (attackerLoss: 0, defenderLoss: 0) would mean defense was zero
             require(attackerLoss < _acquireNumSpaceships, "FAILED_CAPTURED");
             planetUpdate.numSpaceships = _acquireNumSpaceships - attackerLoss;
-            planetUpdate.overflow = 0; // cannot be overflow here
+
+            // NOTE cannot be overflow here as staking provide a number of spaceships below that
+            planetUpdate.overflow = 0;
         } else {
             planetUpdate.numSpaceships += _acquireNumSpaceships;
             if (_productionCapAsDuration > 0) {
                 uint16 production = _production(planetUpdate.data);
-                uint32 cap = uint32(production * _productionCapAsDuration);
+                uint32 cap = uint32(_acquireNumSpaceships + (production * _productionCapAsDuration) / 1 hours);
                 if (planetUpdate.numSpaceships > cap) {
                     planetUpdate.overflow = planetUpdate.numSpaceships - cap;
                 } else {
@@ -453,6 +465,7 @@ contract OuterSpaceFacetBase is
                 planet.exitStartTime = 0;
                 planet.numSpaceships = 0;
                 planet.overflow = 0;
+                planet.travelingUpkeep = 0;
                 planet.lastUpdated = uint40(block.timestamp);
             }
         }
@@ -581,8 +594,7 @@ contract OuterSpaceFacetBase is
             }
             planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
 
-            uint32 cap = uint32(production * _productionCapAsDuration);
-            if (planetUpdate.numSpaceships > cap && planetUpdate.overflow > quantity) {
+            if (planetUpdate.overflow > quantity) {
                 planetUpdate.overflow -= quantity;
             } else {
                 planetUpdate.overflow = 0;
@@ -597,7 +609,7 @@ contract OuterSpaceFacetBase is
         uint256 timeSlot = block.timestamp / (_frontrunningDelay / 2);
         uint32 flying = _inFlight[from][timeSlot].flying;
         flying = flying + quantity;
-        require(flying >= quantity, "OVERFLOW"); // unlikely to ever happen,
+        require(flying >= quantity, "ORBIT_OVERFLOW"); // unlikely to ever happen,
         // would need a huge amount of spaceships to be received and each in turn being sent
         // TOEXPLORE could also cap, that would result in some fleet being able to escape.
         _inFlight[from][timeSlot].flying = flying;
@@ -905,11 +917,13 @@ contract OuterSpaceFacetBase is
 
         toPlanetUpdate.numSpaceships = uint32(newNumSpaceships);
         if (!toPlanetUpdate.active) {
+            // NOTE: not active, overflow is applied on cap = 0
             if (toPlanetUpdate.numSpaceships > toPlanetUpdate.overflow) {
                 toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships;
             }
         } else {
-            uint32 cap = uint32(_production(toPlanetUpdate.data) * _productionCapAsDuration);
+            uint32 cap = uint32(_acquireNumSpaceships + _production(toPlanetUpdate.data) * _productionCapAsDuration) /
+                1 hours;
             if (_productionCapAsDuration > 0 && newNumSpaceships > cap) {
                 if (toPlanetUpdate.numSpaceships - cap > toPlanetUpdate.overflow) {
                     toPlanetUpdate.overflow = uint32(toPlanetUpdate.numSpaceships - cap);
@@ -974,13 +988,16 @@ contract OuterSpaceFacetBase is
             if (!toPlanetUpdate.active) {
                 // numDefense = 0 so numAttack is the overflow, attacker took over
                 toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships;
-            } else if (
-                _productionCapAsDuration > 0 && toPlanetUpdate.numSpaceships > production * _productionCapAsDuration
-            ) {
-                // numDefense = 0 so numAttack is the overflow, attacker took over
-                toPlanetUpdate.overflow = uint32(toPlanetUpdate.numSpaceships - production * _productionCapAsDuration);
             } else {
-                toPlanetUpdate.overflow = 0;
+                if (_productionCapAsDuration > 0) {
+                    uint32 cap = uint32(_acquireNumSpaceships + (production * _productionCapAsDuration) / 1 hours);
+                    if (toPlanetUpdate.numSpaceships > cap) {
+                        // numDefense = 0 so numAttack is the overflow, attacker took over
+                        toPlanetUpdate.overflow = uint32(toPlanetUpdate.numSpaceships - cap);
+                    } else {
+                        toPlanetUpdate.overflow = 0;
+                    }
+                }
             }
 
             rState.victory = true;
@@ -1025,6 +1042,8 @@ contract OuterSpaceFacetBase is
 
         // (attackerLoss: 0, defenderLoss: 0) could either mean attack was zero or defense was zero :
         if (rState.fleetQuantity > 0 && rState.defenderLoss == numDefense) {
+            // NOTE Attacker wins
+
             // all orbiting fleets are destroyed, inFlightPlanetLoss is all that is left
             rState.inFlightPlanetLoss = uint32(numDefense - toPlanetUpdate.numSpaceships);
 
@@ -1037,17 +1056,21 @@ contract OuterSpaceFacetBase is
                 // attack took over, overflow is numSpaceships
                 toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships;
             } else {
-                uint16 production = _production(toPlanetUpdate.data);
-                uint32 cap = uint32(production * _productionCapAsDuration);
-                if (_productionCapAsDuration > 0 && toPlanetUpdate.numSpaceships > cap) {
-                    if (toPlanetUpdate.numSpaceships - cap > toPlanetUpdate.overflow) {
-                        toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships - cap;
+                if (_productionCapAsDuration > 0) {
+                    uint16 production = _production(toPlanetUpdate.data);
+                    uint32 cap = uint32(_acquireNumSpaceships + (production * _productionCapAsDuration) / 1 hours);
+                    if (toPlanetUpdate.numSpaceships > cap) {
+                        if (toPlanetUpdate.numSpaceships - cap > toPlanetUpdate.overflow) {
+                            toPlanetUpdate.overflow = toPlanetUpdate.numSpaceships - cap;
+                        }
+                    } else {
+                        toPlanetUpdate.overflow = 0;
                     }
-                } else {
-                    toPlanetUpdate.overflow = 0;
                 }
             }
         } else if (rState.attackerLoss == rState.fleetQuantity) {
+            // NOTE Defender wins
+
             if (defenderLoss > toPlanetUpdate.numSpaceships) {
                 rState.inFlightPlanetLoss = defenderLoss - toPlanetUpdate.numSpaceships;
                 rState.defenderLoss = toPlanetUpdate.numSpaceships; // defenderLoss represent only planet loss
@@ -1078,16 +1101,18 @@ contract OuterSpaceFacetBase is
                     toPlanetUpdate.overflow -= defenderLoss;
                 }
             } else {
-                uint16 production = _production(toPlanetUpdate.data);
-                uint32 cap = uint32(production * _productionCapAsDuration);
-                if (_productionCapAsDuration > 0 && toPlanetUpdate.numSpaceships > cap) {
-                    if (defenderLoss <= toPlanetUpdate.overflow) {
-                        toPlanetUpdate.overflow -= defenderLoss;
+                if (_productionCapAsDuration > 0) {
+                    uint16 production = _production(toPlanetUpdate.data);
+                    uint32 cap = uint32(_acquireNumSpaceships + (production * _productionCapAsDuration) / 1 hours);
+                    if (toPlanetUpdate.numSpaceships > cap) {
+                        if (defenderLoss <= toPlanetUpdate.overflow) {
+                            toPlanetUpdate.overflow -= defenderLoss;
+                        } else {
+                            toPlanetUpdate.overflow = 0;
+                        }
                     } else {
                         toPlanetUpdate.overflow = 0;
                     }
-                } else {
-                    toPlanetUpdate.overflow = 0;
                 }
             }
         } else {
