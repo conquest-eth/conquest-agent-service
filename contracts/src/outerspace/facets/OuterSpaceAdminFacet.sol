@@ -5,6 +5,7 @@ import "./OuterSpaceFacetBase.sol";
 import "hardhat-deploy/solc_0.8/diamond/UsingDiamondOwner.sol";
 
 contract OuterSpaceAdminFacet is UsingDiamondOwner, OuterSpaceFacetBase {
+    // solhint-disable-next-line no-empty-blocks
     constructor(Config memory config) OuterSpaceFacetBase(config) {}
 
     // TODO : ERC20, ERC721, ERC1155

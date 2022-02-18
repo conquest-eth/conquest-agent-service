@@ -2,7 +2,7 @@
 pragma solidity 0.8.9;
 
 import "../base/ImportingOuterSpaceConstants.sol";
-import "../base/ImportingOuterSpaceEvents.sol";
+import "../events/ImportingOuterSpaceEvents.sol";
 import "../base/UsingOuterSpaceDataLayout.sol";
 
 contract OuterSpaceInitializationFacet is

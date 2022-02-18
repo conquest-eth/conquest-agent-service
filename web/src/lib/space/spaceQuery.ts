@@ -14,12 +14,12 @@ import type {
   PlanetInteruptedExitEvent,
   planetTimePassedExitEvent,
 } from './subgraphTypes';
-import {deletionDelay, blockTime} from '$lib/config';
+import {deletionDelay} from '$lib/config';
 import {now} from '$lib/time';
 import {BigNumber} from '@ethersproject/bignumber';
 import {spaceInfo} from './spaceInfo';
 
-const blockRange = Math.floor(deletionDelay / blockTime);
+// const blockRange = Math.floor(deletionDelay / blockTime);
 const timeRange = deletionDelay;
 
 export type PlanetQueryState = {

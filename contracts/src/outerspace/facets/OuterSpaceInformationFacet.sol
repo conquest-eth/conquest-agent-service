@@ -4,6 +4,7 @@ pragma solidity 0.8.9;
 import "./OuterSpaceFacetBase.sol";
 
 contract OuterSpaceInformationFacet is OuterSpaceFacetBase {
+    // solhint-disable-next-line no-empty-blocks
     constructor(Config memory config) OuterSpaceFacetBase(config) {}
 
     function getGeneisHash() external view returns (bytes32) {

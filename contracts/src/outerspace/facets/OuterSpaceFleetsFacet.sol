@@ -2,8 +2,9 @@
 pragma solidity 0.8.9;
 
 import "./OuterSpaceFacetBase.sol";
+import "../interfaces/IOuterSpaceFleets.sol";
 
-contract OuterSpaceFleetsFacet is OuterSpaceFacetBase {
+contract OuterSpaceFleetsFacet is OuterSpaceFacetBase, IOuterSpaceFleets {
     // solhint-disable-next-line no-empty-blocks
     constructor(Config memory config) OuterSpaceFacetBase(config) {}
 

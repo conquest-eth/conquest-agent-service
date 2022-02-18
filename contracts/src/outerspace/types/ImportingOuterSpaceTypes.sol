@@ -3,7 +3,7 @@ pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract ImportingOuterSpaceTypes {
+interface ImportingOuterSpaceTypes {
     // front running protection : _frontruunningDelay / 2 slots
     struct InFlight {
         uint32 flying;

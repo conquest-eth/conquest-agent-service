@@ -1,4 +1,3 @@
-import {blockTime} from '$lib/config';
 import type {SpaceQueryWithPendingState, SyncedPendingActions} from '$lib/space/optimisticSpace';
 import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
 import {now, time} from '$lib/time';
@@ -8,15 +7,6 @@ import {spaceInfo} from './spaceInfo';
 import type {PlanetContractState, SpaceState} from './spaceQuery';
 
 type ListenerInfo = {planetInfo: PlanetInfo; func: (planetState: PlanetState) => void};
-
-function hours(numHours: number): number {
-  return 60 * 60 * numHours;
-}
-function days(n: number): number {
-  return hours(n * 24);
-}
-
-const ACTIVE_MASK = 2 ** 31;
 
 export class PlanetStates {
   private planetListeners: Record<string, number[] | undefined> = {};

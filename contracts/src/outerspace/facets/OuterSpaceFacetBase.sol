@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.9;
 
-import "../base/ImportingOuterSpaceTypes.sol";
+import "../types/ImportingOuterSpaceTypes.sol";
 import "../base/ImportingOuterSpaceConstants.sol";
-import "../base/ImportingOuterSpaceEvents.sol";
+import "../events/ImportingOuterSpaceEvents.sol";
 import "../base/UsingOuterSpaceDataLayout.sol";
 
 import "../../libraries/Extraction.sol";
@@ -176,6 +176,7 @@ contract OuterSpaceFacetBase is
                         increase = maxIncrease;
                     }
                     newNumSpaceships += increase;
+                    // solhint-disable-next-line no-empty-blocks
                 } else {
                     // not effect currently, when inactive, cap == 0, meaning zero spaceship here
                     // NOTE: we could do the following assuming we act on upkeepRepaid when inactive, we do not do that currently
@@ -643,7 +644,7 @@ contract OuterSpaceFacetBase is
         uint32 orbitDefenseDestroyed2;
     }
 
-    function _resolveFleet(uint256 fleetId, FleetResolution memory resolution) internal {
+    function _resolveFleet(uint256 fleetId, FleetResolution calldata resolution) internal {
         // -----------------------------------------------------------------------------------------------------------
         // Initialise State Update
         // -----------------------------------------------------------------------------------------------------------
