@@ -109,6 +109,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       'OuterSpaceInitializationFacet',
       'OuterSpaceAdminFacet',
       'OuterSpaceFleetsFacet',
+      'OuterSpacePlanetsFacet',
       'OuterSpaceInformationFacet',
       'OuterSpaceStakingFacet',
     ],

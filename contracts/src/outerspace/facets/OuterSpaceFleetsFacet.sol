@@ -9,15 +9,6 @@ contract OuterSpaceFleetsFacet is OuterSpaceFacetBase, IOuterSpaceFleets {
     constructor(Config memory config) OuterSpaceFacetBase(config) {}
 
     // ---------------------------------------------------------------------------------------------------------------
-    // ERC721 : // TODO
-    // ---------------------------------------------------------------------------------------------------------------
-    function setApprovalForAll(address operator, bool approved) external {
-        address sender = _msgSender();
-        _operators[sender][operator] = approved;
-        emit ApprovalForAll(sender, operator, approved);
-    }
-
-    // ---------------------------------------------------------------------------------------------------------------
     // FLEET RESOLUTION, ATTACK / REINFORCEMENT
     // ---------------------------------------------------------------------------------------------------------------
 

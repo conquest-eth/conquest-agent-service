@@ -6,8 +6,6 @@ import "../events/ImportingOuterSpaceEvents.sol";
 
 interface IOuterSpaceFleets is ImportingOuterSpaceTypes, ImportingOuterSpaceEvents {
 
-    function setApprovalForAll(address operator, bool approved) external;
-
     function resolveFleet(uint256 fleetId, FleetResolution calldata resolution) external;
 
     function send(
