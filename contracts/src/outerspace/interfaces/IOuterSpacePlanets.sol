@@ -8,9 +8,4 @@ interface IOuterSpacePlanets is ImportingOuterSpaceTypes, ImportingOuterSpaceEve
     function setApprovalForAll(address operator, bool approved) external;
 
     function getPlanet(uint256 location) external view returns (ExternalPlanet memory state, PlanetStats memory stats);
-
-    function getPlanetStates(uint256[] calldata locations)
-        external
-        view
-        returns (ExternalPlanet[] memory planetStates, Discovered memory discovered);
 }

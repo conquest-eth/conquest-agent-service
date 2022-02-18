@@ -32,27 +32,4 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
         });
         stats = _getPlanetStats(location);
     }
-
-    function getPlanetStates(uint256[] calldata locations)
-        external
-        view
-        returns (ExternalPlanet[] memory planetStates, Discovered memory discovered)
-    {
-        planetStates = new ExternalPlanet[](locations.length);
-        for (uint256 i = 0; i < locations.length; i++) {
-            Planet storage planet = _getPlanet(locations[i]);
-            (bool active, uint32 numSpaceships) = _activeNumSpaceships(planet.numSpaceships);
-            planetStates[i] = ExternalPlanet({
-                owner: planet.owner,
-                ownershipStartTime: planet.ownershipStartTime,
-                exitStartTime: planet.exitStartTime,
-                numSpaceships: numSpaceships,
-                overflow: planet.overflow,
-                lastUpdated: planet.lastUpdated,
-                active: active,
-                reward: _rewards[locations[i]]
-            });
-        }
-        discovered = _discovered;
-    }
 }
