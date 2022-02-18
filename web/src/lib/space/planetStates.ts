@@ -204,7 +204,7 @@ export class PlanetStates {
           if (newNumSpaceships > cap) {
             let decreaseRate = 1800;
             if (overflow > 0) {
-              decreaseRate = (overflow / cap) * 1800;
+              decreaseRate = Math.floor((overflow * 1800) / cap);
               if (decreaseRate < 1800) {
                 decreaseRate = 1800;
               }

@@ -146,7 +146,7 @@ contract OuterSpaceFacetBase is
             if (newNumSpaceships > cap) {
                 uint256 decreaseRate = 1800;
                 if (planetUpdate.overflow > 0) {
-                    decreaseRate = (planetUpdate.overflow / cap) * 1800;
+                    decreaseRate = (planetUpdate.overflow * 1800) / cap;
                     if (decreaseRate < 1800) {
                         decreaseRate = 1800;
                     }
