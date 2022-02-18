@@ -11,6 +11,8 @@
   import PlanetActionPanel from '$lib/components/planets/PlanetActionPanel.svelte';
   import selection from '$lib/map/selection';
   import {account} from '$lib/account/account';
+  import NegativeStat from '../utils/NegativeStat.svelte';
+  import {planetStates} from '$lib/space/planetStates';
 
   export let coords: {x: number; y: number};
   function close() {
@@ -120,7 +122,8 @@
           Capacity
           <Help class="inline w-4 h-4">
             The planet will stop producing planet when it carries that many spaceships. The spaceships number will
-            actually decrease to reach that capacity at a rate of one per second.
+            actually decrease to reach that capacity at a rate that grow with the number of spaceship it received above
+            the capacity.
           </Help>:
         </p>
         <p class={`p-0 mb-1${capacityReached ? ' text-red-600' : ' text-white'}`}>
@@ -155,6 +158,29 @@
         <p class={`p-0 mb-1${capacityReached ? ' text-red-600' : ' ' + textColor}`}>{$planetState.numSpaceships}</p>
       {/if}
     </div>
+
+    <!-- <div class={`m-1 w-26 md:w-36 flex justify-between text-white`}>
+      <p class="p-0 mb-1 text-white">
+        Upkeep
+        <Help class="inline w-4 h-4" />:
+      </p>
+      <p class={`p-0 mb-1${$planetState.travelingUpkeep > 0 ? ' text-red-600' : ' text-green-600'}`}>
+        {$planetState.travelingUpkeep}
+      </p>
+    </div> -->
+
+    <NegativeStat
+      name="Upkeep"
+      value={$planetState.travelingUpkeep}
+      max={planetInfo.stats.maxTravelingUpkeep}
+      min={-planetInfo.stats.maxTravelingUpkeep}
+    >
+      <Help class="inline w-4 h-4"
+        >When fleets are traveling, the planet need to keep maintaining it. When the upkeep is green you can send some
+        spaceships and continue to produce at full capacity. When it is red (after sending fleets), the planet produce
+        at half power until all ukeeep is paid for</Help
+      >
+    </NegativeStat>
 
     <div class="m-1 w-26 md:w-36 text-yellow-400 ">
       <div class="w-full box-border">

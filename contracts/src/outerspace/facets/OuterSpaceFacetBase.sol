@@ -128,7 +128,6 @@ contract OuterSpaceFacetBase is
         // NOTE: the repaypemnt of upkeep always happen at a fixed rate (per planet), it is fully predictable
         uint256 upkeepRepaid = 0;
         if (planetUpdate.travelingUpkeep > 0) {
-            // TODO add sufix: 10000th to _upkeepProductionDecreaseRatePer10000th
             upkeepRepaid = ((produce * _upkeepProductionDecreaseRatePer10000th) / 10000);
             if (upkeepRepaid > uint40(planetUpdate.travelingUpkeep)) {
                 upkeepRepaid = uint40(planetUpdate.travelingUpkeep);
@@ -145,10 +144,15 @@ contract OuterSpaceFacetBase is
                 : 0;
 
             if (newNumSpaceships > cap) {
-                // TODO overflow ?
+                uint256 decreaseRate = 1800;
+                if (planetUpdate.overflow > 0) {
+                    decreaseRate = (planetUpdate.overflow / cap) * 1800;
+                    if (decreaseRate < 1800) {
+                        decreaseRate = 1800;
+                    }
+                }
 
-                // TODO tweak value ? (currently decrease is set to 1800 per hours)
-                uint256 decrease = (timePassed * 1800) / 1 hours;
+                uint256 decrease = (timePassed * decreaseRate) / 1 hours;
                 if (decrease > newNumSpaceships - cap) {
                     decrease = newNumSpaceships - cap;
                 }
@@ -179,12 +183,14 @@ contract OuterSpaceFacetBase is
                 }
             }
 
-            // travelingUpkeep can go negative allow you to charge up your planet for later use, up to 7 days
-            int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) - int256(extraUpkeepPaid);
-            if (newTravelingUpkeep < -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours)) {
-                newTravelingUpkeep = -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours);
+            if (planetUpdate.active) {
+                // travelingUpkeep can go negative allow you to charge up your planet for later use, up to 7 days
+                int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) - int256(extraUpkeepPaid);
+                if (newTravelingUpkeep < -int256((3 days * uint256(production)) / 1 hours)) {
+                    newTravelingUpkeep = -int256((3 days * uint256(production)) / 1 hours);
+                }
+                planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
             }
-            planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
         } else {
             if (planetUpdate.active) {
                 newNumSpaceships += (timePassed * uint256(production) * _productionSpeedUp) / 1 hours - upkeepRepaid;
@@ -204,6 +210,14 @@ contract OuterSpaceFacetBase is
             newNumSpaceships = ACTIVE_MASK - 1;
         }
         planetUpdate.numSpaceships = uint32(newNumSpaceships);
+
+        // TODO remove
+        // console.log(
+        //     "extraUpkeepPaid %i, numSpaceships: %i, upkeepRepaid: %i,",
+        //     extraUpkeepPaid,
+        //     planetUpdate.numSpaceships,
+        //     upkeepRepaid
+        // );
     }
 
     function _setPlanet(Planet storage planet, PlanetUpdateState memory planetUpdate) internal {
@@ -288,7 +302,14 @@ contract OuterSpaceFacetBase is
         // -----------------------------------------------------------------------------------------------------------
         // Emit Event
         // -----------------------------------------------------------------------------------------------------------
-        emit PlanetStake(player, location, planetUpdate.numSpaceships, stake);
+        emit PlanetStake(
+            player,
+            location,
+            planetUpdate.numSpaceships,
+            planetUpdate.travelingUpkeep,
+            planetUpdate.overflow,
+            stake
+        );
     }
 
     function _computePlanetUpdateForStaking(address player, PlanetUpdateState memory planetUpdate) internal view {
@@ -311,6 +332,9 @@ contract OuterSpaceFacetBase is
             // }
         }
 
+        uint16 production = _production(planetUpdate.data);
+        uint32 cap = uint32(_acquireNumSpaceships + (production * _productionCapAsDuration) / 1 hours);
+
         // TODO ensure a player staking on a planet it previously exited work here
         planetUpdate.newOwner = player;
         if (defense != 0) {
@@ -325,8 +349,6 @@ contract OuterSpaceFacetBase is
         } else {
             planetUpdate.numSpaceships += _acquireNumSpaceships;
             if (_productionCapAsDuration > 0) {
-                uint16 production = _production(planetUpdate.data);
-                uint32 cap = uint32(_acquireNumSpaceships + (production * _productionCapAsDuration) / 1 hours);
                 if (planetUpdate.numSpaceships > cap) {
                     planetUpdate.overflow = planetUpdate.numSpaceships - cap;
                 } else {
@@ -334,6 +356,9 @@ contract OuterSpaceFacetBase is
                 }
             }
         }
+
+        // NOTE when staking on a planet, we set an allowance for traveling upkeep
+        planetUpdate.travelingUpkeep = -int32(cap);
         planetUpdate.active = true;
     }
 
@@ -434,23 +459,10 @@ contract OuterSpaceFacetBase is
 
     function _exitFor(address owner, uint256 location) internal {
         Planet storage planet = _getPlanet(location);
-
-        PlanetUpdateState memory planetUpdate = _createPlanetUpdateState(planet, location);
-
-        require(owner == planetUpdate.owner, "NOT_OWNER");
-        require(planetUpdate.exitStartTime == 0, "EXITING_ALREADY");
-
-        _computePlanetUpdateForTimeElapsed(planetUpdate);
-        planetUpdate.newExitStartTime = uint32(block.timestamp);
-
-        _setPlanet(planet, planetUpdate);
-
-        // TODO remove (See _setAccountFromPlanetUpdate)
-        // exit does not count, this is mostly to simplify calculation,
-        // as there is no trigger for when exit actually complete
-        // _accounts[owner].totalProduction -= _production(_planetData(location));
-
-        emit PlanetExit(owner, location); // TODO rename PlanetExitStarted ?
+        require(owner == planet.owner, "NOT_OWNER");
+        require(planet.exitStartTime == 0, "EXITING_ALREADY");
+        planet.exitStartTime = uint40(block.timestamp);
+        emit PlanetExit(owner, location);
     }
 
     function _fetchAndWithdrawFor(address owner, uint256[] calldata locations) internal {
@@ -498,16 +510,6 @@ contract OuterSpaceFacetBase is
     // ---------------------------------------------------------------------------------------------------------------
 
     function _addReward(uint256 location, address sponsor) internal {
-        // NOTE: not really needed
-        //  the planetUpdate could be skipped as we do not need to update number of spaceships
-        // BUG: actually, this would remove the fighting against native if we do
-
-        Planet storage planet = _getPlanet(location);
-        PlanetUpdateState memory planetUpdate = _createPlanetUpdateState(planet, location);
-        _computePlanetUpdateForTimeElapsed(planetUpdate);
-        _setPlanet(planet, planetUpdate);
-        // _setAccountFromPlanetUpdate(planetUpdate);
-
         uint256 rewardId = _rewards[location];
         if (rewardId == 0) {
             rewardId = ++_prevRewardIds[sponsor];
@@ -579,7 +581,9 @@ contract OuterSpaceFacetBase is
             operator,
             fleetId,
             launch.quantity,
-            planetUpdate.numSpaceships
+            planetUpdate.numSpaceships,
+            planetUpdate.travelingUpkeep,
+            planetUpdate.overflow
         );
     }
 
@@ -589,8 +593,8 @@ contract OuterSpaceFacetBase is
             uint16 production = _production(planetUpdate.data);
 
             int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) + int256(uint256(quantity));
-            if (newTravelingUpkeep > int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours)) {
-                newTravelingUpkeep = int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours);
+            if (newTravelingUpkeep > int256((3 days * uint256(production)) / 1 hours)) {
+                newTravelingUpkeep = int256((3 days * uint256(production)) / 1 hours);
             }
             planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
 
@@ -687,7 +691,7 @@ contract OuterSpaceFacetBase is
 
         _recordOrbitLossAccountingForFleetOrigin(rState, resolution);
 
-        _setTravelingUpkeepFromOrigin(rState, resolution.from);
+        _setTravelingUpkeepFromOrigin(fleetId, rState, resolution.from);
 
         _setPlanet(toPlanet, toPlanetUpdate);
         // _setAccountFromPlanetUpdate(toPlanetUpdate); // TODO remove, else think about the fromPlanet ?
@@ -710,11 +714,17 @@ contract OuterSpaceFacetBase is
             rState.inFlightFleetLoss,
             rState.inFlightPlanetLoss,
             rState.victory,
-            toPlanetUpdate.numSpaceships
+            toPlanetUpdate.numSpaceships,
+            toPlanetUpdate.travelingUpkeep,
+            toPlanetUpdate.overflow
         );
     }
 
-    function _setTravelingUpkeepFromOrigin(ResolutionState memory rState, uint256 location) internal {
+    function _setTravelingUpkeepFromOrigin(
+        uint256 fleetID,
+        ResolutionState memory rState,
+        uint256 location
+    ) internal {
         if (rState.attackerLoss > 0) {
             // // we have to update the origin
             Planet storage fromPlanet = _planets[location];
@@ -729,6 +739,14 @@ contract OuterSpaceFacetBase is
             fromPlanetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
 
             _setPlanet(fromPlanet, fromPlanetUpdate);
+
+            emit TravelingUpkeepReductionFromDestruction(
+                location,
+                fleetID,
+                fromPlanetUpdate.numSpaceships,
+                fromPlanetUpdate.travelingUpkeep,
+                fromPlanetUpdate.overflow
+            );
         }
     }
 

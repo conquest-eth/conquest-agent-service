@@ -2,7 +2,14 @@
 pragma solidity 0.8.9;
 
 contract ImportingOuterSpaceEvents {
-    event PlanetStake(address indexed acquirer, uint256 indexed location, uint32 numSpaceships, uint256 stake);
+    event PlanetStake(
+        address indexed acquirer,
+        uint256 indexed location,
+        uint32 numSpaceships,
+        int40 travelingUpkeep,
+        uint32 overflow,
+        uint256 stake
+    );
     event FleetSent(
         address indexed fleetSender,
         address indexed fleetOwner,
@@ -10,10 +17,11 @@ contract ImportingOuterSpaceEvents {
         address operator,
         uint256 fleet,
         uint32 quantity,
-        uint32 newNumSpaceships
+        uint32 newNumSpaceships,
+        int40 newTravelingUpkeep,
+        uint32 newOverflow
     );
 
-    // TODO add fromPlanet to the event ?
     event FleetArrived(
         uint256 indexed fleet,
         address indexed fleetOwner,
@@ -25,7 +33,17 @@ contract ImportingOuterSpaceEvents {
         uint32 inFlightFleetLoss,
         uint32 inFlightPlanetLoss,
         bool won,
-        uint32 newNumspaceships
+        uint32 newNumspaceships,
+        int40 newTravelingUpkeep,
+        uint32 newOverflow
+    );
+
+    event TravelingUpkeepReductionFromDestruction(
+        uint256 indexed origin,
+        uint256 indexed fleet,
+        uint32 newNumspaceships,
+        int40 newTravelingUpkeep,
+        uint32 newOverflow
     );
 
     event PlanetReset(uint256 indexed location);

@@ -26,6 +26,8 @@ export type PlanetQueryState = {
   id: string;
   owner: {id: string};
   numSpaceships: string;
+  travelingUpkeep: string;
+  overflow: string;
   lastUpdated: string;
   exitTime: string;
   active: boolean;
@@ -36,6 +38,8 @@ export type PlanetContractState = {
   id: string;
   owner: string;
   numSpaceships: number;
+  travelingUpkeep: number;
+  overflow: number;
   lastUpdated: number;
   exitTime: number;
   active: boolean;
@@ -195,6 +199,8 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       id
     }
     numSpaceships
+    travelingUpkeep
+    overflow
     lastUpdated
     exitTime
     active
@@ -218,6 +224,8 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       id
     }
     numSpaceships
+    travelingUpkeep
+    overflow
     lastUpdated
     exitTime
     active
@@ -351,6 +359,8 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
           id: v.id,
           owner: v.owner ? v.owner.id : undefined,
           numSpaceships: parseInt(v.numSpaceships),
+          travelingUpkeep: parseInt(v.travelingUpkeep),
+          overflow: parseInt(v.overflow),
           lastUpdated: parseInt(v.lastUpdated),
           exitTime: parseInt(v.exitTime),
           active: v.active,

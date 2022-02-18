@@ -35,7 +35,7 @@ export type PlayersState = {
   chain: {blockHash: string; blockNumber: string};
 };
 
-export class SpaceQueryStore implements QueryStore<PlayersState> {
+export class PlayersQueryStore implements QueryStore<PlayersState> {
   private queryStore: QueryStoreWithRuntimeVariables<PlayersQueryResult>;
   private store: Writable<QueryState<PlayersState>>;
   private $players: PlayersMap = {};
@@ -200,4 +200,4 @@ export class SpaceQueryStore implements QueryStore<PlayersState> {
   }
 }
 
-export const playersQuery = new SpaceQueryStore(SUBGRAPH_ENDPOINT);
+export const playersQuery = new PlayersQueryStore(SUBGRAPH_ENDPOINT);
