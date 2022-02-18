@@ -235,6 +235,8 @@ contract OuterSpaceFacetBase is
             // TODO handle staking pool ?
 
             planet.exitStartTime = 0; // exit interupted // TODO event ?
+
+            emit Transfer(planetUpdate.owner, planetUpdate.newOwner, planetUpdate.location);
         }
         if (planetUpdate.newExitStartTime > 0 && planetUpdate.exitStartTime == 0) {
             planet.exitStartTime = planetUpdate.newExitStartTime;
@@ -473,6 +475,7 @@ contract OuterSpaceFacetBase is
             Planet storage planet = _getPlanet(locations[i]);
             if (_hasJustExited(planet.exitStartTime)) {
                 require(owner == planet.owner, "NOT_OWNER");
+                emit Transfer(owner, address(0), locations[i]);
                 addedStake += _completeExit(planet.owner, locations[i], _planetData(locations[i]));
                 planet.owner = address(0);
                 planet.ownershipStartTime = 0;

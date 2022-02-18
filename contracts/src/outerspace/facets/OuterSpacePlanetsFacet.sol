@@ -14,8 +14,12 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
         emit ApprovalForAll(sender, operator, approved);
     }
 
-    function ownerOf(uint256 location) external view returns (address) {
-        return _planets[location].owner;
+    function ownerOf(uint256 location) external view returns (address currentOwner) {
+        currentOwner = _planets[location].owner;
+        // TODO should we ?
+        // if (_hasJustExited(_planets[location].exitStartTime)) {
+        //     currentOwner = address(0);
+        // }
     }
 
     function isApprovedForAll(address owner, address operator) external view returns (bool) {
@@ -36,10 +40,13 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
 
     function _transfer(address from, address to, uint256 location) internal {
         require(from != address(0), "NOT_ZERO_ADDRESS");
+
+        // TODO extract, see ownerOf (same code)
         address currentOwner = _planets[location].owner;
         if (_hasJustExited(_planets[location].exitStartTime)) {
             currentOwner = address(0);
         }
+
         require(currentOwner == from, "FROM_NOT_OWNER");
         if (msg.sender != currentOwner) {
             require(_operators[currentOwner][msg.sender], "NOT_OPERATOR");
@@ -49,7 +56,6 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
         _planets[location].ownershipStartTime = uint40(block.timestamp);
 
         emit Transfer(from, to, location);
-        // TODO emit event when attack success and also when staking, exit complete ?
     }
 
     function ownerAndOwnershipStartTimeOf(uint256 location) external view returns (address owner, uint40 ownershipStartTime) {
