@@ -186,6 +186,7 @@ contract OuterSpaceFacetBase is
             if (planetUpdate.active) {
                 // travelingUpkeep can go negative allow you to charge up your planet for later use, up to 7 days
                 int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) - int256(extraUpkeepPaid);
+                // TODO add _aquireNumSpaceships ? (+ see other place where this is computed)
                 if (newTravelingUpkeep < -int256((3 days * uint256(production)) / 1 hours)) {
                     newTravelingUpkeep = -int256((3 days * uint256(production)) / 1 hours);
                 }
