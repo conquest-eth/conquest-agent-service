@@ -8,13 +8,57 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
     // solhint-disable-next-line no-empty-blocks
     constructor(Config memory config) OuterSpaceFacetBase(config) {}
 
-    // ---------------------------------------------------------------------------------------------------------------
-    // ERC721 : // TODO
-    // ---------------------------------------------------------------------------------------------------------------
     function setApprovalForAll(address operator, bool approved) external {
         address sender = _msgSender();
         _operators[sender][operator] = approved;
         emit ApprovalForAll(sender, operator, approved);
+    }
+
+    function ownerOf(uint256 location) external view returns (address) {
+        return _planets[location].owner;
+    }
+
+    function isApprovedForAll(address owner, address operator) external view returns (bool) {
+        return _operators[owner][operator];
+    }
+
+    function safeTransferFrom(address from, address to, uint256 location) external {
+        // TODO safe callback
+        _transfer(from, to, location);
+    }
+    function safeTransferFrom(address from, address to, uint256 location, bytes calldata data) external {
+        // TODO safe callback + data
+        _transfer(from, to, location);
+    }
+    function transferFrom(address from, address to, uint256 location) external {
+        _transfer(from, to, location);
+    }
+
+    function _transfer(address from, address to, uint256 location) internal {
+        require(from != address(0), "NOT_ZERO_ADDRESS");
+        address currentOwner = _planets[location].owner;
+        if (_hasJustExited(_planets[location].exitStartTime)) {
+            currentOwner = address(0);
+        }
+        require(currentOwner == from, "FROM_NOT_OWNER");
+        if (msg.sender != currentOwner) {
+            require(_operators[currentOwner][msg.sender], "NOT_OPERATOR");
+        }
+
+        _planets[location].owner = to;
+        _planets[location].ownershipStartTime = uint40(block.timestamp);
+
+        emit Transfer(from, to, location);
+        // TODO emit event when attack success and also when staking, exit complete ?
+    }
+
+    function ownerAndOwnershipStartTimeOf(uint256 location) external view returns (address owner, uint40 ownershipStartTime) {
+        owner = _planets[location].owner;
+        ownershipStartTime = _planets[location].ownershipStartTime;
+    }
+
+    function getPlanetState(uint256 location) external view returns (Planet memory state) {
+        return _planets[location];
     }
 
     function getPlanet(uint256 location) external view returns (ExternalPlanet memory state, PlanetStats memory stats) {

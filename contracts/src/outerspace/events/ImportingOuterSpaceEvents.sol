@@ -57,7 +57,10 @@ interface ImportingOuterSpaceEvents {
 
     event StakeToWithdraw(address indexed owner, uint256 newStake);
 
+    event Initialized(uint32 minX, uint32 maxX, uint32 minY, uint32 maxY, bytes32 genesis);
+
     event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 
-    event Initialized(uint32 minX, uint32 maxX, uint32 minY, uint32 maxY, bytes32 genesis);
+    // TODO use it
+    event Transfer(address indexed from, address indexed to, uint256 indexed location);
 }
