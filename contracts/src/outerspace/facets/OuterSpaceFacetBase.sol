@@ -188,8 +188,8 @@ contract OuterSpaceFacetBase is
                 // travelingUpkeep can go negative allow you to charge up your planet for later use, up to 7 days
                 int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) - int256(extraUpkeepPaid);
                 // TODO add _aquireNumSpaceships ? (+ see other place where this is computed)
-                if (newTravelingUpkeep < -int256((3 days * uint256(production)) / 1 hours)) {
-                    newTravelingUpkeep = -int256((3 days * uint256(production)) / 1 hours);
+                if (newTravelingUpkeep < int256(cap)) {
+                    newTravelingUpkeep = -int256(cap);
                 }
                 planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
             }
@@ -595,13 +595,18 @@ contract OuterSpaceFacetBase is
     function _computePlanetUpdateForFleetLaunch(PlanetUpdateState memory planetUpdate, uint32 quantity) internal view {
         planetUpdate.numSpaceships -= quantity;
         if (_productionCapAsDuration > 0) {
-            uint16 production = _production(planetUpdate.data);
+            if (planetUpdate.active) {
+                // NOTE we do not update travelingUpkeep on Inactive planets
+                //  these get reset on staking
+                uint16 production = _production(planetUpdate.data);
+                uint256 cap = _acquireNumSpaceships + (uint256(production) * _productionCapAsDuration) / 1 hours;
 
-            int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) + int256(uint256(quantity));
-            if (newTravelingUpkeep > int256((3 days * uint256(production)) / 1 hours)) {
-                newTravelingUpkeep = int256((3 days * uint256(production)) / 1 hours);
+                int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) + int256(uint256(quantity));
+                if (newTravelingUpkeep > int256(cap)) {
+                    newTravelingUpkeep = int256(cap);
+                }
+                planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
             }
-            planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
 
             if (planetUpdate.overflow > quantity) {
                 planetUpdate.overflow -= quantity;

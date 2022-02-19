@@ -21,7 +21,7 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
             _operators[sender][address(operator)] = true;
             emit ApprovalForAll(sender, address(operator), true);
         }
-        operator.onApprovedBy(sender, data);
+        operator.onApprovalForAllBy(sender, data);
     }
 
     function ownerOf(uint256 location) external view returns (address currentOwner) {
