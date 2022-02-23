@@ -369,7 +369,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
           potentialAlliances,
           latestBlock.timestamp,
           duration,
-          fleetOwner,
+          fleetSender,
           operator
         );
         account.recordQueueID(tx.hash, queueID);

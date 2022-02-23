@@ -149,7 +149,7 @@ export class FleetsStore implements Readable<FleetListState> {
           } else if (
             state === 'READY_TO_RESOLVE' &&
             sendAction.queueID &&
-            spaceInfo.resolveWindow - timeToResolve < 10 * 60
+            spaceInfo.resolveWindow - timeToResolve < spaceInfo.resolveWindow / 72
           ) {
             // TODO config : 10 * 60 = 10 min late before showing the button to resolve manually
             state = 'RESOLVE_BROADCASTED'; //TODO add another state for agent-service handling
