@@ -100,6 +100,8 @@
 
   $: lineColor = prediction?.outcome.giving ? '#34D399' : 'red';
 
+  $: lineDashed = fleet.owner.toLowerCase() !== $wallet.address?.toLowerCase();
+
   $: renderScale = $camera ? $camera.renderScale : 1;
   let selectionBorder = 4;
   let adjustedRenderScale;
@@ -320,6 +322,7 @@ animation-timing-function: linear;
       style="z-index: 1;"
       stroke-width={`${4 / scale}px`}
       stroke={lineColor}
+      stroke-dasharray={lineDashed ? '1' : undefined}
       {x1}
       {y1}
       {x2}

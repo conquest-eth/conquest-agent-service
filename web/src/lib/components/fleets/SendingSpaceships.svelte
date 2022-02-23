@@ -15,9 +15,13 @@
   import {account} from '$lib/account/account';
   import AttackSendTabButton from './AttackSendTabButton.svelte';
   import {playersQuery} from '$lib/space/playersQuery';
+  import Blockie from '../account/Blockie.svelte';
+  import {wallet} from '$lib/blockchain/wallet';
 
   let useAgentService = false;
   let gift = false;
+
+  let fleetOwnerSpecified;
 
   // TODO investigate why there is need to check sendFlow.data.from ? might need to do the same to sendFlow.data.to below
   $: fromPlanetInfo = $sendFlow.data?.from && spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
@@ -40,7 +44,9 @@
   let fleetAmount = 1;
   let maxSpaceships: number;
   $: {
-    maxSpaceships = fromPlanetState ? Math.max(0, $fromPlanetState.numSpaceships - ($sendFlow.data?.config?.numSpaceshipsToKeep || 0)) : 0;
+    maxSpaceships = fromPlanetState
+      ? Math.max(0, $fromPlanetState.numSpaceships - ($sendFlow.data?.config?.numSpaceshipsToKeep || 0))
+      : 0;
     if (maxSpaceships > 0 && !fleetAmountSet) {
       // TODO loading
       fleetAmount = Math.floor(maxSpaceships / 2);
@@ -104,6 +110,7 @@
   $: text_color = gift ? 'text-cyan-300' : 'text-red-500';
 
   onMount(() => {
+    fleetOwnerSpecified = undefined;
     useAgentService = account.isAgentServiceActivatedByDefault();
     fleetAmount = 1;
     fleetAmountSet = false;
@@ -160,6 +167,27 @@
       <input class="bg-gray-700 border-cyan-800 border-2" type="text" id="textInput" bind:value={fleetAmount} />
     </div>
     <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
+
+    {#if !gift}
+      {#if !$sendFlow.data?.config?.fleetOwner}
+        <div class="text-center">
+          Fleet Owner
+          <input
+            class="text-cyan-300 bg-black"
+            type="text"
+            id="fleetOwnerSpecified"
+            name="fleetOwnerSpecified"
+            bind:value={fleetOwnerSpecified}
+          />
+        </div>
+      {:else if $sendFlow.data?.config?.fleetOwner.toLowerCase() === $wallet.address.toLowerCase()}
+        <!-- for you -->
+      {:else}
+        <div class="text-center mb-2">
+          sending as : <Blockie class="inline-block w-8 h-8" address={$sendFlow.data?.config?.fleetOwner} />
+        </div>
+      {/if}
+    {/if}
 
     {#if fromPlanetInfo && toPlanetInfo}
       <div class="flex flex-col">
@@ -270,7 +298,7 @@
           class="mt-5"
           label="Fleet Amount"
           disabled={confirmDisabled}
-          on:click={() => sendFlow.confirm(fleetAmount, gift, useAgentService)}
+          on:click={() => sendFlow.confirm(fleetAmount, gift, useAgentService, fleetOwnerSpecified)}
         >
           <p>Confirm</p>
           {#if confirmDisabled}(need higher attack){/if}

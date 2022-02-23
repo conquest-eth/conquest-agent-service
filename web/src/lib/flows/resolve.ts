@@ -60,6 +60,13 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
       Math.pow(fleet.to.location.globalY - fleet.from.location.globalY, 2);
     const distance = Math.floor(Math.sqrt(distanceSquared));
 
+    console.log({
+      fleetData,
+      secretHash,
+      distance,
+      fleet,
+    });
+
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 
     // TODO remove

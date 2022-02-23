@@ -24,7 +24,7 @@ type SendConfig = {
   pricePerUnit?: string;
   args?: any[];
   fleetSender?: string;
-  msgValue: string;
+  msgValue?: string;
   // TODO fix numSPaceships option ?
   //  or we could have a callback function, msg type to send to iframe to get the price for every change of amount
 };
@@ -164,8 +164,15 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     this._chooseFleetAmount();
   }
 
-  confirm(fleetAmount: number, gift: boolean, useAgentService: boolean) {
-    this.setData({fleetAmount, gift, useAgentService});
+  confirm(fleetAmount: number, gift: boolean, useAgentService: boolean, fleetOwner?: string) {
+    this.setData({
+      fleetAmount,
+      gift,
+      useAgentService,
+      config: {
+        fleetOwner,
+      },
+    });
     if (!account.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION)) {
       this.setPartial({step: 'TUTORIAL_PRE_TRANSACTION'});
     } else {
@@ -207,10 +214,11 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     // TODO limit possible pricing
     //  allow to set a specific amount of spaceship and a specific price, set pricePerUnit to be undefined and price to be the price to pay
     const pricePerUnit = flow.data.config?.pricePerUnit ? BigNumber.from(flow.data.config?.pricePerUnit) : undefined;
-    const fleetOwner = wallet.address.toLowerCase();
-    const fleetSender = flow.data.config?.fleetSender || fleetOwner;
+    const walletAddress = wallet.address.toLowerCase();
+    const fleetOwner = flow.data.config?.fleetOwner || walletAddress;
+    const fleetSender = flow.data.config?.fleetSender || walletAddress;
     const msgValueString = flow.data.config?.msgValue;
-    const operator = flow.data.config?.contractAddress || fleetOwner;
+    const operator = flow.data.config?.contractAddress || walletAddress;
 
     const latestBlock = await wallet.provider.getBlock('latest');
     if (!isCorrected) {
@@ -227,7 +235,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     let destinationOwner: Player | undefined;
     if (destinationPlanetState.owner) {
       await playersQuery.triggerUpdate();
-      const me = playersQuery.getPlayer(wallet.address.toLowerCase());
+      const me = playersQuery.getPlayer(fleetOwner);
       destinationOwner = playersQuery.getPlayer(destinationPlanetState.owner);
       console.log({me, destinationOwner});
       if (me && me.alliances.length > 0 && destinationOwner && destinationOwner.alliances.length > 0) {
@@ -255,11 +263,12 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       // or switch to gifting based on a signature
     }
 
-    const nonce = await wallet.provider.getTransactionCount(fleetOwner);
+    const nonce = await wallet.provider.getTransactionCount(walletAddress);
 
     const arrivalTimeWanted = 0; // TODO
     const distance = spaceInfo.distance(fromPlanetInfo, toPlanetInfo);
     const duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
+
     const {toHash, fleetId, secretHash} = await account.hashFleet(
       from,
       to,
@@ -271,6 +280,21 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       fleetSender,
       operator
     );
+
+    console.log({
+      from,
+      to,
+      gift,
+      specific,
+      arrivalTimeWanted,
+      nonce,
+      fleetOwner,
+      fleetSender,
+      operator,
+      toHash,
+      fleetId,
+      secretHash,
+    });
 
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 
@@ -314,10 +338,23 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
           value: msgValue,
         });
       } else {
-        tx = await wallet.contracts?.OuterSpace.send(xyToLocation(from.x, from.y), fleetAmount, toHash, {
-          nonce,
-          gasPrice,
-        });
+        tx = await wallet.contracts?.OuterSpace.sendFor(
+          {
+            fleetSender,
+            fleetOwner,
+            from: xyToLocation(from.x, from.y),
+            quantity: fleetAmount,
+            toHash,
+          },
+          {
+            nonce,
+            gasPrice,
+          }
+        );
+        // tx = await wallet.contracts?.OuterSpace.send(xyToLocation(from.x, from.y), fleetAmount, toHash, {
+        //   nonce,
+        //   gasPrice,
+        // });
       }
     } catch (e) {
       console.error(e);

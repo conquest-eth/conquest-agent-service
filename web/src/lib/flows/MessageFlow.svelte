@@ -25,6 +25,7 @@
         <a href="https://discord.gg/Qb4gr2ekfr" target="_blank" rel="noopener" class="underline">discord</a>
       </p>
     {:else if $messageFlow.profile.description}
+      <p class="text-center">{$messageFlow.owner}</p>
       <p class="m-4 text-center">Here is how to contact the player:</p>
       <p class="text-center">{$messageFlow.profile.description}</p>
     {/if}
