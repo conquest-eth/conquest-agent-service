@@ -15,6 +15,7 @@
   import {spaceInfo} from '$lib/space/spaceInfo';
   import selection from '$lib/map/selection';
   import {url} from '$lib/utils/url';
+  import IFramePluginList from '$lib/plugins/IFramePluginList.svelte';
 
   onMount(() => {
     let x = parseInt($page.url.searchParams.get('x'));
@@ -99,3 +100,5 @@
     </div>
   </div>
 {/if}
+
+<IFramePluginList />

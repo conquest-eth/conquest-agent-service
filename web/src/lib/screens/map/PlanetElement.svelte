@@ -249,6 +249,29 @@ animation-timing-function: linear;
     </div>
   {/if}
 
+  <!-- TODO pluginify -->
+  {#if !playerIsOwner && $planetState && $planetState.metadata.basic_sale}
+    <div
+      style={`z-index: 5; position: absolute; transform: translate(${x}px,${y}px) scale(${blockieScale * 2}, ${
+        blockieScale * 2
+      }); width: ${frame.w}px;
+  height: ${frame.h}px;`}
+    >
+      <svg viewBox="0 0 36 36">
+        <path
+          style="fill: none; stroke-width: 2.8; stroke-linecap: round; stroke: #00ff33;"
+          stroke-dasharray={`${Math.max(
+            ((spaceInfo.exitDuration - $planetState.exitTimeLeft) / spaceInfo.exitDuration) * 100,
+            3
+          )} 100`}
+          d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+        />
+      </svg>
+    </div>
+  {/if}
+
   {#if owner}
     {#if blockieScale <= scale}
       <!-- <div

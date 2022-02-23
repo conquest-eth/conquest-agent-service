@@ -12,6 +12,22 @@ import {playersQuery} from '$lib/space/playersQuery';
 import {planets} from '$lib/space/planets';
 import {get} from 'svelte/store';
 import {formatError} from '$lib/utils';
+import {BigNumber} from '@ethersproject/bignumber';
+import {Contract} from '@ethersproject/contracts';
+
+type SendConfig = {
+  fleetOwner?: string;
+  numSpaceshipsToKeep?: number;
+  abi?: any;
+  contractAddress?: string;
+  numSpaceships?: number;
+  pricePerUnit?: string;
+  args?: any[];
+  fleetSender?: string;
+  msgValue: string;
+  // TODO fix numSPaceships option ?
+  //  or we could have a callback function, msg type to send to iframe to get the price for every change of amount
+};
 
 type Data = {
   txHash?: string;
@@ -20,6 +36,7 @@ type Data = {
   from: {x: number; y: number};
   fleetAmount: number;
   useAgentService: boolean;
+  config?: SendConfig;
 };
 
 export type SendFlow = {
@@ -62,12 +79,16 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     return this.$store.data?.gift || false;
   }
 
-  async sendFrom(from: {x: number; y: number}): Promise<void> {
+  async sendFrom(from: {x: number; y: number}, config?: SendConfig): Promise<void> {
     if (this.$store.step == 'PICK_ORIGIN') {
-      this.pickOrigin(from);
+      this.pickOrigin(from, config);
     } else {
       await privateWallet.login();
-      this.setData({from}, {step: 'PICK_DESTINATION'});
+      if (config) {
+        this.setData({from, config}, {step: 'PICK_DESTINATION'});
+      } else {
+        this.setData({from}, {step: 'PICK_DESTINATION'});
+      }
     }
   }
 
@@ -92,11 +113,16 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     this._chooseFleetAmount();
   }
 
-  async pickOrigin(from: {x: number; y: number}): Promise<void> {
+  async pickOrigin(from: {x: number; y: number}, config?: SendConfig): Promise<void> {
     if (this.$store.step !== 'PICK_ORIGIN') {
       throw new Error(`Need to be in step PICK_ORIGIN`);
     }
-    this.setData({from});
+    if (config) {
+      this.setData({from, config});
+    } else {
+      this.setData({from});
+    }
+
     this._chooseFleetAmount();
   }
 
@@ -178,7 +204,13 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       throw new Error(`no provider`);
     }
 
-    const playerAddress = wallet.address.toLowerCase();
+    // TODO limit possible pricing
+    //  allow to set a specific amount of spaceship and a specific price, set pricePerUnit to be undefined and price to be the price to pay
+    const pricePerUnit = flow.data.config?.pricePerUnit ? BigNumber.from(flow.data.config?.pricePerUnit) : undefined;
+    const fleetOwner = wallet.address.toLowerCase();
+    const fleetSender = flow.data.config?.fleetSender || fleetOwner;
+    const msgValueString = flow.data.config?.msgValue;
+    const operator = flow.data.config?.contractAddress || fleetOwner;
 
     const latestBlock = await wallet.provider.getBlock('latest');
     if (!isCorrected) {
@@ -223,15 +255,45 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       // or switch to gifting based on a signature
     }
 
-    const nonce = await wallet.provider.getTransactionCount(playerAddress);
+    const nonce = await wallet.provider.getTransactionCount(fleetOwner);
 
     const distance = spaceInfo.distance(fromPlanetInfo, toPlanetInfo);
     const duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
-    const {toHash, fleetId, secretHash} = await account.hashFleet(from, to, gift, specific, nonce, playerAddress);
+    const {toHash, fleetId, secretHash} = await account.hashFleet(
+      from,
+      to,
+      gift,
+      specific,
+      nonce,
+      fleetOwner,
+      fleetSender,
+      operator
+    );
 
     const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
 
-    console.log({potentialAlliances});
+    // console.log({potentialAlliances});
+
+    const abi = flow.data.config.abi;
+    const args = flow.data.config?.args;
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === '{numSpaceships}') {
+        args[i] = flow.data.fleetAmount;
+      } else if (args[i] === '{toHash}') {
+        args[i] = toHash;
+      } else if (args[i] === '{numSpaceships*pricePerUnit}') {
+        // TODO dynamic value (not only '{numSpaceships*pricePerUnit}')
+        args[i] = pricePerUnit.mul(flow.data.fleetAmount);
+      }
+    }
+
+    // TODO dynamic value (not only '{numSpaceships*pricePerUnit}')
+    let msgValue = BigNumber.from(0);
+    if (msgValueString === '{numSpaceships*pricePerUnit}') {
+      msgValue = pricePerUnit.mul(flow.data.fleetAmount);
+    } else if (msgValueString) {
+      msgValue = BigNumber.from(msgValueString);
+    }
 
     this.setPartial({step: 'WAITING_TX'});
 
@@ -239,10 +301,20 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let tx: any;
     try {
-      tx = await wallet.contracts?.OuterSpace.send(xyToLocation(from.x, from.y), fleetAmount, toHash, {
-        nonce,
-        gasPrice,
-      });
+      if (abi) {
+        // create a contract interface for the purchase call
+        const contract = new Contract(operator, [abi], wallet.provider.getSigner());
+        tx = await contract[abi.name](...args, {
+          nonce,
+          gasPrice,
+          value: msgValue,
+        });
+      } else {
+        tx = await wallet.contracts?.OuterSpace.send(xyToLocation(from.x, from.y), fleetAmount, toHash, {
+          nonce,
+          gasPrice,
+        });
+      }
     } catch (e) {
       console.error(e);
       if (e.message && e.message.indexOf('User denied') >= 0) {
@@ -273,7 +345,9 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         gift,
         specific,
         potentialAlliances,
-        owner: playerAddress,
+        owner: fleetOwner,
+        fleetSender,
+        operator,
       },
       tx.hash,
       latestBlock.timestamp,
@@ -294,7 +368,9 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
           specific,
           potentialAlliances,
           latestBlock.timestamp,
-          duration
+          duration,
+          fleetOwner,
+          operator
         );
         account.recordQueueID(tx.hash, queueID);
       } catch (e) {

@@ -12,7 +12,6 @@
   import selection from '$lib/map/selection';
   import {account} from '$lib/account/account';
   import NegativeStat from '../utils/NegativeStat.svelte';
-  import {planetStates} from '$lib/space/planetStates';
 
   export let coords: {x: number; y: number};
   function close() {

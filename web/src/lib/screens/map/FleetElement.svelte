@@ -60,6 +60,7 @@
 
   $: toPlayer = $playersQuery.data?.players[$toPlanetState?.owner];
   $: fromPlayer = $playersQuery.data?.players[fleet.owner];
+  $: senderPlayer = $playersQuery.data?.players[fleet.fleetSender || fleet.owner];
 
   let prediction:
     | {
@@ -87,6 +88,7 @@
           fleet.quantity,
           fleet.launchTime,
           Math.min($time - fleet.launchTime, fleet.duration),
+          senderPlayer,
           fromPlayer,
           toPlayer,
           fleet.gift,

@@ -23,18 +23,24 @@
   $: fromPlanetInfo = $sendFlow.data?.from && spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
   $: fromPlanetState = fromPlanetInfo && planets.planetStateFor(fromPlanetInfo);
 
+  $: fleetOwner = $sendFlow.data?.config?.fleetOwner || $fromPlanetState?.owner;
+  $: fleetSender = $fromPlanetState?.owner;
+
   $: toPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.to.x, $sendFlow.data?.to.y);
   $: toPlanetState = planets.planetStateFor(toPlanetInfo);
 
-  $: toPlayer = $playersQuery.data?.players[$toPlanetState?.owner];
-  $: fromPlayer = $playersQuery.data?.players[$fromPlanetState?.owner];
+  $: toPlayer = $playersQuery.data?.players[$toPlanetState?.owner.toLowerCase()];
+  $: fromPlayer = $playersQuery.data?.players[fleetOwner.toLowerCase()];
+  $: senderPlayer = $playersQuery.data?.players[fleetSender.toLowerCase()];
+
+  $: console.log({fromPlayer, fleetOwner});
 
   // TODO maxSpaceshipsLoaded and invalid message if maxSpaceships == 0
   let fleetAmountSet = false;
   let fleetAmount = 1;
   let maxSpaceships: number;
   $: {
-    maxSpaceships = (fromPlanetState && $fromPlanetState.numSpaceships) || 0;
+    maxSpaceships = fromPlanetState ? Math.max(0, $fromPlanetState.numSpaceships - ($sendFlow.data?.config?.numSpaceshipsToKeep || 0)) : 0;
     if (maxSpaceships > 0 && !fleetAmountSet) {
       // TODO loading
       fleetAmount = Math.floor(maxSpaceships / 2);
@@ -52,6 +58,7 @@
           min: {captured: boolean; numSpaceshipsLeft: number};
           max: {captured: boolean; numSpaceshipsLeft: number};
           allies: boolean;
+          taxAllies: boolean;
           giving?: {tax: number; loss: number};
           timeUntilFails: number;
         };
@@ -70,6 +77,7 @@
           fleetAmount,
           $time,
           0,
+          senderPlayer,
           fromPlayer,
           toPlayer,
           gift
@@ -109,7 +117,7 @@
   }
 
   function useAttack() {
-    if ($fromPlanetState.owner != $toPlanetState.owner) {
+    if (fleetOwner.toLowerCase() != $toPlanetState.owner.toLowerCase()) {
       gift = false;
     }
   }
@@ -121,7 +129,7 @@
 
   <nav class="relative z-0 mb-5 rounded-lg shadow flex divide-x divide-gray-700" aria-label="Tabs">
     <!-- Current: "text-gray-900", Default: "text-gray-500 hover:text-gray-700" -->
-    <AttackSendTabButton disabled={$fromPlanetState.owner === $toPlanetState.owner} active={!gift} on:click={useAttack}
+    <AttackSendTabButton disabled={fleetOwner === $toPlanetState.owner} active={!gift} on:click={useAttack}
       >Attack</AttackSendTabButton
     >
     <AttackSendTabButton active={gift} on:click={useSend}>Give</AttackSendTabButton>

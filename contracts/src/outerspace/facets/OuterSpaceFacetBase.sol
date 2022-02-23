@@ -808,7 +808,7 @@ contract OuterSpaceFacetBase is
         FleetResolution memory resolution,
         address destinationOwner
     ) internal view {
-        (bool gifting, bool taxed) = _computeGifting(destinationOwner, resolution, rState.fleetLaunchTime);
+        (bool gifting, bool taxed) = _computeGifting(destinationOwner, resolution, rState);
         rState.gifting = gifting;
         rState.taxed = taxed;
     }
@@ -817,39 +817,58 @@ contract OuterSpaceFacetBase is
     function _computeGifting(
         address destinationOwner,
         FleetResolution memory resolution,
-        uint256 fleetLaunchTime
+        ResolutionState memory rState
     ) internal view returns (bool gifting, bool taxed) {
         if (destinationOwner == address(0)) {
             // destination has no owner : this is an attack
             return (false, false);
         }
-        if (destinationOwner == resolution.fleetSender) {
-            // destination is sender: this is a non-taxed gift
+        if (destinationOwner == rState.fleetOwner && destinationOwner == resolution.fleetSender) {
+            // destination is sender is fleet owner: this is a non-taxed gift
             return (true, false);
         }
 
-        if (resolution.gift) {
+        if (resolution.gift || destinationOwner == rState.fleetOwner) {
             // intent was gift
-            if (resolution.specific == address(0) || resolution.specific == destinationOwner) {
+            if (
+                resolution.specific == address(0) ||
+                resolution.specific == destinationOwner ||
+                destinationOwner == rState.fleetOwner
+            ) {
                 // and it was for anyone or specific destination owner that is the same as the current one
+                // or it was simply that fleetOwner = destinationOwner
 
                 (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
                     resolution.fleetSender,
                     destinationOwner,
-                    fleetLaunchTime
+                    rState.fleetLaunchTime
                 );
-                return (true, joinTime == 0 || joinTime > fleetLaunchTime);
+                return (true, joinTime == 0 || joinTime > rState.fleetLaunchTime);
             }
 
             if (resolution.specific == address(1)) {
                 // or the specific specify any common alliances (1)
 
-                (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
-                    resolution.fleetSender,
-                    destinationOwner,
-                    fleetLaunchTime
-                );
-                return (joinTime > 0, joinTime > fleetLaunchTime);
+                if (rState.fleetOwner == resolution.fleetSender) {
+                    (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                        resolution.fleetSender,
+                        destinationOwner,
+                        rState.fleetLaunchTime
+                    );
+                    return (joinTime > 0, joinTime > rState.fleetLaunchTime);
+                } else {
+                    (, uint96 senderJoinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                        resolution.fleetSender,
+                        destinationOwner,
+                        rState.fleetLaunchTime
+                    );
+                    (, uint96 fleetOwnerJoinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                        rState.fleetOwner,
+                        destinationOwner,
+                        rState.fleetLaunchTime
+                    );
+                    return (fleetOwnerJoinTime > 0, senderJoinTime > rState.fleetLaunchTime);
+                }
             }
 
             if (uint160(resolution.specific) > 1) {
@@ -864,9 +883,9 @@ contract OuterSpaceFacetBase is
                     (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
                         resolution.fleetSender,
                         destinationOwner,
-                        fleetLaunchTime
+                        rState.fleetLaunchTime
                     );
-                    return (true, joinTime == 0 || joinTime > fleetLaunchTime);
+                    return (true, joinTime == 0 || joinTime > rState.fleetLaunchTime);
                 }
             }
         } else {
@@ -874,13 +893,27 @@ contract OuterSpaceFacetBase is
             if (resolution.specific == address(1)) {
                 // and the attack was on any non-allies
 
-                // make it a gift if the destination owner is actually an ally
-                (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
-                    resolution.fleetSender,
-                    destinationOwner,
-                    fleetLaunchTime
-                );
-                return (joinTime > 0, joinTime > fleetLaunchTime);
+                if (rState.fleetOwner == resolution.fleetSender) {
+                    // make it a gift if the destination owner is actually an ally
+                    (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                        resolution.fleetSender,
+                        destinationOwner,
+                        rState.fleetLaunchTime
+                    );
+                    return (joinTime > 0, joinTime > rState.fleetLaunchTime);
+                } else {
+                    (, uint96 senderJoinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                        resolution.fleetSender,
+                        destinationOwner,
+                        rState.fleetLaunchTime
+                    );
+                    (, uint96 fleetOwnerJoinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                        rState.fleetOwner,
+                        destinationOwner,
+                        rState.fleetLaunchTime
+                    );
+                    return (fleetOwnerJoinTime > 0, senderJoinTime > rState.fleetLaunchTime);
+                }
             }
 
             if (uint160(resolution.specific) > 1 && resolution.specific != destinationOwner) {
@@ -897,9 +930,9 @@ contract OuterSpaceFacetBase is
                     (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
                         resolution.fleetSender,
                         destinationOwner,
-                        fleetLaunchTime
+                        rState.fleetLaunchTime
                     );
-                    return (true, joinTime == 0 || joinTime > fleetLaunchTime);
+                    return (true, joinTime == 0 || joinTime > rState.fleetLaunchTime);
                 }
             }
         }

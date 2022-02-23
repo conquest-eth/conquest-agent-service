@@ -13,6 +13,7 @@
   import {planets} from '$lib/space/planets';
   import {account} from '$lib/account/account';
   import {privateWallet} from '$lib/account/privateWallet';
+  import {matchConditions, pluginShowing, showPlanetButtons} from '$lib/plugins/currentPlugin';
 
   export let coords: {x: number; y: number};
   export let close: () => void;
@@ -74,6 +75,10 @@
     privateWallet.login();
   }
 
+  function showPlugin(src: string) {
+    pluginShowing.showPlanet(src, planetState, planetInfo);
+  }
+
   $: walletIsOwner = $wallet.address && $wallet.address?.toLowerCase() === $planetState?.owner?.toLowerCase();
   $: textColor =
     $planetState && $planetState.owner ? (walletIsOwner ? 'text-green-500' : 'text-red-500') : 'text-gray-100';
@@ -90,6 +95,11 @@
     $sendFlow.step === 'PICK_ORIGIN' && destinationPlanetState && $destinationPlanetState?.owner !== $wallet.address;
 
   $: captureResult = undefined; // TODO $planetState ? space.simulateCapture($wallet.address, $planet, $time) : undefined;
+
+  $: extraButtons = $showPlanetButtons.filter(
+    (v) =>
+      !v.conditions || matchConditions(v.conditions, {account: $wallet.address, planetState: $planetState, planetInfo})
+  );
 </script>
 
 {#if $planetState}
@@ -99,6 +109,22 @@
         <div class="w-20">Sign-In</div>
       </PanelButton>
     {:else}
+      {#if $sendFlow.step !== 'PICK_DESTINATION' && $sendFlow.step !== 'PICK_ORIGIN'}
+        {#each extraButtons as button}
+          <PanelButton
+            label={button.title}
+            class="m-2"
+            color="text-lime-500"
+            borderColor="border-lime-500"
+            on:click={() => showPlugin(button.src)}
+          >
+            <div class="w-20">
+              {button.title}
+              <Help class="inline w-4 h-4">TODO plugin help ?</Help>
+            </div>
+          </PanelButton>
+        {/each}
+      {/if}
       {#if (!$planetState.owner || $planetState.owner === '0x0000000000000000000000000000000000000000') && $planetState.capturing}
         <p>Capturing....</p>
       {:else if $sendFlow.step === 'PICK_DESTINATION'}

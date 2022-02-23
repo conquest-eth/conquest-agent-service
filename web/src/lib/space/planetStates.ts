@@ -3,6 +3,8 @@ import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
 import {now, time} from '$lib/time';
 import type {PlanetInfo, PlanetState} from 'conquest-eth-common';
 import {xyToLocation} from 'conquest-eth-common';
+import type {MetadataTable} from './planetMetadata';
+import {planetMetadata} from './planetMetadata';
 import {spaceInfo} from './spaceInfo';
 import type {PlanetContractState, SpaceState} from './spaceQuery';
 
@@ -15,10 +17,12 @@ export class PlanetStates {
 
   private spaceStateCache: SpaceQueryWithPendingState;
   private pendingActionsPerPlanet: {[location: string]: SyncedPendingActions};
+  private metadataTable: MetadataTable = {};
 
   start(): void {
     time.subscribe(this.onTime.bind(this));
     spaceQueryWithPendingActions.subscribe(this.onSpaceUpdate.bind(this));
+    planetMetadata.subscribe(this.onMetadataUpdated.bind(this));
   }
 
   onPlannetUpdates(planetInfo: PlanetInfo, func: (planetState: PlanetState) => void): number {
@@ -90,6 +94,13 @@ export class PlanetStates {
     this.processSpace(update, now());
   }
 
+  onMetadataUpdated(metadataTable: MetadataTable): void {
+    this.metadataTable = metadataTable;
+    if (this.spaceStateCache) {
+      this.processSpace(this.spaceStateCache, now());
+    }
+  }
+
   private processSpace(space: SpaceQueryWithPendingState, time: number): void {
     if (!space.queryState.data) {
       return;
@@ -145,7 +156,12 @@ export class PlanetStates {
       inReach,
       rewardGiver: '',
       requireClaimAcknowledgement: undefined,
+      metadata: {},
     };
+
+    if (this.metadataTable[planetInfo.location.id]) {
+      planetState.metadata = {...this.metadataTable[planetInfo.location.id]};
+    }
 
     if (contractState) {
       planetState.lastUpdatedSaved = contractState.lastUpdated;
