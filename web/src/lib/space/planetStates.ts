@@ -174,7 +174,6 @@ export class PlanetStates {
       planetState.overflow = contractState.overflow;
       planetState.exiting = !!contractState.exitTime;
       planetState.exitTimeLeft = Math.max(spaceInfo.exitDuration - (time - contractState.exitTime), 0);
-      planetState.natives = contractState.lastUpdated == 0;
 
       spaceInfo.computePlanetUpdateForTimeElapsed(planetState, planetInfo, time);
       planetState.lastUpdatedSaved = time;

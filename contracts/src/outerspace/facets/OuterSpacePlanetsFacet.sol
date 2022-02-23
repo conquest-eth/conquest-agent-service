@@ -25,10 +25,17 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
     }
 
     function ownerOf(uint256 location) external view returns (address currentOwner) {
-        currentOwner = _planets[location].owner;
+        Planet storage planet = _getPlanet(location);
+        currentOwner = planet.owner;
         // TODO should we ?
         // if (_hasJustExited(_planets[location].exitStartTime)) {
         //     currentOwner = address(0);
+        // } else {
+        //     PlanetUpdateState memory planetUpdate = _createPlanetUpdateState(planet, location);
+        //     _computePlanetUpdateForTimeElapsed(planetUpdate);
+        //     if (!planetUpdate.active && planetUpdate.numSpaceships == 0) {
+        //         currentOwner = address(0);
+        //     }
         // }
     }
 

@@ -321,12 +321,14 @@ contract OuterSpaceFacetBase is
     }
 
     function _computePlanetUpdateForStaking(address player, PlanetUpdateState memory planetUpdate) internal view {
+        require(!planetUpdate.active, "STILL_ACTIVE");
+
         uint32 defense;
-        if (planetUpdate.lastUpdated == 0) {
+        // NOTE : natives are back automatically once spaceships reaches zero (here we know we are not active)
+        // TODO consider making natives come back over time => would need to compute the time numSpaceship became zero
+        if (planetUpdate.numSpaceships == 0) {
             defense = _natives(planetUpdate.data);
         } else {
-            require(!planetUpdate.active, "STILL_ACTIVE");
-
             // Do not allow staking over occupied planets, they are going to zero at some point though
             // TODO owner == address(0) ? is it possible for address(0) + numSpaceships > 0 ?
             require(planetUpdate.owner == player || planetUpdate.numSpaceships == 0, "OCCUPIED");
@@ -355,6 +357,7 @@ contract OuterSpaceFacetBase is
             // NOTE cannot be overflow here as staking provide a number of spaceships below that
             planetUpdate.overflow = 0;
         } else {
+            // NOTE this else is currently not possible now that we use numSpaceships == 0 for natives
             planetUpdate.numSpaceships += _acquireNumSpaceships;
             if (_productionCapAsDuration > 0) {
                 if (planetUpdate.numSpaceships > cap) {
@@ -957,9 +960,8 @@ contract OuterSpaceFacetBase is
         internal
         view
     {
-        if (toPlanetUpdate.lastUpdated == 0) {
-            // Planet was never touched (or do we allow attack to fail silently,
-            // see _updatePlanetUpdateStateAndResolutionStateForNativeAttack)
+        // NOTE natives come back to power once numSPaceships == 0 and planet not active
+        if (toPlanetUpdate.numSpaceships == 0 && !toPlanetUpdate.active) {
             _updatePlanetUpdateStateAndResolutionStateForNativeAttack(rState, toPlanetUpdate);
         } else {
             _updatePlanetUpdateStateAndResolutionStateForPlanetAttack(rState, toPlanetUpdate);
