@@ -45,8 +45,7 @@
 {:else if $sendFlow.step === 'INACTIVE_PLANET'}
   <Modal>
     <p class="mb-3">
-      You are sending spaceships to an inactive planets. Note that once your fleet capture the planet, it will not
-      produce spaceships until you stake <PlayCoin class="w-4 h-4 inline" /> on it.
+      You are sending spaceships to an inactive planets. Note that once your fleet capture the planet, its population will decrease until you stake <PlayCoin class="w-4 h-4 inline" /> on it.
     </p>
 
     <div class="text-center">

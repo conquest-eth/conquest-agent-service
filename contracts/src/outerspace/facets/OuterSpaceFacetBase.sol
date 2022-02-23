@@ -139,8 +139,9 @@ contract OuterSpaceFacetBase is
         uint256 extraUpkeepPaid = 0;
         if (_productionCapAsDuration > 0) {
             // NOTE no need of productionSpeedUp for the cap because _productionCapAsDuration can include it
+            uint256 capWhenActive = _acquireNumSpaceships + (uint256(production) * _productionCapAsDuration) / 1 hours;
             uint256 cap = planetUpdate.active
-                ? _acquireNumSpaceships + (uint256(production) * _productionCapAsDuration) / 1 hours
+                ? capWhenActive
                 : 0;
 
             if (newNumSpaceships > cap) {
@@ -148,7 +149,7 @@ contract OuterSpaceFacetBase is
                 if (planetUpdate.newExitStartTime == 0) {
                     uint256 decreaseRate = 1800;
                     if (planetUpdate.overflow > 0) {
-                        decreaseRate = (planetUpdate.overflow * 1800) / cap;
+                        decreaseRate = (planetUpdate.overflow * 1800) / capWhenActive;
                         if (decreaseRate < 1800) {
                             decreaseRate = 1800;
                         }
@@ -1012,6 +1013,7 @@ contract OuterSpaceFacetBase is
             toPlanetUpdate.numSpaceships = rState.fleetQuantity - attackerLoss;
             rState.defenderLoss = defenderLoss;
             rState.victory = true;
+            toPlanetUpdate.newOwner = rState.fleetOwner;
             // solhint-disable-next-line no-empty-blocks
         } else {
             // TODO revert ?

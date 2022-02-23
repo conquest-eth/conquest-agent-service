@@ -274,16 +274,18 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
     // console.log({potentialAlliances});
 
-    const abi = flow.data.config.abi;
+    const abi = flow.data.config?.abi;
     const args = flow.data.config?.args;
-    for (let i = 0; i < args.length; i++) {
-      if (args[i] === '{numSpaceships}') {
-        args[i] = flow.data.fleetAmount;
-      } else if (args[i] === '{toHash}') {
-        args[i] = toHash;
-      } else if (args[i] === '{numSpaceships*pricePerUnit}') {
-        // TODO dynamic value (not only '{numSpaceships*pricePerUnit}')
-        args[i] = pricePerUnit.mul(flow.data.fleetAmount);
+    if (args) {
+      for (let i = 0; i < args.length; i++) {
+        if (args[i] === '{numSpaceships}') {
+          args[i] = flow.data.fleetAmount;
+        } else if (args[i] === '{toHash}') {
+          args[i] = toHash;
+        } else if (args[i] === '{numSpaceships*pricePerUnit}') {
+          // TODO dynamic value (not only '{numSpaceships*pricePerUnit}')
+          args[i] = pricePerUnit.mul(flow.data.fleetAmount);
+        }
       }
     }
 

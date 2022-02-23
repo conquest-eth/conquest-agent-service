@@ -29,7 +29,7 @@
   $: toPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.to.x, $sendFlow.data?.to.y);
   $: toPlanetState = planets.planetStateFor(toPlanetInfo);
 
-  $: toPlayer = $playersQuery.data?.players[$toPlanetState?.owner.toLowerCase()];
+  $: toPlayer = $playersQuery.data?.players[$toPlanetState?.owner?.toLowerCase()];
   $: fromPlayer = $playersQuery.data?.players[fleetOwner.toLowerCase()];
   $: senderPlayer = $playersQuery.data?.players[fleetSender.toLowerCase()];
 
