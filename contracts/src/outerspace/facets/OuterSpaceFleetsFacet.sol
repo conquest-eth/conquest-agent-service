@@ -18,7 +18,7 @@ contract OuterSpaceFleetsFacet is OuterSpaceFacetBase, IOuterSpaceFleets {
                 keccak256(
                     abi.encodePacked(
                         keccak256(
-                            abi.encodePacked(resolution.secret, resolution.to, resolution.gift, resolution.specific)
+                            abi.encodePacked(resolution.secret, resolution.to, resolution.gift, resolution.specific, resolution.arrivalTimeWanted)
                         ),
                         resolution.from,
                         resolution.fleetSender,

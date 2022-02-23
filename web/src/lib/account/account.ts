@@ -41,6 +41,7 @@ export type PendingSend = PendingActionBase & {
   specific: string;
   potentialAlliances?: string[];
   quantity: number;
+  arrivalTimeWanted: number;
   actualLaunchTime?: number;
   resolution?: string[];
   queueID?: string;
@@ -181,6 +182,7 @@ class Account implements Readable<AccountState> {
     to: {x: number; y: number},
     gift: boolean,
     specific: string,
+    arrivalTimeWanted: number,
     nonce: number,
     fleetOwner: string,
     fleetSender?: string,
@@ -197,7 +199,10 @@ class Account implements Readable<AccountState> {
     // console.log({randomNonce, toString, fromString});
     const secretHash = keccak256(['bytes32', 'uint256', 'uint256'], [privateWallet.hashString(), fromString, nonce]);
     // console.log({secretHash});
-    const toHash = keccak256(['bytes32', 'uint256', 'bool', 'address'], [secretHash, toString, gift, specific]);
+    const toHash = keccak256(
+      ['bytes32', 'uint256', 'bool', 'address', 'uint256'],
+      [secretHash, toString, gift, specific, arrivalTimeWanted]
+    );
     const fleetId = keccak256(
       ['bytes32', 'uint256', 'address', 'address'],
       [toHash, fromString, fleetSender || fleetOwner, operator || fleetOwner]
@@ -215,6 +220,7 @@ class Account implements Readable<AccountState> {
       specific: string;
       potentialAlliances?: string[];
       fleetAmount: number;
+      arrivalTimeWanted: number;
       fleetSender?: string;
       operator?: string;
     },
@@ -234,6 +240,7 @@ class Account implements Readable<AccountState> {
       specific: fleet.specific,
       potentialAlliances: fleet.potentialAlliances ? [...fleet.potentialAlliances] : undefined,
       quantity: fleet.fleetAmount,
+      arrivalTimeWanted: fleet.arrivalTimeWanted,
       fleetSender: fleet.fleetSender,
       operator: fleet.operator,
       fleetOwner: fleet.owner,

@@ -679,7 +679,7 @@ contract OuterSpaceFacetBase is
             rState.fromData,
             toPlanetUpdate.data
         );
-        _requireCorrectTime(resolution.distance, rState.fleetLaunchTime, rState.fromData); // TODO delay
+        _requireCorrectTime(resolution.distance, resolution.arrivalTimeWanted, rState.fleetLaunchTime, rState.fromData);
 
         // -----------------------------------------------------------------------------------------------------------
         // Compute Basic Planet Updates
@@ -1368,10 +1368,11 @@ contract OuterSpaceFacetBase is
 
     function _requireCorrectTime(
         uint256 distance,
+        uint256 arrivalTimeWanted,
         uint40 launchTime,
         bytes32 fromPlanetData
     ) internal view {
-        uint256 reachTime = launchTime + (distance * (_timePerDistance * 10000)) / _speed(fromPlanetData);
+        uint256 reachTime = Math.max(arrivalTimeWanted, launchTime + (distance * (_timePerDistance * 10000)) / _speed(fromPlanetData));
         require(block.timestamp >= reachTime, "too early");
         require(block.timestamp < reachTime + _resolveWindow, "too late, your spaceships are lost in space");
     }

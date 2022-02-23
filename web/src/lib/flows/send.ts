@@ -257,6 +257,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
     const nonce = await wallet.provider.getTransactionCount(fleetOwner);
 
+    const arrivalTimeWanted = 0; // TODO
     const distance = spaceInfo.distance(fromPlanetInfo, toPlanetInfo);
     const duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
     const {toHash, fleetId, secretHash} = await account.hashFleet(
@@ -264,6 +265,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       to,
       gift,
       specific,
+      arrivalTimeWanted,
       nonce,
       fleetOwner,
       fleetSender,
@@ -344,6 +346,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         to, // TODO handle it better
         from,
         fleetAmount,
+        arrivalTimeWanted,
         gift,
         specific,
         potentialAlliances,
@@ -366,6 +369,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
           from,
           to,
           distance,
+          arrivalTimeWanted,
           gift,
           specific,
           potentialAlliances,
@@ -379,20 +383,6 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         this.setPartial({error: {message: formatError(e), type: 'AGENT_SERVICE_SUBMISSION_ERROR'}});
       }
     }
-
-    // TODO REMOVE DEBUG :
-    // await tx.wait();
-    // // TODO distance
-    // // const distanceSquared =
-    // //   Math.pow(to.location.globalX - from.location.globalX, 2) +
-    // //   Math.pow(to.location.globalY - from.location.globalY, 2);
-    // const distance = 1; // TODO Math.floor(Math.sqrt(distanceSquared));
-    // await wallet.contracts.OuterSpace.resolveFleet(
-    //   fleetId,
-    //   xyToLocation(to.x, to.y),
-    //   distance,
-    //   secretHash
-    // );
   }
 
   async cancel(): Promise<void> {

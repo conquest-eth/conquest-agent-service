@@ -29,6 +29,7 @@ export type Fleet = {
   timeToResolve: number;
   gift: boolean;
   specific: string;
+  arrivalTimeWanted: number;
   potentialAlliances?: string[];
   owner: string;
   fleetSender?: string;
@@ -188,6 +189,7 @@ export class FleetsStore implements Readable<FleetListState> {
               state,
               gift,
               specific: sendAction.specific,
+              arrivalTimeWanted: sendAction.arrivalTimeWanted,
               potentialAlliances: sendAction.potentialAlliances,
               owner: sendAction.fleetOwner,
               fleetSender: sendAction.fleetSender,

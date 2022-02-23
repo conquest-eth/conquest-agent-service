@@ -85,6 +85,7 @@ interface ImportingOuterSpaceTypes {
         uint256 from;
         uint256 to;
         uint256 distance;
+        uint256 arrivalTimeWanted;
         bool gift;
         address specific;
         bytes32 secret;

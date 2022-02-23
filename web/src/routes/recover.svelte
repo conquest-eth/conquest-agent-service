@@ -14,6 +14,7 @@
   let transactionHash: string;
   let error: string | undefined;
   let success: string | undefined;
+  let arrivalTimeWanted: number = 0;
 
   function acknowledgeSuccess() {
     success = undefined;
@@ -97,6 +98,7 @@
               destinationCoords,
               gift,
               specific,
+              arrivalTimeWanted,
               nonce,
               fleetOwner,
               fleetSender,
@@ -182,6 +184,16 @@
             id="destination"
             placeholder="destination"
             bind:value={destination}
+          />
+        </div>
+        <div>
+          <label class="text-gray-100 font-semibold block my-3 text-md" for="arrivalTimeWanted">arrivalTimeWanted</label>
+          <input
+            class="w-full bg-gray-800 px-4 py-2 rounded-lg focus:outline-none"
+            type="text"
+            name="arrivalTimeWanted"
+            id="arrivalTimeWanted"
+            bind:value={arrivalTimeWanted}
           />
         </div>
         <!-- <div>

@@ -33,6 +33,7 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
     from: Position,
     to: Position,
     distance: number,
+    arrivalTimeWanted: number,
     gift: boolean,
     specific: string,
     potentialAlliances: string[] | undefined,
@@ -62,6 +63,7 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
       from,
       to,
       distance,
+      arrivalTimeWanted,
       gift,
       specific,
       potentialAlliances,
@@ -75,7 +77,7 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
       to.y
     }:${distance}:${gift}:${specific}:${
       potentialAlliances ? potentialAlliances.join(',') : ''
-    }:${startTime}:${duration}:${revealSubmission.nonceMsTimestamp}`;
+    }:${startTime}:${duration}:${arrivalTimeWanted}:${revealSubmission.nonceMsTimestamp}`;
     const queueSignature = await privateWallet.signer.signMessage(queueMessageString);
     const data = {...revealSubmission, signature: queueSignature, delegate: privateWallet.signer.address.toLowerCase()};
     // console.log(data);
