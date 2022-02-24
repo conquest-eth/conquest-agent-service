@@ -10,6 +10,7 @@
   import {base} from '$app/paths';
   import {wallet} from '$lib/blockchain/wallet';
   import selection from '$lib/map/selection';
+  import selectionOwner from '$lib/map/selectionOwner';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import {playersQuery} from '$lib/space/playersQuery';
 
@@ -129,6 +130,9 @@
 
   $: playerIsOwner = owner?.toLowerCase() === $wallet.address?.toLowerCase();
 
+
+  $: isSelectedOwner = $selectionOwner && $selectionOwner.address.toLowerCase() === owner?.toLowerCase();
+
   // $: capacityReached = $planetState
   //   ? spaceInfo.productionCapAsDuration &&
   //     spaceInfo.productionCapAsDuration > 0 &&
@@ -158,7 +162,7 @@
     ? `rgba(0, 255, 0, ${capacityRatio})`
     : isAlly
     ? `rgba(103, 232, 255, ${capacityRatio})`
-    : `rgba(255, 0 ,0, ${capacityRatio})`; // TODO white + selectionOwner
+    : isSelectedOwner ?`rgba(255, 0 ,0, ${capacityRatio})` :`rgba(255, 255 ,255, ${capacityRatio})`;
 </script>
 
 <div>
