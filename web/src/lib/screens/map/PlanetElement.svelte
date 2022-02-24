@@ -98,6 +98,13 @@
   $: ownerObject = $playersQuery.data?.players[owner];
   $: alliances = ownerObject ? ownerObject.alliances : [];
 
+  // DEBUG one alliance
+  // $: alliances = ownerObject
+  //   ? ownerObject.alliances.length > 0
+  //     ? ownerObject.alliances.concat(ownerObject.alliances[0], ownerObject.alliances[0], ownerObject.alliances[0])
+  //     : []
+  //   : [];
+
   // if (x > -20 * 4 && x < 20 * 4 && y > -20 * 4 && y < 20 * 4) {
   //   owner = '0x3333333333333333333333333333333333333333';
   // }
@@ -129,6 +136,27 @@
         spaceInfo.acquireNumSpaceships +
           Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60)
     : false;
+
+  $: capacityRatio = $planetState
+    ? spaceInfo.productionCapAsDuration &&
+      spaceInfo.productionCapAsDuration > 0 &&
+      Math.max(
+        0.6,
+        Math.min(
+          1,
+          $planetState.numSpaceships /
+            (spaceInfo.acquireNumSpaceships +
+              Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60))
+        )
+      )
+    : 0;
+
+  $: isAlly = alliances.find((v) => v.ally);
+  $: borderColor = playerIsOwner
+    ? `rgba(0, 255, 0, ${capacityRatio})`
+    : isAlly
+    ? `rgba(103, 232, 255, ${capacityRatio})`
+    : `rgba(255, 0 ,0, ${capacityRatio})`;
 </script>
 
 <div>
@@ -189,50 +217,59 @@
 
   {#if rewardAttached}
     <div
-      style={`z-index: 2; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 5}, ${
-        blockieScale * 5
-      }); width: ${frame.w}px;
-  height: ${frame.h}px;`}
+      style={`
+        z-index: 2;
+        position: absolute;
+        transform: translate(${x}px,${y}px) scale(${blockieScale * 5}, ${blockieScale * 5});
+        width: ${frame.w}px;
+        height: ${frame.h}px;
+      `}
     >
       <div
         style={`
-width: ${frame.w}px;
-height: ${frame.h}px;
-border: ${selectionBorder}px solid gold;
-`}
+        width: ${frame.w}px;
+        height: ${frame.h}px;
+        border: ${selectionBorder}px solid gold;
+      `}
       />
     </div>
   {/if}
 
   {#if $selection && $selection.x === planetInfo.location.x && $selection.y === planetInfo.location.y}
     <div
-      style={`z-index: 2; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
-        blockieScale * 3
-      }); width: ${frame.w}px;
-  height: ${frame.h}px;`}
+      style={`
+        z-index: 2;
+        position: absolute;
+        transform: translate(${x}px,${y}px) scale(${blockieScale * 3}, ${blockieScale * 3});
+        width: ${frame.w}px;
+        height: ${frame.h}px;
+      `}
     >
       <div
         style={`
-width: ${frame.w}px;
-height: ${frame.h}px;
-border: ${selectionBorder}px solid white;
-border-left-color: red;
-border-radius: 50%;
-animation-name: rotate-s-loader;
-animation-iteration-count: infinite;
-animation-duration: 1s;
-animation-timing-function: linear;
-`}
+          width: ${frame.w}px;
+          height: ${frame.h}px;
+          border: ${selectionBorder}px solid white;
+          border-left-color: red;
+          border-radius: 50%;
+          animation-name: rotate-s-loader;
+          animation-iteration-count: infinite;
+          animation-duration: 1s;
+          animation-timing-function: linear;
+        `}
       />
     </div>
   {/if}
 
   {#if $planetState && $planetState.exiting}
     <div
-      style={`z-index: 5; position: absolute; transform: translate(${x}px,${y}px) scale(${blockieScale * 3}, ${
-        blockieScale * 3
-      }); width: ${frame.w}px;
-  height: ${frame.h}px;`}
+      style={`
+        z-index: 5;
+        position: absolute;
+        transform: translate(${x}px,${y}px) scale(${blockieScale * 3}, ${blockieScale * 3});
+        width: ${frame.w}px;
+        height: ${frame.h}px;
+      `}
     >
       <svg viewBox="0 0 36 36">
         <path
@@ -252,10 +289,13 @@ animation-timing-function: linear;
   <!-- TODO pluginify -->
   {#if !playerIsOwner && $planetState && $planetState.metadata.basic_sale}
     <div
-      style={`z-index: 5; position: absolute; transform: translate(${x}px,${y}px) scale(${blockieScale * 2}, ${
-        blockieScale * 2
-      }); width: ${frame.w}px;
-  height: ${frame.h}px;`}
+      style={`
+        z-index: 5;
+        position: absolute;
+        transform: translate(${x}px,${y}px) scale(${blockieScale * 2}, ${blockieScale * 2});
+        width: ${frame.w}px;
+        height: ${frame.h}px;
+      `}
     >
       <svg viewBox="0 0 36 36">
         <path
@@ -274,46 +314,33 @@ animation-timing-function: linear;
 
   {#if owner}
     {#if blockieScale <= scale}
-      <!-- <div
-        style={`
-        z-index: 1;
-        position: absolute;
-        transform:
-          translate(${x + (0.6 - 0.1) * multiplier}px,${y - 0.9 * multiplier}px)
-          scale(${blockieScale}, ${blockieScale * 1.5});
-        border-left: ${0.25 / scale}px solid white;
-        width: ${frame.w}px; height: ${frame.h}px;
-  `}
-      /> -->
       <SharedBlockie
         style={`
-        pointer-events: none;
-        z-index: 1;
-        position: absolute;
-        transform:
-          translate(${x + 0.6 * multiplier}px,${rewardAttached ? y - 1.4 * multiplier : y - 1.2 * multiplier}px)
-          scale(${blockieScale}, ${blockieScale});
-        width: ${frame.w}px; height: ${frame.h}px;
-        outline: ${active ? 'solid ' + 0.25 / scale + 'px' : 'dashed ' + 0.12 / scale + 'px'} ${
-          playerIsOwner ? (capacityReached ? 'red' : 'lime') : capacityReached ? 'white' : '#ddd'
-        };
-`}
+          pointer-events: none;
+          z-index: 2;
+          position: absolute;
+          transform:
+            translate(${x + 0.6 * multiplier - +0.5 / scale / 2}px,${
+          rewardAttached ? y - 1.4 * multiplier : y - 1.2 * multiplier - +0.5 / scale / 2
+        }px)
+            scale(${blockieScale}, ${blockieScale});
+          width: ${frame.w + 0.5 / scale}px; height: ${frame.h + 0.5 / scale}px;
+          border: ${active ? 'solid ' + 0.25 / scale + 'px' : 'dashed ' + 0.12 / scale + 'px'}  ${borderColor};
+        `}
         address={owner}
       />
     {:else}
       <SharedBlockie
         style={`
-        pointer-events: none;
-        z-index: 1;
-        position: absolute;
-        transform:
-          translate(${x + 0 * multiplier}px,${y - 0 * multiplier}px)
-          scale(${blockieScale}, ${blockieScale});
-        width: ${frame.w}px; height: ${frame.h}px;
-        outline: ${active ? 'solid ' + 0.25 / scale + 'px' : 'dashed ' + 0.12 / scale + 'px'} ${
-          playerIsOwner ? (capacityReached ? 'red' : 'lime') : capacityReached ? 'white' : '#ddd'
-        };
-`}
+          pointer-events: none;
+          z-index: 2;
+          position: absolute;
+          transform:
+            translate(${x + 0 * multiplier}px,${y - 0 * multiplier}px)
+            scale(${blockieScale}, ${blockieScale});
+          width: ${frame.w}px; height: ${frame.h}px;
+          border: ${active ? 'solid ' + 0.25 / scale + 'px' : 'dashed ' + 0.12 / scale + 'px'}  ${borderColor};
+       `}
         address={owner}
       />
     {/if}
@@ -328,11 +355,11 @@ animation-timing-function: linear;
         z-index: 1;
         position: absolute;
         transform:
-          translate(${x + alliancesOffset[i % 4] * 1.6 * multiplier}px,${
-          y + alliancesOffset[(i + 3) % 4] * 1.6 * multiplier
+          translate(${x + 0.6 * multiplier - +0.5 / scale / 2 + alliancesOffset[i % 4] * 1.3 * multiplier}px,${
+          y - 0.6 * multiplier - +0.5 / scale / 2 + alliancesOffset[(i + 3) % 4] * 1.3 * multiplier
         }px)
-          scale(${blockieScale}, ${blockieScale});
-        width: ${frame.w}px; height: ${frame.h}px;
+          scale(${(blockieScale * 2) / 3}, ${(blockieScale * 2) / 3});
+        width: ${frame.w + 0.5 / scale}px; height: ${frame.h + 0.5 / scale}px;
         border: solid ${0.1 / scale}px  ${alliance.ally ? 'lime' : 'white'};
         border-radius: ${frame.w}px;
 `}
@@ -346,8 +373,8 @@ animation-timing-function: linear;
         z-index: 1;
         position: absolute;
         transform:
-          translate(${x + alliancesOffset[i % 4] * 1.6 * multiplier}px,${
-          y + alliancesOffset[(i + 3) % 4] * 1.6 * multiplier
+          translate(${x + alliancesOffset[i % 4] * 1.3 * multiplier}px,${
+          y + alliancesOffset[(i + 3) % 4] * 1.3 * multiplier
         }px)
           scale(${blockieScale}, ${blockieScale});
         width: ${frame.w}px; height: ${frame.h}px;
