@@ -13,13 +13,16 @@
   import {wallet} from '$lib/blockchain/wallet';
   export let fleet: Fleet;
 
-  $: x1 = fleet.from.location.globalX;
-  $: y1 = fleet.from.location.globalY;
-  $: x2 = fleet.to.location.globalX;
-  $: y2 = fleet.to.location.globalY;
-  $: angle = Math.atan2(y2 - y1, x2 - x1);
-
+  $: angle = Math.atan2(
+    fleet.to.location.globalY - fleet.from.location.globalY,
+    fleet.to.location.globalX - fleet.from.location.globalX
+  );
   $: ratio = Math.max(0, (fleet.duration - fleet.timeLeft) / fleet.duration);
+
+  $: x1 = fleet.from.location.globalX + Math.cos(angle) * 1.5;
+  $: y1 = fleet.from.location.globalY + Math.sin(angle) * 1.5;
+  $: x2 = fleet.to.location.globalX - Math.cos(angle) * 1.5;
+  $: y2 = fleet.to.location.globalY - Math.sin(angle) * 1.5;
 
   $: x = x1 + (x2 - x1) * ratio;
   $: y = y1 + (y2 - y1) * ratio;
