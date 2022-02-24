@@ -62,9 +62,9 @@ type State = DurableObjectState & {blockConcurrencyWhile: (func: () => Promise<v
 
 type TransactionInfo = {hash: string; nonce: number; broadcastTime: number; maxFeePerGasUsed: string};
 
-// Data sent by frontend to request a reveal transaction to be broadcasted at reveal time (startTime + duration)
+// Data sent by frontend to request a reveal transaction to be broadcasted at reveal time (Math.max(arrivalTimeWanted, startTime + minDuration))
 // startTime is the expected startTime, could be off if the send transaction is still pending.
-// duration could technically be computed by backend, but could as well be sent by frontend. Just need to make sure it is accurate
+// minDuration could technically be computed by backend, but could as well be sent by frontend. Just need to make sure it is accurate
 // TODO add sendTXInfo : {hash: string; nonce: number} // so that queue can remove the reveal if that sendTXInfo is never mined.
 // - This would work because the secret (And the fleetID, which is the hash) is generated from nonce and if a new tx replace it and is confirmed but the fleetID has not been recorded, we know that that particular fleet is gone forever
 // - this would need the sendTxSender address too to compare nonce
@@ -79,7 +79,7 @@ type Reveal = {
   distance: number;
   arrivalTimeWanted: number;
   startTime: number; // this is the expected startTime, needed as sendTx could be pending
-  duration: number; // could technically recompute it from spaceInfo // TODO ? if so move duration in RevealData type
+  minDuration: number; // could technically recompute it from spaceInfo // TODO ? if so move duration in RevealData type
   gift: boolean;
   specific: string;
   potentialAlliances?: string[];
@@ -195,7 +195,7 @@ function getMaxFeeFromArray(array: MaxFeesSchedule, delay: number): BigNumber {
 
 function checkSubmission(data: RevealSubmission): {errorResponse?: Response; revealData?: RevealSubmission} {
   if (
-    data.duration &&
+    data.minDuration &&
     data.secret &&
     data.fleetID &&
     data.to &&
@@ -385,14 +385,14 @@ export class RevealQueue extends DO {
       }
     }
 
-    const {player, fleetID, secret, from, to, distance, startTime, arrivalTimeWanted, duration, gift, specific, potentialAlliances} =
+    const {player, fleetID, secret, from, to, distance, startTime, arrivalTimeWanted, minDuration, gift, specific, potentialAlliances} =
       revealSubmission;
 
     const queueMessageString = `queue:${player}:${fleetID}:${secret}:${from.x}:${from.y}:${to.x}:${
       to.y
     }:${distance}:${gift}:${specific}:${
       potentialAlliances ? potentialAlliances.join(',') : ''
-    }:${startTime}:${duration}:${arrivalTimeWanted}:${revealSubmission.nonceMsTimestamp}`;
+    }:${startTime}:${minDuration}:${arrivalTimeWanted}:${revealSubmission.nonceMsTimestamp}`;
     const authorized = isAuthorized(
       revealSubmission.delegate ? account.delegate : player,
       queueMessageString,
@@ -419,7 +419,7 @@ export class RevealQueue extends DO {
     }
 
     const revealID = `l_${reveal.fleetID}`;
-    const broadcastingTime = Math.max(reveal.arrivalTimeWanted, reveal.startTime + reveal.duration);
+    const broadcastingTime = Math.max(reveal.arrivalTimeWanted, reveal.startTime + reveal.minDuration);
     const queueID = `q_${lexicographicNumber12(broadcastingTime)}_${reveal.fleetID}}`;
 
     const existing = await this.state.storage.get<ListData | undefined>(revealID);
@@ -459,7 +459,7 @@ export class RevealQueue extends DO {
       for (const revealEntry of reveals.entries()) {
         const reveal = revealEntry[1];
         const queueID = revealEntry[0];
-        const revealTime = Math.max(reveal.arrivalTimeWanted, reveal.startTime + reveal.duration);
+        const revealTime = Math.max(reveal.arrivalTimeWanted, reveal.startTime + reveal.minDuration);
 
         // TODO finalyty * blockTime
         if (timestamp > revealTime + contracts.OuterSpace.linkedData.resolveWindow + this.finality * 15) {
@@ -472,7 +472,7 @@ export class RevealQueue extends DO {
           await this._executeReveal(queueID, reveal);
         } else {
           this.info(
-            `skip reveal (${queueID}) because not yet time (Math.max(${reveal.arrivalTimeWanted}, ${reveal.startTime} + ${reveal.duration}) = ${revealTime}) > ${timestamp}`
+            `skip reveal (${queueID}) because not yet time (Math.max(${reveal.arrivalTimeWanted}, ${reveal.startTime} + ${reveal.minDuration}) = ${revealTime}) > ${timestamp}`
           );
         }
       }
@@ -619,8 +619,8 @@ export class RevealQueue extends DO {
           retries: reveal.retries,
           startTime: reveal.startTime,
           sendConfirmed: reveal.sendConfirmed,
-          duration: reveal.duration,
-          revealTime: Math.max(reveal.arrivalTimeWanted, reveal.startTime + reveal.duration),
+          minDuration: reveal.minDuration,
+          revealTime: Math.max(reveal.arrivalTimeWanted, reveal.startTime + reveal.minDuration),
           fleetSender: reveal.fleetSender,
           operator: reveal.operator,
           distance: reveal.distance,
@@ -638,7 +638,7 @@ export class RevealQueue extends DO {
         .map((v) => {
           v.revealTime = new Date(v.revealTime * 1000).toUTCString();
           v.startTime = new Date(v.startTime * 1000).toUTCString();
-          v.duration = time2text(v.duration);
+          v.minDuration = time2text(v.minDuration);
           v.arrivalTimeWanted = new Date(v.arrivalTimeWanted * 1000).toUTCString();
           return v;
         }),
@@ -933,7 +933,7 @@ export class RevealQueue extends DO {
       if (!actualStartTime) {
         this.info(`fleet not found :  ${reveal.fleetID}`);
         // not found
-        reveal.startTime = timestamp + retryPeriod(reveal.duration);
+        reveal.startTime = timestamp + retryPeriod(reveal.minDuration);
         reveal.retries++;
         if (reveal.retries >= 10) {
           this.info(`deleting reveal ${revealID} after ${reveal.retries} retries ...`);
@@ -951,7 +951,7 @@ export class RevealQueue extends DO {
       }
     }
 
-    const newBroadcastingTime = Math.max(reveal.arrivalTimeWanted, reveal.startTime + reveal.duration);
+    const newBroadcastingTime = Math.max(reveal.arrivalTimeWanted, reveal.startTime + reveal.minDuration);
     const newQueueID = `q_${lexicographicNumber12(newBroadcastingTime)}_${reveal.fleetID}`;
     if (reveal.sendConfirmed) {
       if (newBroadcastingTime <= timestamp) {
@@ -1246,7 +1246,7 @@ export class RevealQueue extends DO {
     const transaction = await this.provider.getTransaction(pendingReveal.tx.hash);
     if (!transaction || transaction.confirmations === 0) {
       const lastMaxFeeUsed = pendingReveal.tx.maxFeePerGasUsed;
-      const broadcastingTime = Math.max(pendingReveal.arrivalTimeWanted, pendingReveal.startTime + pendingReveal.duration);
+      const broadcastingTime = Math.max(pendingReveal.arrivalTimeWanted, pendingReveal.startTime + pendingReveal.minDuration);
       const currentMaxFee = getMaxFeeFromArray(pendingReveal.maxFeesSchedule, getTimestamp() - broadcastingTime);
       if (!transaction || currentMaxFee.gt(lastMaxFeeUsed)) {
         this.info(
