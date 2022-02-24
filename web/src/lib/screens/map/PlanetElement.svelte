@@ -129,13 +129,13 @@
 
   $: playerIsOwner = owner?.toLowerCase() === $wallet.address?.toLowerCase();
 
-  $: capacityReached = $planetState
-    ? spaceInfo.productionCapAsDuration &&
-      spaceInfo.productionCapAsDuration > 0 &&
-      $planetState.numSpaceships >=
-        spaceInfo.acquireNumSpaceships +
-          Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60)
-    : false;
+  // $: capacityReached = $planetState
+  //   ? spaceInfo.productionCapAsDuration &&
+  //     spaceInfo.productionCapAsDuration > 0 &&
+  //     $planetState.numSpaceships >=
+  //       spaceInfo.acquireNumSpaceships +
+  //         Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60)
+  //   : false;
 
   $: capacityRatio = $planetState
     ? spaceInfo.productionCapAsDuration &&
@@ -152,7 +152,9 @@
     : 0;
 
   $: isAlly = alliances.find((v) => v.ally);
-  $: borderColor = playerIsOwner
+  $: borderColor = !$wallet.address
+    ? 'white'
+    : playerIsOwner
     ? `rgba(0, 255, 0, ${capacityRatio})`
     : isAlly
     ? `rgba(103, 232, 255, ${capacityRatio})`
