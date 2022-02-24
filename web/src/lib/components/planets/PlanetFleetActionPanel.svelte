@@ -114,8 +114,8 @@
           <PanelButton
             label={button.title}
             class="m-2"
-            color="text-lime-500"
-            borderColor="border-lime-500"
+            color="text-blue-600"
+            borderColor="border-blue-600"
             on:click={() => showPlugin(button.src)}
           >
             <div class="w-20">

@@ -19,7 +19,7 @@
 
   async function submit() {
     const distance = spaceInfo.distance(from, to);
-    const duration = spaceInfo.timeToArrive(from, to);
+    const minDuration = spaceInfo.timeToArrive(from, to);
     const {toHash, fleetId, secretHash} = await account.hashFleet(
       from.location,
       to.location,
@@ -42,7 +42,7 @@
       fleet.specific,
       fleet.potentialAlliances,
       fleet.launchTime,
-      duration,
+      minDuration,
       fleet.fleetSender,
       fleet.operator
     );

@@ -25,6 +25,7 @@ type SendConfig = {
   args?: any[];
   fleetSender?: string;
   msgValue?: string;
+  arrivalTimeWanted?: number;
   // TODO fix numSPaceships option ?
   //  or we could have a callback function, msg type to send to iframe to get the price for every change of amount
 };
@@ -164,13 +165,20 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     this._chooseFleetAmount();
   }
 
-  confirm(fleetAmount: number, gift: boolean, useAgentService: boolean, fleetOwner?: string) {
+  confirm(
+    fleetAmount: number,
+    gift: boolean,
+    useAgentService: boolean,
+    fleetOwner: string,
+    arrivalTimeWanted?: number
+  ) {
     this.setData({
       fleetAmount,
       gift,
       useAgentService,
       config: {
         fleetOwner,
+        arrivalTimeWanted,
       },
     });
     if (!account.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION)) {
@@ -188,7 +196,13 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       throw new Error(`not gift recorded`);
     }
     account.recordWelcomingStep(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION);
-    this.confirm(this.$store.data?.fleetAmount, this.$store.data?.gift, this.$store.data?.useAgentService);
+    this.confirm(
+      this.$store.data?.fleetAmount,
+      this.$store.data?.gift,
+      this.$store.data?.useAgentService,
+      this.$store.data?.config?.fleetOwner,
+      this.$store.data?.config?.arrivalTimeWanted
+    );
   }
 
   async _confirm(fleetAmount: number, gift: boolean, useAgentService: boolean): Promise<void> {
@@ -219,6 +233,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     const fleetSender = flow.data.config?.fleetSender || walletAddress;
     const msgValueString = flow.data.config?.msgValue;
     const operator = flow.data.config?.contractAddress || walletAddress;
+    const arrivalTimeWanted = flow.data.config?.arrivalTimeWanted || 0;
 
     const latestBlock = await wallet.provider.getBlock('latest');
     if (!isCorrected) {
@@ -265,9 +280,8 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
     const nonce = await wallet.provider.getTransactionCount(walletAddress);
 
-    const arrivalTimeWanted = 0; // TODO
     const distance = spaceInfo.distance(fromPlanetInfo, toPlanetInfo);
-    const duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
+    const minDuration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
 
     const {toHash, fleetId, secretHash} = await account.hashFleet(
       from,
@@ -411,7 +425,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
           specific,
           potentialAlliances,
           latestBlock.timestamp,
-          duration,
+          minDuration,
           fleetSender,
           operator
         );

@@ -40,8 +40,10 @@ export class ErrorsStore implements Readable<SpaceError[]> {
           // copied from fleets, TODO DRY
           const from = spaceInfo.getPlanetInfo(sendAction.from.x, sendAction.from.y);
           const to = spaceInfo.getPlanetInfo(sendAction.to.x, sendAction.to.y);
-          const duration = spaceInfo.timeToArrive(from, to);
+          const minDuration = spaceInfo.timeToArrive(from, to);
+
           if (sendAction.actualLaunchTime) {
+            const duration = Math.max(minDuration, sendAction.arrivalTimeWanted - sendAction.actualLaunchTime);
             const launchTime = sendAction.actualLaunchTime;
             const timeLeft = Math.max(duration - (now() - launchTime), 0);
             let timeToResolve = 0;

@@ -69,9 +69,12 @@ export class FleetsStore implements Readable<FleetListState> {
 
   private onTime() {
     for (const fleet of this.state.fleets) {
-      fleet.timeLeft = Math.max(fleet.duration - (now() - fleet.launchTime), 0);
+      // const normalDuration = fleet.duration;
+      const minDuration = spaceInfo.timeToArrive(fleet.from, fleet.to); // TODO store in fleet ?
+      const duration = Math.max(minDuration, fleet.arrivalTimeWanted - fleet.launchTime);
+      fleet.timeLeft = Math.max(duration - (now() - fleet.launchTime), 0);
       if (fleet.timeLeft <= 0) {
-        fleet.timeToResolve = Math.max(fleet.launchTime + fleet.duration + spaceInfo.resolveWindow - now(), 0);
+        fleet.timeToResolve = Math.max(fleet.launchTime + duration + spaceInfo.resolveWindow - now(), 0);
       }
     }
     this.store.set(this.state);
@@ -99,7 +102,8 @@ export class FleetsStore implements Readable<FleetListState> {
           if (!to) {
             console.error(`not planet found at ${sendAction.to.x}, ${sendAction.to.y}`);
           }
-          const duration = spaceInfo.timeToArrive(from, to);
+          const minDuration = spaceInfo.timeToArrive(from, to);
+          const duration = Math.max(minDuration, sendAction.arrivalTimeWanted - sendAction.timestamp); // TODO check actualLaunchTime consideration
           let launchTime = now(); // TODO  update.queryState.data?.chain.timestamp ?
           if (sendAction.actualLaunchTime) {
             launchTime = sendAction.actualLaunchTime;

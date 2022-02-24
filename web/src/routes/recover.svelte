@@ -78,6 +78,7 @@
                 from: {x: number; y: number};
                 to: {x: number; y: number};
                 gift: boolean;
+                arrivalTimeWanted: number;
                 specific: string;
                 potentialAlliances?: string[];
                 fleetAmount: number;
@@ -111,6 +112,7 @@
                   from: fromCoords,
                   to: destinationCoords,
                   gift: gift,
+                  arrivalTimeWanted,
                   id: fleetData.fleetId,
                   owner: fleetOwner,
                   specific: specific,

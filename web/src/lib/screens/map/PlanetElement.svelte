@@ -158,7 +158,7 @@
     ? `rgba(0, 255, 0, ${capacityRatio})`
     : isAlly
     ? `rgba(103, 232, 255, ${capacityRatio})`
-    : `rgba(255, 0 ,0, ${capacityRatio})`;
+    : `rgba(255, 0 ,0, ${capacityRatio})`; // TODO white + selectionOwner
 </script>
 
 <div>
@@ -240,7 +240,7 @@
   {#if $selection && $selection.x === planetInfo.location.x && $selection.y === planetInfo.location.y}
     <div
       style={`
-        z-index: 2;
+        z-index: 3;
         position: absolute;
         transform: translate(${x}px,${y}px) scale(${blockieScale * 3}, ${blockieScale * 3});
         width: ${frame.w}px;
@@ -301,7 +301,7 @@
     >
       <svg viewBox="0 0 36 36">
         <path
-          style="fill: none; stroke-width: 2.8; stroke-linecap: round; stroke: #00ff33;"
+          style="fill: none; stroke-width: 2.8; stroke-linecap: round; stroke: blue;"
           stroke-dasharray={`${Math.max(
             ((spaceInfo.exitDuration - $planetState.exitTimeLeft) / spaceInfo.exitDuration) * 100,
             3

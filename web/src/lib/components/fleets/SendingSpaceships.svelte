@@ -17,11 +17,19 @@
   import {playersQuery} from '$lib/space/playersQuery';
   import Blockie from '../account/Blockie.svelte';
   import {wallet} from '$lib/blockchain/wallet';
+  import Flatpickr from '../flatpickr/Flatpickr.svelte';
+  import confirmDatePlugin from 'flatpickr/dist/plugins/confirmDate/confirmDate';
 
   let useAgentService = false;
   let gift = false;
 
   let fleetOwnerSpecified;
+  let arrivalTimeWanted: Date;
+  let formatted_arrivalTimeWanted: string;
+
+  function handleArrivalTimeWantedChange(value) {
+    console.log({arrivalTimeWanted: value});
+  }
 
   // TODO investigate why there is need to check sendFlow.data.from ? might need to do the same to sendFlow.data.to below
   $: fromPlanetInfo = $sendFlow.data?.from && spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
@@ -56,9 +64,15 @@
 
   $: agentServiceAccount = $agentService.account;
 
+  $: defaultTimeToArrive = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
+  // $: arrivalTime = $time + defaultTimeToArrive;
+
+  $: currentTimeToArrive = arrivalTimeWanted ? (arrivalTimeWanted.getTime() / 1000) - $time : defaultTimeToArrive
+
+  $: currentTimeToArriveFormatted = timeToText(currentTimeToArrive)
+
   let prediction:
     | {
-        arrivalTime: string;
         numSpaceshipsAtArrival: {max: number; min: number};
         outcome: {
           min: {captured: boolean; numSpaceshipsLeft: number};
@@ -73,8 +87,7 @@
   $: {
     if (toPlanetState && fromPlanetState) {
       prediction = {
-        arrivalTime: timeToText(spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo)),
-        numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(fromPlanetInfo, toPlanetInfo, $toPlanetState),
+        numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(fromPlanetInfo, toPlanetInfo, $toPlanetState, currentTimeToArrive > defaultTimeToArrive ? defaultTimeToArrive - currentTimeToArrive : 0),
         outcome: spaceInfo.outcome(
           fromPlanetInfo,
           $fromPlanetState,
@@ -91,6 +104,33 @@
       };
     }
   }
+
+  $: flatpickrOptions = flatpickrOptions ? flatpickrOptions : defaultTimeToArrive ? {
+    enableTime: true,
+    minDate: (defaultTimeToArrive + $time + 5 *60) * 1000,
+    defaultDate: '2022-02-17 14:22',
+    time_24hr: true,
+    plugins: [
+      confirmDatePlugin({
+        confirmText: 'OK ',
+        showAlways: false,
+      }),
+    ],
+  }: undefined;
+
+
+  // $: {
+  //   console.log({
+  //     $time,
+  //     defaultTimeToArrive,
+  //     arrivalTimeWantedString: arrivalTimeWanted?.toISOString(),
+  //     currentTimeToArrive,
+  //     arrivalTimeWanted: arrivalTimeWanted?.getTime() / 1000,
+  //     arrivalTimeWantedDate: arrivalTimeWanted,
+  //     minDate: flatpickrOptions?.minDate
+  //   })
+  // }
+
 
   let confirmDisabled = false;
   $: {
@@ -168,6 +208,22 @@
     </div>
     <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
 
+    <div class="text-center">
+      {#if flatpickrOptions}
+        <!-- {new Date(arrivalTimeWanted).getTime() / 1000} -->
+        <Flatpickr
+          class="bg-gray-800 text-cyan-500"
+          options={flatpickrOptions}
+          bind:value={arrivalTimeWanted}
+          bind:formattedValue={formatted_arrivalTimeWanted}
+          on:change={handleArrivalTimeWantedChange}
+          name="arrivalTimeWanted"
+          placeholder="Arrival Time"
+        />
+      {/if}
+    </div>
+    <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
+
     {#if !gift}
       {#if !$sendFlow.data?.config?.fleetOwner}
         <div class="text-center">
@@ -218,7 +274,7 @@
             <span>Arrives in</span><span class="text-right">Spaceships Then</span>
           </div>
           <div class="flex flex-row justify-between">
-            <span>{prediction?.arrivalTime}</span><span class="text-right"
+            <span>{currentTimeToArriveFormatted}</span><span class="text-right"
               >{prediction?.numSpaceshipsAtArrival.min}</span
             >
           </div>
@@ -260,7 +316,7 @@
             <span>Arrives in</span><span class="text-right">Spaceships Then</span>
           </div>
           <div class="flex flex-row justify-between">
-            <span>{prediction?.arrivalTime}</span><span class="text-right"
+            <span>{currentTimeToArriveFormatted}</span><span class="text-right"
               >{prediction?.outcome.min.numSpaceshipsLeft || 0}</span
             >
           </div>
@@ -298,7 +354,7 @@
           class="mt-5"
           label="Fleet Amount"
           disabled={confirmDisabled}
-          on:click={() => sendFlow.confirm(fleetAmount, gift, useAgentService, fleetOwnerSpecified)}
+          on:click={() => sendFlow.confirm(fleetAmount, gift, useAgentService, fleetOwnerSpecified, arrivalTimeWanted ? Math.floor(arrivalTimeWanted.getTime() / 1000) : undefined)}
         >
           <p>Confirm</p>
           {#if confirmDisabled}(need higher attack){/if}

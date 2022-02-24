@@ -12,7 +12,11 @@
   $: toPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data.to.x, $sendFlow.data.to.y);
   // $: toPlanetState = planets.planetStateFor(toPlanetInfo);
 
-  $: duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
+  $: minDuration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
+  $: duration = $sendFlow.data?.config?.arrivalTimeWanted ? Math.max(
+          minDuration,
+          $sendFlow.data?.config?.arrivalTimeWanted - now()
+        ) : minDuration;
   $: arrival = duration + now();
 </script>
 
