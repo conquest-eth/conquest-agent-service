@@ -1113,7 +1113,8 @@ contract OuterSpaceFacetBase is
             // NOTE Attacker wins
 
             // all orbiting fleets are destroyed, inFlightPlanetLoss is all that is left
-            rState.inFlightPlanetLoss = uint32(numDefense - toPlanetUpdate.numSpaceships);
+
+            rState.defenderLoss = toPlanetUpdate.numSpaceships; // defenderLoss represent only planet loss
 
             toPlanetUpdate.numSpaceships = rState.fleetQuantity - attackerLoss;
             rState.victory = true;
