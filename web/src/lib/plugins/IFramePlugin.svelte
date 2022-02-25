@@ -88,9 +88,11 @@
     }
   }
 
+  let tryCount = 0;
   function initUntilAcknowledged() {
-    if (!acknowledged) {
+    if (!acknowledged && tryCount < 10) {
       console.log(`sending init`);
+      tryCount ++;
       iframe.contentWindow.postMessage(JSON.stringify({type: 'init'}), src);
       setTimeout(initUntilAcknowledged, 300);
     }
