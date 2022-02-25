@@ -96,8 +96,9 @@ type MaxFeesSchedule = [
 // Data for each account
 type AccountData = {
   nonceMsTimestamp: number;
-  paid: string; // amount of ETH deposited minus amout used (by mined transactions)
-  spending: string; // amount reserved for pending reveals
+  paymentReceived: string; // amount of ETH deposited minus amout used (by mined transactions)
+  paymentUsed: string;
+  paymentSpending: string; // amount reserved for pending reveals
   delegate?: string; // TODO array or reverse lookup ?
   maxFeesSchedule: MaxFeesSchedule; // an array for of maxFeePerGas to use depending on delay for new reveals
 };
@@ -256,8 +257,9 @@ export class RevealQueue extends DO {
     let account = await this.state.storage.get<AccountData | undefined>(accountID);
     if (!account) {
       account = {
-        spending: '0',
-        paid: '0',
+        paymentReceived: '0',
+        paymentUsed: '0',
+        paymentSpending: '0',
         nonceMsTimestamp: 0,
         maxFeesSchedule: defaultMaxFeesSchedule,
       };
@@ -299,8 +301,9 @@ export class RevealQueue extends DO {
     let account = await this.state.storage.get<AccountData | undefined>(accountID);
     if (!account) {
       account = {
-        spending: '0',
-        paid: '0',
+        paymentReceived: '0',
+        paymentUsed: '0',
+        paymentSpending: '0',
         nonceMsTimestamp: 0,
         maxFeesSchedule: defaultMaxFeesSchedule,
       };
@@ -363,7 +366,13 @@ export class RevealQueue extends DO {
     const accountID = `account_${revealSubmission.player.toLowerCase()}`;
     let account = await this.state.storage.get<AccountData | undefined>(accountID);
     if (!account) {
-      account = {paid: '0', spending: '0', nonceMsTimestamp: 0, maxFeesSchedule: defaultMaxFeesSchedule};
+      account = {
+        paymentReceived: '0',
+        paymentUsed: '0',
+        paymentSpending: '0',
+        nonceMsTimestamp: 0,
+        maxFeesSchedule: defaultMaxFeesSchedule
+      };
     }
     const maxFeeAllowed = getMaxFeeAllowed(account.maxFeesSchedule);
     const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
@@ -409,7 +418,7 @@ export class RevealQueue extends DO {
       return NotAuthorized();
     }
 
-    let balance = BigNumber.from(account.paid).sub(account.spending);
+    let balance = BigNumber.from(account.paymentReceived).sub(BigNumber.from(account.paymentUsed).add(account.paymentSpending));
     if (balance.lt(minimumBalance)) {
       //|| !account.delegate) {
       balance = await this._fetchExtraBalanceFromLogs(balance, player.toLowerCase());
@@ -439,10 +448,16 @@ export class RevealQueue extends DO {
 
     let accountRefected = await this.state.storage.get<AccountData | undefined>(accountID);
     if (!accountRefected) {
-      accountRefected = {paid: '0', spending: '0', nonceMsTimestamp: 0, maxFeesSchedule: defaultMaxFeesSchedule};
+      accountRefected = {
+        paymentReceived: '0',
+        paymentUsed: '0',
+        paymentSpending: '0',
+        nonceMsTimestamp: 0,
+        maxFeesSchedule: defaultMaxFeesSchedule
+      };
     }
-    const spending = BigNumber.from(accountRefected.spending).add(minimumBalance);
-    accountRefected.spending = spending.toString();
+    const paymentSpending = BigNumber.from(accountRefected.paymentSpending).add(minimumBalance);
+    accountRefected.paymentSpending = paymentSpending.toString();
 
     this.state.storage.put<AccountData>(accountID, accountRefected);
     this.state.storage.put<RevealData>(queueID, reveal);
@@ -515,7 +530,7 @@ export class RevealQueue extends DO {
     if (accountData) {
       const maxFeeAllowed = getMaxFeeAllowed(accountData.maxFeesSchedule);
       const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
-      let balance = BigNumber.from(accountData.paid).sub(accountData.spending);
+      let balance = BigNumber.from(accountData.paymentReceived).sub(BigNumber.from(accountData.paymentUsed).add(accountData.paymentSpending));
       if (balance.lt(minimumBalance)) {
         balance = await this._fetchExtraBalanceFromLogs(balance, player);
       }
@@ -843,11 +858,18 @@ export class RevealQueue extends DO {
       const accountUpdate = accountsToUpdate[accountAddress];
       let currentAccountState = await this.state.storage.get<AccountData | undefined>(`account_${accountAddress}`);
       if (!currentAccountState) {
-        currentAccountState = {paid: '0', spending: '0', nonceMsTimestamp: 0, maxFeesSchedule: defaultMaxFeesSchedule};
+        currentAccountState = {
+          paymentReceived: '0',
+          paymentUsed: '0',
+          paymentSpending: '0',
+          nonceMsTimestamp: 0,
+          maxFeesSchedule: defaultMaxFeesSchedule
+        };
       }
       this.state.storage.put<AccountData>(`account_${accountAddress}`, {
-        paid: accountUpdate.balanceUpdate.add(currentAccountState.paid).toString(),
-        spending: currentAccountState.spending,
+        paymentReceived: accountUpdate.balanceUpdate.add(currentAccountState.paymentReceived).toString(),
+        paymentUsed: currentAccountState.paymentUsed, // TODO
+        paymentSpending: currentAccountState.paymentSpending,
         nonceMsTimestamp: currentAccountState.nonceMsTimestamp,
         delegate: currentAccountState.delegate,
         maxFeesSchedule: currentAccountState.maxFeesSchedule,
@@ -910,7 +932,8 @@ export class RevealQueue extends DO {
       return;
     }
 
-    if (BigNumber.from(account.paid).lt(minimumBalance)) {
+    let balanceWithoutConsideringPending = BigNumber.from(account.paymentReceived).sub(BigNumber.from(account.paymentUsed));
+    if (BigNumber.from(balanceWithoutConsideringPending).lt(minimumBalance)) {
       this.info(`not enough fund for ${reveal.player}`);
       // TODO return ?
     }
@@ -1039,15 +1062,15 @@ export class RevealQueue extends DO {
     const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
     let accountRefetched = await this.state.storage.get<AccountData | undefined>(accountID);
     if (!accountRefetched) {
-      accountRefetched = {paid: '0', spending: '0', nonceMsTimestamp: 0, maxFeesSchedule: defaultMaxFeesSchedule};
+      accountRefetched = {paymentReceived: '0', paymentUsed: '0', paymentSpending: '0', nonceMsTimestamp: 0, maxFeesSchedule: defaultMaxFeesSchedule};
     }
-    let spending = BigNumber.from(accountRefetched.spending);
-    if (spending.lt(minimumBalance)) {
-      spending = BigNumber.from(0);
+    let paymentSpending = BigNumber.from(accountRefetched.paymentSpending);
+    if (paymentSpending.lt(minimumBalance)) {
+      paymentSpending = BigNumber.from(0);
     } else {
-      spending = spending.sub(minimumBalance);
+      paymentSpending = paymentSpending.sub(minimumBalance);
     }
-    accountRefetched.spending = spending.toString();
+    accountRefetched.paymentSpending = paymentSpending.toString();
     this.state.storage.put<AccountData>(accountID, accountRefetched);
   }
 
@@ -1280,10 +1303,20 @@ export class RevealQueue extends DO {
         if (txReceipt.gasUsed && txReceipt.effectiveGasPrice) {
           gasCost = txReceipt.gasUsed?.mul(txReceipt.effectiveGasPrice);
         }
-        const paid = BigNumber.from((await accountData).paid).sub(gasCost);
-        const spending = BigNumber.from((await accountData).spending).sub(minimumBalance);
-        accountData.paid = paid.toString();
-        accountData.spending = spending.toString();
+        const paymentUsed = BigNumber.from((await accountData).paymentUsed).add(gasCost);
+        let paymentSpending = BigNumber.from((await accountData).paymentSpending).sub(minimumBalance);
+        if (paymentSpending.lt(0)) {
+          paymentSpending = BigNumber.from(0);
+        }
+        // TODO move to sync stage ?
+        //  could either make every tx go through the payment gateway and emit event there
+        //  or do it on OuterSpace by adding an param to the event
+        //  we just need payer address and amount reserved (spending)
+        //  doing it via event has the advantage that the payment can be tacked back even after full db reset
+        //  we could even process a signature from the payer
+        //  the system would still require trusting the agent-service, but everything would at least be auditable
+        accountData.paymentUsed = paymentUsed.toString();
+        accountData.paymentSpending = paymentSpending.toString();
         this.state.storage.put<AccountData>(accountID, accountData);
       } else {
         this.error(`weird, accountData do not exist anymore`); // TODO handle it
