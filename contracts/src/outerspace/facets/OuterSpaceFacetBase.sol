@@ -1101,7 +1101,7 @@ contract OuterSpaceFacetBase is
         uint16 defense = _defense(toPlanetUpdate.data);
         (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(
             rState.fleetQuantity,
-            toPlanetUpdate.numSpaceships,
+            numDefense,
             attack,
             defense
         );
