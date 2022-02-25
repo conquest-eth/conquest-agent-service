@@ -78,6 +78,7 @@
     "local:dev": "hardhat --network localhost deploy --watch",
     "execute": "node ./_scripts.js run",
     "deploy": "node ./_scripts.js deploy",
+    "verify": "node ./_scripts.js verify",
     "export": "node ./_scripts.js export",
     "hardhat": "hardhat",
     "fork:execute": "node ./_scripts.js fork:run",
