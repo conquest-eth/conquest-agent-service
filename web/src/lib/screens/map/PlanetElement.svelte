@@ -343,7 +343,7 @@
           position: absolute;
           transform:
             translate(${x + 0 * multiplier}px,${y - 0 * multiplier}px)
-            scale(${blockieScale}, ${blockieScale});
+            scale(${blockieScale*1.5}, ${blockieScale*1.5});
           width: ${frame.w}px; height: ${frame.h}px;
           border: ${active ? 'solid ' + 0.25 / scale + 'px' : 'dashed ' + 0.12 / scale + 'px'}  ${borderColor};
        `}
