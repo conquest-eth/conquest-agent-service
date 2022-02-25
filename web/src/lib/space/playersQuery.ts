@@ -19,6 +19,18 @@ export type Alliance = {
   members: Player[];
 };
 
+export function hasCommonAlliance(p1: Player, p2: Player): boolean {
+  if (p1 && p2 && p1.alliances && p2.alliances) {
+    for (const alliance of p1.alliances) {
+      if (p2.alliances.find((v) => v.address === alliance.address)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 export type PlayersMap = {[address: string]: Player};
 
 export type AlliancesMap = {[address: string]: Alliance};

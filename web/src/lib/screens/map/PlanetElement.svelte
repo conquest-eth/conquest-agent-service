@@ -12,7 +12,7 @@
   import selection from '$lib/map/selection';
   import selectionOwner from '$lib/map/selectionOwner';
   import {spaceInfo} from '$lib/space/spaceInfo';
-  import {playersQuery} from '$lib/space/playersQuery';
+  import {hasCommonAlliance, playersQuery} from '$lib/space/playersQuery';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -161,8 +161,8 @@
     : playerIsOwner
     ? `rgba(0, 255, 0, ${capacityRatio})`
     : isAlly
-    ? `rgba(103, 232, 255, ${capacityRatio})`
-    : isSelectedOwner ?`rgba(255, 0 ,0, ${capacityRatio})` :`rgba(255, 255 ,255, ${capacityRatio})`;
+    ? isSelectedOwner ?`rgba(103, 232, 255, ${capacityRatio})` :`rgba(103, 232, 255, ${capacityRatio})` // TODO different color on selection ?
+    : isSelectedOwner ?`rgba(255, 0 ,0, ${capacityRatio})` : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])? `rgba(255, 165 ,0, ${capacityRatio})` : `rgba(255, 255 ,255, ${capacityRatio})`;
 </script>
 
 <div>
