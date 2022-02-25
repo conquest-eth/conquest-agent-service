@@ -140,9 +140,7 @@ contract OuterSpaceFacetBase is
         if (_productionCapAsDuration > 0) {
             // NOTE no need of productionSpeedUp for the cap because _productionCapAsDuration can include it
             uint256 capWhenActive = _acquireNumSpaceships + (uint256(production) * _productionCapAsDuration) / 1 hours;
-            uint256 cap = planetUpdate.active
-                ? capWhenActive
-                : 0;
+            uint256 cap = planetUpdate.active ? capWhenActive : 0;
 
             if (newNumSpaceships > cap) {
                 // NOTE do not decrease while exiting
