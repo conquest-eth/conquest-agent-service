@@ -17,6 +17,7 @@ selection.subscribe((v) => {
   if (!v) {
     if (stopSubscribtion) {
       stopSubscribtion();
+      stopSubscribtion = undefined;
     }
     planetInfo = undefined;
     planetState = undefined;
@@ -26,6 +27,7 @@ selection.subscribe((v) => {
     if (newPlanetInfo.location.id !== planetInfo?.location.id) {
       if (stopSubscribtion) {
         stopSubscribtion();
+        stopSubscribtion = undefined;
       }
       planetInfo = newPlanetInfo;
       planetState = planets.planetStateFor(planetInfo);

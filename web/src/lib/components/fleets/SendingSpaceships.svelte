@@ -67,9 +67,9 @@
   $: defaultTimeToArrive = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
   // $: arrivalTime = $time + defaultTimeToArrive;
 
-  $: currentTimeToArrive = arrivalTimeWanted ? (arrivalTimeWanted.getTime() / 1000) - $time : defaultTimeToArrive
+  $: currentTimeToArrive = arrivalTimeWanted ? arrivalTimeWanted.getTime() / 1000 - $time : defaultTimeToArrive;
 
-  $: currentTimeToArriveFormatted = timeToText(currentTimeToArrive)
+  $: currentTimeToArriveFormatted = timeToText(currentTimeToArrive);
 
   let prediction:
     | {
@@ -87,7 +87,12 @@
   $: {
     if (toPlanetState && fromPlanetState) {
       prediction = {
-        numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(fromPlanetInfo, toPlanetInfo, $toPlanetState, currentTimeToArrive > defaultTimeToArrive ? defaultTimeToArrive - currentTimeToArrive : 0),
+        numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(
+          fromPlanetInfo,
+          toPlanetInfo,
+          $toPlanetState,
+          currentTimeToArrive > defaultTimeToArrive ? - (arrivalTimeWanted.getTime() / 1000 - $toPlanetState.lastUpdatedSaved) : 0
+        ),
         outcome: spaceInfo.outcome(
           fromPlanetInfo,
           $fromPlanetState,
@@ -95,7 +100,7 @@
           $toPlanetState,
           fleetAmount,
           $time,
-          0,
+          currentTimeToArrive > defaultTimeToArrive ? - (arrivalTimeWanted.getTime() / 1000 - $toPlanetState.lastUpdatedSaved) : 0,
           senderPlayer,
           fromPlayer,
           toPlayer,
@@ -105,19 +110,23 @@
     }
   }
 
-  $: flatpickrOptions = flatpickrOptions ? flatpickrOptions : defaultTimeToArrive ? {
-    enableTime: true,
-    minDate: (defaultTimeToArrive + $time + 5 *60) * 1000,
-    defaultDate: '2022-02-17 14:22',
-    time_24hr: true,
-    plugins: [
-      confirmDatePlugin({
-        confirmText: 'OK ',
-        showAlways: false,
-      }),
-    ],
-  }: undefined;
-
+  $: flatpickrOptions = flatpickrOptions
+    ? flatpickrOptions
+    : defaultTimeToArrive
+    ? {
+        enableTime: true,
+        minDate: (defaultTimeToArrive + $time + 1 * 60) * 1000,
+        defaultDate: '2022-02-17 14:22',
+        time_24hr: true,
+        minuteIncrement: 1,
+        plugins: [
+          confirmDatePlugin({
+            confirmText: 'OK ',
+            showAlways: false,
+          }),
+        ],
+      }
+    : undefined;
 
   // $: {
   //   console.log({
@@ -130,7 +139,6 @@
   //     minDate: flatpickrOptions?.minDate
   //   })
   // }
-
 
   let confirmDisabled = false;
   $: {
@@ -354,7 +362,14 @@
           class="mt-5"
           label="Fleet Amount"
           disabled={confirmDisabled}
-          on:click={() => sendFlow.confirm(fleetAmount, gift, useAgentService, fleetOwnerSpecified, arrivalTimeWanted ? Math.floor(arrivalTimeWanted.getTime() / 1000) : undefined)}
+          on:click={() =>
+            sendFlow.confirm(
+              fleetAmount,
+              gift,
+              useAgentService,
+              fleetOwnerSpecified,
+              arrivalTimeWanted ? Math.floor(arrivalTimeWanted.getTime() / 1000) : undefined
+            )}
         >
           <p>Confirm</p>
           {#if confirmDisabled}(need higher attack){/if}
