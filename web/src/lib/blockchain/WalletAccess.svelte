@@ -1,6 +1,6 @@
 <script lang="ts">
   export let title = '';
-  import {chainId, chainName, fallbackProviderOrUrl, webWalletURL} from '$lib/config';
+  import {chainName} from '$lib/config';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import Button from '$lib/components/generic/PanelButton.svelte';
   import Modal from '$lib/components/generic/Modal.svelte';
