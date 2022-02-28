@@ -7,7 +7,16 @@
           {
             name: 'Basic Spaceship Marketplace',
             iframe: 'http://localhost:3001',
-            config: {actions: [{title: 'Market', action: 'show_planet', conditions: ['owner', 'planet:basic_sale']}]},
+            config: {
+              actions: [
+                {
+                  title: 'Market',
+                  action: 'show_planet',
+                  panelConditions: ['owner', 'planet:basic_sale'],
+                  mapConditions: ['planet:basic_sale'],
+                },
+              ],
+            },
           },
         ]
       : [];

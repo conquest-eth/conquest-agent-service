@@ -98,7 +98,8 @@
 
   $: extraButtons = $showPlanetButtons.filter(
     (v) =>
-      !v.conditions || matchConditions(v.conditions, {account: $wallet.address, planetState: $planetState, planetInfo})
+      !v.panelConditions ||
+      matchConditions(v.panelConditions, {account: $wallet.address, planetState: $planetState, planetInfo})
   );
 </script>
 

@@ -3,12 +3,22 @@ import type {PlanetInfo, PlanetState} from 'conquest-eth-common';
 import type {Readable} from 'svelte/store';
 import {get, writable} from 'svelte/store';
 
-export type Action = {title: string; action: string; conditions: (string | string[])[]};
+export type Action = {
+  title: string;
+  action: string;
+  panelConditions: (string | string[])[];
+  mapConditions: (string | string[])[];
+};
 export type PluginConfig = {actions: Action[]};
 
 const pluginsActivated: {src: string; window: Window; config: PluginConfig}[] = [];
 
-export type ButtonInfo = {src: string; title: string; conditions: (string | string[])[]};
+export type ButtonInfo = {
+  src: string;
+  title: string;
+  panelConditions: (string | string[])[];
+  mapConditions: (string | string[])[];
+};
 
 const showPlanetButtonsStore = writable<ButtonInfo[]>([]);
 
@@ -19,7 +29,12 @@ export const showPlanetButtons: Readable<ButtonInfo[]> = {
 function addButton(arr: ButtonInfo[], actionToAdd: string, actions: Action[], src: string) {
   for (const action of actions) {
     if (action.action === actionToAdd) {
-      arr.push({src, title: action.title, conditions: action.conditions});
+      arr.push({
+        src,
+        title: action.title,
+        panelConditions: action.panelConditions,
+        mapConditions: action.mapConditions,
+      });
       break;
     }
   }

@@ -14,6 +14,7 @@
   import {spaceInfo} from '$lib/space/spaceInfo';
   import {hasCommonAlliance, playersQuery} from '$lib/space/playersQuery';
   import {privateWallet} from '$lib/account/privateWallet';
+  import {matchConditions, pluginShowing, showPlanetButtons} from '$lib/plugins/currentPlugin';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -172,6 +173,14 @@
       : $selectionOwner
       ? `rgba(255, 255 ,255, ${capacityRatio})`
       : `rgba(255, 0 ,0, ${capacityRatio})`;
+
+  $: plugins = !$planetState
+    ? []
+    : $showPlanetButtons.filter(
+        (v) =>
+          v.mapConditions &&
+          matchConditions(v.mapConditions, {account: $wallet.address, planetState: $planetState, planetInfo})
+      );
 </script>
 
 <div>
@@ -301,8 +310,8 @@
     </div>
   {/if}
 
-  <!-- TODO pluginify -->
-  {#if !playerIsOwner && $planetState && $planetState.metadata.basic_sale}
+  {#each plugins as plugin}
+    <!-- TODO color -->
     <div
       style={`
         z-index: 5;
@@ -325,7 +334,7 @@
         />
       </svg>
     </div>
-  {/if}
+  {/each}
 
   {#if owner}
     {#if blockieScale <= scale}
