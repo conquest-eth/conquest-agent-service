@@ -18,7 +18,7 @@
   import Blockie from '../account/Blockie.svelte';
   import {wallet} from '$lib/blockchain/wallet';
   import Flatpickr from '../flatpickr/Flatpickr.svelte';
-  import confirmDatePlugin from 'flatpickr/dist/plugins/confirmDate/confirmDate';
+  import confirmDatePlugin from 'flatpickr/dist/plugins/confirmDate/confirmDate.js';
 
   let useAgentService = false;
   let gift = false;
