@@ -30,7 +30,6 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericEvent[]> {
         orderDirection: desc
         orderBy: blockNumber
         where: {
-          owner_not_in: ["0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20", "0xe53cd71271acadbeb0f64d9c8c62bbddc8ca9e66"]
           timestamp_gt: $timestamp
         }
         first: 1000
