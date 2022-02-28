@@ -92,4 +92,11 @@ interface ImportingOuterSpaceTypes {
         address fleetSender; // does not work ?
         address operator; // should be saved ?
     }
+
+    struct AccumulatedAttack {
+        address target;
+        uint32 numAttackSpent;
+        uint32 damageCausedSoFar;
+        uint16 averageAttackPower;
+    }
 }

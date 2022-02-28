@@ -655,6 +655,11 @@ contract OuterSpaceFacetBase is
         uint32 orbitDefenseDestroyed1;
         uint32 orbitDefense2;
         uint32 orbitDefenseDestroyed2;
+        bool accumulating;
+        uint40 arrivalTime;
+        uint32 accumulatedDefenseAdded;
+        uint32 accumulatedAttackAdded;
+        uint16 attackPower;
     }
 
     function _resolveFleet(uint256 fleetId, FleetResolution calldata resolution) internal {
@@ -677,7 +682,13 @@ contract OuterSpaceFacetBase is
             rState.fromData,
             toPlanetUpdate.data
         );
-        _requireCorrectTime(resolution.distance, resolution.arrivalTimeWanted, rState.fleetLaunchTime, rState.fromData);
+        _requireCorrectTimeAndUpdateArrivalTime(
+            resolution.distance,
+            resolution.arrivalTimeWanted,
+            rState.fleetLaunchTime,
+            rState.fromData,
+            rState
+        );
 
         // -----------------------------------------------------------------------------------------------------------
         // Compute Basic Planet Updates
@@ -696,7 +707,7 @@ contract OuterSpaceFacetBase is
 
         _updateFleetForGifting(rState, resolution, toPlanetUpdate.owner);
 
-        _computeResolutionResult(rState, toPlanetUpdate);
+        _computeResolutionResult(rState, toPlanetUpdate, resolution);
 
         // -----------------------------------------------------------------------------------------------------------
         // Write New State
@@ -709,6 +720,9 @@ contract OuterSpaceFacetBase is
         _setTravelingUpkeepFromOrigin(fleetId, rState, resolution.from);
 
         _setPlanet(toPlanet, toPlanetUpdate);
+
+        _setAccumulatedAttack(rState, toPlanetUpdate);
+
         // _setAccountFromPlanetUpdate(toPlanetUpdate); // TODO remove, else think about the fromPlanet ?
 
         // TODO quantity should be kept ?
@@ -731,7 +745,9 @@ contract OuterSpaceFacetBase is
             rState.victory,
             toPlanetUpdate.numSpaceships,
             toPlanetUpdate.travelingUpkeep,
-            toPlanetUpdate.overflow
+            toPlanetUpdate.overflow,
+            rState.accumulatedDefenseAdded,
+            rState.accumulatedAttackAdded
         );
     }
 
@@ -765,6 +781,20 @@ contract OuterSpaceFacetBase is
         }
     }
 
+    function _setAccumulatedAttack(ResolutionState memory rState, PlanetUpdateState memory toPlanetUpdate) internal {
+        if (rState.victory) {
+            // victory, past attack has been succesful in capturing the planet, They do not count anymore
+            delete _attacks[toPlanetUpdate.location][rState.fleetOwner][rState.arrivalTime];
+        } else if (rState.accumulating) {
+            AccumulatedAttack storage attack = _attacks[toPlanetUpdate.location][rState.fleetOwner][rState.arrivalTime];
+
+            attack.target = toPlanetUpdate.owner;
+            attack.damageCausedSoFar = rState.defenderLoss + rState.inFlightPlanetLoss;
+            attack.numAttackSpent = rState.attackerLoss;
+            attack.averageAttackPower = rState.attackPower;
+        }
+    }
+
     function _createResolutionState(Fleet storage fleet, uint256 from)
         internal
         view
@@ -774,6 +804,7 @@ contract OuterSpaceFacetBase is
         rState.fleetLaunchTime = fleet.launchTime;
         rState.fleetQuantity = fleet.quantity;
         rState.fromData = _planetData(from);
+        rState.attackPower = _attack(rState.fromData);
     }
 
     function _computeInFlightLossForFleet(ResolutionState memory rState, FleetResolution memory resolution)
@@ -943,25 +974,55 @@ contract OuterSpaceFacetBase is
         }
     }
 
-    function _computeResolutionResult(ResolutionState memory rState, PlanetUpdateState memory toPlanetUpdate)
-        internal
-        view
-    {
+    function _computeResolutionResult(
+        ResolutionState memory rState,
+        PlanetUpdateState memory toPlanetUpdate,
+        FleetResolution memory resolution
+    ) internal view {
         if (rState.gifting) {
             _computeGiftingResolutionResult(rState, toPlanetUpdate);
         } else {
-            _computeAttackResolutionResult(rState, toPlanetUpdate);
+            _computeAttackResolutionResult(rState, toPlanetUpdate, resolution);
         }
     }
 
-    function _computeAttackResolutionResult(ResolutionState memory rState, PlanetUpdateState memory toPlanetUpdate)
-        internal
-        view
-    {
+    function _computeAttackResolutionResult(
+        ResolutionState memory rState,
+        PlanetUpdateState memory toPlanetUpdate,
+        FleetResolution memory resolution
+    ) internal view {
         // NOTE natives come back to power once numSPaceships == 0 and planet not active
         if (toPlanetUpdate.numSpaceships == 0 && !toPlanetUpdate.active) {
             _updatePlanetUpdateStateAndResolutionStateForNativeAttack(rState, toPlanetUpdate);
         } else {
+            if (block.timestamp < rState.arrivalTime + 45 minutes) {
+                if (rState.fleetOwner != resolution.fleetSender) {
+                    (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
+                        resolution.fleetSender,
+                        rState.fleetOwner,
+                        rState.fleetLaunchTime
+                    );
+                    rState.accumulating = joinTime != 0 && joinTime <= rState.fleetLaunchTime;
+                } else {
+                    rState.accumulating = true;
+                }
+
+                if (rState.accumulating) {
+                    AccumulatedAttack memory acc = _attacks[toPlanetUpdate.location][rState.fleetOwner][
+                        rState.arrivalTime
+                    ];
+                    if (acc.target == toPlanetUpdate.owner && acc.numAttackSpent != 0) {
+                        rState.attackPower = uint16(
+                            uint256(
+                                rState.attackPower * rState.fleetQuantity + acc.averageAttackPower * acc.numAttackSpent
+                            ) / (rState.fleetQuantity + acc.numAttackSpent)
+                        );
+                        rState.accumulatedAttackAdded = acc.numAttackSpent;
+                        rState.accumulatedDefenseAdded = acc.damageCausedSoFar;
+                    }
+                }
+            }
+
             _updatePlanetUpdateStateAndResolutionStateForPlanetAttack(rState, toPlanetUpdate);
         }
     }
@@ -1005,7 +1066,7 @@ contract OuterSpaceFacetBase is
     ) internal view {
         uint16 attack = _attack(rState.fromData);
         uint16 defense = _defense(toPlanetUpdate.data);
-        uint16 natives = _natives(toPlanetUpdate.data);
+        uint16 natives = _natives(toPlanetUpdate.data); // TODO ? attacks ?
         (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(rState.fleetQuantity, natives, attack, defense);
         rState.attackerLoss = attackerLoss;
         if (defenderLoss == natives && rState.fleetQuantity > attackerLoss) {
@@ -1015,9 +1076,8 @@ contract OuterSpaceFacetBase is
             rState.victory = true;
             toPlanetUpdate.newOwner = rState.fleetOwner;
             // solhint-disable-next-line no-empty-blocks
-        } else {
-            // TODO revert ?
         }
+        // NOTE else (attacker lost) then nothing happen
     }
 
     function _updateResolutionStateFromOrbitDefense(
@@ -1042,7 +1102,10 @@ contract OuterSpaceFacetBase is
         PlanetUpdateState memory toPlanetUpdate
     ) internal view {
         _updateResolutionStateFromOrbitDefense(rState, toPlanetUpdate);
-        uint256 numDefense = toPlanetUpdate.numSpaceships + rState.orbitDefense1 + rState.orbitDefense2;
+        uint256 numDefense = toPlanetUpdate.numSpaceships +
+            rState.accumulatedDefenseAdded +
+            rState.orbitDefense1 +
+            rState.orbitDefense2;
         uint16 production = _production(toPlanetUpdate.data);
 
         if (numDefense == 0 && rState.fleetQuantity > 0) {
@@ -1095,10 +1158,10 @@ contract OuterSpaceFacetBase is
         PlanetUpdateState memory toPlanetUpdate,
         uint256 numDefense
     ) internal view {
-        uint16 attack = _attack(rState.fromData);
+        uint16 attack = rState.attackPower;
         uint16 defense = _defense(toPlanetUpdate.data);
         (uint32 attackerLoss, uint32 defenderLoss) = _computeFight(
-            rState.fleetQuantity,
+            rState.fleetQuantity + rState.accumulatedAttackAdded,
             numDefense,
             attack,
             defense
@@ -1111,10 +1174,13 @@ contract OuterSpaceFacetBase is
             // NOTE Attacker wins
 
             // all orbiting fleets are destroyed, inFlightPlanetLoss is all that is left
+            rState.inFlightPlanetLoss = uint32(
+                numDefense - toPlanetUpdate.numSpaceships - rState.accumulatedDefenseAdded
+            );
 
-            rState.defenderLoss = toPlanetUpdate.numSpaceships; // defenderLoss represent only planet loss
+            rState.defenderLoss = rState.defenderLoss - rState.inFlightPlanetLoss;
 
-            toPlanetUpdate.numSpaceships = rState.fleetQuantity - attackerLoss;
+            toPlanetUpdate.numSpaceships = rState.fleetQuantity + rState.accumulatedAttackAdded - attackerLoss;
             rState.victory = true;
 
             toPlanetUpdate.newOwner = rState.fleetOwner;
@@ -1135,12 +1201,15 @@ contract OuterSpaceFacetBase is
                     }
                 }
             }
-        } else if (rState.attackerLoss == rState.fleetQuantity) {
+        } else if (rState.attackerLoss == rState.fleetQuantity + rState.accumulatedAttackAdded) {
             // NOTE Defender wins
 
-            if (defenderLoss > toPlanetUpdate.numSpaceships) {
-                rState.inFlightPlanetLoss = defenderLoss - toPlanetUpdate.numSpaceships;
-                rState.defenderLoss = toPlanetUpdate.numSpaceships; // defenderLoss represent only planet loss
+            if (defenderLoss > toPlanetUpdate.numSpaceships + rState.accumulatedDefenseAdded) {
+                rState.inFlightPlanetLoss =
+                    defenderLoss -
+                    toPlanetUpdate.numSpaceships -
+                    rState.accumulatedDefenseAdded;
+
                 toPlanetUpdate.numSpaceships = 0;
 
                 if (rState.orbitDefense1 >= rState.inFlightPlanetLoss) {
@@ -1159,8 +1228,14 @@ contract OuterSpaceFacetBase is
                     rState.orbitDefense1 = 0;
                 }
             } else {
-                toPlanetUpdate.numSpaceships = toPlanetUpdate.numSpaceships - defenderLoss;
+                toPlanetUpdate.numSpaceships =
+                    toPlanetUpdate.numSpaceships +
+                    rState.accumulatedDefenseAdded -
+                    defenderLoss;
             }
+
+            rState.defenderLoss = rState.defenderLoss - rState.inFlightPlanetLoss;
+
             if (!toPlanetUpdate.active) {
                 if (defenderLoss > toPlanetUpdate.overflow) {
                     toPlanetUpdate.overflow = 0;
@@ -1365,13 +1440,18 @@ contract OuterSpaceFacetBase is
         require(distance**2 <= distanceSquared && distanceSquared < (distance + 1)**2, "wrong distance");
     }
 
-    function _requireCorrectTime(
+    function _requireCorrectTimeAndUpdateArrivalTime(
         uint256 distance,
         uint256 arrivalTimeWanted,
         uint40 launchTime,
-        bytes32 fromPlanetData
+        bytes32 fromPlanetData,
+        ResolutionState memory rState
     ) internal view {
-        uint256 reachTime = Math.max(arrivalTimeWanted, launchTime + (distance * (_timePerDistance * 10000)) / _speed(fromPlanetData));
+        uint256 reachTime = Math.max(
+            arrivalTimeWanted,
+            launchTime + (distance * (_timePerDistance * 10000)) / _speed(fromPlanetData)
+        );
+        rState.arrivalTime = uint40(reachTime);
         require(block.timestamp >= reachTime, "too early");
         require(block.timestamp < reachTime + _resolveWindow, "too late, your spaceships are lost in space");
     }

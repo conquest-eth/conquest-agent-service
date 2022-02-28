@@ -35,7 +35,9 @@ interface ImportingOuterSpaceEvents {
         bool won,
         uint32 newNumspaceships,
         int40 newTravelingUpkeep,
-        uint32 newOverflow
+        uint32 newOverflow,
+        uint32 accumulatedDefenseAdded,
+        uint32 accumulatedAttackAdded
     );
 
     event TravelingUpkeepReductionFromDestruction(
