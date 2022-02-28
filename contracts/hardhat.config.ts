@@ -69,6 +69,7 @@ const config: HardhatUserConfig = {
       31337: 0,
       4: 2,
       5: 2,
+      100: 2,
     },
   },
   networks: addForkConfiguration({
@@ -88,8 +89,8 @@ const config: HardhatUserConfig = {
       deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
     },
     dev: {
-      url: node_url('goerli'),
-      accounts: accounts('goerli'),
+      url: node_url('gnosis_chain'),
+      accounts: accounts('gnosis_chain'),
       deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
     },
     quick: {
@@ -105,6 +106,11 @@ const config: HardhatUserConfig = {
     forfun: {
       url: node_url('goerli'),
       accounts: accounts('goerli'),
+      deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
+    },
+    beta1: {
+      url: node_url('gnosis_chain'),
+      accounts: accounts('gnosis_chain'),
       deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
     },
     production: {
