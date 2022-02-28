@@ -4,6 +4,7 @@ export const chainNames: {[chainId: string]: string} = {
   '4': 'rinkeby',
   '5': 'goerli',
   '42': 'kovan',
+  '100': 'Gnosis Chain',
   '1337': 'localhost chain',
   '31337': 'localhost chain',
 };
