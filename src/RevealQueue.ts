@@ -1034,8 +1034,8 @@ export class RevealQueue extends DO {
         this.state.storage.put<PendingTransactionData>(pendingID, {...reveal, tx});
 
         transactionsCounter.nextIndex = tx.nonce + 1;
-        this.state.storage.put<TransactionsCounter>(`pending`, transactionsCounter);
-        this.state.storage.delete(queueID);
+        await this.state.storage.put<TransactionsCounter>(`pending`, transactionsCounter);
+        await this.state.storage.delete(queueID);
       } else {
         if (change) {
           if (newQueueID !== queueID) {
