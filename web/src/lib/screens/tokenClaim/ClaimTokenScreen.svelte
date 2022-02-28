@@ -1,6 +1,6 @@
 <script lang="ts">
   import tokenClaim from './tokenClaim';
-  import {wallet, chain} from '$lib/blockchain/wallet';
+  import {wallet, chain, switchChain} from '$lib/blockchain/wallet';
   import Button from '$lib/components/generic/PanelButton.svelte';
   import {chainName} from '$lib/config';
   import {privateWallet} from '$lib/account/privateWallet';
@@ -21,6 +21,9 @@
       {:else if $wallet.state === 'Ready'}
         {#if $chain.notSupported}
           <p class="m-5 text-red-500">Please switch to {chainName}.</p>
+          <div>
+            <Button label="Unlock Wallet" on:click={switchChain}>Switch</Button>
+          </div>
         {:else if $tokenClaim.state === 'Loading'}
           <p class="text-green-500">Congratulations! You have been given some tokens to claim.</p>
           <p class="mt-5">Loading claim...</p>

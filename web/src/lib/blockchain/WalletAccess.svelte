@@ -5,7 +5,7 @@
   import Button from '$lib/components/generic/PanelButton.svelte';
   import Modal from '$lib/components/generic/Modal.svelte';
   import {base} from '$app/paths';
-  import {wallet, builtin, chain, transactions, balance, flow, fallback} from '$lib/blockchain/wallet';
+  import {wallet, builtin, chain, transactions, balance, flow, fallback, switchChain} from '$lib/blockchain/wallet';
   import {privateWallet} from '$lib/account/privateWallet';
 
   $: executionError = $flow.executionError as any;
@@ -61,22 +61,6 @@
   }
 
   let onSharedStorage = !!(base && (base.startsWith('/ipfs/') || base.startsWith('/ipns/')));
-
-  async function switchChain() {
-    let blockExplorerUrls: string[] | undefined;
-    const explorerTXURL = import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION as string;
-    if (explorerTXURL) {
-      blockExplorerUrls.push(explorerTXURL.slice(0, explorerTXURL.length - 2));
-    }
-    const rpcUrls = [];
-    if (webWalletURL) {
-      rpcUrls.push(webWalletURL);
-    }
-    if (fallbackProviderOrUrl) {
-      rpcUrls.push(fallbackProviderOrUrl);
-    }
-    await chain.switchChain(chainId, {chainName, rpcUrls, blockExplorerUrls});
-  }
 </script>
 
 <slot />
@@ -186,7 +170,9 @@
         Please switch to
         {chainName}
         <!-- ({$chain.chainId}) -->
-        <Button label="Unlock Wallet" on:click={switchChain}>Switch</Button>
+        <div>
+          <Button label="Unlock Wallet" on:click={switchChain}>Switch</Button>
+        </div>
       {/if}
     {:else if executionError}
       <div class="text-center">

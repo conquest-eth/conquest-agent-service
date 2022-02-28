@@ -44,7 +44,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     await deployments.saveDotFile(pastMnemonicsFilename, JSON.stringify(pastMnemonics));
   }
 
-  const claimKeyETHAmount = parseEther('0.52');
+  const claimKeyETHAmount = parseEther('0.2');
   const defaultClaimKeyTokenAmount = parseEther('200');
 
   const claimKeys: {
