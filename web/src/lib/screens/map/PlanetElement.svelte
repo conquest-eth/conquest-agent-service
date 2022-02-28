@@ -13,6 +13,7 @@
   import selectionOwner from '$lib/map/selectionOwner';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import {hasCommonAlliance, playersQuery} from '$lib/space/playersQuery';
+  import {privateWallet} from '$lib/account/privateWallet';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -128,8 +129,7 @@
     adjustedRenderScale = 1;
   }
 
-  $: playerIsOwner = owner?.toLowerCase() === $wallet.address?.toLowerCase();
-
+  $: playerIsOwner = $privateWallet.step === 'READY' && owner?.toLowerCase() === $wallet.address?.toLowerCase();
 
   $: isSelectedOwner = $selectionOwner && $selectionOwner.address.toLowerCase() === owner?.toLowerCase();
 
@@ -156,13 +156,22 @@
     : 0;
 
   $: isAlly = alliances.find((v) => v.ally);
-  $: borderColor = !$wallet.address
-    ? 'white'
-    : playerIsOwner
-    ? `rgba(0, 255, 0, ${capacityRatio})`
-    : isAlly
-    ? isSelectedOwner ?`rgba(103, 232, 255, ${capacityRatio})` :`rgba(103, 232, 255, ${capacityRatio})` // TODO different color on selection ?
-    : isSelectedOwner ?`rgba(255, 0 ,0, ${capacityRatio})` : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])? `rgba(255, 165 ,0, ${capacityRatio})` : `rgba(255, 255 ,255, ${capacityRatio})`;
+  $: borderColor =
+    !$wallet.address || $privateWallet.step !== 'READY'
+      ? 'white'
+      : playerIsOwner
+      ? `rgba(0, 255, 0, ${capacityRatio})`
+      : isAlly
+      ? isSelectedOwner
+        ? `rgba(103, 232, 255, ${capacityRatio})`
+        : `rgba(103, 232, 255, ${capacityRatio})` // TODO different color on selection ?
+      : isSelectedOwner
+      ? `rgba(255, 0 ,0, ${capacityRatio})`
+      : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])
+      ? `rgba(255, 165 ,0, ${capacityRatio})`
+      : $selectionOwner
+      ? `rgba(255, 255 ,255, ${capacityRatio})`
+      : `rgba(255, 0 ,0, ${capacityRatio})`;
 </script>
 
 <div>
@@ -343,7 +352,7 @@
           position: absolute;
           transform:
             translate(${x + 0 * multiplier}px,${y - 0 * multiplier}px)
-            scale(${blockieScale*1.5}, ${blockieScale*1.5});
+            scale(${blockieScale * 1.5}, ${blockieScale * 1.5});
           width: ${frame.w}px; height: ${frame.h}px;
           border: ${active ? 'solid ' + 0.25 / scale + 'px' : 'dashed ' + 0.12 / scale + 'px'}  ${borderColor};
        `}
