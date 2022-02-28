@@ -28,11 +28,11 @@ if (!process.env.VITE_CHAIN_ID) {
 
 let outputFolder = './build';
 
-if (process.env.VERCEL) {
-  // allow no config when creating a vercel project
-  outputFolder = '../public';
-  console.log('building on VERCEL...');
-}
+// if (process.env.VERCEL) {
+//   // allow no config when creating a vercel project
+//   outputFolder = '../public';
+//   console.log('building on VERCEL...');
+// }
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
