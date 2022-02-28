@@ -38,9 +38,10 @@
   import {time} from '$lib/time';
 
   import Search from '$lib/components/utils/Search.svelte';
-import PlanetEventList from './PlanetEventList.svelte';
-import { xyToLocation } from 'conquest-eth-common';
-import { select_option } from 'svelte/internal';
+  import PlanetEventList from './PlanetEventList.svelte';
+  import {xyToLocation} from 'conquest-eth-common';
+  import {select_option} from 'svelte/internal';
+  import {showFleets} from '$lib/map/showFleets';
 
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
@@ -181,7 +182,7 @@ import { select_option } from 'svelte/internal';
   </Banner>
 {:else if $selection}
   <PlanetInfoPanel coords={$selection} />
-  <PlanetEventList location={xyToLocation($selection.x, $selection.y)}/>
+  <PlanetEventList location={xyToLocation($selection.x, $selection.y)} />
 {:else}
   <Search />
 {/if}
@@ -190,6 +191,13 @@ import { select_option } from 'svelte/internal';
     <PlanetsListPanel />
     <FleetsList />
     <EventsList />
+    <div class="flex-col">
+      <div
+        class="top-0 md:p-3 p-1  w-32 text-center relative bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 mt-4 text-sm"
+      >
+        <p class="text-white"><input type="checkbox" bind:checked={$showFleets} /> Fleet</p>
+      </div>
+    </div>
   </div>
 </div>
 

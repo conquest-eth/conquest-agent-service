@@ -11,6 +11,7 @@
   import EventElement from './EventElement.svelte';
   import {errors} from '$lib/space/errors';
   import ErrorElement from './ErrorElement.svelte';
+  import {showFleets} from '$lib/map/showFleets';
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
 
   $: x1 = ($spaceQueryWithPendingActions.queryState.data?.space.x1 || -16) * 4 - 2; // TODO sync CONSTANTS with thegraph and contract
@@ -62,12 +63,14 @@ width:100%; height: 100%;
       {/each}
     {/if}
 
-    {#if $fleetList.fleets}
-      {#each $fleetList.fleets as fleet}
-        {#if fleet.state !== 'WAITING_ACKNOWLEDGMENT'}
-          <FleetElement {fleet} />
-        {/if}
-      {/each}
+    {#if $showFleets}
+      {#if $fleetList.fleets}
+        {#each $fleetList.fleets as fleet}
+          {#if fleet.state !== 'WAITING_ACKNOWLEDGMENT'}
+            <FleetElement {fleet} />
+          {/if}
+        {/each}
+      {/if}
     {/if}
 
     {#if $myevents}
