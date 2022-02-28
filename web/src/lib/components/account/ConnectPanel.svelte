@@ -128,6 +128,10 @@
         Profile
         <Help class="w-4 h-4">You can setup your profile so that other player can contact you.</Help>
       </NavButton>
+      <NavButton class="m-1" label="settings" href={url('plugins/')}>
+        Plugins
+        <Help class="w-4 h-4">Manage Plugins</Help>
+      </NavButton>
       {#if showErrorButton}
         <NavButton class="m-1" label="settings" on:click={() => account.generateError()}>
           Error
