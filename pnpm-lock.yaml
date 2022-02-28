@@ -267,6 +267,7 @@ importers:
       '@ethersproject/contracts': ^5.5.0
       '@ethersproject/providers': ^5.5.1
       '@ethersproject/solidity': ^5.5.0
+      '@ethersproject/units': ^5.5.0
       '@ethersproject/wallet': ^5.5.0
       '@sentry/browser': ^6.16.1
       '@sentry/cli': ^1.72.0
@@ -328,6 +329,7 @@ importers:
       '@ethersproject/contracts': 5.5.0
       '@ethersproject/providers': 5.5.2
       '@ethersproject/solidity': 5.5.0
+      '@ethersproject/units': 5.5.0
       '@ethersproject/wallet': 5.5.0
       '@sentry/browser': 6.17.1
       '@sentry/integrations': 6.17.1
@@ -1093,7 +1095,6 @@ packages:
       '@ethersproject/bignumber': 5.5.0
       '@ethersproject/constants': 5.5.0
       '@ethersproject/logger': 5.5.0
-    dev: true
 
   /@ethersproject/wallet/5.4.0:
     resolution: {integrity: sha512-wU29majLjM6AjCjpat21mPPviG+EpK7wY1+jzKD0fg3ui5fgedf2zEu1RDgpfIMsfn8fJHJuzM4zXZ2+hSHaSQ==}
@@ -3125,7 +3126,7 @@ packages:
   /axios/0.21.4:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
     dependencies:
-      follow-redirects: 1.14.7
+      follow-redirects: 1.14.7_debug@4.3.3
     transitivePeerDependencies:
       - debug
     dev: true
@@ -7331,16 +7332,6 @@ packages:
 
   /follow-redirects/1.14.6:
     resolution: {integrity: sha512-fhUl5EwSJbbl8AR+uYL2KQDxLkdSjZGR36xy46AO7cOMTrCMON6Sa28FmAnC2tRTDbd/Uuzz3aJBv7EBN7JH8A==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-    dev: true
-
-  /follow-redirects/1.14.7:
-    resolution: {integrity: sha512-+hbxoLbFMbRKDwohX8GkTataGqO6Jb7jGwpAlwgy2bIz25XtRm7KEzJM76R1WiNT5SwZkX4Y75SwBolkpmE7iQ==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'
@@ -13549,7 +13540,7 @@ packages:
     dependencies:
       command-exists: 1.2.9
       commander: 3.0.2
-      follow-redirects: 1.14.7
+      follow-redirects: 1.14.7_debug@4.3.3
       fs-extra: 0.30.0
       js-sha3: 0.8.0
       memorystream: 0.3.1

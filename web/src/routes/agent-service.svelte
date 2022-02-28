@@ -13,11 +13,17 @@
   import agentService_register from '$lib/flows/agentService_register';
   import agentService_topup from '$lib/flows/agentService_topup';
   import {BigNumber} from '@ethersproject/bignumber';
+  import {formatEther, parseEther} from '@ethersproject/units';
   import {account} from '$lib/account/account';
   import {fleetList} from '$lib/space/fleets';
 
   $: registered = $agentService.account && $agentService.account.delegate;
   $: enoughBalance = registered && $agentService.account.balance.gte($agentService.account.minimumBalance);
+
+  $: minimumBalance = $agentService.account
+    ? BigNumber.from($agentService.account?.minimumBalance)
+    : parseEther('0.01');
+  const topupValue = parseEther('0.1'); // TODO config
 </script>
 
 <div class="w-full h-full bg-black">
@@ -100,9 +106,7 @@
               {/if}
             {:else}
               <p>
-                You do not have enough balance. You need at least {$agentService.account?.minimumBalance
-                  .div('100000000000000')
-                  .toNumber() / 10000} ${nativeTokenSymbol}
+                You do not have enough balance. You need at least {formatEther(minimumBalance)}} ${nativeTokenSymbol}
               </p>
 
               <p>please top-up</p>
@@ -110,18 +114,14 @@
 
             <p>
               Your Balance:
-              {$agentService.account.balance.div('100000000000000').toNumber() / 10000}
+              {formatEther($agentService.account.balance)}
               ${nativeTokenSymbol}
               <!-- (arround
                 {$agent.balance.div($agent?.cost || 0)}
                 fleet) -->
 
-              <Button
-                class="w-max-content m-4"
-                label="Top Up"
-                on:click={() => agentService_topup.topup(BigNumber.from('200000000000000000'))}
-              >
-                Top Up
+              <Button class="w-max-content m-4" label="Top Up" on:click={() => agentService_topup.topup(topupValue)}>
+                Top Up ({formatEther(topupValue)})
                 <!-- Top Up (for 10 fleets) -->
               </Button>
             </p>
