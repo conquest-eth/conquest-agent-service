@@ -60,10 +60,11 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   for (let i = offset; i < numClaimKey + offset; i++) {
     const path = "m/44'/60'/" + i + "'/0/0";
     const wallet = Wallet.fromMnemonic(mnemonic, path);
-    let claimKeyTokenAmount = defaultClaimKeyTokenAmount;
-    if (BigNumber.from(wallet.address).mod(100).toNumber() < 10) {
-      claimKeyTokenAmount = defaultClaimKeyTokenAmount.mul(2);
-    }
+    const claimKeyTokenAmount = defaultClaimKeyTokenAmount;
+    // TODO reenable 400 tokens ?
+    // if (BigNumber.from(wallet.address).mod(100).toNumber() < 10) {
+    //   claimKeyTokenAmount = defaultClaimKeyTokenAmount.mul(2);
+    // }
     claimKeys.push({
       key: wallet.privateKey,
       amount: claimKeyTokenAmount.div('1000000000000000000').toNumber(),
