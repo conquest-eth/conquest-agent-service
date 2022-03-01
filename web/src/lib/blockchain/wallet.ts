@@ -3,7 +3,17 @@ import {WalletConnectModuleLoader} from 'web3w-walletconnect-loader';
 import {PortisModuleLoader} from 'web3w-portis-loader';
 import {contractsInfos} from '$lib/blockchain/contracts';
 import {notifications} from '../web/notifications';
-import {webWalletURL, finality, chainName, fallbackProviderOrUrl, chainId, localDev} from '$lib/config';
+import {
+  webWalletURL,
+  finality,
+  chainName,
+  fallbackProviderOrUrl,
+  chainId,
+  localDev,
+  nativeTokenName,
+  nativeTokenSymbol,
+  nativeTokenDecimal,
+} from '$lib/config';
 import {isCorrected, correctTime} from '$lib/time';
 import {base} from '$app/paths';
 import {chainTempo} from '$lib/blockchain/chainTempo';
@@ -139,5 +149,15 @@ export async function switchChain() {
   if (fallbackProviderOrUrl && webWalletURL !== fallbackProviderOrUrl) {
     rpcUrls.push(fallbackProviderOrUrl);
   }
-  await chain.switchChain(chainId, {chainName, rpcUrls, blockExplorerUrls});
+
+  await chain.switchChain(chainId, {
+    chainName,
+    rpcUrls,
+    blockExplorerUrls,
+    nativeCurrency: {
+      name: nativeTokenName,
+      symbol: nativeTokenSymbol,
+      decimals: nativeTokenDecimal,
+    },
+  });
 }
