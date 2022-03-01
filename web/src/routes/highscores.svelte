@@ -20,10 +20,12 @@
     <h1 class="text-cyan-400"><span class="font-black">Highscores</span></h1>
     <p class="text-gray-400 text-xs">(Note: ties are not resolved here)</p>
     <p class="text-gray-400">score = 10000 + 10000 * (((token in control) - (token given)) / (token given))</p>
-    <p class="text-yellow-400">
+    <!-- <p class="text-yellow-400">
       The Score shown is the final score, based on block 6074693 (last block before December 23rd 10PM UTC)
-    </p>
-    <p class="text-yellow-400">Congrats to all players!</p>
+    </p> -->
+    <!-- <p class="text-yellow-400">Congrats to all players!</p> -->
+
+    <!-- //TODO update date -->
     <!-- <p class="text-gray-400">Score will be frozen past December 23rd 10PM UTC</p>
     <p class="text-yellow-400">Time Left: {timeToText(1640296800 - $time)}</p> -->
     {#if $highscores.error}
