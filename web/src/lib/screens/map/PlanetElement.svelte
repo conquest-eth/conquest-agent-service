@@ -159,7 +159,9 @@
   $: isAlly = alliances.find((v) => v.ally);
   $: borderColor =
     !$wallet.address || $privateWallet.step !== 'READY'
-      ? 'white'
+      ? isSelectedOwner
+        ? 'red'
+        : 'white'
       : playerIsOwner
       ? `rgba(0, 255, 0, ${capacityRatio})`
       : isAlly
