@@ -19,10 +19,14 @@
   );
   $: ratio = Math.max(0, (fleet.duration - fleet.timeLeft) / fleet.duration);
 
-  $: x1 = fleet.from.location.globalX + Math.cos(angle) * 1.5;
-  $: y1 = fleet.from.location.globalY + Math.sin(angle) * 1.5;
-  $: x2 = fleet.to.location.globalX - Math.cos(angle) * 1.5;
-  $: y2 = fleet.to.location.globalY - Math.sin(angle) * 1.5;
+  $: distanceSquare =
+    Math.pow(fleet.to.location.globalX - fleet.from.location.globalX, 2) +
+    Math.pow(fleet.to.location.globalY - fleet.from.location.globalY, 2);
+
+  $: x1 = fleet.from.location.globalX + (distanceSquare > 10 ? Math.cos(angle) * 1.4 : 0);
+  $: y1 = fleet.from.location.globalY + (distanceSquare > 10 ? Math.sin(angle) * 1.4 : 0);
+  $: x2 = fleet.to.location.globalX - (distanceSquare > 10 ? Math.cos(angle) * 1.4 : 0);
+  $: y2 = fleet.to.location.globalY - (distanceSquare > 10 ? Math.sin(angle) * 1.4 : 0);
 
   $: x = x1 + (x2 - x1) * ratio;
   $: y = y1 + (y2 - y1) * ratio;
@@ -34,7 +38,7 @@
   let showLine = true;
   let color;
 
-  let lineColor = fleet.gift ? '#34D399' : 'red';
+  let lineColor = 'white';
   $: if (fleet.state === 'SEND_BROADCASTED') {
     color = 'orange';
   } else if (fleet.state === 'LOADING') {
@@ -98,10 +102,13 @@
           fleet.specific
         ),
       };
+      lineColor = prediction.outcome.giving ? '#34D399' : 'red';
+    } else {
+      lineColor = 'white';
     }
   }
 
-  $: lineColor = prediction?.outcome.giving ? '#34D399' : 'red';
+  // $: lineColor = prediction?.outcome.giving !== undefined ? '#34D399' : 'red';
 
   $: lineDashed = fleet.owner.toLowerCase() !== $wallet.address?.toLowerCase();
 
