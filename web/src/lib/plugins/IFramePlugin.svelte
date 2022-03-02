@@ -65,6 +65,7 @@
             pricePerUnit,
             contractAddress,
             numSpaceshipsToKeep,
+            numSpaceshipsAvailable,
             args,
             fleetSender,
             msgValue,
@@ -77,6 +78,7 @@
             abi,
             contractAddress,
             numSpaceshipsToKeep,
+            numSpaceshipsAvailable,
             numSpaceships,
             pricePerUnit,
             args,
@@ -92,7 +94,7 @@
   function initUntilAcknowledged() {
     if (!acknowledged && tryCount < 10) {
       console.log(`sending init`);
-      tryCount ++;
+      tryCount++;
       iframe.contentWindow.postMessage(JSON.stringify({type: 'init'}), src);
       setTimeout(initUntilAcknowledged, 300);
     }

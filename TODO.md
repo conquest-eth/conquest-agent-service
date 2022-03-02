@@ -39,6 +39,7 @@
 # ISSUES
 
 - [ ] when not signed in, cannot acknowledge error or event: need to either force sign-in to see (same as fleets) orat least bring a popup to sign-in
+- [ ] investigate error `Reverted 0x464c4545545f444f5f4e4f545f4558495354` seems to resolved itself, when switching from sending fleet to attack that then become for you (who just captured the destination planet)
 
 # NOTES
 

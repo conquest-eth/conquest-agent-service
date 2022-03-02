@@ -123,7 +123,7 @@ contract OuterSpaceFacetBase is
 
         uint256 timePassed = block.timestamp - planetUpdate.lastUpdated;
         uint16 production = _production(planetUpdate.data);
-        uint256 produce = (timePassed * uint256(production) * _productionSpeedUp) / 1 hours;
+        uint256 produce = (timePassed * _productionSpeedUp * uint256(production)) / 1 hours;
 
         // NOTE: the repaypemnt of upkeep always happen at a fixed rate (per planet), it is fully predictable
         uint256 upkeepRepaid = 0;
@@ -153,7 +153,7 @@ contract OuterSpaceFacetBase is
                         }
                     }
 
-                    uint256 decrease = (timePassed * decreaseRate) / 1 hours;
+                    uint256 decrease = (timePassed * _productionSpeedUp * decreaseRate) / 1 hours;
                     if (decrease > newNumSpaceships - cap) {
                         decrease = newNumSpaceships - cap;
                     }
@@ -187,7 +187,7 @@ contract OuterSpaceFacetBase is
             }
 
             if (planetUpdate.active) {
-                // travelingUpkeep can go negative allow you to charge up your planet for later use, up to 7 days
+                // travelingUpkeep can go negative allow you to charge up your planet for later use
                 int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) - int256(extraUpkeepPaid);
                 // TODO add _aquireNumSpaceships ? (+ see other place where this is computed)
                 if (newTravelingUpkeep < int256(cap)) {
@@ -197,10 +197,10 @@ contract OuterSpaceFacetBase is
             }
         } else {
             if (planetUpdate.active) {
-                newNumSpaceships += (timePassed * uint256(production) * _productionSpeedUp) / 1 hours - upkeepRepaid;
+                newNumSpaceships += (timePassed * _productionSpeedUp * uint256(production)) / 1 hours - upkeepRepaid;
             } else {
                 // NOTE no need to overflow here  as there is no production cap, so no incentive to regroup spaceships
-                uint256 decrease = (timePassed * 1800) / 1 hours;
+                uint256 decrease = (timePassed * _productionSpeedUp * 1800) / 1 hours;
                 if (decrease > newNumSpaceships) {
                     decrease = newNumSpaceships;
                     newNumSpaceships = 0;
@@ -756,6 +756,8 @@ contract OuterSpaceFacetBase is
         ResolutionState memory rState,
         uint256 location
     ) internal {
+        // TODO why only when attacked ?
+        //  should we not also bring bacp upkeep when arriving ?
         if (rState.attackerLoss > 0) {
             // // we have to update the origin
             Planet storage fromPlanet = _planets[location];
@@ -763,9 +765,11 @@ contract OuterSpaceFacetBase is
             _computePlanetUpdateForTimeElapsed(fromPlanetUpdate);
 
             uint32 production = _production(fromPlanetUpdate.data);
+            uint256 capWhenActive = _acquireNumSpaceships + (uint256(production) * _productionCapAsDuration) / 1 hours;
+
             int256 newTravelingUpkeep = int256(fromPlanetUpdate.travelingUpkeep) - int256(int32(rState.attackerLoss));
-            if (newTravelingUpkeep < -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours)) {
-                newTravelingUpkeep = -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours);
+            if (newTravelingUpkeep < -int256(capWhenActive)) {
+                newTravelingUpkeep = -int256(capWhenActive);
             }
             fromPlanetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
 
@@ -1013,9 +1017,10 @@ contract OuterSpaceFacetBase is
                     ];
                     if (acc.target == toPlanetUpdate.owner && acc.numAttackSpent != 0) {
                         rState.attackPower = uint16(
-                            uint256(
-                                rState.attackPower * rState.fleetQuantity + acc.averageAttackPower * acc.numAttackSpent
-                            ) / (rState.fleetQuantity + acc.numAttackSpent)
+                            (uint256(rState.attackPower) *
+                                rState.fleetQuantity +
+                                acc.averageAttackPower *
+                                acc.numAttackSpent) / (uint256(rState.fleetQuantity) + acc.numAttackSpent)
                         );
                         rState.accumulatedAttackAdded = acc.numAttackSpent;
                         rState.accumulatedDefenseAdded = acc.damageCausedSoFar;
@@ -1144,10 +1149,12 @@ contract OuterSpaceFacetBase is
         // allow the attacker to pay for upkeep as part of the attack
         // only get to keep the upkeep that was there as a result of spaceships sent away
 
+        uint256 capWhenActive = _acquireNumSpaceships + (uint256(production) * _productionCapAsDuration) / 1 hours;
+
         int256 totalLoss = int256(uint256(rState.defenderLoss + rState.inFlightPlanetLoss + rState.attackerLoss));
         int256 newTravelingUpkeep = int256(toPlanetUpdate.travelingUpkeep) - totalLoss;
-        if (newTravelingUpkeep < -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours)) {
-            newTravelingUpkeep = -int256((7 days * uint256(production) * _productionSpeedUp) / 1 hours);
+        if (newTravelingUpkeep < -int256(capWhenActive)) {
+            newTravelingUpkeep = -int256(capWhenActive);
         }
         toPlanetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
     }

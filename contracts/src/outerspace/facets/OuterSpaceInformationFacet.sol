@@ -15,7 +15,6 @@ contract OuterSpaceInformationFacet is OuterSpaceFacetBase {
         return _allianceRegistry;
     }
 
-
     function getDiscovered() external view returns (Discovered memory) {
         return _discovered;
     }

@@ -55,6 +55,10 @@
     maxSpaceships = fromPlanetState
       ? Math.max(0, $fromPlanetState.numSpaceships - ($sendFlow.data?.config?.numSpaceshipsToKeep || 0))
       : 0;
+
+    if ($sendFlow.data?.config?.numSpaceshipsAvailable) {
+      maxSpaceships = Math.min(maxSpaceships, $sendFlow.data?.config?.numSpaceshipsAvailable);
+    }
     if (maxSpaceships > 0 && !fleetAmountSet) {
       // TODO loading
       fleetAmount = Math.floor(maxSpaceships / 2);
@@ -91,7 +95,9 @@
           fromPlanetInfo,
           toPlanetInfo,
           $toPlanetState,
-          currentTimeToArrive > defaultTimeToArrive ? - (arrivalTimeWanted.getTime() / 1000 - $toPlanetState.lastUpdatedSaved) : 0
+          currentTimeToArrive > defaultTimeToArrive
+            ? -(arrivalTimeWanted.getTime() / 1000 - $toPlanetState.lastUpdatedSaved)
+            : 0
         ),
         outcome: spaceInfo.outcome(
           fromPlanetInfo,
@@ -100,7 +106,9 @@
           $toPlanetState,
           fleetAmount,
           $time,
-          currentTimeToArrive > defaultTimeToArrive ? - (arrivalTimeWanted.getTime() / 1000 - $toPlanetState.lastUpdatedSaved) : 0,
+          currentTimeToArrive > defaultTimeToArrive
+            ? -(arrivalTimeWanted.getTime() / 1000 - $toPlanetState.lastUpdatedSaved)
+            : 0,
           senderPlayer,
           fromPlayer,
           toPlayer,

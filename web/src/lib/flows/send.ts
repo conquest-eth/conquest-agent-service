@@ -18,6 +18,7 @@ import {Contract} from '@ethersproject/contracts';
 type SendConfig = {
   fleetOwner?: string;
   numSpaceshipsToKeep?: number;
+  numSpaceshipsAvailable?: number;
   abi?: any;
   contractAddress?: string;
   numSpaceships?: number;

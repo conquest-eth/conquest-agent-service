@@ -16,7 +16,6 @@ contract OuterSpaceAdminFacet is UsingDiamondOwner, OuterSpaceFacetBase {
     }
 
     function resetPlanet(uint256 location) external onlyOwner {
-
         // TODO
         // if (_planets[location].owner == address(0) && active) {
         //     //update totalProduction
@@ -29,8 +28,6 @@ contract OuterSpaceAdminFacet is UsingDiamondOwner, OuterSpaceFacetBase {
         _planets[location].numSpaceships = 0;
         _planets[location].lastUpdated = 0;
         _planets[location].overflow = 0;
-
-
 
         emit PlanetReset(location);
     }

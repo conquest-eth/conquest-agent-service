@@ -43,19 +43,38 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
         return _operators[owner][operator];
     }
 
-    function safeTransferFrom(address from, address to, uint256 location) external {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 location
+    ) external {
         // TODO safe callback
         _transfer(from, to, location);
     }
-    function safeTransferFrom(address from, address to, uint256 location, bytes calldata data) external {
+
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 location,
+        bytes calldata data
+    ) external {
         // TODO safe callback + data
         _transfer(from, to, location);
     }
-    function transferFrom(address from, address to, uint256 location) external {
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 location
+    ) external {
         _transfer(from, to, location);
     }
 
-    function _transfer(address from, address to, uint256 location) internal {
+    function _transfer(
+        address from,
+        address to,
+        uint256 location
+    ) internal {
         require(from != address(0), "NOT_ZERO_ADDRESS");
 
         // TODO extract, see ownerOf (same code)
@@ -72,10 +91,16 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
         _planets[location].owner = to;
         _planets[location].ownershipStartTime = uint40(block.timestamp);
 
+        // TODO tax
+
         emit Transfer(from, to, location);
     }
 
-    function ownerAndOwnershipStartTimeOf(uint256 location) external view returns (address owner, uint40 ownershipStartTime) {
+    function ownerAndOwnershipStartTimeOf(uint256 location)
+        external
+        view
+        returns (address owner, uint40 ownershipStartTime)
+    {
         owner = _planets[location].owner;
         ownershipStartTime = _planets[location].ownershipStartTime;
     }
