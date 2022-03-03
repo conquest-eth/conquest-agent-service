@@ -35,6 +35,9 @@
 - [ ] Memory leak ?
 - [ ] plugin list
 - [ ] Plugin marker on map + condition (like buttons), Marketplace sale => show whenver there is a sale (even if you are the owner), color ? blue ? radius ?
+- [ ] WITHDRAWAL PAGE
+- [ ] NEW PLANET LOGO AND TEST REWARDS
+- [ ] Fleet arrived event: does it need to provide more info ? (operator, sender, owner ?)
 
 # ISSUES
 

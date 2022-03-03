@@ -48,7 +48,7 @@ contract OuterSpaceFleetsFacet is OuterSpaceFacetBase, IOuterSpaceFleets {
     ) external {
         address sender = _msgSender();
         uint256 fleetId = uint256(keccak256(abi.encodePacked(toHash, from, sender, sender)));
-        _sendFor(
+        _unsafe_sendFor(
             fleetId,
             sender,
             FleetLaunch({fleetSender: sender, fleetOwner: sender, from: from, quantity: quantity, toHash: toHash})
@@ -74,7 +74,7 @@ contract OuterSpaceFleetsFacet is OuterSpaceFacetBase, IOuterSpaceFleets {
         //     require(_operators[launch.fleetOwner][operator], "NOT_AUTHORIZED_TO_FLEET");
         // }
 
-        _sendFor(fleetId, operator, launch);
+        _unsafe_sendFor(fleetId, operator, launch);
     }
 
     // ---------------------------------------------------------------------------------------------------------------
