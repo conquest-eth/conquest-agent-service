@@ -25,6 +25,7 @@ contract OuterSpaceFacetBase is
 
     IERC20 internal immutable _stakingToken;
     AllianceRegistry internal immutable _allianceRegistry;
+
     bytes32 internal immutable _genesis;
     uint256 internal immutable _resolveWindow;
     uint256 internal immutable _timePerDistance;
@@ -35,6 +36,8 @@ contract OuterSpaceFacetBase is
     uint256 internal immutable _productionCapAsDuration;
     uint256 internal immutable _upkeepProductionDecreaseRatePer10000th;
     uint256 internal immutable _fleetSizeFactor6;
+    uint32 internal immutable _expansionDelta; // = 8;
+    uint256 internal immutable _giftTaxPer10000; // = 2500;
 
     struct Config {
         IERC20 stakingToken;
@@ -49,6 +52,8 @@ contract OuterSpaceFacetBase is
         uint256 productionCapAsDuration;
         uint256 upkeepProductionDecreaseRatePer10000th;
         uint256 fleetSizeFactor6;
+        uint32 expansionDelta;
+        uint256 giftTaxPer10000;
     }
 
     constructor(Config memory config) {
@@ -57,6 +62,7 @@ contract OuterSpaceFacetBase is
 
         _stakingToken = config.stakingToken;
         _allianceRegistry = config.allianceRegistry;
+
         _genesis = config.genesis;
         _resolveWindow = config.resolveWindow;
         _timePerDistance = t;
@@ -67,6 +73,8 @@ contract OuterSpaceFacetBase is
         _productionCapAsDuration = config.productionCapAsDuration;
         _upkeepProductionDecreaseRatePer10000th = config.upkeepProductionDecreaseRatePer10000th;
         _fleetSizeFactor6 = config.fleetSizeFactor6;
+        _expansionDelta = config.expansionDelta;
+        _giftTaxPer10000 = config.giftTaxPer10000;
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -381,7 +389,7 @@ contract OuterSpaceFacetBase is
         bool changes = false;
         if (x < 0) {
             require(-x <= int256(uint256(discovered.minX)), "NOT_REACHABLE_YET_MINX");
-            x = -x + EXPANSION;
+            x = -x + int32(_expansionDelta);
             if (x > UINT32_MAX) {
                 x = UINT32_MAX;
             }
@@ -391,7 +399,7 @@ contract OuterSpaceFacetBase is
             }
         } else {
             require(x <= int256(uint256(discovered.maxX)), "NOT_REACHABLE_YET_MAXX");
-            x = x + EXPANSION;
+            x = x + int32(_expansionDelta);
             if (x > UINT32_MAX) {
                 x = UINT32_MAX;
             }
@@ -403,7 +411,7 @@ contract OuterSpaceFacetBase is
 
         if (y < 0) {
             require(-y <= int256(uint256(discovered.minY)), "NOT_REACHABLE_YET_MINY");
-            y = -y + EXPANSION;
+            y = -y + int32(_expansionDelta);
             if (y > UINT32_MAX) {
                 y = UINT32_MAX;
             }
@@ -413,7 +421,7 @@ contract OuterSpaceFacetBase is
             }
         } else {
             require(y <= int256(uint256(discovered.maxY)), "NOT_REACHABLE_YET_MAXY");
-            y = y + EXPANSION;
+            y = y + int32(_expansionDelta);
             if (y > UINT32_MAX) {
                 y = UINT32_MAX;
             }
@@ -1038,7 +1046,7 @@ contract OuterSpaceFacetBase is
     {
         if (rState.taxed) {
             rState.fleetQuantity = uint32(
-                uint256(rState.fleetQuantity) - (uint256(rState.fleetQuantity) * GIFT_TAX_PER_10000) / 10000
+                uint256(rState.fleetQuantity) - (uint256(rState.fleetQuantity) * _giftTaxPer10000) / 10000
             );
         }
         uint256 newNumSpaceships = toPlanetUpdate.numSpaceships + rState.fleetQuantity;

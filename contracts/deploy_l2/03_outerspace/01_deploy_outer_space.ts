@@ -36,6 +36,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const productionCapAsDuration = 3 * 24 * 3600; // 3 days
   const upkeepProductionDecreaseRatePer10000th = 5000;
   const fleetSizeFactor6 = 500000;
+  const initialSpaceExpansion = 12;
+  const expansionDelta = 4;
+  const giftTaxPer10000 = 2000;
 
   // use a command to increase time in 1337
   if (localTesting) {
@@ -69,10 +72,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   if (networkName === 'dev') {
     genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
-    timePerDistance /= 25;
-    exitDuration /= 25;
-    productionSpeedUp = 25;
-    frontrunningDelay /= 25;
+    timePerDistance /= 100;
+    exitDuration /= 100;
+    productionSpeedUp = 100;
+    frontrunningDelay /= 100;
     resolveWindow /= 25;
     // productionCapAsDuration /= 180;
     genesisHash = '0xee563ebbe85edccc120c5082a5066539b0e9b7958b5fbac114523a95a8162667';
@@ -99,6 +102,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     productionCapAsDuration,
     upkeepProductionDecreaseRatePer10000th,
     fleetSizeFactor6,
+    initialSpaceExpansion,
+    expansionDelta,
+    giftTaxPer10000,
   });
 
   await diamond.deploy('OuterSpace', {
@@ -115,6 +121,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       productionCapAsDuration,
       upkeepProductionDecreaseRatePer10000th,
       fleetSizeFactor6,
+      initialSpaceExpansion,
+      expansionDelta,
+      giftTaxPer10000,
     },
     facets: [
       'OuterSpaceInitializationFacet',
@@ -138,6 +147,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         productionCapAsDuration,
         upkeepProductionDecreaseRatePer10000th,
         fleetSizeFactor6,
+        initialSpaceExpansion,
+        expansionDelta,
+        giftTaxPer10000,
       },
     ],
     execute: {
