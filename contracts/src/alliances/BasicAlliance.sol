@@ -4,11 +4,15 @@ pragma solidity 0.8.9;
 import "./AllianceRegistry.sol";
 // import "../interfaces/IAlliance.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract BasicAlliance {
     bool internal _original;
     AllianceRegistry internal immutable _allianceRegistry;
     address public admin;
+
+    // TODO preprocess
+    string constant internal _baseURI = "https://basic-alliances-dev.conquest.etherplay.io/alliances/#";
 
     // constructor(AllianceRegistry allianceRegistry, AllianceRegistry.PlayerSubmission[] memory playerSubmissions) {
     //     _allianceRegistry = allianceRegistry;
@@ -19,6 +23,10 @@ contract BasicAlliance {
         _allianceRegistry = allianceRegistry;
         _original = true;
         admin = address(1); // lock it
+    }
+
+    function frontendURI() external view returns (string memory) {
+        return string(bytes.concat(bytes(_baseURI), bytes(Strings.toHexString(uint256(uint160(address(this))), 20))));
     }
 
     function setAdminAndAddMembers(address newAdmin, AllianceRegistry.PlayerSubmission[] calldata playerSubmissions)
