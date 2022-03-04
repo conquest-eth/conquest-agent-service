@@ -15,6 +15,7 @@
   import {hasCommonAlliance, playersQuery} from '$lib/space/playersQuery';
   import {privateWallet} from '$lib/account/privateWallet';
   import {matchConditions, pluginShowing, showPlanetButtons} from '$lib/plugins/currentPlugin';
+  import {showAlliances} from '$lib/map/showAlliances';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -161,6 +162,8 @@
     !$wallet.address || $privateWallet.step !== 'READY'
       ? isSelectedOwner
         ? 'red'
+        : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])
+        ? `rgba(255, 165 ,0, 1)`
         : 'white'
       : playerIsOwner
       ? `rgba(0, 255, 0, ${capacityRatio})`
@@ -372,43 +375,45 @@
     {/if}
   {/if}
 
-  {#each alliances as alliance, i}
-    {#if blockieScale <= scale}
-      <SharedBlockie
-        offset={1}
-        style={`
+  {#if $showAlliances}
+    {#each alliances as alliance, i}
+      {#if blockieScale <= scale}
+        <SharedBlockie
+          offset={1}
+          style={`
         pointer-events: none;
         z-index: 1;
         position: absolute;
         transform:
           translate(${x + 0.6 * multiplier - +0.5 / scale / 2 + alliancesOffset[i % 4] * 1.3 * multiplier}px,${
-          y - 0.6 * multiplier - +0.5 / scale / 2 + alliancesOffset[(i + 3) % 4] * 1.3 * multiplier
-        }px)
+            y - 0.6 * multiplier - +0.5 / scale / 2 + alliancesOffset[(i + 3) % 4] * 1.3 * multiplier
+          }px)
           scale(${(blockieScale * 2) / 3}, ${(blockieScale * 2) / 3});
         width: ${frame.w + 0.5 / scale}px; height: ${frame.h + 0.5 / scale}px;
         border: solid ${0.1 / scale}px  ${alliance.ally ? 'lime' : 'white'};
         border-radius: ${frame.w}px;
 `}
-        address={alliance.address}
-      />
-    {:else}
-      <SharedBlockie
-        offset={1}
-        style={`
+          address={alliance.address}
+        />
+      {:else}
+        <SharedBlockie
+          offset={1}
+          style={`
         pointer-events: none;
         z-index: 1;
         position: absolute;
         transform:
           translate(${x + alliancesOffset[i % 4] * 1.3 * multiplier}px,${
-          y + alliancesOffset[(i + 3) % 4] * 1.3 * multiplier
-        }px)
+            y + alliancesOffset[(i + 3) % 4] * 1.3 * multiplier
+          }px)
           scale(${blockieScale}, ${blockieScale});
         width: ${frame.w}px; height: ${frame.h}px;
         border: solid ${0.1 / scale}px  ${alliance.ally ? 'lime' : 'white'};
         border-radius: ${frame.w}px;
 `}
-        address={alliance.address}
-      />
-    {/if}
-  {/each}
+          address={alliance.address}
+        />
+      {/if}
+    {/each}
+  {/if}
 </div>

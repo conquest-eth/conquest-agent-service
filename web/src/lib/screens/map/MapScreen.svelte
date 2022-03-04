@@ -42,6 +42,7 @@
   import {xyToLocation} from 'conquest-eth-common';
   import {select_option} from 'svelte/internal';
   import {showFleets} from '$lib/map/showFleets';
+  import {showAlliances} from '$lib/map/showAlliances';
 
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
@@ -195,7 +196,8 @@
       <div
         class="top-0 md:p-3 p-1  w-32 text-center relative bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 mt-4 text-sm"
       >
-        <p class="text-white"><input type="checkbox" bind:checked={$showFleets} /> Fleet</p>
+        <p class="text-white text-xs"><input type="checkbox" bind:checked={$showFleets} /> Fleet</p>
+        <p class="text-white text-xs"><input type="checkbox" bind:checked={$showAlliances} /> alliances</p>
       </div>
     </div>
   </div>
