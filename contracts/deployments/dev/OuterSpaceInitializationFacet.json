@@ -1,5 +1,5 @@
 {
-  "address": "0x81Cf8a55B482cE65c5A96348dEB317403a00d9Fc",
+  "address": "0x348635B8C93375ea5aD84FD9957ad6378CD4d055",
   "abi": [
     {
       "inputs": [
@@ -9,6 +9,66 @@
               "internalType": "bytes32",
               "name": "genesis",
               "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "resolveWindow",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "timePerDistance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "exitDuration",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint32",
+              "name": "acquireNumSpaceships",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "productionSpeedUp",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "frontrunningDelay",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "productionCapAsDuration",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "upkeepProductionDecreaseRatePer10000th",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "fleetSizeFactor6",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint32",
+              "name": "initialSpaceExpansion",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint32",
+              "name": "expansionDelta",
+              "type": "uint32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "giftTaxPer10000",
+              "type": "uint256"
             }
           ],
           "internalType": "struct OuterSpaceInitializationFacet.Config",
@@ -232,33 +292,81 @@
       "inputs": [
         {
           "indexed": false,
-          "internalType": "uint32",
-          "name": "minX",
-          "type": "uint32"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint32",
-          "name": "maxX",
-          "type": "uint32"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint32",
-          "name": "minY",
-          "type": "uint32"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint32",
-          "name": "maxY",
-          "type": "uint32"
-        },
-        {
-          "indexed": false,
           "internalType": "bytes32",
           "name": "genesis",
           "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "resolveWindow",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timePerDistance",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "exitDuration",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "acquireNumSpaceships",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "productionSpeedUp",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "frontrunningDelay",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "productionCapAsDuration",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "upkeepProductionDecreaseRatePer10000th",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "fleetSizeFactor6",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "initialSpaceExpansion",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint32",
+          "name": "expansionDelta",
+          "type": "uint32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "giftTaxPer10000",
+          "type": "uint256"
         }
       ],
       "name": "Initialized",
@@ -478,40 +586,62 @@
       "type": "function"
     }
   ],
+  "transactionHash": "0xaefb8610ee14521d1aa6f45c0e53fa90d7e4c1df90443d826c113a7badcb081b",
+  "receipt": {
+    "to": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
+    "from": "0xbE19B59E8C588d68f475A407C7BA5fE813AEb792",
+    "contractAddress": null,
+    "transactionIndex": 2,
+    "gasUsed": "255883",
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "blockHash": "0x271696640a62ba7f96e52a7e2451475d6a7d03bd0cb88414796f42f746ebccbf",
+    "transactionHash": "0xaefb8610ee14521d1aa6f45c0e53fa90d7e4c1df90443d826c113a7badcb081b",
+    "logs": [],
+    "blockNumber": 20936696,
+    "cumulativeGasUsed": "600408",
+    "status": 1,
+    "byzantium": true
+  },
   "args": [
     {
-      "stakingToken": "0x1501c5E8Ee6cacE2a72844fE915F469db5667a38",
-      "allianceRegistry": "0x62aa7B084801BFD8F2B32480C80e321290E79A47",
+      "stakingToken": "0xe3a596a09926120926aeEd1378d0458720a86079",
+      "allianceRegistry": "0x5FCb145BBba51DB237aA2632eF840426DB7F3217",
       "genesis": "0xee563ebbe85edccc120c5082a5066539b0e9b7958b5fbac114523a95a8162667",
       "resolveWindow": 1728,
-      "timePerDistance": 288,
-      "exitDuration": 10368,
+      "timePerDistance": 72,
+      "exitDuration": 2592,
       "acquireNumSpaceships": 100000,
-      "productionSpeedUp": 25,
-      "frontrunningDelay": 72,
+      "productionSpeedUp": 100,
+      "frontrunningDelay": 18,
       "productionCapAsDuration": 259200,
       "upkeepProductionDecreaseRatePer10000th": 5000,
-      "fleetSizeFactor6": 500000
+      "fleetSizeFactor6": 500000,
+      "initialSpaceExpansion": 12,
+      "expansionDelta": 4,
+      "giftTaxPer10000": 2000
     }
   ],
   "numDeployments": 1,
   "linkedData": {
     "genesisHash": "0xee563ebbe85edccc120c5082a5066539b0e9b7958b5fbac114523a95a8162667",
     "resolveWindow": 1728,
-    "timePerDistance": 288,
-    "exitDuration": 10368,
+    "timePerDistance": 72,
+    "exitDuration": 2592,
     "acquireNumSpaceships": 100000,
-    "productionSpeedUp": 25,
+    "productionSpeedUp": 100,
     "chainGenesisHash": "",
-    "frontrunningDelay": 72,
+    "frontrunningDelay": 18,
     "productionCapAsDuration": 259200,
     "upkeepProductionDecreaseRatePer10000th": 5000,
-    "fleetSizeFactor6": 500000
+    "fleetSizeFactor6": 500000,
+    "initialSpaceExpansion": 12,
+    "expansionDelta": 4,
+    "giftTaxPer10000": 2000
   },
-  "solcInputHash": "54031a5456ab27c09a0d821c4b18f56f",
-  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"genesis\",\"type\":\"bytes32\"}],\"internalType\":\"struct OuterSpaceInitializationFacet.Config\",\"name\":\"config\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\"}],\"name\":\"ExitComplete\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"fleet\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"fleetOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"destinationOwner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"destination\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"gift\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"fleetLoss\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"planetLoss\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"inFlightFleetLoss\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"inFlightPlanetLoss\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"won\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newNumspaceships\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"int40\",\"name\":\"newTravelingUpkeep\",\"type\":\"int40\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newOverflow\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"accumulatedDefenseAdded\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"accumulatedAttackAdded\",\"type\":\"uint32\"}],\"name\":\"FleetArrived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"fleetSender\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"fleetOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"from\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fleet\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"quantity\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newNumSpaceships\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"int40\",\"name\":\"newTravelingUpkeep\",\"type\":\"int40\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newOverflow\",\"type\":\"uint32\"}],\"name\":\"FleetSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"minX\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"maxX\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"minY\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"maxY\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"genesis\",\"type\":\"bytes32\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"}],\"name\":\"PlanetExit\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"}],\"name\":\"PlanetReset\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"acquirer\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"numSpaceships\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"int40\",\"name\":\"travelingUpkeep\",\"type\":\"int40\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"overflow\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\"}],\"name\":\"PlanetStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"giver\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"rewardId\",\"type\":\"uint256\"}],\"name\":\"RewardSetup\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"rewardId\",\"type\":\"uint256\"}],\"name\":\"RewardToWithdraw\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newStake\",\"type\":\"uint256\"}],\"name\":\"StakeToWithdraw\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"origin\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"fleet\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newNumspaceships\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"int40\",\"name\":\"newTravelingUpkeep\",\"type\":\"int40\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newOverflow\",\"type\":\"uint32\"}],\"name\":\"TravelingUpkeepReductionFromDestruction\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"init\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/outerspace/facets/OuterSpaceInitializationFacet.sol\":\"OuterSpaceInitializationFacet\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":999999},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Interface of the ERC20 standard as defined in the EIP.\\n */\\ninterface IERC20 {\\n    /**\\n     * @dev Returns the amount of tokens in existence.\\n     */\\n    function totalSupply() external view returns (uint256);\\n\\n    /**\\n     * @dev Returns the amount of tokens owned by `account`.\\n     */\\n    function balanceOf(address account) external view returns (uint256);\\n\\n    /**\\n     * @dev Moves `amount` tokens from the caller's account to `recipient`.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transfer(address recipient, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Returns the remaining number of tokens that `spender` will be\\n     * allowed to spend on behalf of `owner` through {transferFrom}. This is\\n     * zero by default.\\n     *\\n     * This value changes when {approve} or {transferFrom} are called.\\n     */\\n    function allowance(address owner, address spender) external view returns (uint256);\\n\\n    /**\\n     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * IMPORTANT: Beware that changing an allowance with this method brings the risk\\n     * that someone may use both the old and the new allowance by unfortunate\\n     * transaction ordering. One possible solution to mitigate this race\\n     * condition is to first reduce the spender's allowance to 0 and set the\\n     * desired value afterwards:\\n     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729\\n     *\\n     * Emits an {Approval} event.\\n     */\\n    function approve(address spender, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Moves `amount` tokens from `sender` to `recipient` using the\\n     * allowance mechanism. `amount` is then deducted from the caller's\\n     * allowance.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transferFrom(\\n        address sender,\\n        address recipient,\\n        uint256 amount\\n    ) external returns (bool);\\n\\n    /**\\n     * @dev Emitted when `value` tokens are moved from one account (`from`) to\\n     * another (`to`).\\n     *\\n     * Note that `value` may be zero.\\n     */\\n    event Transfer(address indexed from, address indexed to, uint256 value);\\n\\n    /**\\n     * @dev Emitted when the allowance of a `spender` for an `owner` is set by\\n     * a call to {approve}. `value` is the new allowance.\\n     */\\n    event Approval(address indexed owner, address indexed spender, uint256 value);\\n}\\n\",\"keccak256\":\"0x027b891937d20ccf213fdb9c31531574256de774bda99d3a70ecef6e1913ed2a\",\"license\":\"MIT\"},\"src/outerspace/base/ImportingOuterSpaceConstants.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity 0.8.9;\\n\\ncontract ImportingOuterSpaceConstants {\\n    uint256 internal constant DECIMALS_18 = 1e18;\\n    uint32 internal constant ACTIVE_MASK = 2**31;\\n    int256 internal constant UINT32_MAX = 2**32 - 1;\\n    int256 internal constant UINT32_MIN = -2147483648;\\n\\n    int256 internal constant EXPANSION = 8;\\n    uint32 internal constant INITIAL_SPACE = 16;\\n    uint256 internal constant GIFT_TAX_PER_10000 = 2500;\\n\\n    uint256 internal constant COMBAT_RULE_SWITCH_TIME = 1620144000; // Tuesday, 4 May 2021 16:00:00 GMT\\n}\\n\",\"keccak256\":\"0xdfd9d8ccaaa0a4485afaaa12d9f44f89eb2bd4bf95e6687ba3efd215e9ed17a4\",\"license\":\"AGPL-3.0\"},\"src/outerspace/base/UsingOuterSpaceDataLayout.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity 0.8.9;\\n\\nimport \\\"../types/ImportingOuterSpaceTypes.sol\\\";\\n\\ncontract UsingOuterSpaceDataLayout is ImportingOuterSpaceTypes {\\n    mapping(uint256 => Planet) internal _planets;\\n    mapping(uint256 => Fleet) internal _fleets;\\n\\n    mapping(address => uint256) internal _stakeReadyToBeWithdrawn;\\n\\n    mapping(address => mapping(address => bool)) internal _operators;\\n\\n    // TODO make it namespaces per user, currently it is possible (though unlikely) for 2 users to share a slot if one attack another and quickly send away spaceships\\n    mapping(uint256 => mapping(uint256 => InFlight)) internal _inFlight;\\n\\n    Discovered internal _discovered;\\n    // rewards\\n    mapping(address => uint256) internal _prevRewardIds;\\n    mapping(uint256 => uint256) internal _rewards;\\n    mapping(address => mapping(uint256 => bool)) internal _rewardsToWithdraw;\\n\\n    // This adds 20,000 gas to all resolution\\n    mapping(uint256 => mapping(address => mapping(uint256 => AccumulatedAttack))) internal _attacks;\\n\\n    // remove\\n    // mapping(address => Account) internal _accounts;\\n}\\n\",\"keccak256\":\"0x101bd8f6d39a9f594f377ae36bbe007604b04a06af4737766ec2745fdcbf91d1\",\"license\":\"AGPL-3.0\"},\"src/outerspace/events/ImportingOuterSpaceEvents.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity 0.8.9;\\n\\ninterface ImportingOuterSpaceEvents {\\n    event PlanetStake(\\n        address indexed acquirer,\\n        uint256 indexed location,\\n        uint32 numSpaceships,\\n        int40 travelingUpkeep,\\n        uint32 overflow,\\n        uint256 stake\\n    );\\n    event FleetSent(\\n        address indexed fleetSender,\\n        address indexed fleetOwner,\\n        uint256 indexed from,\\n        address operator,\\n        uint256 fleet,\\n        uint32 quantity,\\n        uint32 newNumSpaceships,\\n        int40 newTravelingUpkeep,\\n        uint32 newOverflow\\n    );\\n\\n    event FleetArrived(\\n        uint256 indexed fleet,\\n        address indexed fleetOwner,\\n        address indexed destinationOwner,\\n        uint256 destination,\\n        bool gift,\\n        uint32 fleetLoss,\\n        uint32 planetLoss,\\n        uint32 inFlightFleetLoss,\\n        uint32 inFlightPlanetLoss,\\n        bool won,\\n        uint32 newNumspaceships,\\n        int40 newTravelingUpkeep,\\n        uint32 newOverflow,\\n        uint32 accumulatedDefenseAdded,\\n        uint32 accumulatedAttackAdded\\n    );\\n\\n    event TravelingUpkeepReductionFromDestruction(\\n        uint256 indexed origin,\\n        uint256 indexed fleet,\\n        uint32 newNumspaceships,\\n        int40 newTravelingUpkeep,\\n        uint32 newOverflow\\n    );\\n\\n    event PlanetReset(uint256 indexed location);\\n\\n    event PlanetExit(address indexed owner, uint256 indexed location);\\n\\n    event ExitComplete(address indexed owner, uint256 indexed location, uint256 stake);\\n\\n    event RewardSetup(uint256 indexed location, address indexed giver, uint256 rewardId);\\n    event RewardToWithdraw(address indexed owner, uint256 indexed location, uint256 indexed rewardId);\\n\\n    event StakeToWithdraw(address indexed owner, uint256 newStake);\\n\\n    event Initialized(uint32 minX, uint32 maxX, uint32 minY, uint32 maxY, bytes32 genesis);\\n\\n    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);\\n\\n    // TODO use it\\n    event Transfer(address indexed from, address indexed to, uint256 indexed location);\\n}\\n\",\"keccak256\":\"0xe7b8bc304fb1874e04f3b845620d7d81304d5554b375d2f30e51f3289149a20e\",\"license\":\"AGPL-3.0\"},\"src/outerspace/facets/OuterSpaceInitializationFacet.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity 0.8.9;\\n\\nimport \\\"../base/ImportingOuterSpaceConstants.sol\\\";\\nimport \\\"../events/ImportingOuterSpaceEvents.sol\\\";\\nimport \\\"../base/UsingOuterSpaceDataLayout.sol\\\";\\n\\ncontract OuterSpaceInitializationFacet is\\n    ImportingOuterSpaceConstants,\\n    ImportingOuterSpaceEvents,\\n    UsingOuterSpaceDataLayout\\n{\\n    bytes32 internal immutable _genesis;\\n    struct Config {\\n        bytes32 genesis;\\n    }\\n\\n    constructor(Config memory config) {\\n        _genesis = config.genesis;\\n    }\\n\\n    // TODO only owner\\n    function init() external {\\n        if (_discovered.minX == 0) {\\n            _discovered = Discovered({\\n                minX: INITIAL_SPACE,\\n                maxX: INITIAL_SPACE,\\n                minY: INITIAL_SPACE,\\n                maxY: INITIAL_SPACE\\n            });\\n            emit Initialized(_discovered.minX, _discovered.maxX, _discovered.minY, _discovered.maxY, _genesis);\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x04311bae497f3ea9f153403a24c1ca407c9dd70a7066b208a63e2ba03000dcb9\",\"license\":\"AGPL-3.0\"},\"src/outerspace/types/ImportingOuterSpaceTypes.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity 0.8.9;\\n\\nimport \\\"@openzeppelin/contracts/token/ERC20/IERC20.sol\\\";\\n\\ninterface ImportingOuterSpaceTypes {\\n    // front running protection : _frontruunningDelay / 2 slots\\n    struct InFlight {\\n        uint32 flying;\\n        uint32 destroyed;\\n        // STORE last attack too, to compute combined attack on it ? uint128 is plainty enough\\n    }\\n\\n    // TODO remove\\n    // struct Account {\\n    //     // TODO add more info\\n    //     // stake for example ? => coild it be used by staking ?\\n    //     // numPlanets ?\\n    //     // numSpaceships ? => probably too much ?\\n    //     uint64 totalProduction;\\n    //     uint64 productionDebt;\\n    // }\\n\\n    struct Discovered {\\n        uint32 minX;\\n        uint32 maxX;\\n        uint32 minY;\\n        uint32 maxY;\\n    }\\n\\n    // TODO split in 2 structs ? PlanetOwnership and PlanetState ?\\n    struct Planet {\\n        address owner;\\n        uint40 ownershipStartTime; // ~ 34865 years, should be enough :)\\n        uint40 exitStartTime; // ~ 34865 years, should be enough :)\\n        // TODO uint16 ?\\n        ///\\n        uint32 numSpaceships; // uint31 + first bit => active // TODO use bool active ?\\n        uint40 lastUpdated; // ~ 34865 years, should be enough :)\\n        int40 travelingUpkeep; // decrease per _upkeepProductionDecreaseRatePer10000th  * production\\n        uint32 overflow;\\n        // bool active; // TODO ?\\n        // bool exiting; // TODO ?\\n    }\\n\\n    struct Fleet {\\n        address owner;\\n        uint40 launchTime; // ~ 34865 years, should be enough :)\\n        uint32 quantity; // TODO? first bit = done? to keep quantity value on-chain post resolution, actually not needed, can be given in the hash\\n        // we got 24bit more to store if needed\\n        // operator ? // signer ?\\n    }\\n\\n    struct PlanetStats {\\n        int8 subX;\\n        int8 subY;\\n        uint16 stake;\\n        uint16 production;\\n        uint16 attack;\\n        uint16 defense;\\n        uint16 speed;\\n        uint16 natives;\\n    }\\n\\n    struct ExternalPlanet {\\n        address owner;\\n        uint40 ownershipStartTime; // ~ 34865 years, should be enough :)\\n        uint40 exitStartTime; // ~ 34865 years, should be enough :)\\n        uint32 numSpaceships;\\n        uint32 overflow;\\n        uint40 lastUpdated; // ~ 34865 years, should be enough :)\\n        bool active;\\n        // bool exiting;\\n        uint256 reward;\\n    }\\n\\n    struct FleetLaunch {\\n        address fleetSender;\\n        address fleetOwner;\\n        uint256 from;\\n        uint32 quantity;\\n        bytes32 toHash;\\n    }\\n    struct FleetResolution {\\n        uint256 from;\\n        uint256 to;\\n        uint256 distance;\\n        uint256 arrivalTimeWanted;\\n        bool gift;\\n        address specific;\\n        bytes32 secret;\\n        address fleetSender; // does not work ?\\n        address operator; // should be saved ?\\n    }\\n\\n    struct AccumulatedAttack {\\n        address target;\\n        uint32 numAttackSpent;\\n        uint32 damageCausedSoFar;\\n        uint16 averageAttackPower;\\n    }\\n}\\n\",\"keccak256\":\"0xde203f8ac79d1cce8910e4208fc94b79008b4267f50b39c44a6a1d409282cf8d\",\"license\":\"AGPL-3.0\"}},\"version\":1}",
-  "bytecode": "0x60a060405234801561001057600080fd5b5060405161021738038061021783398101604081905261002f91610038565b51608052610087565b60006020828403121561004a57600080fd5b604051602081016001600160401b038111828210171561007a57634e487b7160e01b600052604160045260246000fd5b6040529151825250919050565b6080516101766100a1600039600060ed01526101766000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063e1c7392a14610030575b600080fd5b61003861003a565b005b60055463ffffffff1661013e576040805160808082018352601080835260208084018290528385018290526060938401829052600580547fffffffffffffffffffffffffffffffff00000000000000000000000000000000166c100000001000000010000000101790819055855192835263ffffffff64010000000082048116928401929092526801000000000000000081048216838701526c01000000000000000000000000900416928101929092527f00000000000000000000000000000000000000000000000000000000000000009082015290517f3086e986d6b4ec35754cd5a19b964d1012b58b3584a51a321d0fb693ae4cfcd99160a0908290030190a15b56fea26469706673582212200a6de83beb73a44314d82b33ee983a6f851cff9c36120be882d957178eef470c64736f6c63430008090033",
-  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c8063e1c7392a14610030575b600080fd5b61003861003a565b005b60055463ffffffff1661013e576040805160808082018352601080835260208084018290528385018290526060938401829052600580547fffffffffffffffffffffffffffffffff00000000000000000000000000000000166c100000001000000010000000101790819055855192835263ffffffff64010000000082048116928401929092526801000000000000000081048216838701526c01000000000000000000000000900416928101929092527f00000000000000000000000000000000000000000000000000000000000000009082015290517f3086e986d6b4ec35754cd5a19b964d1012b58b3584a51a321d0fb693ae4cfcd99160a0908290030190a15b56fea26469706673582212200a6de83beb73a44314d82b33ee983a6f851cff9c36120be882d957178eef470c64736f6c63430008090033",
+  "solcInputHash": "4f7f4177d3e9e99332c00f97b0a8b0ae",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.9+commit.e5eed63a\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[{\"components\":[{\"internalType\":\"bytes32\",\"name\":\"genesis\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"resolveWindow\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timePerDistance\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"exitDuration\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"acquireNumSpaceships\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"productionSpeedUp\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"frontrunningDelay\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"productionCapAsDuration\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"upkeepProductionDecreaseRatePer10000th\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"fleetSizeFactor6\",\"type\":\"uint256\"},{\"internalType\":\"uint32\",\"name\":\"initialSpaceExpansion\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"expansionDelta\",\"type\":\"uint32\"},{\"internalType\":\"uint256\",\"name\":\"giftTaxPer10000\",\"type\":\"uint256\"}],\"internalType\":\"struct OuterSpaceInitializationFacet.Config\",\"name\":\"config\",\"type\":\"tuple\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\"}],\"name\":\"ExitComplete\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"fleet\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"fleetOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"destinationOwner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"destination\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"gift\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"fleetLoss\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"planetLoss\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"inFlightFleetLoss\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"inFlightPlanetLoss\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"won\",\"type\":\"bool\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newNumspaceships\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"int40\",\"name\":\"newTravelingUpkeep\",\"type\":\"int40\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newOverflow\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"accumulatedDefenseAdded\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"accumulatedAttackAdded\",\"type\":\"uint32\"}],\"name\":\"FleetArrived\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"fleetSender\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"fleetOwner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"from\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fleet\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"quantity\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newNumSpaceships\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"int40\",\"name\":\"newTravelingUpkeep\",\"type\":\"int40\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newOverflow\",\"type\":\"uint32\"}],\"name\":\"FleetSent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"bytes32\",\"name\":\"genesis\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"resolveWindow\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"timePerDistance\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"exitDuration\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"acquireNumSpaceships\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"productionSpeedUp\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"frontrunningDelay\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"productionCapAsDuration\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"upkeepProductionDecreaseRatePer10000th\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"fleetSizeFactor6\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"initialSpaceExpansion\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"expansionDelta\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"giftTaxPer10000\",\"type\":\"uint256\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"}],\"name\":\"PlanetExit\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"}],\"name\":\"PlanetReset\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"acquirer\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"numSpaceships\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"int40\",\"name\":\"travelingUpkeep\",\"type\":\"int40\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"overflow\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"stake\",\"type\":\"uint256\"}],\"name\":\"PlanetStake\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"giver\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"rewardId\",\"type\":\"uint256\"}],\"name\":\"RewardSetup\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"rewardId\",\"type\":\"uint256\"}],\"name\":\"RewardToWithdraw\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"newStake\",\"type\":\"uint256\"}],\"name\":\"StakeToWithdraw\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"location\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"origin\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"fleet\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newNumspaceships\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"int40\",\"name\":\"newTravelingUpkeep\",\"type\":\"int40\"},{\"indexed\":false,\"internalType\":\"uint32\",\"name\":\"newOverflow\",\"type\":\"uint32\"}],\"name\":\"TravelingUpkeepReductionFromDestruction\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"init\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/outerspace/facets/OuterSpaceInitializationFacet.sol\":\"OuterSpaceInitializationFacet\"},\"evmVersion\":\"london\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\",\"useLiteralContent\":true},\"optimizer\":{\"enabled\":true,\"runs\":999999},\"remappings\":[]},\"sources\":{\"@openzeppelin/contracts/token/ERC20/IERC20.sol\":{\"content\":\"// SPDX-License-Identifier: MIT\\n\\npragma solidity ^0.8.0;\\n\\n/**\\n * @dev Interface of the ERC20 standard as defined in the EIP.\\n */\\ninterface IERC20 {\\n    /**\\n     * @dev Returns the amount of tokens in existence.\\n     */\\n    function totalSupply() external view returns (uint256);\\n\\n    /**\\n     * @dev Returns the amount of tokens owned by `account`.\\n     */\\n    function balanceOf(address account) external view returns (uint256);\\n\\n    /**\\n     * @dev Moves `amount` tokens from the caller's account to `recipient`.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transfer(address recipient, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Returns the remaining number of tokens that `spender` will be\\n     * allowed to spend on behalf of `owner` through {transferFrom}. This is\\n     * zero by default.\\n     *\\n     * This value changes when {approve} or {transferFrom} are called.\\n     */\\n    function allowance(address owner, address spender) external view returns (uint256);\\n\\n    /**\\n     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * IMPORTANT: Beware that changing an allowance with this method brings the risk\\n     * that someone may use both the old and the new allowance by unfortunate\\n     * transaction ordering. One possible solution to mitigate this race\\n     * condition is to first reduce the spender's allowance to 0 and set the\\n     * desired value afterwards:\\n     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729\\n     *\\n     * Emits an {Approval} event.\\n     */\\n    function approve(address spender, uint256 amount) external returns (bool);\\n\\n    /**\\n     * @dev Moves `amount` tokens from `sender` to `recipient` using the\\n     * allowance mechanism. `amount` is then deducted from the caller's\\n     * allowance.\\n     *\\n     * Returns a boolean value indicating whether the operation succeeded.\\n     *\\n     * Emits a {Transfer} event.\\n     */\\n    function transferFrom(\\n        address sender,\\n        address recipient,\\n        uint256 amount\\n    ) external returns (bool);\\n\\n    /**\\n     * @dev Emitted when `value` tokens are moved from one account (`from`) to\\n     * another (`to`).\\n     *\\n     * Note that `value` may be zero.\\n     */\\n    event Transfer(address indexed from, address indexed to, uint256 value);\\n\\n    /**\\n     * @dev Emitted when the allowance of a `spender` for an `owner` is set by\\n     * a call to {approve}. `value` is the new allowance.\\n     */\\n    event Approval(address indexed owner, address indexed spender, uint256 value);\\n}\\n\",\"keccak256\":\"0x027b891937d20ccf213fdb9c31531574256de774bda99d3a70ecef6e1913ed2a\",\"license\":\"MIT\"},\"src/outerspace/base/ImportingOuterSpaceConstants.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity 0.8.9;\\n\\ncontract ImportingOuterSpaceConstants {\\n    uint256 internal constant DECIMALS_18 = 1e18;\\n    uint32 internal constant ACTIVE_MASK = 2**31;\\n    int256 internal constant UINT32_MAX = 2**32 - 1;\\n    int256 internal constant UINT32_MIN = -2147483648;\\n}\\n\",\"keccak256\":\"0x21e8431ecbcbc07b0b40e3f89136337ce85b07b581aa169a66156cca000c9219\",\"license\":\"AGPL-3.0\"},\"src/outerspace/base/UsingOuterSpaceDataLayout.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity 0.8.9;\\n\\nimport \\\"../types/ImportingOuterSpaceTypes.sol\\\";\\n\\ncontract UsingOuterSpaceDataLayout is ImportingOuterSpaceTypes {\\n    mapping(uint256 => Planet) internal _planets;\\n    mapping(uint256 => Fleet) internal _fleets;\\n\\n    mapping(address => uint256) internal _stakeReadyToBeWithdrawn;\\n\\n    mapping(address => mapping(address => bool)) internal _operators;\\n\\n    // TODO make it namespaces per user, currently it is possible (though unlikely) for 2 users to share a slot if one attack another and quickly send away spaceships\\n    mapping(uint256 => mapping(uint256 => InFlight)) internal _inFlight;\\n\\n    Discovered internal _discovered;\\n    // rewards\\n    mapping(address => uint256) internal _prevRewardIds;\\n    mapping(uint256 => uint256) internal _rewards;\\n    mapping(address => mapping(uint256 => bool)) internal _rewardsToWithdraw;\\n\\n    // This adds 20,000 gas to all resolution\\n    mapping(uint256 => mapping(address => mapping(uint256 => AccumulatedAttack))) internal _attacks;\\n\\n    // remove\\n    // mapping(address => Account) internal _accounts;\\n}\\n\",\"keccak256\":\"0x101bd8f6d39a9f594f377ae36bbe007604b04a06af4737766ec2745fdcbf91d1\",\"license\":\"AGPL-3.0\"},\"src/outerspace/events/ImportingOuterSpaceEvents.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity 0.8.9;\\n\\ninterface ImportingOuterSpaceEvents {\\n    event PlanetStake(\\n        address indexed acquirer,\\n        uint256 indexed location,\\n        uint32 numSpaceships,\\n        int40 travelingUpkeep,\\n        uint32 overflow,\\n        uint256 stake\\n    );\\n    event FleetSent(\\n        address indexed fleetSender,\\n        address indexed fleetOwner,\\n        uint256 indexed from,\\n        address operator,\\n        uint256 fleet,\\n        uint32 quantity,\\n        uint32 newNumSpaceships,\\n        int40 newTravelingUpkeep,\\n        uint32 newOverflow\\n    );\\n\\n    event FleetArrived(\\n        uint256 indexed fleet,\\n        address indexed fleetOwner,\\n        address indexed destinationOwner,\\n        uint256 destination,\\n        bool gift,\\n        uint32 fleetLoss,\\n        uint32 planetLoss,\\n        uint32 inFlightFleetLoss,\\n        uint32 inFlightPlanetLoss,\\n        bool won,\\n        uint32 newNumspaceships,\\n        int40 newTravelingUpkeep,\\n        uint32 newOverflow,\\n        uint32 accumulatedDefenseAdded,\\n        uint32 accumulatedAttackAdded\\n    );\\n\\n    event TravelingUpkeepReductionFromDestruction(\\n        uint256 indexed origin,\\n        uint256 indexed fleet,\\n        uint32 newNumspaceships,\\n        int40 newTravelingUpkeep,\\n        uint32 newOverflow\\n    );\\n\\n    event PlanetReset(uint256 indexed location);\\n\\n    event PlanetExit(address indexed owner, uint256 indexed location);\\n\\n    event ExitComplete(address indexed owner, uint256 indexed location, uint256 stake);\\n\\n    event RewardSetup(uint256 indexed location, address indexed giver, uint256 rewardId);\\n    event RewardToWithdraw(address indexed owner, uint256 indexed location, uint256 indexed rewardId);\\n\\n    event StakeToWithdraw(address indexed owner, uint256 newStake);\\n\\n    event Initialized(\\n        bytes32 genesis,\\n        uint256 resolveWindow,\\n        uint256 timePerDistance,\\n        uint256 exitDuration,\\n        uint32 acquireNumSpaceships,\\n        uint32 productionSpeedUp,\\n        uint256 frontrunningDelay,\\n        uint256 productionCapAsDuration,\\n        uint256 upkeepProductionDecreaseRatePer10000th,\\n        uint256 fleetSizeFactor6,\\n        uint32 initialSpaceExpansion,\\n        uint32 expansionDelta,\\n        uint256 giftTaxPer10000\\n    );\\n\\n    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);\\n\\n    // TODO use it\\n    event Transfer(address indexed from, address indexed to, uint256 indexed location);\\n}\\n\",\"keccak256\":\"0x629652cd8738f1fd751a0eacf149f651dcfbd1f2869c88f0f8384c88bd4b2ba6\",\"license\":\"AGPL-3.0\"},\"src/outerspace/facets/OuterSpaceInitializationFacet.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity 0.8.9;\\n\\nimport \\\"../base/ImportingOuterSpaceConstants.sol\\\";\\nimport \\\"../events/ImportingOuterSpaceEvents.sol\\\";\\nimport \\\"../base/UsingOuterSpaceDataLayout.sol\\\";\\n\\ncontract OuterSpaceInitializationFacet is\\n    ImportingOuterSpaceConstants,\\n    ImportingOuterSpaceEvents,\\n    UsingOuterSpaceDataLayout\\n{\\n    bytes32 internal immutable _genesis;\\n    uint256 internal immutable _resolveWindow;\\n    uint256 internal immutable _timePerDistance;\\n    uint256 internal immutable _exitDuration;\\n    uint32 internal immutable _acquireNumSpaceships;\\n    uint32 internal immutable _productionSpeedUp;\\n    uint256 internal immutable _frontrunningDelay;\\n    uint256 internal immutable _productionCapAsDuration;\\n    uint256 internal immutable _upkeepProductionDecreaseRatePer10000th;\\n    uint256 internal immutable _fleetSizeFactor6;\\n    uint32 internal immutable _expansionDelta; // = 8;\\n    uint32 internal immutable _initialSpaceExpansion; // = 16;\\n    uint256 internal immutable _giftTaxPer10000; // = 2500;\\n\\n    struct Config {\\n        bytes32 genesis;\\n        uint256 resolveWindow;\\n        uint256 timePerDistance;\\n        uint256 exitDuration;\\n        uint32 acquireNumSpaceships;\\n        uint32 productionSpeedUp;\\n        uint256 frontrunningDelay;\\n        uint256 productionCapAsDuration;\\n        uint256 upkeepProductionDecreaseRatePer10000th;\\n        uint256 fleetSizeFactor6;\\n        uint32 initialSpaceExpansion;\\n        uint32 expansionDelta;\\n        uint256 giftTaxPer10000;\\n    }\\n\\n    constructor(Config memory config) {\\n        uint32 t = uint32(config.timePerDistance) / 4; // the coordinates space is 4 times bigger\\n        require(t * 4 == config.timePerDistance, \\\"TIME_PER_DIST_NOT_DIVISIBLE_4\\\");\\n\\n        _genesis = config.genesis;\\n        _resolveWindow = config.resolveWindow;\\n        _timePerDistance = t;\\n        _exitDuration = config.exitDuration;\\n        _acquireNumSpaceships = config.acquireNumSpaceships;\\n        _productionSpeedUp = config.productionSpeedUp;\\n        _frontrunningDelay = config.frontrunningDelay;\\n        _productionCapAsDuration = config.productionCapAsDuration;\\n        _upkeepProductionDecreaseRatePer10000th = config.upkeepProductionDecreaseRatePer10000th;\\n        _fleetSizeFactor6 = config.fleetSizeFactor6;\\n        _initialSpaceExpansion = config.initialSpaceExpansion;\\n        _expansionDelta = config.expansionDelta;\\n        _giftTaxPer10000 = config.giftTaxPer10000;\\n    }\\n\\n    // TODO make this facet an initialization contract\\n    function init() external {\\n        if (_discovered.minX == 0) {\\n            _discovered = Discovered({\\n                minX: _initialSpaceExpansion,\\n                maxX: _initialSpaceExpansion,\\n                minY: _initialSpaceExpansion,\\n                maxY: _initialSpaceExpansion\\n            });\\n            emit Initialized(\\n                _genesis,\\n                _resolveWindow,\\n                _timePerDistance,\\n                _exitDuration,\\n                _acquireNumSpaceships,\\n                _productionSpeedUp,\\n                _frontrunningDelay,\\n                _productionCapAsDuration,\\n                _upkeepProductionDecreaseRatePer10000th,\\n                _fleetSizeFactor6,\\n                _initialSpaceExpansion,\\n                _expansionDelta,\\n                _giftTaxPer10000\\n            );\\n        }\\n    }\\n}\\n\",\"keccak256\":\"0x95770f5e12ab06c8931bfcda30ca31e642e9a7daa16e8b6067901715a707e4ef\",\"license\":\"AGPL-3.0\"},\"src/outerspace/types/ImportingOuterSpaceTypes.sol\":{\"content\":\"// SPDX-License-Identifier: AGPL-3.0\\npragma solidity 0.8.9;\\n\\nimport \\\"@openzeppelin/contracts/token/ERC20/IERC20.sol\\\";\\n\\ninterface ImportingOuterSpaceTypes {\\n    // front running protection : _frontruunningDelay / 2 slots\\n    struct InFlight {\\n        uint32 flying;\\n        uint32 destroyed;\\n        // STORE last attack too, to compute combined attack on it ? uint128 is plainty enough\\n    }\\n\\n    // TODO remove\\n    // struct Account {\\n    //     // TODO add more info\\n    //     // stake for example ? => coild it be used by staking ?\\n    //     // numPlanets ?\\n    //     // numSpaceships ? => probably too much ?\\n    //     uint64 totalProduction;\\n    //     uint64 productionDebt;\\n    // }\\n\\n    struct Discovered {\\n        uint32 minX;\\n        uint32 maxX;\\n        uint32 minY;\\n        uint32 maxY;\\n    }\\n\\n    // TODO split in 2 structs ? PlanetOwnership and PlanetState ?\\n    struct Planet {\\n        address owner;\\n        uint40 ownershipStartTime; // ~ 34865 years, should be enough :)\\n        uint40 exitStartTime; // ~ 34865 years, should be enough :)\\n        // TODO uint16 ?\\n        ///\\n        uint32 numSpaceships; // uint31 + first bit => active // TODO use bool active ?\\n        uint40 lastUpdated; // ~ 34865 years, should be enough :)\\n        int40 travelingUpkeep; // decrease per _upkeepProductionDecreaseRatePer10000th  * production\\n        uint32 overflow;\\n        // bool active; // TODO ?\\n        // bool exiting; // TODO ?\\n    }\\n\\n    struct Fleet {\\n        address owner;\\n        uint40 launchTime; // ~ 34865 years, should be enough :)\\n        uint32 quantity; // TODO? first bit = done? to keep quantity value on-chain post resolution, actually not needed, can be given in the hash\\n        // we got 24bit more to store if needed\\n        // operator ? // signer ?\\n    }\\n\\n    struct PlanetStats {\\n        int8 subX;\\n        int8 subY;\\n        uint16 stake;\\n        uint16 production;\\n        uint16 attack;\\n        uint16 defense;\\n        uint16 speed;\\n        uint16 natives;\\n    }\\n\\n    struct ExternalPlanet {\\n        address owner;\\n        uint40 ownershipStartTime; // ~ 34865 years, should be enough :)\\n        uint40 exitStartTime; // ~ 34865 years, should be enough :)\\n        uint32 numSpaceships;\\n        uint32 overflow;\\n        uint40 lastUpdated; // ~ 34865 years, should be enough :)\\n        bool active;\\n        // bool exiting;\\n        uint256 reward;\\n    }\\n\\n    struct FleetLaunch {\\n        address fleetSender;\\n        address fleetOwner;\\n        uint256 from;\\n        uint32 quantity;\\n        bytes32 toHash;\\n    }\\n    struct FleetResolution {\\n        uint256 from;\\n        uint256 to;\\n        uint256 distance;\\n        uint256 arrivalTimeWanted;\\n        bool gift;\\n        address specific;\\n        bytes32 secret;\\n        address fleetSender; // does not work ?\\n        address operator; // should be saved ?\\n    }\\n\\n    struct AccumulatedAttack {\\n        address target;\\n        uint32 numAttackSpent;\\n        uint32 damageCausedSoFar;\\n        uint16 averageAttackPower;\\n    }\\n}\\n\",\"keccak256\":\"0xde203f8ac79d1cce8910e4208fc94b79008b4267f50b39c44a6a1d409282cf8d\",\"license\":\"AGPL-3.0\"}},\"version\":1}",
+  "bytecode": "0x61022060405234801561001157600080fd5b506040516106bc3803806106bc83398101604081905261003091610182565b6000600482604001516100439190610245565b6040830151909150610056826004610276565b63ffffffff16146100ad5760405162461bcd60e51b815260206004820152601d60248201527f54494d455f5045525f444953545f4e4f545f444956495349424c455f34000000604482015260640160405180910390fd5b81516080908152602083015160a090815263ffffffff92831660c0908152606085015160e0908152928501518416610100908152918501518416610120908152908501516101409081529285015161016090815291850151610180908152908501516101a0529184015183166101e0528301519091166101c0520151610200526102b0565b6040516101a081016001600160401b038111828210171561016357634e487b7160e01b600052604160045260246000fd5b60405290565b805163ffffffff8116811461017d57600080fd5b919050565b60006101a0828403121561019557600080fd5b61019d610132565b825181526020830151602082015260408301516040820152606083015160608201526101cb60808401610169565b60808201526101dc60a08401610169565b60a082015260c083015160c082015260e083015160e082015261010080840151818301525061012080840151818301525061014061021b818501610169565b9082015261016061022d848201610169565b90820152610180928301519281019290925250919050565b600063ffffffff8084168061026a57634e487b7160e01b600052601260045260246000fd5b92169190910492915050565b600063ffffffff808316818516818304811182151516156102a757634e487b7160e01b600052601160045260246000fd5b02949350505050565b60805160a05160c05160e05161010051610120516101405161016051610180516101a0516101c0516101e0516102005161037161034b60003960006102e5015260006054015260006102bd0152600061028d01526000610266015260006102400152600061021a015260006101f2015260006101c8015260006101a001526000610178015260006101500152600061012d01526103716000f3fe608060405234801561001057600080fd5b506004361061002b5760003560e01c8063e1c7392a14610030575b600080fd5b61003861003a565b005b60055463ffffffff166103395760408051608080820183527f000000000000000000000000000000000000000000000000000000000000000063ffffffff90811680845260208085018290528486018290526060948501829052600580547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001683176401000000008402177fffffffffffffffffffffffffffffffff0000000000000000ffffffffffffffff166801000000000000000084027fffffffffffffffffffffffffffffffff00000000ffffffffffffffffffffffff16176c01000000000000000000000000840217905585517f000000000000000000000000000000000000000000000000000000000000000081527f0000000000000000000000000000000000000000000000000000000000000000918101919091527f0000000000000000000000000000000000000000000000000000000000000000958101959095527f0000000000000000000000000000000000000000000000000000000000000000938501939093527f00000000000000000000000000000000000000000000000000000000000000008116918401919091527f0000000000000000000000000000000000000000000000000000000000000000811660a08401527f000000000000000000000000000000000000000000000000000000000000000060c08401527f000000000000000000000000000000000000000000000000000000000000000060e08401527f00000000000000000000000000000000000000000000000000000000000000006101008401527f00000000000000000000000000000000000000000000000000000000000000006101208401526101408301919091527f0000000000000000000000000000000000000000000000000000000000000000166101608201527f00000000000000000000000000000000000000000000000000000000000000006101808201527fefcbe15df7146e7feae33c3806a403cb267a03fcb07b65891f0b82d95e218378906101a00160405180910390a15b56fea2646970667358221220d8bc0f2f12a6a833146a2385e2137a0acce6812bb96d6dd3d8b8e8bca3eed4cf64736f6c63430008090033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061002b5760003560e01c8063e1c7392a14610030575b600080fd5b61003861003a565b005b60055463ffffffff166103395760408051608080820183527f000000000000000000000000000000000000000000000000000000000000000063ffffffff90811680845260208085018290528486018290526060948501829052600580547fffffffffffffffffffffffffffffffffffffffffffffffff00000000000000001683176401000000008402177fffffffffffffffffffffffffffffffff0000000000000000ffffffffffffffff166801000000000000000084027fffffffffffffffffffffffffffffffff00000000ffffffffffffffffffffffff16176c01000000000000000000000000840217905585517f000000000000000000000000000000000000000000000000000000000000000081527f0000000000000000000000000000000000000000000000000000000000000000918101919091527f0000000000000000000000000000000000000000000000000000000000000000958101959095527f0000000000000000000000000000000000000000000000000000000000000000938501939093527f00000000000000000000000000000000000000000000000000000000000000008116918401919091527f0000000000000000000000000000000000000000000000000000000000000000811660a08401527f000000000000000000000000000000000000000000000000000000000000000060c08401527f000000000000000000000000000000000000000000000000000000000000000060e08401527f00000000000000000000000000000000000000000000000000000000000000006101008401527f00000000000000000000000000000000000000000000000000000000000000006101208401526101408301919091527f0000000000000000000000000000000000000000000000000000000000000000166101608201527f00000000000000000000000000000000000000000000000000000000000000006101808201527fefcbe15df7146e7feae33c3806a403cb267a03fcb07b65891f0b82d95e218378906101a00160405180910390a15b56fea2646970667358221220d8bc0f2f12a6a833146a2385e2137a0acce6812bb96d6dd3d8b8e8bca3eed4cf64736f6c63430008090033",
   "devdoc": {
     "kind": "dev",
     "methods": {},
@@ -525,23 +655,23 @@
   "storageLayout": {
     "storage": [
       {
-        "astId": 16595,
+        "astId": 16858,
         "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
         "label": "_planets",
         "offset": 0,
         "slot": "0",
-        "type": "t_mapping(t_uint256,t_struct(Planet)22896_storage)"
+        "type": "t_mapping(t_uint256,t_struct(Planet)23363_storage)"
       },
       {
-        "astId": 16600,
+        "astId": 16863,
         "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
         "label": "_fleets",
         "offset": 0,
         "slot": "1",
-        "type": "t_mapping(t_uint256,t_struct(Fleet)22903_storage)"
+        "type": "t_mapping(t_uint256,t_struct(Fleet)23370_storage)"
       },
       {
-        "astId": 16604,
+        "astId": 16867,
         "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
         "label": "_stakeReadyToBeWithdrawn",
         "offset": 0,
@@ -549,7 +679,7 @@
         "type": "t_mapping(t_address,t_uint256)"
       },
       {
-        "astId": 16610,
+        "astId": 16873,
         "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
         "label": "_operators",
         "offset": 0,
@@ -557,23 +687,23 @@
         "type": "t_mapping(t_address,t_mapping(t_address,t_bool))"
       },
       {
-        "astId": 16617,
+        "astId": 16880,
         "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
         "label": "_inFlight",
         "offset": 0,
         "slot": "4",
-        "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(InFlight)22872_storage))"
+        "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(InFlight)23339_storage))"
       },
       {
-        "astId": 16620,
+        "astId": 16883,
         "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
         "label": "_discovered",
         "offset": 0,
         "slot": "5",
-        "type": "t_struct(Discovered)22881_storage"
+        "type": "t_struct(Discovered)23348_storage"
       },
       {
-        "astId": 16624,
+        "astId": 16887,
         "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
         "label": "_prevRewardIds",
         "offset": 0,
@@ -581,7 +711,7 @@
         "type": "t_mapping(t_address,t_uint256)"
       },
       {
-        "astId": 16628,
+        "astId": 16891,
         "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
         "label": "_rewards",
         "offset": 0,
@@ -589,7 +719,7 @@
         "type": "t_mapping(t_uint256,t_uint256)"
       },
       {
-        "astId": 16634,
+        "astId": 16897,
         "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
         "label": "_rewardsToWithdraw",
         "offset": 0,
@@ -597,12 +727,12 @@
         "type": "t_mapping(t_address,t_mapping(t_uint256,t_bool))"
       },
       {
-        "astId": 16643,
+        "astId": 16906,
         "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
         "label": "_attacks",
         "offset": 0,
         "slot": "9",
-        "type": "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_struct(AccumulatedAttack)22976_storage)))"
+        "type": "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_struct(AccumulatedAttack)23443_storage)))"
       }
     ],
     "types": {
@@ -642,12 +772,12 @@
         "numberOfBytes": "32",
         "value": "t_mapping(t_uint256,t_bool)"
       },
-      "t_mapping(t_address,t_mapping(t_uint256,t_struct(AccumulatedAttack)22976_storage))": {
+      "t_mapping(t_address,t_mapping(t_uint256,t_struct(AccumulatedAttack)23443_storage))": {
         "encoding": "mapping",
         "key": "t_address",
         "label": "mapping(address => mapping(uint256 => struct ImportingOuterSpaceTypes.AccumulatedAttack))",
         "numberOfBytes": "32",
-        "value": "t_mapping(t_uint256,t_struct(AccumulatedAttack)22976_storage)"
+        "value": "t_mapping(t_uint256,t_struct(AccumulatedAttack)23443_storage)"
       },
       "t_mapping(t_address,t_uint256)": {
         "encoding": "mapping",
@@ -663,47 +793,47 @@
         "numberOfBytes": "32",
         "value": "t_bool"
       },
-      "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_struct(AccumulatedAttack)22976_storage)))": {
+      "t_mapping(t_uint256,t_mapping(t_address,t_mapping(t_uint256,t_struct(AccumulatedAttack)23443_storage)))": {
         "encoding": "mapping",
         "key": "t_uint256",
         "label": "mapping(uint256 => mapping(address => mapping(uint256 => struct ImportingOuterSpaceTypes.AccumulatedAttack)))",
         "numberOfBytes": "32",
-        "value": "t_mapping(t_address,t_mapping(t_uint256,t_struct(AccumulatedAttack)22976_storage))"
+        "value": "t_mapping(t_address,t_mapping(t_uint256,t_struct(AccumulatedAttack)23443_storage))"
       },
-      "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(InFlight)22872_storage))": {
+      "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(InFlight)23339_storage))": {
         "encoding": "mapping",
         "key": "t_uint256",
         "label": "mapping(uint256 => mapping(uint256 => struct ImportingOuterSpaceTypes.InFlight))",
         "numberOfBytes": "32",
-        "value": "t_mapping(t_uint256,t_struct(InFlight)22872_storage)"
+        "value": "t_mapping(t_uint256,t_struct(InFlight)23339_storage)"
       },
-      "t_mapping(t_uint256,t_struct(AccumulatedAttack)22976_storage)": {
+      "t_mapping(t_uint256,t_struct(AccumulatedAttack)23443_storage)": {
         "encoding": "mapping",
         "key": "t_uint256",
         "label": "mapping(uint256 => struct ImportingOuterSpaceTypes.AccumulatedAttack)",
         "numberOfBytes": "32",
-        "value": "t_struct(AccumulatedAttack)22976_storage"
+        "value": "t_struct(AccumulatedAttack)23443_storage"
       },
-      "t_mapping(t_uint256,t_struct(Fleet)22903_storage)": {
+      "t_mapping(t_uint256,t_struct(Fleet)23370_storage)": {
         "encoding": "mapping",
         "key": "t_uint256",
         "label": "mapping(uint256 => struct ImportingOuterSpaceTypes.Fleet)",
         "numberOfBytes": "32",
-        "value": "t_struct(Fleet)22903_storage"
+        "value": "t_struct(Fleet)23370_storage"
       },
-      "t_mapping(t_uint256,t_struct(InFlight)22872_storage)": {
+      "t_mapping(t_uint256,t_struct(InFlight)23339_storage)": {
         "encoding": "mapping",
         "key": "t_uint256",
         "label": "mapping(uint256 => struct ImportingOuterSpaceTypes.InFlight)",
         "numberOfBytes": "32",
-        "value": "t_struct(InFlight)22872_storage"
+        "value": "t_struct(InFlight)23339_storage"
       },
-      "t_mapping(t_uint256,t_struct(Planet)22896_storage)": {
+      "t_mapping(t_uint256,t_struct(Planet)23363_storage)": {
         "encoding": "mapping",
         "key": "t_uint256",
         "label": "mapping(uint256 => struct ImportingOuterSpaceTypes.Planet)",
         "numberOfBytes": "32",
-        "value": "t_struct(Planet)22896_storage"
+        "value": "t_struct(Planet)23363_storage"
       },
       "t_mapping(t_uint256,t_uint256)": {
         "encoding": "mapping",
@@ -712,12 +842,12 @@
         "numberOfBytes": "32",
         "value": "t_uint256"
       },
-      "t_struct(AccumulatedAttack)22976_storage": {
+      "t_struct(AccumulatedAttack)23443_storage": {
         "encoding": "inplace",
         "label": "struct ImportingOuterSpaceTypes.AccumulatedAttack",
         "members": [
           {
-            "astId": 22969,
+            "astId": 23436,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "target",
             "offset": 0,
@@ -725,7 +855,7 @@
             "type": "t_address"
           },
           {
-            "astId": 22971,
+            "astId": 23438,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "numAttackSpent",
             "offset": 20,
@@ -733,7 +863,7 @@
             "type": "t_uint32"
           },
           {
-            "astId": 22973,
+            "astId": 23440,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "damageCausedSoFar",
             "offset": 24,
@@ -741,7 +871,7 @@
             "type": "t_uint32"
           },
           {
-            "astId": 22975,
+            "astId": 23442,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "averageAttackPower",
             "offset": 28,
@@ -751,12 +881,12 @@
         ],
         "numberOfBytes": "32"
       },
-      "t_struct(Discovered)22881_storage": {
+      "t_struct(Discovered)23348_storage": {
         "encoding": "inplace",
         "label": "struct ImportingOuterSpaceTypes.Discovered",
         "members": [
           {
-            "astId": 22874,
+            "astId": 23341,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "minX",
             "offset": 0,
@@ -764,7 +894,7 @@
             "type": "t_uint32"
           },
           {
-            "astId": 22876,
+            "astId": 23343,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "maxX",
             "offset": 4,
@@ -772,7 +902,7 @@
             "type": "t_uint32"
           },
           {
-            "astId": 22878,
+            "astId": 23345,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "minY",
             "offset": 8,
@@ -780,7 +910,7 @@
             "type": "t_uint32"
           },
           {
-            "astId": 22880,
+            "astId": 23347,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "maxY",
             "offset": 12,
@@ -790,12 +920,12 @@
         ],
         "numberOfBytes": "32"
       },
-      "t_struct(Fleet)22903_storage": {
+      "t_struct(Fleet)23370_storage": {
         "encoding": "inplace",
         "label": "struct ImportingOuterSpaceTypes.Fleet",
         "members": [
           {
-            "astId": 22898,
+            "astId": 23365,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "owner",
             "offset": 0,
@@ -803,7 +933,7 @@
             "type": "t_address"
           },
           {
-            "astId": 22900,
+            "astId": 23367,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "launchTime",
             "offset": 20,
@@ -811,7 +941,7 @@
             "type": "t_uint40"
           },
           {
-            "astId": 22902,
+            "astId": 23369,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "quantity",
             "offset": 25,
@@ -821,12 +951,12 @@
         ],
         "numberOfBytes": "32"
       },
-      "t_struct(InFlight)22872_storage": {
+      "t_struct(InFlight)23339_storage": {
         "encoding": "inplace",
         "label": "struct ImportingOuterSpaceTypes.InFlight",
         "members": [
           {
-            "astId": 22869,
+            "astId": 23336,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "flying",
             "offset": 0,
@@ -834,7 +964,7 @@
             "type": "t_uint32"
           },
           {
-            "astId": 22871,
+            "astId": 23338,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "destroyed",
             "offset": 4,
@@ -844,12 +974,12 @@
         ],
         "numberOfBytes": "32"
       },
-      "t_struct(Planet)22896_storage": {
+      "t_struct(Planet)23363_storage": {
         "encoding": "inplace",
         "label": "struct ImportingOuterSpaceTypes.Planet",
         "members": [
           {
-            "astId": 22883,
+            "astId": 23350,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "owner",
             "offset": 0,
@@ -857,7 +987,7 @@
             "type": "t_address"
           },
           {
-            "astId": 22885,
+            "astId": 23352,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "ownershipStartTime",
             "offset": 20,
@@ -865,7 +995,7 @@
             "type": "t_uint40"
           },
           {
-            "astId": 22887,
+            "astId": 23354,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "exitStartTime",
             "offset": 25,
@@ -873,7 +1003,7 @@
             "type": "t_uint40"
           },
           {
-            "astId": 22889,
+            "astId": 23356,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "numSpaceships",
             "offset": 0,
@@ -881,7 +1011,7 @@
             "type": "t_uint32"
           },
           {
-            "astId": 22891,
+            "astId": 23358,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "lastUpdated",
             "offset": 4,
@@ -889,7 +1019,7 @@
             "type": "t_uint40"
           },
           {
-            "astId": 22893,
+            "astId": 23360,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "travelingUpkeep",
             "offset": 9,
@@ -897,7 +1027,7 @@
             "type": "t_int40"
           },
           {
-            "astId": 22895,
+            "astId": 23362,
             "contract": "src/outerspace/facets/OuterSpaceInitializationFacet.sol:OuterSpaceInitializationFacet",
             "label": "overflow",
             "offset": 14,
