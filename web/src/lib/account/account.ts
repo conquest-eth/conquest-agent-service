@@ -29,6 +29,7 @@ type PendingActionBase = {
   timestamp: number;
   nonce: number;
   acknowledged?: 'ERROR' | 'SUCCESS';
+  acknowledgementTime?: number;
   external?: {status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT'; final?: number};
 };
 
@@ -348,6 +349,7 @@ class Account implements Readable<AccountState> {
     const action = this.state.data.pendingActions[txHash];
     if (action && typeof action !== 'number') {
       action.acknowledged = undefined;
+      action.acknowledgementTime = now();
       await this.accountDB.save(this.state.data);
       this._notify();
     }
@@ -445,13 +447,16 @@ class Account implements Readable<AccountState> {
         }
       } else {
         pendingAction.acknowledged = statusType;
+        pendingAction.acknowledgementTime = now();
         if (sendAction) {
           sendAction.acknowledged = statusType;
+          sendAction.acknowledgementTime = now();
           if (sendAction.resolution) {
             for (const resolutionId of sendAction.resolution) {
               const resolution = this.state.data.pendingActions[resolutionId];
               if (resolution && typeof resolution !== 'number') {
                 resolution.acknowledged = statusType;
+                resolution.acknowledgementTime = now();
               }
             }
           }
@@ -503,6 +508,7 @@ class Account implements Readable<AccountState> {
         this.state.data.pendingActions[txHash] = final;
       } else {
         pendingAction.acknowledged = 'ERROR';
+        pendingAction.acknowledgementTime = now();
       }
     }
     await this.accountDB.save(this.state.data);
@@ -657,11 +663,16 @@ class Account implements Readable<AccountState> {
             newData.pendingActions[txHash] = remotePendingAction;
           } else if (typeof pendingAction !== 'number' && typeof remotePendingAction !== 'number') {
             if (pendingAction.acknowledged !== remotePendingAction.acknowledged) {
-              if (pendingAction.acknowledged) {
+              if (
+                !remotePendingAction.acknowledgementTime ||
+                (pendingAction.acknowledgementTime &&
+                  pendingAction.acknowledgementTime >= remotePendingAction.acknowledgementTime)
+              ) {
                 newDataOnLocal = true;
               } else {
                 newDataOnRemote = true;
                 pendingAction.acknowledged = remotePendingAction.acknowledged;
+                pendingAction.acknowledgementTime = remotePendingAction.acknowledgementTime;
               }
             }
             if (pendingAction.type === 'SEND' && remotePendingAction.type === 'SEND') {
