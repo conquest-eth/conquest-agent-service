@@ -71,14 +71,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // }
 
   if (networkName === 'dev') {
-    genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65111';
     timePerDistance /= 100;
     exitDuration /= 100;
     productionSpeedUp = 100;
     frontrunningDelay /= 100;
     resolveWindow /= 25;
     // productionCapAsDuration /= 180;
-    genesisHash = '0xee563ebbe85edccc120c5082a5066539b0e9b7958b5fbac114523a95a8162667';
+    genesisHash = '0xee563ebbe85edccc120c5082a5066539b0e9b7958b5fbac114523a95a8162668';
   }
 
   if (networkName === 'alpha') {
@@ -86,7 +85,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   if (networkName === 'beta1') {
-    genesisHash = '0x54cfc698a2dc6796e9cf1ab3cdbcc07c54b649287b791b14c040997bdc379b34';
+    genesisHash = '0x54cfc698a2dc6796e9cf1ab3cdbcc07c54b649287b791b14c040997bdc379b35';
   }
 
   console.log({
