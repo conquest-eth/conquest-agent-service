@@ -11,18 +11,23 @@ contract BasicAlliance {
     AllianceRegistry internal immutable _allianceRegistry;
     address public admin;
 
-    // TODO preprocess
-    string constant internal _baseURI = "https://basic-alliances-dev.conquest.etherplay.io/alliances/#";
+    string internal _baseURI;
 
     // constructor(AllianceRegistry allianceRegistry, AllianceRegistry.PlayerSubmission[] memory playerSubmissions) {
     //     _allianceRegistry = allianceRegistry;
     //     _allianceRegistry.addMultiplePlayersToAlliance(playerSubmissions);
     // }
 
-    constructor(AllianceRegistry allianceRegistry) {
+    constructor(AllianceRegistry allianceRegistry, string memory baseURI) {
         _allianceRegistry = allianceRegistry;
         _original = true;
         admin = address(1); // lock it
+        init(baseURI);
+    }
+
+    function init(string memory baseURI) public {
+        require(bytes(_baseURI).length == 0, "ALREADY_INITIALISED");
+        _baseURI = baseURI;
     }
 
     function frontendURI() external view returns (string memory) {
@@ -52,6 +57,7 @@ contract BasicAlliance {
     ) external {
         require(_original, "CANNOT_INSTANTIATE_FROM_CLONES");
         address newAlliance = Clones.cloneDeterministic(address(this), keccak256(abi.encodePacked(salt, msg.sender)));
+        BasicAlliance(newAlliance).init(_baseURI);
         BasicAlliance(newAlliance).setAdminAndAddMembers(initialAdmin, playerSubmissions);
     }
 

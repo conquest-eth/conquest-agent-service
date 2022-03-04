@@ -10,7 +10,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await deploy('BasicAllianceFactory', {
     contract: 'BasicAlliance',
     from: deployer,
-    args: [allianceRegistry.address],
+    args: [allianceRegistry.address, 'https://basic-alliances-dev.conquest.etherplay.io/alliances/#'],
     log: true,
     autoMine: true,
     skipIfAlreadyDeployed: true,
