@@ -23,6 +23,8 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
   private _lastId = 1;
   private state: SyncingState<T>;
   private store: Writable<SyncingState<T>>;
+  private _lastSyncTime: number | undefined;
+  private _syncDelay: NodeJS.Timeout | undefined;
 
   // private destroyed = false;
   constructor(
@@ -43,6 +45,25 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     return this.store.subscribe(run, invalidate);
   }
 
+  _syncNow() {
+    console.log(`SYNC: _syncNow`);
+    this._syncDelay = undefined;
+    this._syncRemote();
+  }
+
+  _syncLater() {
+    if (!this._syncDelay) {
+      if (this._lastSyncTime && performance.now() - this._lastSyncTime < 1000) {
+        this._syncDelay = setTimeout(this._syncNow.bind(this), 1000);
+      } else {
+        console.log(`SYNC: _syncRemote now`);
+        this._syncRemote();
+      }
+    } else {
+      console.log(`SYNC: _skip`);
+    }
+  }
+
   async save(data: T): Promise<void> {
     this.state.data = data;
     const notified = await this._syncLocal();
@@ -50,9 +71,8 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
       this._notify();
     }
 
-    // TODO sync in time
-    // handle multiple request and do only once once all has been process (timer of 1 second ?)
-    this._syncRemote();
+    console.log(`SYNC: _syncLater after save`);
+    this._syncLater();
   }
 
   async requestSync(): Promise<void> {
@@ -86,6 +106,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
   }
 
   private async _syncRemote(): Promise<void> {
+    this._lastSyncTime = performance.now();
     if (!this.state.remoteSyncEnabled) {
       return;
     }

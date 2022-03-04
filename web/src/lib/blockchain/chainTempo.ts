@@ -64,6 +64,8 @@ class ChainTempo implements Readable<ChainTempoInfo> {
     }
   }
   private onBlock(blockNumber?: number) {
+    // console.log(`onBlock: ${blockNumber}`);
+    // TODO skip if same ?
     if (blockNumber) {
       this.chainInfo.lastBlockNumber = blockNumber;
       this.chainInfo.stale = false;

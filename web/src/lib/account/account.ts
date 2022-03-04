@@ -567,6 +567,7 @@ class Account implements Readable<AccountState> {
           $privateWallet.syncEnabled
         );
         this.unsubscribeFromSync = this.accountDB.subscribe(this.onSync.bind(this));
+        console.log(`SYNC: requesting sync after account changed`);
         this.accountDB.requestSync();
       }
     }

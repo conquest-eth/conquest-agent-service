@@ -49,6 +49,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
   private store: Writable<CheckedPendingActions>;
   private checkingInProgress = false;
   private ownerAddress: string | undefined;
+  private processingAccountChanges: boolean;
 
   private stopAccountSubscription: (() => void) | undefined = undefined;
   private stopChainTempoSubscription: (() => void) | undefined = undefined;
@@ -76,45 +77,55 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
   }
 
   private async _handleAccountChange($account: AccountState): Promise<void> {
-    console.log(`PENDING ACTION, update from account`);
-    if ($account.data) {
-      const txHashes = Object.keys($account.data.pendingActions);
-      for (const txHash of txHashes) {
-        const action = $account.data.pendingActions[txHash];
-        if (typeof action === 'number') {
-          continue;
-        }
-        // if (action.acknowledged) {
-        //   continue;
-        // }
-        const found = this.state.find((v) => v.id === txHash);
-        if (!found) {
-          console.log(`new pending tx ${txHash}`);
-          this.state.push({
-            id: txHash,
-            status: action.external ? action.external.status : 'LOADING',
-            final: action.external ? action.external.final : undefined,
-            action,
-          });
-        }
-      }
-      for (let i = this.state.length - 1; i >= 0; i--) {
-        if (
-          !$account.data.pendingActions[this.state[i].id] ||
-          typeof $account.data.pendingActions[this.state[i].id] === 'number'
-        ) {
-          this.state.splice(i, 1);
-        }
-      }
-    } else {
-      this.state.length = 0;
+    if (this.processingAccountChanges && $account.ownerAddress === this.ownerAddress) {
+      console.log(`already processing..., should we postpone, or cancel ?`);
+      return;
     }
+    this.processingAccountChanges = true;
+    try {
+      console.log(`PENDING ACTION, update from account`);
+      if ($account.data) {
+        const txHashes = Object.keys($account.data.pendingActions);
+        for (const txHash of txHashes) {
+          const action = $account.data.pendingActions[txHash];
+          if (typeof action === 'number') {
+            continue;
+          }
+          // if (action.acknowledged) {
+          //   continue;
+          // }
+          const found = this.state.find((v) => v.id === txHash);
+          if (!found) {
+            console.log(`new pending tx ${txHash}`);
+            this.state.push({
+              id: txHash,
+              status: action.external ? action.external.status : 'LOADING',
+              final: action.external ? action.external.final : undefined,
+              action,
+            });
+          }
+        }
+        for (let i = this.state.length - 1; i >= 0; i--) {
+          if (
+            !$account.data.pendingActions[this.state[i].id] ||
+            typeof $account.data.pendingActions[this.state[i].id] === 'number'
+          ) {
+            this.state.splice(i, 1);
+          }
+        }
+      } else {
+        this.state.length = 0;
+      }
 
-    this.ownerAddress = $account.ownerAddress;
+      this.ownerAddress = $account.ownerAddress;
 
-    this._handleChainTempo(chainTempo.chainInfo);
+      this._handleChainTempo(chainTempo.chainInfo);
+      // TODO this should collect changes... and then call save
+      //  currently it trigger save which then amke it go in a endless loop
 
-    this._notify();
+      this._notify();
+    } catch (e) {}
+    this.processingAccountChanges = false;
   }
 
   private async _handleChainTempo($chainTempoInfo: ChainTempoInfo): Promise<void> {
@@ -182,6 +193,8 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
       if (checkedAction.action.acknowledged) {
         if (checkedAction.action.acknowledged !== finalStatus) {
           console.log(`cancel acknowledgement as not matching new status ${checkedAction.id}`);
+          console.log({type: checkedAction.action.type, acknowledged: checkedAction.action.acknowledged, finalStatus});
+          console.log(checkedAction);
           account.cancelAcknowledgment(checkedAction.id);
         } else if (typeof checkedAction.action !== 'number') {
           console.log(`acknowledgedment final for ${checkedAction.id}`);
