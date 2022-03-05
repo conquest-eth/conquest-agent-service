@@ -109,8 +109,10 @@
   onDestroy(() => {
     console.log(`sending stop`);
     unregisterIframe(src);
-    window.removeEventListener('message', onIFrameMessage);
-    iframe.contentWindow.postMessage(JSON.stringify({type: 'stop'}), src);
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('message', onIFrameMessage);
+      iframe.contentWindow.postMessage(JSON.stringify({type: 'stop'}), src);
+    }
   });
 
   function close() {
