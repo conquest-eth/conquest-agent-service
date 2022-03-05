@@ -148,12 +148,11 @@ type SyncData = {
 };
 
 const gwei = BigNumber.from('1000000000');
-const defaultMaxFeePerGas = gwei.mul(100);
 // the default fee schedule for new user registration
 const defaultMaxFeesSchedule: MaxFeesSchedule = [
-  {maxFeePerGas: defaultMaxFeePerGas.toString(), delay: 0},
-  {maxFeePerGas: defaultMaxFeePerGas.toString(), delay: 0},
-  {maxFeePerGas: defaultMaxFeePerGas.toString(), delay: 0},
+  {maxFeePerGas: gwei.mul(1.5).toString(), delay: 0},
+  {maxFeePerGas: gwei.mul(3).toString(), delay: 5*60},
+  {maxFeePerGas: gwei.mul(6).toString(), delay: 20*60},
 ];
 
 // maximum gas consumed for the reveal tx // TODO check its actual value, as we modify the contract
