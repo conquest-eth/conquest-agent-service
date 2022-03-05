@@ -106,7 +106,7 @@
               {/if}
             {:else}
               <p>
-                You do not have enough balance. You need at least {formatEther(minimumBalance)}} ${nativeTokenSymbol}
+                You do not have enough balance. You need at least {formatEther(minimumBalance)} ${nativeTokenSymbol}
               </p>
 
               <p>please top-up</p>
