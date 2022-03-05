@@ -163,10 +163,10 @@ export class PlanetStates {
       planetState.metadata = {...this.metadataTable[planetInfo.location.id]};
     }
 
-    if (planetInfo.stats.name === 'Akhew Awino') {
-      console.log(planetInfo.stats.name);
-      console.log({contractState});
-    }
+    // if (planetInfo.stats.name === 'Akhew Awino') {
+    //   console.log(planetInfo.stats.name);
+    //   console.log({contractState});
+    // }
 
     if (contractState) {
       planetState.natives =
