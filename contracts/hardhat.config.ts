@@ -157,6 +157,7 @@ const config: HardhatUserConfig = {
   tenderly: {
     project: 'conquest-eth', // TODO parameterize with network name
     username: process.env.TENDERLY_USERNAME as string,
+    appendNetworkNameToProject: true,
   },
 };
 
