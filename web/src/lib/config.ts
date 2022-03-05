@@ -116,6 +116,8 @@ const SYNC_DB_NAME =
     ? ':' + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
     : '');
 
+console.log({SYNC_DB_NAME});
+
 const AGENT_SERVICE_URL = params['agent-service'] || (import.meta.env.VITE_AGENT_SERVICE_URL as string); //  'http://invalid.io'; // to emulate connection loss :)
 
 let _dropTransactions = false;
