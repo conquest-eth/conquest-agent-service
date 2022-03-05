@@ -71,7 +71,7 @@ export class PlanetStates {
   }
 
   private onSpaceUpdate(update: SpaceQueryWithPendingState): void {
-    console.log(`on space update for planets`);
+    // console.log(`on space update for planets`);
     if (!update.queryState.data) {
       console.log('hmmm, no data...');
       // TODO error
@@ -163,7 +163,15 @@ export class PlanetStates {
       planetState.metadata = {...this.metadataTable[planetInfo.location.id]};
     }
 
+    if (planetInfo.stats.name === 'Akhew Awino') {
+      console.log(planetInfo.stats.name);
+      console.log({contractState});
+    }
+
     if (contractState) {
+      planetState.natives =
+        !contractState.active &&
+        (contractState.owner === '0x0000000000000000000000000000000000000000' || contractState.numSpaceships == 0);
       planetState.lastUpdatedSaved = contractState.lastUpdated;
       planetState.startExitTime = contractState.exitTime;
       planetState.owner = contractState.owner;

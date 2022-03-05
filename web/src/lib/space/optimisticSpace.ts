@@ -43,7 +43,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
   }
 
   private _handlePendingActions(pendingActions: CheckedPendingActions): void {
-    console.log('checked pending actions updated');
+    // console.log('checked pending actions updated');
     this.state.rawPendingActions = pendingActions;
     // this._updateAndNotify();
     // TODO consider loading
