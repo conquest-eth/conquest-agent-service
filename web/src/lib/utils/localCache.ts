@@ -77,9 +77,10 @@ class LocalCache {
 }
 
 const localCache = new LocalCache(
-  contractsInfos.contracts.OuterSpace.address + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
-    ? ':' + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
-    : ''
+  contractsInfos.contracts.OuterSpace.address +
+    (contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+      ? ':' + contractsInfos.contracts.OuterSpace.linkedData.chainGenesisHash
+      : '')
 );
 
 export default localCache;
