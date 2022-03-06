@@ -802,6 +802,13 @@ contract OuterSpaceFacetBase is
         rState.taxed = taxed;
     }
 
+    // TODO simplify and apply that to attack (when fleetOwner is not fleetSender)
+    //  if (resolution.gift) { rState.fleetOwner = destinationOwner }
+    //  then compute tax based on fleetOwner != fleetSender, box for attacks and gift
+    //  combined attack could even work for non-allies ?
+    //  in _computeGift calculate the tax for every branch that result in `gifting` being false
+    //  then in attack, add tax to the quantity of fleet + modify event
+
     // solhint-disable-next-line code-complexity
     function _computeGifting(
         address destinationOwner,
