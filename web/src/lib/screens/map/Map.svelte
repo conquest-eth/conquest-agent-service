@@ -59,13 +59,24 @@
 
       const fleets = fleetList.state.fleets;
       for (const fleet of fleets) {
-        const x1 = fleet.from.location.globalX;
-        const y1 = fleet.from.location.globalY;
-        const x2 = fleet.to.location.globalX;
-        const y2 = fleet.to.location.globalY;
-        const angle = Math.atan2(y2 - y1, x2 - x1);
+        // TODO duplicate of FleetElement
+        //  reuse or compute in Fleet
+
+        const angle = Math.atan2(
+          fleet.to.location.globalY - fleet.from.location.globalY,
+          fleet.to.location.globalX - fleet.from.location.globalX
+        );
 
         const ratio = Math.max(0, (fleet.duration - fleet.timeLeft) / fleet.duration);
+
+        const distanceSquare =
+          Math.pow(fleet.to.location.globalX - fleet.from.location.globalX, 2) +
+          Math.pow(fleet.to.location.globalY - fleet.from.location.globalY, 2);
+
+        const x1 = fleet.from.location.globalX + (distanceSquare > 10 ? Math.cos(angle) * 1.4 : 0);
+        const y1 = fleet.from.location.globalY + (distanceSquare > 10 ? Math.sin(angle) * 1.4 : 0);
+        const x2 = fleet.to.location.globalX - (distanceSquare > 10 ? Math.cos(angle) * 1.4 : 0);
+        const y2 = fleet.to.location.globalY - (distanceSquare > 10 ? Math.sin(angle) * 1.4 : 0);
 
         const scale = $camera ? $camera.renderScale : 1;
         const multiplier = (400 / scale) * 6;
@@ -82,8 +93,6 @@
           return;
         }
       }
-
-
     }
     selection.unselect();
     fleetselection.unselect();
