@@ -31,4 +31,8 @@ contract OuterSpaceAdminFacet is UsingDiamondOwner, OuterSpaceFacetBase {
 
         emit PlanetReset(location);
     }
+
+    function debug_reset_exitStartTime(uint256 location) external onlyOwner {
+        _planets[location].exitStartTime = 0;
+    }
 }
