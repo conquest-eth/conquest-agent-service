@@ -11,12 +11,13 @@ import {account} from '$lib/account/account';
 
 export type Player = {
   address: string;
-  alliances: {address: string; ally: boolean}[];
+  alliances: {address: string; ally: boolean; frontendURI: string}[];
 };
 
 export type Alliance = {
   address: string;
   members: Player[];
+  frontendURI: string;
 };
 
 export function hasCommonAlliance(p1: Player, p2: Player): boolean {
@@ -36,7 +37,7 @@ export type PlayersMap = {[address: string]: Player};
 export type AlliancesMap = {[address: string]: Alliance};
 
 export type PlayersQueryResult = {
-  owners: {id: string; alliances: {alliance: {id: string}}[]}[];
+  owners: {id: string; alliances: {alliance: {id: string; frontendURI: string}}[]}[];
   chain: {blockHash: string; blockNumber: string};
 };
 
@@ -65,6 +66,7 @@ export class PlayersQueryStore implements QueryStore<PlayersState> {
     alliances {
       alliance {
         id
+        frontendURI
       }
     }
   }
@@ -158,7 +160,7 @@ export class PlayersQueryStore implements QueryStore<PlayersState> {
       const player = (this.$players[owner.id] = {
         address: owner.id,
         alliances: owner.alliances.map((v) => {
-          return {address: v.alliance.id, ally: playerAlliances[v.alliance.id]};
+          return {address: v.alliance.id, ally: playerAlliances[v.alliance.id], frontendURI: v.alliance.frontendURI};
         }),
       });
       for (const alliance of owner.alliances) {
@@ -167,6 +169,7 @@ export class PlayersQueryStore implements QueryStore<PlayersState> {
           existingAlliance = this.$alliances[alliance.alliance.id] = {
             address: alliance.alliance.id,
             members: [],
+            frontendURI: alliance.alliance.frontendURI,
           };
         }
         existingAlliance.members.push(player);

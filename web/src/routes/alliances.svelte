@@ -62,7 +62,7 @@
           <a
             target="_blank"
             class="inline-block border-2 border-yellow-400 p-1 m-1"
-            href={url(`external/basic-alliances/`, `id=${entry[0]}`)}>JOIN/MANAGE</a
+            href={entry[1].frontendURI}>JOIN/MANAGE</a
           >
           <p>members:</p>
           <ul class="m-2">
