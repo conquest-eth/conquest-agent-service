@@ -35,15 +35,18 @@
 
 <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
 
-<div>
-  <div>
-    <PanelButton on:click={create} label="Create"
-      >Create Your Alliance <Help class="w-6 h-6"
-        >While you can create alliances any way you like (they are just smart contract), for the alpha, we let you
-        create BasicAlliance right here, that have an admin riole that can add new member but cannot remove them. If you
-        want more complex alliances, you ll need to code them.</Help
-      ></PanelButton
-    >
+<div class="m-4">
+  <h2 class="text-xl mb-1">What are alliances?</h2>
+  <p>Alliance allow 2 or more players to collaborate more easily in game. They</p>
+  <ul>
+    <li>- can combine attacks</li>
+    <li>- can send each other spaceships without any loss</li>
+    <li>- do not carry risk of attacking each other</li>
+  </ul>
+  <p>And they are programmable. Each alliance is a smart contract. You can create alliance with any rule you want. They can for example require a slashable deposit, taken away in case of betrayal.</p>
+
+  <div class="mt-4">
+    <p>For now we have created a basic alliance that is managed by one admin user. Check it out <a class="underline" href="https://basic-alliances-dev.conquest.etherplay.io/">here</a></p>
   </div>
 </div>
 
