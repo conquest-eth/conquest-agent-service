@@ -11,7 +11,14 @@ import {JsonRpcProvider} from '@ethersproject/providers';
 
 type TokenClaim = {
   inUrl: boolean;
-  state: 'Loading' | 'Available' | 'Claiming' | 'Claimed' | 'AlreadyClaimed' | 'AlreadyClaimedAnother';
+  state:
+    | 'Loading'
+    | 'Available'
+    | 'SettingUpClaim'
+    | 'Claiming'
+    | 'Claimed'
+    | 'AlreadyClaimed'
+    | 'AlreadyClaimedAnother';
   error?: unknown;
 };
 
@@ -95,21 +102,33 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       throw new Error(`no wallet.chain.contracts`);
     }
 
+    this.setPartial({state: 'SettingUpClaim'});
+
     const claimWallet = this.getClaimtWallet().connect(wallet.provider);
 
     const ConquestToken = wallet.chain.contracts.ConquestToken.connect(claimWallet);
-    const ethBalance = await wallet.provider.getBalance(claimWallet.address);
-    const tokenBalance = await ConquestToken.balanceOf(claimWallet.address);
-    if (tokenBalance.eq(0)) {
-      // TODO
+
+    let ethBalance: BigNumber;
+    let tokenBalance: BigNumber;
+    let nonce: number;
+    let estimate: BigNumber;
+    try {
+      ethBalance = await wallet.provider.getBalance(claimWallet.address);
+      tokenBalance = await ConquestToken.balanceOf(claimWallet.address);
+      if (tokenBalance.eq(0)) {
+        // TODO
+      }
+
+      nonce = await wallet.provider.getTransactionCount(claimWallet.address, 'latest');
+
+      estimate = await ConquestToken.estimateGas.transferAlongWithETH(wallet.address, tokenBalance, {
+        value: 1,
+        nonce,
+      });
+    } catch (e) {
+      // TODO use previous state instead of 'Available'
+      this.setPartial({state: 'Available', error: formatError(e)});
     }
-
-    const nonce = await wallet.provider.getTransactionCount(claimWallet.address, 'latest');
-
-    const estimate = await ConquestToken.estimateGas.transferAlongWithETH(wallet.address, tokenBalance, {
-      value: 1,
-      nonce,
-    });
 
     if (wallet.selected?.toLowerCase() === 'portis') {
       console.log('PORTIS bug, use alternative provider');
@@ -144,7 +163,8 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
         });
         this.setPartial({state: 'Claiming'});
       } catch (e) {
-        this.setPartial({error: formatError(e)});
+        // TODO use previous state instead of 'Available'
+        this.setPartial({state: 'Available', error: formatError(e)});
         console.error(e);
       }
       if (tx) {
@@ -152,7 +172,8 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
           await tx.wait();
           this.setPartial({state: 'Claimed'});
         } catch (e) {
-          this.setPartial({error: formatError(e)});
+          // TODO use previous state instead of 'Available'
+          this.setPartial({state: 'Available', error: formatError(e)});
           console.error(e);
         }
       }
@@ -176,7 +197,8 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
         });
         this.setPartial({state: 'Claiming'});
       } catch (e) {
-        this.setPartial({error: formatError(e)});
+        // TODO use previous state instead of 'Available'
+        this.setPartial({state: 'Available', error: formatError(e)});
         console.error(e);
       }
       if (tx) {

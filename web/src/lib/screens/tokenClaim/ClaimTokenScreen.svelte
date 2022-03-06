@@ -4,6 +4,7 @@
   import Button from '$lib/components/generic/PanelButton.svelte';
   import {chainName} from '$lib/config';
   import {privateWallet} from '$lib/account/privateWallet';
+  import Blockie from '$lib/components/account/Blockie.svelte';
 </script>
 
 {#if $tokenClaim.inUrl}
@@ -19,6 +20,9 @@
         <p class="m-5 text-red-500">{$tokenClaim.error}</p>
         <Button class="mt-4" label="ok" on:click={() => tokenClaim.acknowledgeError()}>ok</Button>
       {:else if $wallet.state === 'Ready'}
+        <p>Hello</p>
+        <p><Blockie class="inline-block w-12 h-12" address={$wallet.address} /></p>
+        <p>{$wallet.address}</p>
         {#if $chain.notSupported}
           <p class="m-5 text-red-500">Please switch to {chainName}.</p>
           <div>
@@ -30,6 +34,8 @@
         {:else if $tokenClaim.state === 'Available'}
           <p class="text-green-500">Congratulations! You have been given some tokens to claim.</p>
           <Button class="mt-4" label="claim" on:click={() => tokenClaim.claim()}>Claim</Button>
+        {:else if $tokenClaim.state === 'SettingUpClaim'}
+          <p class="mt-5">Please wait while the claim is being executed...</p>
         {:else if $tokenClaim.state === 'Claiming'}
           <p class="mt-5">Please wait while the claim is being executed...</p>
         {:else if $tokenClaim.state === 'Claimed'}
