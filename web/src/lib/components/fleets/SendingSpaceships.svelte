@@ -85,6 +85,7 @@
           taxAllies: boolean;
           giving?: {tax: number; loss: number};
           timeUntilFails: number;
+          nativeResist: boolean;
         };
       }
     | undefined = undefined;
@@ -151,7 +152,7 @@
   let confirmDisabled = false;
   $: {
     if (toPlanetState) {
-      confirmDisabled = !!($toPlanetState.natives && !prediction?.outcome.min.captured);
+      confirmDisabled = prediction?.outcome.nativeResist;
     }
   }
 
@@ -301,7 +302,7 @@
           <div class="flex flex-row justify-center">
             {#if prediction?.outcome.min.captured}
               <span class="text-green-600">{prediction?.outcome.min.numSpaceshipsLeft} (captured)</span>
-            {:else if $toPlanetState.natives}
+            {:else if prediction?.outcome.nativeResist}
               <span class="text-red-400">{prediction?.outcome.min.numSpaceshipsLeft} (native population resists)</span>
             {:else}<span class="text-red-400">{prediction?.outcome.min.numSpaceshipsLeft} (attack failed)</span>{/if}
           </div>
