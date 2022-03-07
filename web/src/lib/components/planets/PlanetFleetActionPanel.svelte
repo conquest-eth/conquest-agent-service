@@ -110,22 +110,23 @@
         <div class="w-20">Sign-In</div>
       </PanelButton>
     {:else}
-      <!-- {#if $sendFlow.step !== 'PICK_DESTINATION' && $sendFlow.step !== 'PICK_ORIGIN'} -->
-      {#each extraButtons as button}
-        <PanelButton
-          label={button.title}
-          class="m-2"
-          color="text-blue-600"
-          borderColor="border-blue-600"
-          on:click={() => showPlugin(button.src)}
-        >
-          <div class="w-20">
-            {button.title}
-            <Help class="inline w-4 h-4">TODO plugin help ?</Help>
-          </div>
-        </PanelButton>
-      {/each}
-      <!-- {/if} -->
+      <!-- TODO !walletIsOwner should depend on plugins-->
+      {#if ($sendFlow.step !== 'PICK_DESTINATION' && $sendFlow.step !== 'PICK_ORIGIN') || !walletIsOwner}
+        {#each extraButtons as button}
+          <PanelButton
+            label={button.title}
+            class="m-2"
+            color="text-blue-600"
+            borderColor="border-blue-600"
+            on:click={() => showPlugin(button.src)}
+          >
+            <div class="w-20">
+              {button.title}
+              <Help class="inline w-4 h-4">TODO plugin help ?</Help>
+            </div>
+          </PanelButton>
+        {/each}
+      {/if}
       {#if (!$planetState.owner || $planetState.owner === '0x0000000000000000000000000000000000000000') && $planetState.capturing}
         <p>Capturing....</p>
       {:else if $sendFlow.step === 'PICK_DESTINATION'}
