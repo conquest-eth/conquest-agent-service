@@ -232,6 +232,11 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     rewardGiver
   }
   planetInteruptedExitEvents: planetExitEvents(where: {owner: $owner exitTime_gt: $fromTime interupted: true} orderBy: timestamp, orderDirection: desc) {
+    id
+    blockNumber
+    timestamp
+    transaction {id}
+    owner {id}
     planet {id}
     exitTime
     stake
@@ -239,7 +244,12 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     complete
     success
   }
-  planetTimePassedExitEvents: planetExitEvents(where: {owner: $owner exitTime_gt: $fromTime exitTime_lt: $exitTimeEnd} orderBy: timestamp, orderDirection: desc) {
+  planetTimePassedExitEvents: planetExitEvents(where: {owner: $owner exitTime_gt: $fromTime exitTime_lt: $exitTimeEnd interupted: false} orderBy: timestamp, orderDirection: desc) {
+    id
+    blockNumber
+    timestamp
+    transaction {id}
+    owner {id}
     planet {id}
     exitTime
     stake
