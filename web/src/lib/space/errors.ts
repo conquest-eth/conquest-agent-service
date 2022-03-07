@@ -1,4 +1,5 @@
-import type {PendingAction} from '$lib/account/account';
+import type {AccountState, Acknowledgements, PendingAction, PendingActions} from '$lib/account/account';
+import {account} from '$lib/account/account';
 import type {SpaceQueryWithPendingState} from '$lib/space/optimisticSpace';
 import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
 import {now} from '$lib/time';
@@ -18,6 +19,11 @@ export type SpaceError = {
 export class ErrorsStore implements Readable<SpaceError[]> {
   private store: Writable<SpaceError[]>;
   private errors: SpaceError[] = [];
+  private currentOwner: string;
+  private tmpErrors: SpaceError[] = [];
+  private tmpPlayer: string;
+  // private acknowledgements: Acknowledgements;
+  private pendingActions: PendingActions;
 
   constructor() {
     this.store = writable(this.errors, this._start.bind(this));
@@ -25,10 +31,11 @@ export class ErrorsStore implements Readable<SpaceError[]> {
 
   _start(): void {
     spaceQueryWithPendingActions.subscribe(this.onSpaceUpdate.bind(this));
+    account.subscribe(this._handleAccountChange.bind(this));
   }
 
   private onSpaceUpdate(update: SpaceQueryWithPendingState): void {
-    this.errors.length = 0;
+    const newErrors = [];
     for (const pendingAction of update.pendingActions) {
       let errorProcessed = false;
       let location: {x: number; y: number} | undefined;
@@ -53,7 +60,7 @@ export class ErrorsStore implements Readable<SpaceError[]> {
                 if (timeToResolve <= 0) {
                   errorProcessed = true;
                   location = pendingAction.action.to;
-                  this.errors.push({
+                  newErrors.push({
                     action: pendingAction.action,
                     status: 'TIMEOUT',
                     txHash: pendingAction.id,
@@ -80,7 +87,7 @@ export class ErrorsStore implements Readable<SpaceError[]> {
           pendingAction.status === 'CANCELED' ||
           pendingAction.status === 'TIMEOUT')
       ) {
-        this.errors.push({
+        newErrors.push({
           action: pendingAction.action,
           status: pendingAction.status,
           txHash: pendingAction.id,
@@ -90,7 +97,46 @@ export class ErrorsStore implements Readable<SpaceError[]> {
       }
     }
 
-    this.errors = this.errors.filter((v) => !v.acknowledged);
+    const newPlayer = update.queryState.data?.player;
+    if (this.currentOwner !== newPlayer) {
+      this.tmpPlayer = newPlayer;
+      this.tmpErrors = newErrors;
+      this.errors.length = 0;
+      // TODO loading ?
+    } else {
+      this.errors = this.addAcknowledgements(newErrors);
+    }
+
+    this.store.set(this.errors);
+  }
+
+  private addAcknowledgements(newErrors: SpaceError[]): SpaceError[] {
+    for (const error of newErrors) {
+      const pendingAction = (this.pendingActions && this.pendingActions[error.txHash]) || error.action;
+      error.acknowledged = typeof pendingAction === 'number' || pendingAction?.acknowledged === 'ERROR';
+    }
+    return newErrors.filter((v) => !v.acknowledged); // TODO should we include all and filter in UI instead ?
+  }
+
+  private async _handleAccountChange($account: AccountState): Promise<void> {
+    const newPlayer = $account.ownerAddress?.toLowerCase();
+    // this.acknowledgements = $account.data?.acknowledgements; // not used by errors
+    this.pendingActions = $account.data?.pendingActions;
+
+    if ($account.step === 'IDLE') {
+      this.currentOwner = undefined;
+      this.errors = [];
+    } else if (this.currentOwner === newPlayer) {
+      this.errors = this.addAcknowledgements(this.errors);
+    } else if (newPlayer === this.tmpPlayer) {
+      this.currentOwner = newPlayer;
+      this.errors = this.addAcknowledgements(this.tmpErrors);
+    } else {
+      this.currentOwner = newPlayer;
+      this.errors = [];
+      // TODO loading
+    }
+
     this.store.set(this.errors);
   }
 
