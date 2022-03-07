@@ -1,7 +1,6 @@
 <script lang="ts">
   import SendingSpaceships from '$lib/components/fleets/SendingSpaceships.svelte';
   import Button from '$lib/components/generic/PanelButton.svelte';
-  import Banner from '$lib/components/screen/Banner.svelte';
   import sendFlow from '$lib/flows/send';
   import Modal from '$lib/components/generic/Modal.svelte';
   import SpaceshipsSent from '$lib/components/fleets/SpaceshipsSent.svelte';
@@ -9,8 +8,7 @@
   import SendPreTransactionMessage from '$lib/components/fleets/SendPreTransactionMessage.svelte';
   import {url} from '$lib/utils/url';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
-  import {flow} from '$lib/blockchain/wallet';
-  import {dataset_dev} from 'svelte/internal';
+  import VirtualFleetInfoPanel from '$lib/components/planets/VirtualFleetInfoPanel.svelte';
 
   $: pickNeeded =
     $sendFlow.step === 'PICK_DESTINATION' ? 'destination' : $sendFlow.step === 'PICK_ORIGIN' ? 'origin' : undefined;
@@ -36,16 +34,16 @@
     {/if}
   </Modal>
 {:else if pickNeeded}
-  <Banner on:close={() => sendFlow.cancel()}>
-    <p class="font-medium">
-      <span class="inline" />
-      {#if pickNeeded === 'destination'}Pick the Destination{:else}Pick the Origin{/if}
-    </p>
-  </Banner>
+  {#if $sendFlow.step === 'PICK_DESTINATION'}
+    <VirtualFleetInfoPanel coords={$sendFlow.data?.from} {pickNeeded} />
+  {:else if $sendFlow.step === 'PICK_ORIGIN'}
+    <VirtualFleetInfoPanel coords={$sendFlow.data?.to} {pickNeeded} />
+  {/if}
 {:else if $sendFlow.step === 'INACTIVE_PLANET'}
   <Modal>
     <p class="mb-3">
-      You are sending spaceships to an inactive planets. Note that once your fleet capture the planet, its population will decrease until you stake <PlayCoin class="w-4 h-4 inline" /> on it.
+      You are sending spaceships to an inactive planets. Note that once your fleet capture the planet, its population
+      will decrease until you stake <PlayCoin class="w-4 h-4 inline" /> on it.
     </p>
 
     <div class="text-center">

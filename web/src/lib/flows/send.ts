@@ -1,6 +1,7 @@
 import {wallet} from '$lib/blockchain/wallet';
 import {privateWallet} from '$lib/account/privateWallet';
 import {account} from '$lib/account/account';
+import type {PlanetInfo} from 'conquest-eth-common';
 import {xyToLocation} from 'conquest-eth-common';
 import {spaceInfo} from '$lib/space/spaceInfo';
 import {BaseStoreWithData} from '$lib/utils/stores/base';
@@ -14,6 +15,11 @@ import {get} from 'svelte/store';
 import {formatError} from '$lib/utils';
 import {BigNumber} from '@ethersproject/bignumber';
 import {Contract} from '@ethersproject/contracts';
+
+export type VirtualFleet = {
+  from: PlanetInfo;
+  to: PlanetInfo;
+};
 
 type SendConfig = {
   fleetOwner?: string;
@@ -55,9 +61,37 @@ export type SendFlow = {
     | 'CREATING_TX'
     | 'WAITING_TX'
     | 'SUCCESS';
+  pastStep:
+    | 'IDLE'
+    | 'CONNECTING'
+    | 'INACTIVE_PLANET'
+    | 'PICK_DESTINATION'
+    | 'PICK_ORIGIN'
+    | 'TUTORIAL_PRE_FLEET_AMOUNT'
+    | 'TUTORIAL_PRE_TRANSACTION'
+    | 'CHOOSE_FLEET_AMOUNT'
+    | 'CREATING_TX'
+    | 'WAITING_TX'
+    | 'SUCCESS';
   data?: Data;
   error?: {message?: string; type?: string};
 };
+
+export function virtualFleetFrom(sendFlowData: Data, pos: {x: number; y: number}): VirtualFleet {
+  return {
+    from: spaceInfo.getPlanetInfo(pos.x, pos.y),
+    // owner: '0x0000000000000000000000000000000000000000', // TODO
+    to: spaceInfo.getPlanetInfo(sendFlowData.to.x, sendFlowData.to.y),
+  };
+}
+
+export function virtualFleetTo(sendFlowData: Data, pos: {x: number; y: number}): VirtualFleet {
+  return {
+    from: spaceInfo.getPlanetInfo(sendFlowData.from.x, sendFlowData.from.y),
+    // owner: '0x0000000000000000000000000000000000000000', // TODO
+    to: spaceInfo.getPlanetInfo(pos.x, pos.y),
+  };
+}
 
 function findCommonAlliances(arr1: string[], arr2: string[]): string[] {
   const result = [];
@@ -74,6 +108,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     super({
       type: 'SEND',
       step: 'IDLE',
+      pastStep: 'IDLE',
     });
   }
 
@@ -87,9 +122,9 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     } else {
       await privateWallet.login();
       if (config) {
-        this.setData({from, config}, {step: 'PICK_DESTINATION'});
+        this.setData({from, config}, {step: 'PICK_DESTINATION', pastStep: 'PICK_DESTINATION'});
       } else {
-        this.setData({from}, {step: 'PICK_DESTINATION'});
+        this.setData({from}, {step: 'PICK_DESTINATION', pastStep: 'PICK_DESTINATION'});
       }
     }
   }
@@ -103,7 +138,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       this.pickDestination(to);
     } else {
       await privateWallet.login();
-      this.setData({to}, {step: 'PICK_ORIGIN'});
+      this.setData({to}, {step: 'PICK_ORIGIN', pastStep: 'PICK_ORIGIN'});
     }
   }
 
@@ -439,6 +474,15 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
   async cancel(): Promise<void> {
     this._reset();
+  }
+
+  async back(): Promise<void> {
+    if (this.$store.pastStep === 'PICK_DESTINATION') {
+      this.setData({to: undefined});
+    } else if (this.$store.pastStep === 'PICK_ORIGIN') {
+      this.setData({from: undefined});
+    }
+    this.setPartial({step: this.$store.pastStep});
   }
 
   async acknownledgeSuccess(): Promise<void> {

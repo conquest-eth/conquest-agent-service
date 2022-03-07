@@ -188,7 +188,7 @@
 </script>
 
 <!-- TODO Remove on:confirm, see button below -->
-<Modal {border_color} on:close={() => sendFlow.cancel()}>
+<Modal {border_color} on:close={() => sendFlow.back()}>
   <!-- <h2 slot="header">Stake on Planet {location.x},{location.y}</h2> -->
 
   <nav class="relative z-0 mb-5 rounded-lg shadow flex divide-x divide-gray-700" aria-label="Tabs">

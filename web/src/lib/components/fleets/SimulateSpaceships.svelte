@@ -68,7 +68,7 @@
   });
 </script>
 
-<Modal on:close={() => simulateFlow.cancel()}>
+<Modal on:close={() => simulateFlow.back()}>
   <!-- <h2 slot="header">Capture Planet {location.x},{location.y}</h2> -->
 
   <div class="text-center">

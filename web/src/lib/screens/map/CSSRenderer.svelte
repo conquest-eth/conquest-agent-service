@@ -12,6 +12,12 @@
   import {errors} from '$lib/space/errors';
   import ErrorElement from './ErrorElement.svelte';
   import {showFleets} from '$lib/map/showFleets';
+  import sendFlow, {virtualFleetFrom, virtualFleetTo} from '$lib/flows/send';
+  import selection from '$lib/map/selection';
+  import VirtualFleetElement from './VirtualFleetElement.svelte';
+  import simulateFlow, {virtualFleetSimulationTo} from '$lib/flows/simulateFlow';
+  import VirtualFleetSimulationElement from './VirtualFleetSimulationElement.svelte';
+
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
 
   $: x1 = ($spaceQueryWithPendingActions.queryState.data?.space.x1 || -16) * 4 - 2; // TODO sync CONSTANTS with thegraph and contract
@@ -70,6 +76,16 @@ width:100%; height: 100%;
             <FleetElement {fleet} />
           {/if}
         {/each}
+      {/if}
+    {/if}
+
+    {#if $selection && $sendFlow}
+      {#if $sendFlow.step === 'PICK_ORIGIN'}
+        <VirtualFleetElement fleet={virtualFleetFrom($sendFlow.data, $selection)} />
+      {:else if $sendFlow.step === 'PICK_DESTINATION'}
+        <VirtualFleetElement fleet={virtualFleetTo($sendFlow.data, $selection)} />
+      {:else if $simulateFlow.step === 'PICK_DESTINATION'}
+        <VirtualFleetSimulationElement fleet={virtualFleetSimulationTo($simulateFlow.data, $selection)} />
       {/if}
     {/if}
 

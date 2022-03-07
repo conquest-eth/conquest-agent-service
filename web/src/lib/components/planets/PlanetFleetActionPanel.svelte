@@ -110,161 +110,50 @@
         <div class="w-20">Sign-In</div>
       </PanelButton>
     {:else}
-      {#if $sendFlow.step !== 'PICK_DESTINATION' && $sendFlow.step !== 'PICK_ORIGIN'}
-        {#each extraButtons as button}
-          <PanelButton
-            label={button.title}
-            class="m-2"
-            color="text-blue-600"
-            borderColor="border-blue-600"
-            on:click={() => showPlugin(button.src)}
-          >
-            <div class="w-20">
-              {button.title}
-              <Help class="inline w-4 h-4">TODO plugin help ?</Help>
-            </div>
-          </PanelButton>
-        {/each}
-      {/if}
+      <!-- {#if $sendFlow.step !== 'PICK_DESTINATION' && $sendFlow.step !== 'PICK_ORIGIN'} -->
+      {#each extraButtons as button}
+        <PanelButton
+          label={button.title}
+          class="m-2"
+          color="text-blue-600"
+          borderColor="border-blue-600"
+          on:click={() => showPlugin(button.src)}
+        >
+          <div class="w-20">
+            {button.title}
+            <Help class="inline w-4 h-4">TODO plugin help ?</Help>
+          </div>
+        </PanelButton>
+      {/each}
+      <!-- {/if} -->
       {#if (!$planetState.owner || $planetState.owner === '0x0000000000000000000000000000000000000000') && $planetState.capturing}
         <p>Capturing....</p>
       {:else if $sendFlow.step === 'PICK_DESTINATION'}
-        {#if planetInfo.location.id === (originPlanetInfo ? originPlanetInfo.location.id : null)}
-          <p class="m-3">Pick a Different Planet than Itself</p>
-        {:else if !$planetState.owner}
-          <!-- SEND TO CONQUERE -->
+        <!-- TAKEN CARE BY VirtualFleetActionPanel -->
+        {#if !walletIsOwner}
           <PanelButton
-            label="Confirm"
+            label="Message"
+            color="text-blue-400"
+            borderColor="border-blue-400"
             class="m-2"
-            color="text-blue-500"
-            borderColor="border-blue-500"
-            on:click={sendTo}
+            on:click={messageOwner}
           >
-            <div class="w-20">
-              Confirm
-              <Help class="inline w-4 h-4"
-                >You can send out spaceships in the form of fleets to either attack or send reinforcement.</Help
-              >
-            </div>
-          </PanelButton>
-        {:else if walletIsOwner && !$planetState.active}
-          <!-- SEND MORE -->
-          <PanelButton
-            label="Confirm"
-            class="m-2"
-            color="text-blue-500"
-            borderColor="border-blue-500"
-            on:click={sendTo}
-          >
-            <div class="w-20">Confirm</div>
-          </PanelButton>
-        {:else if walletIsOwner}
-          <!-- SEND PROTECTION -->
-          <PanelButton
-            label="Confirm"
-            class="m-2"
-            color="text-blue-500"
-            borderColor="border-blue-500"
-            on:click={sendTo}
-          >
-            <div class="w-20">Confirm</div>
-          </PanelButton>
-        {:else}
-          <!-- ATTACK -->
-          <PanelButton
-            label="Confirm"
-            class="m-2"
-            color="text-blue-500"
-            borderColor="border-blue-500"
-            on:click={sendTo}
-          >
-            <div class="w-20">
-              Confirm
-              <Help class="inline w-4 h-4">
-                You can send out spaceships in the form of fleets to either attack or send reinforcement.
-              </Help>
-            </div>
+            <div class="w-20">Message Owner</div>
           </PanelButton>
         {/if}
-        <PanelButton label="Cancel" class="m-2" on:click={cancelSend}>
-          <div class="w-20">Cancel</div>
-        </PanelButton>
       {:else if $sendFlow.step === 'PICK_ORIGIN'}
-        {#if planetInfo.location.id === (destinationPlanetInfo ? destinationPlanetInfo.location.id : null)}
-          <p class="m-3">Pick a Different Planet than Itself</p>
-        {:else if !$planetState.owner}
-          <!-- SEND TO CONQUERE -->
-          <p class="m-3">Pick a Planet you own.</p>
-        {:else if walletIsOwner && $planetState.exiting}
-          <!-- SEND TO CONQUERE -->
-          <p class="m-3">This Planet is exiting, pick another one</p>
-        {:else if walletIsOwner && !$planetState.active}
-          {#if $planetState.numSpaceships == 0}
-            <p class="m-3">Pick a Planet with spaceships.</p>
-          {:else}
-            <!-- SEND MORE -->
-            {#if attacking}
-              <PanelButton
-                label="Confirm"
-                class="m-2"
-                color="text-blue-500"
-                borderColor="border-blue-500"
-                on:click={sendFrom}
-              >
-                <div class="w-20">
-                  Confirm
-                  <Help class="inline w-4 h-4">
-                    You can send out spaceships in the form of fleets to either attack or send reinforcement.
-                  </Help>
-                </div>
-              </PanelButton>
-            {:else}
-              <PanelButton
-                label="Confirm"
-                class="m-2"
-                color="text-blue-500"
-                borderColor="border-blue-500"
-                on:click={sendFrom}
-              >
-                <div class="w-20">Confirm</div>
-              </PanelButton>
-            {/if}
-          {/if}
-        {:else if walletIsOwner}
-          <!-- SEND PROTECTION -->
-          {#if attacking}
-            <PanelButton
-              label="Confirm"
-              class="m-2"
-              color="text-blue-500"
-              borderColor="border-blue-500"
-              on:click={sendFrom}
-            >
-              <div class="w-20">
-                Confirm
-                <Help class="inline w-4 h-4">
-                  You can send out spaceships in the form of fleets to either attack or send reinforcement.
-                </Help>
-              </div>
-            </PanelButton>
-          {:else}
-            <PanelButton
-              label="Send Reinforcment"
-              class="m-2"
-              color="text-green-500"
-              borderColor="border-green-500"
-              on:click={sendFrom}
-            >
-              <div class="w-20">Send Reinforcment</div>
-            </PanelButton>
-          {/if}
-        {:else}
-          <!-- ATTACK -->
-          <p class="m-3">Pick a Planet you own.</p>
+        <!-- TAKEN CARE BY VirtualFleetActionPanel -->
+        {#if !walletIsOwner}
+          <PanelButton
+            label="Message"
+            color="text-blue-400"
+            borderColor="border-blue-400"
+            class="m-2"
+            on:click={messageOwner}
+          >
+            <div class="w-20">Message Owner</div>
+          </PanelButton>
         {/if}
-        <PanelButton label="Cancel" class="m-2" on:click={cancelSend}>
-          <div class="w-20">Cancel</div>
-        </PanelButton>
       {:else if $simulateFlow.step === 'PICK_DESTINATION'}
         <PanelButton
           label="Show simulation"
