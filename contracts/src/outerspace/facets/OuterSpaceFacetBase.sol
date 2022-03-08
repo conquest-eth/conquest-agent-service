@@ -224,8 +224,14 @@ contract OuterSpaceFacetBase is
         planetUpdate.numSpaceships = uint32(newNumSpaceships);
     }
 
-    function _setPlanet(Planet storage planet, PlanetUpdateState memory planetUpdate) internal {
+    function _setPlanet(
+        Planet storage planet,
+        PlanetUpdateState memory planetUpdate,
+        bool exitInterupted
+    ) internal {
         if (planetUpdate.exitStartTime > 0 && planetUpdate.newExitStartTime == 0) {
+            // NOTE: planetUpdate.newExitStartTime is only set to zero when exit is actually complete (not interupted)
+            //  interuption is handled by exitInterupted
             // exit has completed, newExitStartTime is not set to zero for interuption,
             // interuption is taken care below (owner changes)
             _handleExitComplete(planetUpdate);
@@ -235,15 +241,15 @@ contract OuterSpaceFacetBase is
             planet.ownershipStartTime = uint40(block.timestamp);
             // TODO stakedOwnershipStartTime ?
             // TODO handle staking pool ?
-
-            // if (planetUpdate.newExitStartTime == 0 && planetUpdate.exitStartTime > 0) {
-            // exit interupted // TODO event ?
-            // }
-
             emit Transfer(planetUpdate.owner, planetUpdate.newOwner, planetUpdate.location);
         }
 
-        if (planetUpdate.newExitStartTime != planetUpdate.exitStartTime) {
+        if (exitInterupted) {
+            // if (planetUpdate.newExitStartTime == 0 && planetUpdate.exitStartTime > 0) {
+            // exit interupted // TODO event ?
+            // }
+            planet.exitStartTime = 0;
+        } else if (planetUpdate.newExitStartTime != planetUpdate.exitStartTime) {
             planet.exitStartTime = planetUpdate.newExitStartTime;
         }
 
@@ -287,7 +293,7 @@ contract OuterSpaceFacetBase is
         // -----------------------------------------------------------------------------------------------------------
         // Write New State
         // -----------------------------------------------------------------------------------------------------------
-        _setPlanet(planet, planetUpdate);
+        _setPlanet(planet, planetUpdate, false);
         // _setAccountFromPlanetUpdate(planetUpdate);
 
         // -----------------------------------------------------------------------------------------------------------
@@ -495,7 +501,7 @@ contract OuterSpaceFacetBase is
         Planet storage planet = _getPlanet(location);
         PlanetUpdateState memory planetUpdate = _createPlanetUpdateState(planet, location);
         _computePlanetUpdateForTimeElapsed(planetUpdate);
-        _setPlanet(planet, planetUpdate);
+        _setPlanet(planet, planetUpdate, false);
         // _setAccountFromPlanetUpdate(planetUpdate);
     }
 
@@ -556,7 +562,7 @@ contract OuterSpaceFacetBase is
         // -----------------------------------------------------------------------------------------------------------
         // Write New State
         // -----------------------------------------------------------------------------------------------------------
-        _setPlanet(planet, planetUpdate);
+        _setPlanet(planet, planetUpdate, false);
         // _setAccountFromPlanetUpdate(planetUpdate);
 
         _setFleetFlyingSlot(launch.from, launch.quantity);
@@ -702,7 +708,7 @@ contract OuterSpaceFacetBase is
 
         _setTravelingUpkeepFromOrigin(fleetId, rState, resolution.from);
 
-        _setPlanet(toPlanet, toPlanetUpdate);
+        _setPlanet(toPlanet, toPlanetUpdate, rState.victory);
 
         _setAccumulatedAttack(rState, toPlanetUpdate);
 
@@ -975,7 +981,7 @@ contract OuterSpaceFacetBase is
             }
             fromPlanetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
 
-            _setPlanet(fromPlanet, fromPlanetUpdate);
+            _setPlanet(fromPlanet, fromPlanetUpdate, false);
 
             emit TravelingUpkeepReductionFromDestruction(
                 location,
