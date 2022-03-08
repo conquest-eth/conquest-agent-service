@@ -236,15 +236,14 @@ contract OuterSpaceFacetBase is
             // TODO stakedOwnershipStartTime ?
             // TODO handle staking pool ?
 
-            if (planetUpdate.exitStartTime != 0) {
-                // TODO investigate : had this also before : && planetUpdate.newExitStartTime == 0
-                planet.exitStartTime = 0;
-                // exit interupted // TODO event ?
-            }
+            // if (planetUpdate.newExitStartTime == 0 && planetUpdate.exitStartTime > 0) {
+            // exit interupted // TODO event ?
+            // }
 
             emit Transfer(planetUpdate.owner, planetUpdate.newOwner, planetUpdate.location);
         }
-        if (planetUpdate.newExitStartTime > 0 && planetUpdate.exitStartTime == 0) {
+
+        if (planetUpdate.newExitStartTime != planetUpdate.exitStartTime) {
             planet.exitStartTime = planetUpdate.newExitStartTime;
         }
 
