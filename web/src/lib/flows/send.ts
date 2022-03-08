@@ -61,6 +61,7 @@ export type SendFlow = {
     | 'CREATING_TX'
     | 'WAITING_TX'
     | 'SUCCESS';
+  cancelingConfirmation?: boolean;
   pastStep:
     | 'IDLE'
     | 'CONNECTING'
@@ -122,15 +123,21 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     } else {
       await privateWallet.login();
       if (config) {
-        this.setData({from, config}, {step: 'PICK_DESTINATION', pastStep: 'PICK_DESTINATION'});
+        this.setData(
+          {from, config},
+          {step: 'PICK_DESTINATION', pastStep: 'PICK_DESTINATION', cancelingConfirmation: undefined}
+        );
       } else {
-        this.setData({from}, {step: 'PICK_DESTINATION', pastStep: 'PICK_DESTINATION'});
+        this.setData(
+          {from},
+          {step: 'PICK_DESTINATION', pastStep: 'PICK_DESTINATION', cancelingConfirmation: undefined}
+        );
       }
     }
   }
 
   async sendToInactivePlanet(to: {x: number; y: number}): Promise<void> {
-    this.setData({to}, {step: 'INACTIVE_PLANET'});
+    this.setData({to}, {step: 'INACTIVE_PLANET', cancelingConfirmation: undefined});
   }
 
   async sendTo(to: {x: number; y: number}): Promise<void> {
@@ -138,7 +145,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       this.pickDestination(to);
     } else {
       await privateWallet.login();
-      this.setData({to}, {step: 'PICK_ORIGIN', pastStep: 'PICK_ORIGIN'});
+      this.setData({to}, {step: 'PICK_ORIGIN', pastStep: 'PICK_ORIGIN', cancelingConfirmation: undefined});
     }
   }
 
@@ -242,7 +249,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
   }
 
   async _confirm(fleetAmount: number, gift: boolean, useAgentService: boolean): Promise<void> {
-    const flow = this.setPartial({step: 'CREATING_TX'});
+    const flow = this.setPartial({step: 'CREATING_TX', cancelingConfirmation: undefined});
     if (!flow.data) {
       throw new Error(`no data for send flow`);
     }
@@ -472,8 +479,16 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     }
   }
 
-  async cancel(): Promise<void> {
-    this._reset();
+  async cancelCancelation(): Promise<void> {
+    this.setPartial({cancelingConfirmation: false});
+  }
+
+  async cancel(cancelingConfirmation = false): Promise<void> {
+    if (cancelingConfirmation) {
+      this.setPartial({cancelingConfirmation: true});
+    } else {
+      this._reset();
+    }
   }
 
   async back(): Promise<void> {

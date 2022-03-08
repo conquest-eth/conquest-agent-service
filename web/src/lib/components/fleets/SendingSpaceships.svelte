@@ -27,8 +27,18 @@
   let arrivalTimeWanted: Date;
   let formatted_arrivalTimeWanted: string;
 
-  function handleArrivalTimeWantedChange(value) {
-    console.log({arrivalTimeWanted: value});
+  function handleArrivalTimeWantedChange(event: CustomEvent) {
+    // const value = event.detail[0][0];
+    // if (value) {
+    //   console.log({arrivalTimeWanted: value.getTime()});
+    //   console.log(value);
+
+    //   // arrivalTimeWanted = new Date(Math.ceil(value.getTime() / 60000) * 60000);
+    //   // console.log({arrivalTimeWanted: arrivalTimeWanted.getTime()});
+    //   // console.log(arrivalTimeWanted);
+    //   // formatted_arrivalTimeWanted = arrivalTimeWanted.toDateString();
+
+    // }
   }
 
   // TODO investigate why there is need to check sendFlow.data.from ? might need to do the same to sendFlow.data.to below
@@ -74,6 +84,18 @@
   $: currentTimeToArrive = arrivalTimeWanted ? arrivalTimeWanted.getTime() / 1000 - $time : defaultTimeToArrive;
 
   $: currentTimeToArriveFormatted = timeToText(currentTimeToArrive);
+
+  $: actualDefaultArrivalDateTime = defaultTimeToArrive + $time;
+
+  $: defaultArrivalDateTime = (Math.ceil((defaultTimeToArrive + $time) / 60) * 60 + 1 * 60);
+
+  let attentionRequired : 'TIME_PASSED' | undefined;
+  $: {
+    if (arrivalTimeWanted && arrivalTimeWanted.getTime() / 1000 < actualDefaultArrivalDateTime) {
+      arrivalTimeWanted = undefined
+      attentionRequired = 'TIME_PASSED';
+    }
+  }
 
   let prediction:
     | {
@@ -124,8 +146,9 @@
     : defaultTimeToArrive
     ? {
         enableTime: true,
-        minDate: (defaultTimeToArrive + $time + 1 * 60) * 1000,
-        defaultDate: '2022-02-17 14:22',
+        minDate: defaultArrivalDateTime * 1000,
+        defaultDate: new Date(defaultArrivalDateTime * 1000).toDateString(),
+        defaultSecond: 0,
         time_24hr: true,
         minuteIncrement: 1,
         plugins: [
@@ -187,7 +210,17 @@
   }
 </script>
 
-<!-- TODO Remove on:confirm, see button below -->
+
+{#if attentionRequired}
+<Modal {border_color} on:close={() => attentionRequired = undefined}>
+  <div class="text-center">
+    <p class="pb-4">Popup Idle, please review information</p>
+    <PanelButton label="OK" on:click={() => attentionRequired = undefined}>OK</PanelButton>
+  </div>
+</Modal>
+
+{:else}
+  <!-- TODO Remove on:confirm, see button below -->
 <Modal {border_color} on:close={() => sendFlow.back()}>
   <!-- <h2 slot="header">Stake on Planet {location.x},{location.y}</h2> -->
 
@@ -387,3 +420,6 @@
     {/if}
   </div>
 </Modal>
+
+{/if}
+

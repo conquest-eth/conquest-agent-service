@@ -69,6 +69,8 @@
   $: fromPlayer = $playersQuery.data?.players[fleet.owner];
   $: senderPlayer = $playersQuery.data?.players[fleet.fleetSender || fleet.owner];
 
+  $: minDuration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
+
   let prediction:
     | {
         arrivalTime: string;
@@ -260,20 +262,18 @@ animation-timing-function: linear;
 {#if ($fleetselection && $fleetselection.txHash == fleet.txHash) || ($camera && $camera.zoom > 60)}
   <!-- svelte-ignore a11y-mouse-events-have-key-events -->
   <div
-    class="w-24 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300"
-    style={`font-size: 9px;
+    class="w-32 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300"
+    style={`font-size: 7px;
       transform-origin: top left;
        position: absolute; z-index: 99; overflow: visible; transform: translate(${x}px,${y}px) scale(${2 / scale})`}
   >
     <ul class="text-white">
-      <li><span class="text-yellow-300">from:</span> {fleet.from.stats.name}</li>
-      <li><span class="text-yellow-300">to:</span> {fleet.to.stats.name}</li>
+
       <li><span class="text-yellow-300">spaceships:</span> {fleet.quantity}</li>
-      <li>
-        <span class="text-yellow-300">Duration:</span>
-        {timeToText(fleet.duration)}
-      </li>
       <li><span class="text-yellow-300">Time left:</span> {timeToText(fleet.timeLeft)}</li>
+      <li><span class="text-yellow-300">Arrival:</span> {new Date((fleet.launchTime + Math.max(minDuration, fleet.arrivalTimeWanted - fleet.launchTime)) * 1000).toLocaleString()}</li>
+      <!-- <li><span class="text-yellow-300">launch+duration:</span> {fleet.launchTime + minDuration}</li>
+      <li><span class="text-yellow-300">arrivalTimeWanted:</span> {fleet.arrivalTimeWanted}</li> -->
       {#if prediction}
         <li>
           {#if prediction.outcome.giving}
@@ -284,28 +284,27 @@ animation-timing-function: linear;
             <!-- <span class="text-red-500">No Capture</span> -->
           {/if}
         </li>
-        <li>
+
           {#if prediction.outcome.giving}
-            <span
+          <li><span
               class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
               >spaceships: {prediction.outcome.min.numSpaceshipsLeft}</span
-            >
+            ></li>
           {:else if prediction.outcome.min.captured}
-            <span
+            <li><span
               class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
               >spaceships: {prediction.outcome.min.numSpaceshipsLeft}</span
-            >
+            ></li>
           {:else}
-            <span
+            <li><span
               class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
               >damage: {prediction.numSpaceshipsAtArrival.min - prediction.outcome.min.numSpaceshipsLeft}</span
-            >
-            <span
+            ></li>
+            <li><span
               class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
               >spaceships: {prediction.outcome.min.numSpaceshipsLeft}</span
-            >
+            ></li>
           {/if}
-        </li>
       {/if}
     </ul>
   </div>

@@ -172,7 +172,8 @@ export class MyEventsStore implements Readable<MyEvent[]> {
         }
       }
     }
-    return events.filter((v) => v.acknowledged !== 'YES'); // TODO should we include all and filter in UI instead ?
+    // TODO should we include all and filter in UI instead ?
+    return events.filter((v) => v.acknowledged !== 'YES').sort((a, b) => a.event.timestamp - b.event.timestamp);
   }
 
   private async _handleAccountChange($account: AccountState): Promise<void> {

@@ -18,6 +18,19 @@
       <Button class="mt-5" label="Stake" on:click={() => exitFlow.acknownledgeError()}>Ok</Button>
     </div>
   </Modal>
+{:else if $exitFlow.cancelingConfirmation}
+  <Modal
+    closeButton={true}
+    globalCloseButton={true}
+    on:close={() => exitFlow.cancelCancelation()}
+    on:confirm={() => exitFlow.cancel()}
+  >
+    <div class="text-center">
+      <p class="pb-4">Are you sure to cancel ?</p>
+      <p class="pb-4">(This will prevent the game to record your transaction, if you were to execute it afterward)</p>
+      <PanelButton label="OK" on:click={() => exitFlow.cancel()}>Yes</PanelButton>
+    </div>
+  </Modal>
 {:else if $exitFlow.step === 'WAITING_CONFIRMATION'}
   <Modal on:close={() => exitFlow.cancel()} on:confirm={() => exitFlow.confirm()}>
     <p class="text-center">
@@ -32,6 +45,10 @@
       <PanelButton class="mt-5" label="Exit" on:click={() => exitFlow.confirm()}>Confirm Exit</PanelButton>
     </p>
   </Modal>
+{:else if $exitFlow.step === 'WAITING_TX'}
+  <Modal closeButton={true} globalCloseButton={true} closeOnOutsideClick={false} on:close={() => exitFlow.cancel(true)}>
+    Please Accept the Transaction...
+  </Modal>
 {:else}
   <Modal>
     {#if $exitFlow.step === 'SUCCESS'}
@@ -45,6 +62,6 @@
       </div>
     {:else if $exitFlow.step === 'CONNECTING'}
       Connecting...
-    {:else if $exitFlow.step === 'WAITING_TX'}Please Accept the Transaction...{:else}...{/if}
+    {:else}...{/if}
   </Modal>
 {/if}

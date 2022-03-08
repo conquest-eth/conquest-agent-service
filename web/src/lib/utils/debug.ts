@@ -7,7 +7,7 @@ const txsSeen: {[txHash: string]: boolean} = {};
 
 export function initDebug(): void {
   account.subscribe(($account) => {
-    console.log({shouldDropTransactions: shouldDropTransactions()});
+    // console.log({shouldDropTransactions: shouldDropTransactions()});
     if (shouldDropTransactions()) {
       dropAllTransactionsIfPossible();
     }

@@ -33,6 +33,19 @@
       </div>
     {/if}
   </Modal>
+{:else if $sendFlow.cancelingConfirmation}
+  <Modal
+    closeButton={true}
+    globalCloseButton={true}
+    on:close={() => sendFlow.cancelCancelation()}
+    on:confirm={() => sendFlow.cancel()}
+  >
+    <div class="text-center">
+      <p class="pb-4">Are you sure to cancel ?</p>
+      <p class="pb-4">(This will prevent the game to record your transaction, if you were to execute it afterward)</p>
+      <PanelButton label="OK" on:click={() => sendFlow.cancel()}>Yes</PanelButton>
+    </div>
+  </Modal>
 {:else if pickNeeded}
   {#if $sendFlow.step === 'PICK_DESTINATION'}
     <VirtualFleetInfoPanel coords={$sendFlow.data?.from} {pickNeeded} />
@@ -93,7 +106,9 @@
 {:else if $sendFlow.step === 'CREATING_TX'}
   <Modal>Preparing The Transaction...</Modal>
 {:else if $sendFlow.step === 'WAITING_TX'}
-  <Modal>Please Accept the Transaction...</Modal>
+  <Modal closeButton={true} globalCloseButton={true} closeOnOutsideClick={false} on:close={() => sendFlow.cancel(true)}
+    >Please Accept the Transaction...</Modal
+  >
 {:else}
   <Modal>...</Modal>
 {/if}

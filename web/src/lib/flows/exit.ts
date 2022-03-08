@@ -10,6 +10,7 @@ type Data = {
 export type ExitFlow = {
   type: 'EXIT';
   step: 'IDLE' | 'CONNECTING' | 'WAITING_CONFIRMATION' | 'WAITING_TX' | 'SUCCESS';
+  cancelingConfirmation?: boolean;
   data?: Data;
   error?: {message?: string};
 };
@@ -24,7 +25,7 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
 
   async exitFrom(location: {x: number; y: number}): Promise<void> {
     this.setData({location}, {step: 'CONNECTING'});
-    this.setPartial({step: 'WAITING_CONFIRMATION'});
+    this.setPartial({step: 'WAITING_CONFIRMATION', cancelingConfirmation: false});
   }
 
   async confirm(): Promise<void> {
@@ -63,8 +64,16 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
     this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
   }
 
-  async cancel(): Promise<void> {
-    this._reset();
+  async cancelCancelation(): Promise<void> {
+    this.setPartial({cancelingConfirmation: false});
+  }
+
+  async cancel(cancelingConfirmation = false): Promise<void> {
+    if (cancelingConfirmation) {
+      this.setPartial({cancelingConfirmation: true});
+    } else {
+      this._reset();
+    }
   }
 
   async acknownledgeSuccess(): Promise<void> {

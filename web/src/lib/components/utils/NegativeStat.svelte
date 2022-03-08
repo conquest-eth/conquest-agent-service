@@ -11,16 +11,16 @@
     ? Math.ceil(100 * ((max - (max - clampValue)) / max))
     : Math.ceil(100 * ((min + (clampValue - min)) / min));
 
-  $: {
-    console.log({
-      clampValue,
-      value,
-      positive,
-      percent,
-      min,
-      max,
-    });
-  }
+  // $: {
+  //   console.log({
+  //     clampValue,
+  //     value,
+  //     positive,
+  //     percent,
+  //     min,
+  //     max,
+  //   });
+  // }
 </script>
 
 <!-- $: percent = Math.floor(((value - min) / div) / (div - min)); -->

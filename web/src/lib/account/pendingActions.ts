@@ -83,7 +83,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     }
     this.processingAccountChanges = true;
     try {
-      console.log(`PENDING ACTION, update from account`);
+      // console.log(`PENDING ACTION, update from account`);
       if ($account.data) {
         const txHashes = Object.keys($account.data.pendingActions);
         for (const txHash of txHashes) {
@@ -129,7 +129,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
   }
 
   private async _handleChainTempo($chainTempoInfo: ChainTempoInfo): Promise<void> {
-    console.log(`PENDING ACTIONS (${this.state.length} items) chain tempo : ${chainTempo.chainInfo.lastBlockNumber}`);
+    // console.log(`PENDING ACTIONS (${this.state.length} items) chain tempo : ${chainTempo.chainInfo.lastBlockNumber}`);
     if (!$chainTempoInfo.lastBlockNumber) {
       console.log(`no block number, skip...`);
       return; // TODO ?

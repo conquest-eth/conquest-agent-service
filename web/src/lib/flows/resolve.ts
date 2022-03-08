@@ -8,6 +8,7 @@ import type {Fleet} from '$lib/space/fleets';
 export type ResolveFlow = {
   type: 'RESOLVE';
   step: 'IDLE' | 'CONNECTING' | 'CREATING_TX' | 'WAITING_TX' | 'SUCCESS';
+  cancelingConfirmation?: boolean;
   error?: unknown;
 };
 
@@ -21,7 +22,7 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
 
   async resolve(fleet: Fleet): Promise<void> {
     this.setPartial({step: 'CONNECTING'});
-    this.setPartial({step: 'CREATING_TX'});
+    this.setPartial({step: 'CREATING_TX', cancelingConfirmation: undefined});
 
     let nonce = fleet.sending.action.nonce;
 
@@ -121,8 +122,16 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
     }
   }
 
-  async cancel(): Promise<void> {
-    this._reset();
+  async cancelCancelation(): Promise<void> {
+    this.setPartial({cancelingConfirmation: false});
+  }
+
+  async cancel(cancelingConfirmation = false): Promise<void> {
+    if (cancelingConfirmation) {
+      this.setPartial({cancelingConfirmation: true});
+    } else {
+      this._reset();
+    }
   }
 
   async acknownledgeSuccess(): Promise<void> {

@@ -30,13 +30,13 @@
         locY + (offsetY == 2 ? -1 : offsetY)
       );
 
-      console.log({
-        x,
-        y,
-        zoom: camera.zoom,
-        pX: planetInfo && planetInfo.location.globalX,
-        pY: planetInfo && planetInfo.location.globalY,
-      });
+      // console.log({
+      //   x,
+      //   y,
+      //   zoom: camera.zoom,
+      //   pX: planetInfo && planetInfo.location.globalX,
+      //   pY: planetInfo && planetInfo.location.globalY,
+      // });
 
       if (planetInfo) {
         const multiplier = planetInfo.stats.production / 3600;

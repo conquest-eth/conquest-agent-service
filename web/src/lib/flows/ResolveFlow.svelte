@@ -13,6 +13,19 @@
       <Button class="mt-5" label="Stake" on:click={() => resolveFlow.acknownledgeError()}>Ok</Button>
     </div>
   </Modal>
+{:else if $resolveFlow.cancelingConfirmation}
+  <Modal
+    closeButton={true}
+    globalCloseButton={true}
+    on:close={() => resolveFlow.cancelCancelation()}
+    on:confirm={() => resolveFlow.cancel()}
+  >
+    <div class="text-center">
+      <p class="pb-4">Are you sure to cancel ?</p>
+      <p class="pb-4">(This will prevent the game to record your transaction, if you were to execute it afterward)</p>
+      <PanelButton label="OK" on:click={() => resolveFlow.cancel()}>Yes</PanelButton>
+    </div>
+  </Modal>
 {:else}
   <Modal>
     {#if $resolveFlow.step === 'SUCCESS'}
@@ -24,6 +37,13 @@
       Connecting...
     {:else if $resolveFlow.step === 'CREATING_TX'}
       ...
-    {:else if $resolveFlow.step === 'WAITING_TX'}Please Accept the Transaction...{:else}...{/if}
+    {:else if $resolveFlow.step === 'WAITING_TX'}
+      <Modal
+        closeButton={true}
+        globalCloseButton={true}
+        closeOnOutsideClick={false}
+        on:close={() => resolveFlow.cancel(true)}>Please Accept the Transaction...</Modal
+      >
+    {:else}...{/if}
   </Modal>
 {/if}
