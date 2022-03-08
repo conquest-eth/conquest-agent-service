@@ -769,11 +769,13 @@ contract OuterSpaceFacetBase is
         bytes32 fromPlanetData,
         ResolutionState memory rState
     ) internal view {
-        uint256 reachTime = Math.max(
-            arrivalTimeWanted,
-            launchTime + (distance * (_timePerDistance * 10000)) / _speed(fromPlanetData)
-        );
-        rState.arrivalTime = uint40(reachTime);
+        uint256 minReachTime = launchTime + (distance * (_timePerDistance * 10000)) / _speed(fromPlanetData);
+        uint256 reachTime = Math.max(arrivalTimeWanted, minReachTime);
+        if (arrivalTimeWanted > 0) {
+            rState.arrivalTime = uint40(arrivalTimeWanted);
+        } else {
+            rState.arrivalTime = uint40(minReachTime);
+        }
         require(block.timestamp >= reachTime, "too early");
         require(block.timestamp < reachTime + _resolveWindow, "too late, your spaceships are lost in space");
     }
