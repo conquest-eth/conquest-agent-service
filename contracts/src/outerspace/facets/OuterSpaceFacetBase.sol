@@ -147,7 +147,7 @@ contract OuterSpaceFacetBase is
         uint256 extraUpkeepPaid = 0;
         if (_productionCapAsDuration > 0) {
             uint256 capWhenActive = _capWhenActive(production);
-            uint256 cap = planetUpdate.active ? capWhenActive : _natives(planetUpdate.data);
+            uint256 cap = planetUpdate.active ? capWhenActive : 0;
 
             if (newNumSpaceships > cap) {
                 // NOTE do not decrease while exiting
