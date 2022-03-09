@@ -15,7 +15,7 @@
   $: planetState = planets.planetStateFor(planetInfo);
 
   $: selectedPlanetInfo =
-    $selection && ($selection.x != coords.x || $selection.y != coords.y)
+    $selection
       ? spaceInfo.getPlanetInfo($selection.x, $selection.y)
       : undefined;
 

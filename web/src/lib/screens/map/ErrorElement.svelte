@@ -43,7 +43,7 @@
 width: ${48}px;
 height: ${48}px;
 border: ${selectionBorder}px solid ${color};
-animation-name: event-scale-up-down;
+animation-name: event-scale-up-flat;
 animation-iteration-count: infinite;
 animation-duration: 1s;
 animation-timing-function: linear;

@@ -222,6 +222,10 @@ contract OuterSpaceFacetBase is
             newNumSpaceships = ACTIVE_MASK - 1;
         }
         planetUpdate.numSpaceships = uint32(newNumSpaceships);
+
+        if (!planetUpdate.active && planetUpdate.numSpaceships == 0) {
+            planetUpdate.newOwner = address(0);
+        }
     }
 
     function _setPlanet(
@@ -694,7 +698,7 @@ contract OuterSpaceFacetBase is
         // Resolution logic...
         // -----------------------------------------------------------------------------------------------------------
 
-        _updateFleetForGifting(rState, resolution, toPlanetUpdate.owner);
+        _updateFleetForGifting(rState, resolution, toPlanetUpdate.newOwner);
 
         _computeResolutionResult(rState, toPlanetUpdate, resolution);
 
@@ -1083,7 +1087,7 @@ contract OuterSpaceFacetBase is
         FleetResolution memory resolution
     ) internal view {
         // NOTE natives come back to power once numSPaceships == 0 and planet not active
-        if (toPlanetUpdate.numSpaceships == 0 && !toPlanetUpdate.active) {
+        if (!toPlanetUpdate.active && toPlanetUpdate.numSpaceships < _natives(toPlanetUpdate.data)) {
             _updatePlanetUpdateStateAndResolutionStateForNativeAttack(rState, toPlanetUpdate);
         } else {
             if (block.timestamp < rState.arrivalTime + 45 minutes) {

@@ -16,6 +16,7 @@
   import {privateWallet} from '$lib/account/privateWallet';
   import {matchConditions, pluginShowing, showPlanetButtons} from '$lib/plugins/currentPlugin';
   import {showAlliances} from '$lib/map/showAlliances';
+  import sendFlow from '$lib/flows/send';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -186,6 +187,14 @@
           v.mapConditions &&
           matchConditions(v.mapConditions, {account: $wallet.address, planetState: $planetState, planetInfo})
       );
+
+  $: pickedBySendFlow =
+    ($sendFlow.step === 'PICK_DESTINATION' &&
+      $sendFlow.data.from.x == planetInfo.location.x &&
+      $sendFlow.data.from.y == planetInfo.location.y) ||
+    ($sendFlow.step === 'PICK_ORIGIN' &&
+      $sendFlow.data.to.x == planetInfo.location.x &&
+      $sendFlow.data.to.y == planetInfo.location.y);
 </script>
 
 <div>
@@ -264,12 +273,37 @@
     </div>
   {/if}
 
-  {#if $selection && $selection.x === planetInfo.location.x && $selection.y === planetInfo.location.y}
+  {#if pickedBySendFlow}
+    <div
+      style={`
+    z-index: 3;
+    position: absolute;
+    transform: translate(${x}px,${y}px) scale(${(blockieScale * 3) / multiplier}, ${(blockieScale * 3) / multiplier});
+    width: ${frame.w}px;
+    height: ${frame.h}px;
+  `}
+    >
+      <div
+        style={`
+          width: ${frame.w}px;
+          height: ${frame.h}px;
+          border: ${selectionBorder}px solid white;
+          border-radius: 50%;
+          animation-name: event-scale-up-down;
+          animation-iteration-count: infinite;
+          animation-duration: 2s;
+          animation-timing-function: linear;
+        `}
+      />
+    </div>
+  {:else if $selection && $selection.x === planetInfo.location.x && $selection.y === planetInfo.location.y}
     <div
       style={`
         z-index: 3;
         position: absolute;
-        transform: translate(${x}px,${y}px) scale(${blockieScale * 3}, ${blockieScale * 3});
+        transform: translate(${x}px,${y}px) scale(${(blockieScale * 3) / multiplier}, ${
+        (blockieScale * 3) / multiplier
+      });
         width: ${frame.w}px;
         height: ${frame.h}px;
       `}
@@ -279,11 +313,9 @@
           width: ${frame.w}px;
           height: ${frame.h}px;
           border: ${selectionBorder}px solid white;
-          border-left-color: red;
-          border-radius: 50%;
-          animation-name: rotate-s-loader;
+          animation-name: event-scale-up-down;
           animation-iteration-count: infinite;
-          animation-duration: 1s;
+          animation-duration: 2s;
           animation-timing-function: linear;
         `}
       />

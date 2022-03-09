@@ -192,12 +192,24 @@ width:100%; height: 100%;
     }
   }
 
-  @keyframes -global-event-scale-up-down {
+  @keyframes -global-event-scale-up-flat {
     from {
       transform: scale(0.8);
     }
     to {
       transform: scale(2);
+    }
+  }
+
+  @keyframes -global-event-scale-up-down {
+    0%,
+    50%,
+    100% {
+      transform: scale(1.8);
+    }
+    25%,
+    75% {
+      transform: scale(1);
     }
   }
 
