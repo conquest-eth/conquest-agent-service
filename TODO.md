@@ -39,6 +39,21 @@
 - [ ] NEW PLANET LOGO AND TEST REWARDS
 - [ ] Fleet arrived event: does it need to provide more info ? (operator, sender, owner ?)
 
+## NEW
+
+- [ ] Tax on sale: implement on fleetOwner vs sender, and destinationOwner vs fleetOwner
+
+- [ ] event for sales / sender / operator
+- [ ] betrayal detection example
+- [ ] Better event messages
+- [ ] Show better time on selection
+- [ ] Clain token page, reload on error or timeout
+- [ ] Make that tax visible in the UI
+- [ ] SHow alliance icon on front
+- [ ] Upkeep: event show upkeep given back ?
+- [ ] Native should not display sales
+- [ ]
+
 # ISSUES
 
 - [ ] when not signed in, cannot acknowledge error or event: need to either force sign-in to see (same as fleets) orat least bring a popup to sign-in
