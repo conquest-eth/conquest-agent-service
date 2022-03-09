@@ -287,7 +287,7 @@
         style={`
           width: ${frame.w}px;
           height: ${frame.h}px;
-          border: ${selectionBorder}px solid white;
+          border: ${selectionBorder / 1.2}px solid white;
           border-radius: 50%;
           animation-name: event-scale-up-down;
           animation-iteration-count: infinite;
@@ -312,7 +312,7 @@
         style={`
           width: ${frame.w}px;
           height: ${frame.h}px;
-          border: ${selectionBorder}px solid white;
+          border: ${selectionBorder / 1.2}px solid white;
           animation-name: event-scale-up-down;
           animation-iteration-count: infinite;
           animation-duration: 2s;
