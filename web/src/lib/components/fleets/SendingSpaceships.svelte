@@ -36,7 +36,9 @@
   $: fromPlanetInfo = $sendFlow.data?.from && spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
   $: fromPlanetState = fromPlanetInfo && planets.planetStateFor(fromPlanetInfo);
 
-  $: fleetOwner = $sendFlow.data?.config?.fleetOwner || $fromPlanetState?.owner;
+  $: fleetOwner = fleetOwnerSpecified
+    ? fleetOwnerSpecified
+    : $sendFlow.data?.config?.fleetOwner || $fromPlanetState?.owner;
   $: fleetSender = $fromPlanetState?.owner;
 
   $: toPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.to.x, $sendFlow.data?.to.y);
@@ -272,7 +274,7 @@
       <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
 
       {#if !gift}
-        {#if (fleetOwnerSpecified || $sendFlow.data?.config?.fleetOwner) !== $wallet.address}
+        {#if fleetOwner && fleetOwner.toLowerCase() !== $wallet.address?.toLowerCase()}
           <div class="text-center mb-2">
             sending as : <Blockie
               class="inline-block w-8 h-8"
