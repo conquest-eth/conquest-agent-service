@@ -27,18 +27,6 @@
   let arrivalTimeWanted: Date;
   let formatted_arrivalTimeWanted: string;
 
-  function handleArrivalTimeWantedChange(event: CustomEvent) {
-    // const value = event.detail[0][0];
-    // if (value) {
-    //   console.log({arrivalTimeWanted: value.getTime()});
-    //   console.log(value);
-    //   // arrivalTimeWanted = new Date(Math.ceil(value.getTime() / 60000) * 60000);
-    //   // console.log({arrivalTimeWanted: arrivalTimeWanted.getTime()});
-    //   // console.log(arrivalTimeWanted);
-    //   // formatted_arrivalTimeWanted = arrivalTimeWanted.toDateString();
-    // }
-  }
-
   // TODO investigate why there is need to check sendFlow.data.from ? might need to do the same to sendFlow.data.to below
   $: fromPlanetInfo = $sendFlow.data?.from && spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
   $: fromPlanetState = fromPlanetInfo && planets.planetStateFor(fromPlanetInfo);
@@ -262,7 +250,6 @@
             options={flatpickrOptions}
             bind:value={arrivalTimeWanted}
             bind:formattedValue={formatted_arrivalTimeWanted}
-            on:change={handleArrivalTimeWantedChange}
             name="arrivalTimeWanted"
             placeholder="Arrival Time"
           />
