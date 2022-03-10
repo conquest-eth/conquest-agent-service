@@ -1,16 +1,14 @@
 <script lang="ts">
-  import {account} from '$lib/account/account';
   import {camera} from '$lib/map/camera';
   import {timeToText} from '$lib/utils';
-  import {clickOutside} from '$lib/utils/clickOutside';
   import type {Fleet} from '$lib/space/fleets';
-  import {onMount} from 'svelte';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import {time} from '$lib/time';
   import {planets} from '$lib/space/planets';
   import {playersQuery} from '$lib/space/playersQuery';
   import fleetselection from '$lib/map/fleetselection';
   import {wallet} from '$lib/blockchain/wallet';
+  import type {Outcome} from 'conquest-eth-common';
   export let fleet: Fleet;
 
   $: angle = Math.atan2(
@@ -75,13 +73,7 @@
     | {
         arrivalTime: string;
         numSpaceshipsAtArrival: {max: number; min: number};
-        outcome: {
-          min: {captured: boolean; numSpaceshipsLeft: number};
-          max: {captured: boolean; numSpaceshipsLeft: number};
-          allies: boolean;
-          giving?: {tax: number; loss: number};
-          timeUntilFails: number;
-        };
+        outcome: Outcome;
       }
     | undefined = undefined;
   $: {
@@ -104,13 +96,13 @@
           fleet.specific
         ),
       };
-      lineColor = prediction.outcome.giving ? '#34D399' : 'red';
+      lineColor = prediction.outcome.gift ? '#34D399' : 'red';
     } else {
       lineColor = 'white';
     }
   }
 
-  // $: lineColor = prediction?.outcome.giving !== undefined ? '#34D399' : 'red';
+  // $: lineColor = prediction?.outcome.gift ? '#34D399' : 'red';
 
   $: lineDashed = fleet.owner.toLowerCase() !== $wallet.address?.toLowerCase();
 
@@ -148,7 +140,7 @@ border: ${selectionBorder}px solid red;
 border-radius: 50%;
 animation-name: event-scale-up-down;
 animation-iteration-count: infinite;
-animation-duration: 1s;
+animation-duration: 2s;
 animation-timing-function: linear;
 `}
     />
@@ -268,43 +260,46 @@ animation-timing-function: linear;
        position: absolute; z-index: 99; overflow: visible; transform: translate(${x}px,${y}px) scale(${2 / scale})`}
   >
     <ul class="text-white">
-
       <li><span class="text-yellow-300">spaceships:</span> {fleet.quantity}</li>
       <li><span class="text-yellow-300">Time left:</span> {timeToText(fleet.timeLeft)}</li>
-      <li><span class="text-yellow-300">Arrival:</span> {new Date((fleet.launchTime + Math.max(minDuration, fleet.arrivalTimeWanted - fleet.launchTime)) * 1000).toLocaleString()}</li>
+      <li>
+        <span class="text-yellow-300">Arrival:</span>
+        {new Date(
+          (fleet.launchTime + Math.max(minDuration, fleet.arrivalTimeWanted - fleet.launchTime)) * 1000
+        ).toLocaleString()}
+      </li>
       <!-- <li><span class="text-yellow-300">launch+duration:</span> {fleet.launchTime + minDuration}</li>
       <li><span class="text-yellow-300">arrivalTimeWanted:</span> {fleet.arrivalTimeWanted}</li> -->
       {#if prediction}
         <li>
-          {#if prediction.outcome.giving}
-            <span class="text-green-500">Reinforcement...</span>
+          {#if prediction.outcome.gift}
+            <span class="text-green-500">Reinforcement</span>
           {:else if prediction.outcome.min.captured}
             <span class="text-green-500">Will capture </span>
           {:else}
-            <!-- <span class="text-red-500">No Capture</span> -->
+            <span class="text-red-500">Fails to capture</span>
           {/if}
         </li>
 
-          {#if prediction.outcome.giving}
-          <li><span
-              class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
-              >spaceships: {prediction.outcome.min.numSpaceshipsLeft}</span
-            ></li>
-          {:else if prediction.outcome.min.captured}
-            <li><span
-              class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
-              >spaceships: {prediction.outcome.min.numSpaceshipsLeft}</span
-            ></li>
-          {:else}
-            <li><span
-              class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
-              >damage: {prediction.numSpaceshipsAtArrival.min - prediction.outcome.min.numSpaceshipsLeft}</span
-            ></li>
-            <li><span
-              class={prediction.outcome.giving || prediction.outcome.min.captured ? `text-green-500` : `text-red-500`}
-              >spaceships: {prediction.outcome.min.numSpaceshipsLeft}</span
-            ></li>
-          {/if}
+        {#if prediction.outcome.gift}
+          <li>
+            <span class="text-green-500">spaceships then: {prediction.outcome.min.numSpaceshipsLeft}</span>
+          </li>
+        {:else if prediction.outcome.min.captured}
+          <li>
+            <span class="text-green-500">spaceships then: {prediction.outcome.min.numSpaceshipsLeft}</span>
+          </li>
+        {:else}
+          <li>
+            <span class="text-red-500">defender's loss: {prediction.outcome.combat?.defenderLoss}</span>
+          </li>
+          <!-- <li>
+            <span class="text-red-500">attackerLoss: {prediction.outcome.combat?.attackerLoss}</span>
+          </li> -->
+          <li>
+            <span class="text-red-500">spaceships left: {prediction.outcome.min.numSpaceshipsLeft}</span>
+          </li>
+        {/if}
       {/if}
     </ul>
   </div>

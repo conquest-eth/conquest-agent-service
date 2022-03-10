@@ -648,7 +648,6 @@ contract OuterSpaceFacetBase is
         uint32 orbitDefenseDestroyed1;
         uint32 orbitDefense2;
         uint32 orbitDefenseDestroyed2;
-        bool accumulating;
         uint40 arrivalTime;
         uint32 accumulatedDefenseAdded;
         uint32 accumulatedAttackAdded;
@@ -700,7 +699,7 @@ contract OuterSpaceFacetBase is
 
         _updateFleetForGifting(rState, resolution, toPlanetUpdate.newOwner);
 
-        _computeResolutionResult(rState, toPlanetUpdate, resolution);
+        _computeResolutionResult(rState, toPlanetUpdate);
 
         // -----------------------------------------------------------------------------------------------------------
         // Write New State
@@ -829,7 +828,7 @@ contract OuterSpaceFacetBase is
     ) internal view returns (bool gifting, bool taxed) {
         if (destinationOwner == address(0)) {
             // destination has no owner : this is an attack
-            return (false, false);
+            return (false, _isFleetOwnerTaxed(rState.fleetOwner, resolution.fleetSender, rState.fleetLaunchTime));
         }
         if (destinationOwner == rState.fleetOwner && destinationOwner == resolution.fleetSender) {
             // destination is sender is fleet owner: this is a non-taxed gift
@@ -874,7 +873,10 @@ contract OuterSpaceFacetBase is
 
                     if (fleetOwnerJoinTime == 0) {
                         // not in an alliance
-                        return (false, false);
+                        return (
+                            false,
+                            _isFleetOwnerTaxed(rState.fleetOwner, resolution.fleetSender, rState.fleetLaunchTime)
+                        );
                     }
 
                     // alliance => means gift
@@ -928,7 +930,10 @@ contract OuterSpaceFacetBase is
 
                     if (fleetOwnerJoinTime == 0) {
                         // not in an alliance
-                        return (false, false);
+                        return (
+                            false,
+                            _isFleetOwnerTaxed(rState.fleetOwner, resolution.fleetSender, rState.fleetLaunchTime)
+                        );
                     }
 
                     // alliance => means gift
@@ -963,6 +968,19 @@ contract OuterSpaceFacetBase is
                 }
             }
         }
+        return (false, _isFleetOwnerTaxed(rState.fleetOwner, resolution.fleetSender, rState.fleetLaunchTime));
+    }
+
+    function _isFleetOwnerTaxed(
+        address fleetOwner,
+        address fleetSender,
+        uint40 fleetLaunchTime
+    ) internal view returns (bool) {
+        if (fleetOwner == fleetSender) {
+            return false;
+        }
+        (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(fleetOwner, fleetSender, fleetLaunchTime);
+        return joinTime == 0 || joinTime > fleetLaunchTime;
     }
 
     function _setTravelingUpkeepFromOrigin(
@@ -1003,7 +1021,7 @@ contract OuterSpaceFacetBase is
         if (rState.victory) {
             // victory, past attack has been succesful in capturing the planet, They do not count anymore
             delete _attacks[toPlanetUpdate.location][rState.fleetOwner][rState.arrivalTime];
-        } else if (rState.accumulating) {
+        } else if (!rState.taxed) {
             AccumulatedAttack storage attack = _attacks[toPlanetUpdate.location][rState.fleetOwner][rState.arrivalTime];
 
             attack.target = toPlanetUpdate.owner;
@@ -1037,19 +1055,7 @@ contract OuterSpaceFacetBase is
         }
     }
 
-    function _computeResolutionResult(
-        ResolutionState memory rState,
-        PlanetUpdateState memory toPlanetUpdate,
-        FleetResolution memory resolution
-    ) internal view {
-        if (rState.gifting) {
-            _computeGiftingResolutionResult(rState, toPlanetUpdate);
-        } else {
-            _computeAttackResolutionResult(rState, toPlanetUpdate, resolution);
-        }
-    }
-
-    function _computeGiftingResolutionResult(ResolutionState memory rState, PlanetUpdateState memory toPlanetUpdate)
+    function _computeResolutionResult(ResolutionState memory rState, PlanetUpdateState memory toPlanetUpdate)
         internal
         view
     {
@@ -1058,6 +1064,17 @@ contract OuterSpaceFacetBase is
                 uint256(rState.fleetQuantity) - (uint256(rState.fleetQuantity) * _giftTaxPer10000) / 10000
             );
         }
+        if (rState.gifting) {
+            _computeGiftingResolutionResult(rState, toPlanetUpdate);
+        } else {
+            _computeAttackResolutionResult(rState, toPlanetUpdate);
+        }
+    }
+
+    function _computeGiftingResolutionResult(ResolutionState memory rState, PlanetUpdateState memory toPlanetUpdate)
+        internal
+        view
+    {
         uint256 newNumSpaceships = toPlanetUpdate.numSpaceships + rState.fleetQuantity;
         if (newNumSpaceships >= ACTIVE_MASK) {
             newNumSpaceships = ACTIVE_MASK - 1;
@@ -1081,28 +1098,16 @@ contract OuterSpaceFacetBase is
         }
     }
 
-    function _computeAttackResolutionResult(
-        ResolutionState memory rState,
-        PlanetUpdateState memory toPlanetUpdate,
-        FleetResolution memory resolution
-    ) internal view {
+    function _computeAttackResolutionResult(ResolutionState memory rState, PlanetUpdateState memory toPlanetUpdate)
+        internal
+        view
+    {
         // NOTE natives come back to power once numSPaceships == 0 and planet not active
         if (!toPlanetUpdate.active && toPlanetUpdate.numSpaceships < _natives(toPlanetUpdate.data)) {
             _updatePlanetUpdateStateAndResolutionStateForNativeAttack(rState, toPlanetUpdate);
         } else {
             if (block.timestamp < rState.arrivalTime + 45 minutes) {
-                if (rState.fleetOwner != resolution.fleetSender) {
-                    (, uint96 joinTime) = _allianceRegistry.havePlayersAnAllianceInCommon(
-                        resolution.fleetSender,
-                        rState.fleetOwner,
-                        rState.fleetLaunchTime
-                    );
-                    rState.accumulating = joinTime != 0 && joinTime <= rState.fleetLaunchTime;
-                } else {
-                    rState.accumulating = true;
-                }
-
-                if (rState.accumulating) {
+                if (!rState.taxed) {
                     AccumulatedAttack memory acc = _attacks[toPlanetUpdate.location][rState.fleetOwner][
                         rState.arrivalTime
                     ];

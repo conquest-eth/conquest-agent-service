@@ -19,6 +19,7 @@
   import {wallet} from '$lib/blockchain/wallet';
   import Flatpickr from '../flatpickr/Flatpickr.svelte';
   import confirmDatePlugin from 'flatpickr/dist/plugins/confirmDate/confirmDate.js';
+  import type {Outcome} from 'conquest-eth-common';
 
   let useAgentService = false;
   let gift = false;
@@ -94,15 +95,7 @@
   let prediction:
     | {
         numSpaceshipsAtArrival: {max: number; min: number};
-        outcome: {
-          min: {captured: boolean; numSpaceshipsLeft: number};
-          max: {captured: boolean; numSpaceshipsLeft: number};
-          allies: boolean;
-          taxAllies: boolean;
-          giving?: {tax: number; loss: number};
-          timeUntilFails: number;
-          nativeResist: boolean;
-        };
+        outcome: Outcome;
       }
     | undefined = undefined;
   $: {
@@ -248,6 +241,19 @@
         <!-- <label for="fleetAmount">Number Of Spaceships</label> -->
         <input class="bg-gray-700 border-cyan-800 border-2" type="text" id="textInput" bind:value={fleetAmount} />
       </div>
+
+      <div class="flex flex-row justify-center">
+        <span>
+          {#if prediction?.outcome.tax?.loss > 0}
+            <span class="text-red-500"
+              >{`( ${fleetAmount} - ${prediction?.outcome.tax?.loss} (${
+                prediction?.outcome.tax?.taxRate / 100
+              }% tax))`}</span
+            >
+            = {fleetAmount - prediction?.outcome.tax?.loss}
+          {/if}
+        </span>
+      </div>
       <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
 
       <div class="text-center">
@@ -344,18 +350,18 @@
               </div>
             {/if}
           {:else}
-            <div class="flex flex-row justify-center">
+            <!-- <div class="flex flex-row justify-center">
               <span
-                >will receive {fleetAmount - prediction?.outcome.giving?.loss}
-                {#if prediction?.outcome.giving?.loss > 0}
+                >will receive {fleetAmount - prediction?.outcome.tax?.loss}
+                {#if prediction?.outcome.tax?.loss > 0}
                   <span class="text-red-500"
-                    >{`( ${fleetAmount} - ${prediction?.outcome.giving?.loss} (${
-                      prediction?.outcome.giving?.tax / 100
+                    >{`( ${fleetAmount} - ${prediction?.outcome.tax?.loss} (${
+                      prediction?.outcome.tax?.taxRate / 100
                     }% tax))`}</span
                   >
                 {/if}
               </span>
-            </div>
+            </div> -->
 
             <div class="flex flex-row justify-between mt-2 text-xs text-gray-500">
               <span>Arrives in</span><span class="text-right">Spaceships Then</span>
