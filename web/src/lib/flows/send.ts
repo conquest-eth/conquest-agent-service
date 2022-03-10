@@ -368,6 +368,8 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         } else if (args[i] === '{numSpaceships*pricePerUnit}') {
           // TODO dynamic value (not only '{numSpaceships*pricePerUnit}')
           args[i] = pricePerUnit.mul(flow.data.fleetAmount);
+        } else if (args[i] === '{fleetOwner}') {
+          args[i] = fleetOwner;
         }
       }
     }
