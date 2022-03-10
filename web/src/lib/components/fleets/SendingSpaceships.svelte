@@ -23,9 +23,13 @@
   let useAgentService = false;
   let gift = false;
 
-  let fleetOwnerSpecified;
+  let fleetOwnerSpecified: string | undefined;
   let arrivalTimeWanted: Date;
   let formatted_arrivalTimeWanted: string;
+
+  onMount(() => {
+    fleetOwnerSpecified = $sendFlow.data?.config?.fleetOwner;
+  });
 
   // TODO investigate why there is need to check sendFlow.data.from ? might need to do the same to sendFlow.data.to below
   $: fromPlanetInfo = $sendFlow.data?.from && spaceInfo.getPlanetInfo($sendFlow.data?.from.x, $sendFlow.data?.from.y);
@@ -42,6 +46,10 @@
   $: senderPlayer = $playersQuery.data?.players[fleetSender.toLowerCase()];
 
   $: console.log({fromPlayer, fleetOwner});
+
+  $: canSpecifyFleetOwner =
+    !$sendFlow.data?.config?.abi ||
+    ($sendFlow.data?.config?.args && $sendFlow.data?.config?.args.includes('{fleetOwner}'));
 
   // TODO maxSpaceshipsLoaded and invalid message if maxSpaceships == 0
   let fleetAmountSet = false;
@@ -258,7 +266,16 @@
       <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
 
       {#if !gift}
-        {#if !$sendFlow.data?.config?.fleetOwner}
+        {#if (fleetOwnerSpecified || $sendFlow.data?.config?.fleetOwner) !== $wallet.address}
+          <div class="text-center mb-2">
+            sending as : <Blockie
+              class="inline-block w-8 h-8"
+              address={fleetOwnerSpecified || $sendFlow.data?.config?.fleetOwner || $wallet.address}
+            />
+          </div>
+        {/if}
+
+        {#if canSpecifyFleetOwner}
           <div class="text-center">
             Fleet Owner
             <input
@@ -268,12 +285,6 @@
               name="fleetOwnerSpecified"
               bind:value={fleetOwnerSpecified}
             />
-          </div>
-        {:else if $sendFlow.data?.config?.fleetOwner.toLowerCase() === $wallet.address.toLowerCase()}
-          <!-- for you -->
-        {:else}
-          <div class="text-center mb-2">
-            sending as : <Blockie class="inline-block w-8 h-8" address={$sendFlow.data?.config?.fleetOwner} />
           </div>
         {/if}
       {/if}
