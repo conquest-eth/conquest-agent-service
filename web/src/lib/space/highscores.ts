@@ -91,7 +91,7 @@ query($first: Int! $lastId: ID!) {
           const currentStake = BigNumber.from(p.currentStake);
           const tokenToWithdraw = BigNumber.from(p.tokenToWithdraw);
           const tokenBalance = BigNumber.from(p.tokenBalance);
-          const tokenGiven = BigNumber.from(p.tokenGiven);
+          const tokenGiven = BigNumber.from('200000000000000000000'); // BigNumber.from(p.tokenGiven);
           const total = currentStake.add(tokenToWithdraw).add(tokenBalance);
           return {
             id: p.id,
