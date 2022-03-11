@@ -43,7 +43,7 @@
 
   $: planetChosenState = planetChosenInfo ? planets.planetStateFor(planetChosenInfo) : undefined;
 
-  $: console.log({planetChosenState, planetChosenInfo});
+  // $: console.log({planetChosenState, planetChosenInfo});
 
   $: walletIsOwner = $wallet.address && $wallet.address?.toLowerCase() === $planetState?.owner?.toLowerCase();
 

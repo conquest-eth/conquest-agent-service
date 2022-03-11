@@ -73,7 +73,7 @@ query($owner: String $planet: String) {
         },
       });
 
-      console.log(result);
+      // console.log(result);
 
       let departures = [];
       if (result.data) {

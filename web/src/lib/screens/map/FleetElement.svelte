@@ -306,7 +306,7 @@ animation-timing-function: linear;
 {/if}
 
 {#if showLine}
-  <svg style={`position: absolute; z-index: 4; overflow: visible;`}>
+  <svg style={`position: absolute; z-index: 3; overflow: visible;`}>
     <marker
       xmlns="http://www.w3.org/2000/svg"
       id="triangle"
@@ -324,7 +324,7 @@ animation-timing-function: linear;
     </marker>
     <line
       marker-end="url(#triangle)"
-      style="z-index: 4;"
+      style="z-index: 3;"
       stroke-width={`${4 / scale}px`}
       stroke={lineColor}
       stroke-dasharray={lineDashed ? '1' : undefined}

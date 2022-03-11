@@ -1,6 +1,6 @@
 <script lang="ts">
-  export let planetState;
-  export let planetInfo;
+  export let planetState: Readable<PlanetState>;
+  export let planetInfo: PlanetInfo;
 
   import Blockie from '$lib/components/account/Blockie.svelte';
   import Stat from '$lib/components/utils/Stat.svelte';
@@ -10,6 +10,8 @@
   import NegativeStat from '../utils/NegativeStat.svelte';
   import {wallet} from '$lib/blockchain/wallet';
   import {spaceInfo} from '$lib/space/spaceInfo';
+  import type { PlanetInfo, PlanetState } from 'conquest-eth-common';
+  import type { Readable } from 'svelte/store';
 
   function _select(elem: HTMLElement) {
     const range = document.createRange();
@@ -26,13 +28,15 @@
   $: textColor =
     $planetState && $planetState.owner ? (walletIsOwner ? 'text-green-500' : 'text-red-500') : 'text-gray-100';
 
+  $:frameBGColor = $planetState && $planetState.owner ? (walletIsOwner ? 'bg-cyan-300' : 'bg-red-500') : 'bg-cyan-300';
+
   $: capacityReached = $planetState
     ? spaceInfo.productionCapAsDuration &&
       spaceInfo.productionCapAsDuration > 0 &&
-      $planetState.numSpaceships >=
-        spaceInfo.acquireNumSpaceships +
-          Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60)
+      $planetState.numSpaceships >= planetInfo.stats.cap
     : false;
+
+  $: productionColor = capacityReached ? ' text-red-600' : $planetState?.travelingUpkeep > 0 ? 'text-amber-500' : 'text-green-500'
 </script>
 
 <div class="flex m-1">
@@ -64,7 +68,7 @@
 {/if}
 <div class="w-full h-1 bg-cyan-300 my-2" />
 
-<div class="m-2 text-xs">
+<div class="m-2 text-xs ">
   {#if $planetState}
     <!-- if active-->
     <!-- <div class="m-1">
@@ -108,8 +112,7 @@
         </Help>:
       </p>
       <p class={`p-0 mb-1${capacityReached ? ' text-red-600' : ' text-white'}`}>
-        {spaceInfo.acquireNumSpaceships +
-          Math.floor(planetInfo.stats.production * spaceInfo.productionCapAsDuration) / (60 * 60)}
+        {planetInfo.stats.cap}
       </p>
     </div>
   {/if}
@@ -126,7 +129,7 @@
       </p>
       <p class="p-0 mb-1">{planetInfo.stats.natives}</p>
     {:else}
-      <p class="p-0 mb-1 {textColor}">
+      <p class={`p-0 mb-1 ${productionColor}`}>
         Spaceships
         <Help class="inline w-4 h-4">
           The number of spaceships present on the planet. These spaceships can be used for attacks or left on the planet
@@ -134,7 +137,7 @@
           spaceships.
         </Help>
       </p>
-      <p class={`p-0 mb-1${capacityReached ? ' text-red-600' : ' ' + textColor}`}>{$planetState.numSpaceships}</p>
+      <p class={`p-0 mb-1 ${productionColor}`}>{$planetState.numSpaceships}</p>
     {/if}
   </div>
 

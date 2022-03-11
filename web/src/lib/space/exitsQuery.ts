@@ -83,7 +83,7 @@ export class ExitQueryStore implements QueryStore<ExitsState> {
 
   onTime(): void {
     this.queryStore.runtimeVariables.time = '' + this.getTime();
-    console.log(this.queryStore.runtimeVariables);
+    // console.log(this.queryStore.runtimeVariables);
   }
 
   protected stop(): void {

@@ -48,7 +48,7 @@
   $: fromPlayer = $playersQuery.data?.players[fleetOwner.toLowerCase()];
   $: senderPlayer = $playersQuery.data?.players[fleetSender.toLowerCase()];
 
-  $: console.log({fromPlayer, fleetOwner});
+  // $: console.log({fromPlayer, fleetOwner});
 
   $: canSpecifyFleetOwner =
     !$sendFlow.data?.config?.abi ||
