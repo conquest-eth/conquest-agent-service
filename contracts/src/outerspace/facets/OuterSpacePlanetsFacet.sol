@@ -76,24 +76,55 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
         uint256 location
     ) internal {
         require(from != address(0), "NOT_ZERO_ADDRESS");
+        require(to != address(0), "NOT_ZERO_ADDRESS");
 
-        // TODO extract, see ownerOf (same code)
-        address currentOwner = _planets[location].owner;
-        if (_hasJustExited(_planets[location].exitStartTime)) {
-            currentOwner = address(0);
+        // -----------------------------------------------------------------------------------------------------------
+        // Initialise State Update
+        // -----------------------------------------------------------------------------------------------------------
+        Planet storage planet = _getPlanet(location);
+        PlanetUpdateState memory planetUpdate = _createPlanetUpdateState(planet, location);
+
+        // -----------------------------------------------------------------------------------------------------------
+        // Compute Basic Planet Updates
+        // -----------------------------------------------------------------------------------------------------------
+        _computePlanetUpdateForTimeElapsed(planetUpdate);
+
+        // -----------------------------------------------------------------------------------------------------------
+        // check requirements
+        // -----------------------------------------------------------------------------------------------------------
+
+        require(planetUpdate.newOwner == from, "FROM_NOT_OWNER");
+        if (msg.sender != planetUpdate.newOwner) {
+            require(_operators[planetUpdate.newOwner][msg.sender], "NOT_OPERATOR");
         }
 
-        require(currentOwner == from, "FROM_NOT_OWNER");
-        if (msg.sender != currentOwner) {
-            require(_operators[currentOwner][msg.sender], "NOT_OPERATOR");
+        // -----------------------------------------------------------------------------------------------------------
+        // Perform Transfer
+        // -----------------------------------------------------------------------------------------------------------
+        planetUpdate.newOwner = to;
+        // NOTE transfer incurs a tax if the new owner and previous owner are not in an alliance since at least 3 days.
+        if (planetUpdate.numSpaceships > 0 && !_isFleetOwnerTaxed(from, to, uint40(block.timestamp - 3 days))) {
+            planetUpdate.numSpaceships = uint32(
+                uint256(planetUpdate.numSpaceships) - (uint256(planetUpdate.numSpaceships) * _giftTaxPer10000) / 10000
+            );
         }
 
-        _planets[location].owner = to;
-        _planets[location].ownershipStartTime = uint40(block.timestamp);
+        // -----------------------------------------------------------------------------------------------------------
+        // Write New State
+        // -----------------------------------------------------------------------------------------------------------
+        _setPlanet(planet, planetUpdate, false);
 
-        // TODO tax
-
-        emit Transfer(from, to, location);
+        // -----------------------------------------------------------------------------------------------------------
+        // Emit Event
+        // -----------------------------------------------------------------------------------------------------------
+        emit PlanetTransfer(
+            from,
+            to,
+            location,
+            planetUpdate.numSpaceships,
+            planetUpdate.travelingUpkeep,
+            planetUpdate.overflow
+        );
     }
 
     function ownerAndOwnershipStartTimeOf(uint256 location)

@@ -14,10 +14,7 @@
   $: planetInfo = spaceInfo.getPlanetInfo(coords.x, coords.y);
   $: planetState = planets.planetStateFor(planetInfo);
 
-  $: selectedPlanetInfo =
-    $selection
-      ? spaceInfo.getPlanetInfo($selection.x, $selection.y)
-      : undefined;
+  $: selectedPlanetInfo = $selection ? spaceInfo.getPlanetInfo($selection.x, $selection.y) : undefined;
 
   function cancelSend() {
     sendFlow.cancel();
@@ -39,7 +36,9 @@
     {/if}
 
     {#if selectedPlanetInfo}
-      <p class="m-1">Will take {timeToText(spaceInfo.timeToArrive(selectedPlanetInfo, planetInfo))}</p>
+      <p class="m-1 text-sm text-yellow-400">
+        Will take {timeToText(spaceInfo.timeToArrive(selectedPlanetInfo, planetInfo))}
+      </p>
       <VirtualFleetActionPanel {planetState} {planetInfo} close={() => selection.unselect()} />
     {/if}
 

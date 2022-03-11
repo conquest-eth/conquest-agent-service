@@ -48,6 +48,15 @@ interface ImportingOuterSpaceEvents {
         uint32 newOverflow
     );
 
+    event PlanetTransfer(
+        address indexed previousOwner,
+        address indexed newOwner,
+        uint256 indexed location,
+        uint32 newNumspaceships,
+        int40 newTravelingUpkeep,
+        uint32 newOverflow
+    );
+
     event PlanetReset(uint256 indexed location);
 
     event PlanetExit(address indexed owner, uint256 indexed location);

@@ -21,6 +21,8 @@
   import SimulateFlow from '$lib/flows/SimulateFlow.svelte';
   import exitFlow from '$lib/flows/exit';
   import ExitFlow from '$lib/flows/ExitFlow.svelte';
+  import planetTransferFlow from '$lib/flows/planetTransfer';
+  import PlanetTransferFlow from '$lib/flows/PlanetTransferFlow.svelte';
   import resolveFlow from '$lib/flows/resolve';
   import ResolveFlow from '$lib/flows/ResolveFlow.svelte';
   import FleetsToResolve from '$lib/components/fleets/FleetsToResolve.svelte';
@@ -43,6 +45,7 @@
   import {select_option} from 'svelte/internal';
   import {showFleets} from '$lib/map/showFleets';
   import {showAlliances} from '$lib/map/showAlliances';
+
 
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
@@ -113,6 +116,10 @@
 
 {#if $exitFlow.error || $exitFlow.step !== 'IDLE'}
   <ExitFlow />
+{/if}
+
+{#if $planetTransferFlow.error || $planetTransferFlow.step !== 'IDLE'}
+  <PlanetTransferFlow />
 {/if}
 
 {#if $messageFlow.error || $messageFlow.step !== 'IDLE'}

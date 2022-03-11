@@ -3,6 +3,7 @@
   import sendFlow from '$lib/flows/send';
   import simulateFlow from '$lib/flows/simulateFlow';
   import exitFlow from '$lib/flows/exit';
+  import planetTransferFlow from '$lib/flows/planetTransfer';
   import messageFlow from '$lib/flows/message';
   import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
   import {wallet} from '$lib/blockchain/wallet';
@@ -60,6 +61,11 @@
 
   function exitFrom() {
     exitFlow.exitFrom(coords);
+    close();
+  }
+
+  function transferPlanet() {
+    planetTransferFlow.transfer(coords);
     close();
   }
 
@@ -272,6 +278,16 @@
           on:click={exitFrom}
         >
           <div class="w-20">Exit</div>
+        </PanelButton>
+
+        <PanelButton
+          label="Transfer"
+          color="text-yellow-400"
+          borderColor="border-yellow-400"
+          class="m-2"
+          on:click={transferPlanet}
+        >
+          <div class="w-20">Transfer</div>
         </PanelButton>
       {:else}
         <PanelButton label="Send" class="m-2" on:click={sendTo}>
