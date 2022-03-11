@@ -29,14 +29,20 @@ export type Registration = {
 
 export type StoredMessage = {
   message: string;
+  nonce: string;
   from: string;
+  read?: boolean;
 };
 
 export type MessageSubmission = {
+  signedMessage: string;
+};
+
+export type MessageInfo = {
   to: string;
-  message: string;
-  // TODO signature ?
-  // encryption ?
+  encryptedMessage: string;
+  nonce: string;
+  from: string;
   // TODO burnProof ?
 };
 
@@ -135,31 +141,90 @@ export class Account extends DO {
     }
 
     currentProfile.description = json.description;
+    currentProfile.nonceMsTimestamp = json.nonceMsTimestamp;
     this.state.storage.put<ProfileData>(accountID, currentProfile);
     return createResponse({success: true});
   }
 
   async send(path: string[], messageSubmission: MessageSubmission): Promise<Response> {
-    const timestamp10Th = getTimestamp10ThSeconds();
-    const toAddress = messageSubmission.to.toLowerCase();
-    const toID = `_${toAddress}`;
-    const fromID = ''; // TODO message signature // encryption ?
+    const msTimestamp = Math.floor(Date.now());
+    const accountAddress = path[0].toLowerCase();
+    const app = path[1].toLowerCase();
+    const accountID = `_${accountAddress}`;
 
-    await this.state.storage.put<StoredMessage>(`${toID}_t${lexicographicNumber12(timestamp10Th)}_f${fromID}`, {
-      from: fromID,
-      message: messageSubmission.message,
+    let currentProfile = await this.state.storage.get<ProfileData | undefined>(accountID);
+    if (!currentProfile) {
+      return errorResponse({code: 4445, message: 'not registered'});
+    }
+
+    const messageBytes = nacl.sign.open(
+      base64.base64ToBytes(messageSubmission.signedMessage),
+      base64.base64ToBytes(currentProfile.publicSigningKey)
+    );
+    const message = base64.base64decode(base64.bytesToBase64(messageBytes));
+    if (!message) {
+      return errorResponse({code: 4002, message: 'invalid signature'});
+    }
+    const json: {messageInfo: MessageInfo; nonceMsTimestamp: number} = JSON.parse(message);
+
+    if (
+      !json.nonceMsTimestamp ||
+      json.nonceMsTimestamp <= currentProfile.nonceMsTimestamp ||
+      json.nonceMsTimestamp > msTimestamp
+    ) {
+      return errorResponse({code: 4002, message: 'invalid nonceMsTimestamp'});
+    }
+
+    const toAddress = json.messageInfo.to.toLowerCase();
+    const toID = `_${toAddress}`;
+
+    const timestamp10Th = getTimestamp10ThSeconds();
+    currentProfile.nonceMsTimestamp = json.nonceMsTimestamp;
+
+    this.state.storage.put<StoredMessage>(`${toID}_${app}_t${lexicographicNumber12(timestamp10Th)}`, {
+      from: accountAddress,
+      message: json.messageInfo.encryptedMessage,
+      nonce: json.messageInfo.nonce
     });
+
+    this.state.storage.put<ProfileData>(accountID, currentProfile);
+
     return createResponse({success: true});
   }
 
-  async messages(path: string[]): Promise<Response> {
-    const limit = 1000;
+  async messages(path: string[], proof: {signedMessage: string}): Promise<Response> {
+    const msTimestamp = Math.floor(Date.now());
     const accountAddress = path[0].toLowerCase();
+    const app = path[1].toLowerCase();
     const accountID = `_${accountAddress}`;
 
-    // if not encrypted, require signature from request ? (path ? header ?)
+    let currentProfile = await this.state.storage.get<ProfileData | undefined>(accountID);
+    if (!currentProfile) {
+      return errorResponse({code: 4445, message: 'not registered'});
+    }
 
-    const messageEntries = (await this.state.storage.list({prefix: `${accountID}_t`, limit})) as
+    const messageBytes = nacl.sign.open(
+      base64.base64ToBytes(proof.signedMessage),
+      base64.base64ToBytes(currentProfile.publicSigningKey)
+    );
+    const message = base64.base64decode(base64.bytesToBase64(messageBytes));
+    if (!message) {
+      return errorResponse({code: 4002, message: 'invalid signature'});
+    }
+    const json: {msTimestamp: number} = JSON.parse(message);
+
+    if (
+      !json.msTimestamp ||
+      json.msTimestamp > msTimestamp ||
+      json.msTimestamp < msTimestamp - 30000 // 30 seconds
+    ) {
+      return errorResponse({code: 4002, message: 'invalid msTimestamp'});
+    }
+
+
+    const limit = 1000;
+
+    const messageEntries = (await this.state.storage.list({prefix: `${accountID}_${app}_t`, limit})) as
       | Map<string, StoredMessage>
       | undefined;
 
@@ -168,10 +233,46 @@ export class Account extends DO {
       for (const messageEntry of messageEntries.entries()) {
         const message = messageEntry[1];
         // const messageId = messageEntry[0];
-        messages.push(message);
+        messages.push({...message, id: messageEntry[0]});
       }
     }
 
     return createResponse({success: true, messages});
+  }
+
+  async deleteMessage(path: string[], deletionSubmission: {signedMessage: string}): Promise<Response> {
+    const msTimestamp = Math.floor(Date.now());
+    const accountAddress = path[0].toLowerCase();
+    const accountID = `_${accountAddress}`;
+
+    let currentProfile = await this.state.storage.get<ProfileData | undefined>(accountID);
+    if (!currentProfile) {
+      return errorResponse({code: 4445, message: 'not registered'});
+    }
+
+    const messageBytes = nacl.sign.open(
+      base64.base64ToBytes(deletionSubmission.signedMessage),
+      base64.base64ToBytes(currentProfile.publicSigningKey)
+    );
+    const message = base64.base64decode(base64.bytesToBase64(messageBytes));
+    if (!message) {
+      return errorResponse({code: 4002, message: 'invalid signature'});
+    }
+    const json: {messageID: string; nonceMsTimestamp: number} = JSON.parse(message);
+
+    if (
+      !json.nonceMsTimestamp ||
+      json.nonceMsTimestamp <= currentProfile.nonceMsTimestamp ||
+      json.nonceMsTimestamp > msTimestamp
+    ) {
+      return errorResponse({code: 4002, message: 'invalid nonceMsTimestamp'});
+    }
+
+    currentProfile.nonceMsTimestamp = json.nonceMsTimestamp;
+
+    this.state.storage.delete(json.messageID);
+    this.state.storage.put<ProfileData>(accountID, currentProfile);
+
+    return createResponse({success: true});
   }
 }
