@@ -49,10 +49,13 @@
 - [ ] Show better time on selection
 - [ ] Clain token page, reload on error or timeout
 - [ ] Make that tax visible in the UI
-- [ ] SHow alliance icon on front
+- [ ] Show alliance icon on front
 - [ ] Upkeep: event show upkeep given back ?
 - [ ] Native should not display sales
-- [ ]
+- [ ] Batch resolution of fleet
+- [ ] Better event details
+- [ ] Make "Loading" faster
+- [ ] Messages
 
 # ISSUES
 

@@ -127,7 +127,7 @@
 
 {#if fleet.state === 'READY_TO_RESOLVE'}
   <div
-    style={`z-index: 2; position: absolute; z-index: 3; transform: translate(${x - 48 / 2}px,${y - 48 / 2}px)  scale(${
+    style={`z-index: 4; position: absolute; transform: translate(${x - 48 / 2}px,${y - 48 / 2}px)  scale(${
       blockieScale * 4
     }, ${blockieScale * 4}); width: ${48}px;
   height: ${48}px;`}
@@ -187,7 +187,7 @@ animation-timing-function: linear;
     height={(400 / scale) * 6}
     style={`
     position: absolute;
-    z-index: 3;
+    z-index: 4;
     overflow: visible;
     transform: translate(${x - Math.cos(angle) * 0.2}px,${y - Math.sin(angle) * 0.2}px);
     animation-name: animation-flash;
@@ -213,7 +213,7 @@ animation-timing-function: linear;
     height={(400 / scale) * 6}
     style={`
     position: absolute;
-    z-index: 3;
+    z-index: 4;
     overflow: visible;
     transform: translate(${x + Math.cos(angle) * 0.1}px,${y + Math.sin(angle) * 0.1}px);
     animation-name: animation-flash;
@@ -237,7 +237,7 @@ animation-timing-function: linear;
     viewBox="0 0 500 500 "
     width={(400 / scale) * 6}
     height={(400 / scale) * 6}
-    style={`position: absolute; z-index: 3; overflow: visible; transform: translate(${x}px,${y}px);`}
+    style={`position: absolute; z-index: 4; overflow: visible; transform: translate(${x}px,${y}px);`}
   >
     <!-- <g style={`transform: scale(${scale});`} > -->
     <!-- svelte-ignore a11y-mouse-events-have-key-events -->
@@ -306,7 +306,7 @@ animation-timing-function: linear;
 {/if}
 
 {#if showLine}
-  <svg style={`position: absolute; z-index: 2; overflow: visible;`}>
+  <svg style={`position: absolute; z-index: 4; overflow: visible;`}>
     <marker
       xmlns="http://www.w3.org/2000/svg"
       id="triangle"
@@ -324,7 +324,7 @@ animation-timing-function: linear;
     </marker>
     <line
       marker-end="url(#triangle)"
-      style="z-index: 1;"
+      style="z-index: 4;"
       stroke-width={`${4 / scale}px`}
       stroke={lineColor}
       stroke-dasharray={lineDashed ? '1' : undefined}

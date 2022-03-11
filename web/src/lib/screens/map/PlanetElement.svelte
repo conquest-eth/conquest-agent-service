@@ -180,6 +180,49 @@
       ? `rgba(255, 255 ,255, ${capacityRatio})`
       : `rgba(255, 0 ,0, ${capacityRatio})`;
 
+    $: allianceBorderColor =
+      !$wallet.address || $privateWallet.step !== 'READY'
+      ? isSelectedOwner
+        ? 'red'
+        : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])
+        ? `red`
+        : 'white'
+      : playerIsOwner
+      ? `lime`
+      : isAlly
+      ? isSelectedOwner
+        ? `lime`
+        : `lime` // TODO different color on selection ?
+      : isSelectedOwner
+      ? `red`
+      : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])
+      ? `red`
+      : $selectionOwner
+      ? `white`
+      : `red`;
+
+
+    // $: borderColorWithoutTransparency =
+    //   !$wallet.address || $privateWallet.step !== 'READY'
+    //   ? isSelectedOwner
+    //     ? 'red'
+    //     : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])
+    //     ? `rgb(255, 165 ,0)`
+    //     : 'white'
+    //   : playerIsOwner
+    //   ? `rgb(0, 255, 0)`
+    //   : isAlly
+    //   ? isSelectedOwner
+    //     ? `rgb(103, 232, 255)`
+    //     : `rgb(103, 232, 255)` // TODO different color on selection ?
+    //   : isSelectedOwner
+    //   ? `rgb(255, 0 ,0)`
+    //   : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])
+    //   ? `rgb(255, 165 ,0)`
+    //   : $selectionOwner
+    //   ? `rgb(255, 255 ,255)`
+    //   : `rgb(255, 0 ,0)`;
+
   $: plugins = !$planetState
     ? []
     : $showPlanetButtons.filter(
@@ -414,15 +457,15 @@
           offset={1}
           style={`
         pointer-events: none;
-        z-index: 1;
+        z-index: 3;
         position: absolute;
         transform:
           translate(${x + 0.6 * multiplier - +0.5 / scale / 2 + alliancesOffset[i % 4] * 1.3 * multiplier}px,${
             y - 0.6 * multiplier - +0.5 / scale / 2 + alliancesOffset[(i + 3) % 4] * 1.3 * multiplier
           }px)
-          scale(${(blockieScale * 2) / 3}, ${(blockieScale * 2) / 3});
+          scale(${blockieScale}, ${blockieScale});
         width: ${frame.w + 0.5 / scale}px; height: ${frame.h + 0.5 / scale}px;
-        border: solid ${0.1 / scale}px  ${alliance.ally ? 'lime' : 'white'};
+        border: solid 10px ${allianceBorderColor};
         border-radius: ${frame.w}px;
 `}
           address={alliance.address}
@@ -432,15 +475,15 @@
           offset={1}
           style={`
         pointer-events: none;
-        z-index: 1;
+        z-index: 3;
         position: absolute;
         transform:
           translate(${x + alliancesOffset[i % 4] * 1.3 * multiplier}px,${
             y + alliancesOffset[(i + 3) % 4] * 1.3 * multiplier
           }px)
-          scale(${blockieScale}, ${blockieScale});
+          scale(${blockieScale* 1.5}, ${blockieScale* 1.5});
         width: ${frame.w}px; height: ${frame.h}px;
-        border: solid ${0.1 / scale}px  ${alliance.ally ? 'lime' : 'white'};
+        border: solid 10px ${allianceBorderColor};
         border-radius: ${frame.w}px;
 `}
           address={alliance.address}
