@@ -77,7 +77,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     frontrunningDelay /= 100;
     resolveWindow /= 25;
     // productionCapAsDuration /= 180;
-    genesisHash = '0xee563ebbe85edccc120c5082a5066539b0e9b7958b5fbac114523a95a8162670';
+    genesisHash = '0xee563ebbe85edccc120c5082a5066539b0e9b7958b5fbac114523a95a8162671';
   }
 
   if (networkName === 'alpha') {
