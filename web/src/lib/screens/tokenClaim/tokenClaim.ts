@@ -135,6 +135,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
 
       let provider = wallet.fallbackProvider;
       if (!provider) {
+        // TODO do not default on localhost
         let url = 'http://localhost:8545';
         const chainId = wallet.chain.chainId;
         if (chainId === '1') {
@@ -143,6 +144,8 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
           url = 'https://goerli.infura.io/v3/bc0bdd4eaac640278cdebc3aa91fabe4';
         } else if (chainId === '4') {
           url = 'https://rinkeby.infura.io/v3/bc0bdd4eaac640278cdebc3aa91fabe4';
+        } else if (chainId === '100') {
+          url = 'https://rpc.gnosischain.com/';
         }
         provider = new JsonRpcProvider(url);
       }
