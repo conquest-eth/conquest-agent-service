@@ -280,7 +280,7 @@
           <div class="w-20">Exit</div>
         </PanelButton>
 
-        <PanelButton
+        <!-- <PanelButton
           label="Transfer"
           color="text-yellow-400"
           borderColor="border-yellow-400"
@@ -288,7 +288,7 @@
           on:click={transferPlanet}
         >
           <div class="w-20">Transfer</div>
-        </PanelButton>
+        </PanelButton> -->
       {:else}
         <PanelButton label="Send" class="m-2" on:click={sendTo}>
           <div class="w-20">
