@@ -26,7 +26,7 @@ async function dropAllTransactionsIfPossible() {
         const url =
           typeof fallbackProviderOrUrl === 'string' && fallbackProviderOrUrl !== ''
             ? fallbackProviderOrUrl
-            : 'http://127.0.0.1:8545';
+            : 'http://127.0.0.1:8545'; // TODO ?
         try {
           const response = await fetch(url, {
             method: 'POST',
