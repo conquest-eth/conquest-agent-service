@@ -118,7 +118,7 @@
       </NavButton>
       <NavButton class="m-1" label="help" href={url('alliances/')}>
         Alliances
-        <Help class="w-4 h-4">See Highscores for current alpha</Help>
+        <Help class="w-4 h-4">See All Public Alliances</Help>
       </NavButton>
       <NavButton class="m-1" label="help" href={url('help/')}>
         Help

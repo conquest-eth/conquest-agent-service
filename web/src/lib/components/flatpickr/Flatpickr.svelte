@@ -14,7 +14,7 @@
     'onValueUpdate',
     'onDayCreate',
   ]);
-  export let value = undefined
+  export let value = undefined;
   export let formattedValue = '',
     element = null,
     dateFormat = null;
@@ -70,10 +70,6 @@
   }
 </script>
 
-<!-- <slot>
-  <input bind:this={input} {...$$restProps} />
-</slot> -->
-
 <div class="bg-gray-800 text-cyan-500" bind:this={element}>
   <input bind:this={input} {...$$restProps} data-input />
 
@@ -103,6 +99,7 @@
       /></svg
     >
   </a>
+  <slot />
 </div>
 
 <style>

@@ -262,13 +262,19 @@
         {#if flatpickrOptions}
           <!-- {new Date(arrivalTimeWanted).getTime() / 1000} -->
           <Flatpickr
-            class="bg-gray-800 text-cyan-500"
+            class="bg-gray-800 text-cyan-500 inline-block"
             options={flatpickrOptions}
             bind:value={arrivalTimeWanted}
             bind:formattedValue={formatted_arrivalTimeWanted}
             name="arrivalTimeWanted"
             placeholder="Arrival Time"
-          />
+            ><Help class="w-6 h-6"
+              >You can specify a specific arrival time. If you use the same exact arrival time for multiple fleets,
+              they'll combine their attack making bigger damage that if sent one by one. This also work with yout
+              allies, in which case, you'll need to pick the same address for "fleetOwner" (See below) that will own the
+              planet being attacked in case of success.</Help
+            ></Flatpickr
+          >
         {/if}
       </div>
       <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
@@ -293,6 +299,11 @@
               name="fleetOwnerSpecified"
               bind:value={fleetOwnerSpecified}
             />
+            <Help class="w-6 h-6"
+              >You can pick a fleetOwner, different than your own wallet address. The attack will then be performed on
+              its behalf and will be the owner of the planet being attacked if successful. Note that if the fleetOwner
+              chosen is not an ally, a burn tax will be applied as usual.</Help
+            >
           </div>
         {/if}
       {/if}
