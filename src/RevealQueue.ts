@@ -1209,9 +1209,25 @@ export class RevealQueue extends DO {
             }
           );
         } else {
+
           this.error(
             `FAILED TO SENDING TX... , TODO ? send dummy tx ? ${e.message || (e.toString && e.toString()) || e}`
           );
+          this.error({
+            fleetID: reveal.fleetID,
+            from: xyToLocation(reveal.from.x, reveal.from.y),
+            to: xyToLocation(reveal.to.x, reveal.to.y),
+            distance: reveal.distance,
+            arrivalTimeWanted: reveal.arrivalTimeWanted,
+            secret: reveal.secret,
+            gift: reveal.gift,
+            specific: reveal.specific,
+            fleetSender: reveal.fleetSender || reveal.player,
+            operator: reveal.operator || reveal.player,
+            nonce,
+            maxFeePerGas: options.maxFeePerGas,
+            maxPriorityFeePerGas,
+          });
           // TODO make dummy tx
           // or even better resign all tx queued with lower nonce, to skip it
           // but note in that "better" case, we should not do it if a tx has been broadcasted as we cannot guarantee the broadcasted tx will not be included in the end
