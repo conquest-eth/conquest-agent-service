@@ -10,8 +10,8 @@
   import NegativeStat from '../utils/NegativeStat.svelte';
   import {wallet} from '$lib/blockchain/wallet';
   import {spaceInfo} from '$lib/space/spaceInfo';
-  import type { PlanetInfo, PlanetState } from 'conquest-eth-common';
-  import type { Readable } from 'svelte/store';
+  import type {PlanetInfo, PlanetState} from 'conquest-eth-common';
+  import type {Readable} from 'svelte/store';
 
   function _select(elem: HTMLElement) {
     const range = document.createRange();
@@ -28,7 +28,7 @@
   $: textColor =
     $planetState && $planetState.owner ? (walletIsOwner ? 'text-green-500' : 'text-red-500') : 'text-gray-100';
 
-  $:frameBGColor = $planetState && $planetState.owner ? (walletIsOwner ? 'bg-cyan-300' : 'bg-red-500') : 'bg-cyan-300';
+  $: frameBGColor = $planetState && $planetState.owner ? (walletIsOwner ? 'bg-cyan-300' : 'bg-red-500') : 'bg-cyan-300';
 
   $: capacityReached = $planetState
     ? spaceInfo.productionCapAsDuration &&
@@ -36,7 +36,11 @@
       $planetState.numSpaceships >= planetInfo.stats.cap
     : false;
 
-  $: productionColor = capacityReached ? ' text-red-600' : $planetState?.travelingUpkeep > 0 ? 'text-amber-500' : 'text-green-500'
+  $: productionColor = capacityReached
+    ? ' text-red-600'
+    : $planetState?.travelingUpkeep > 0
+    ? 'text-amber-500'
+    : 'text-green-500';
 </script>
 
 <div class="flex m-1">
@@ -140,6 +144,10 @@
       <p class={`p-0 mb-1 ${productionColor}`}>{$planetState.numSpaceships}</p>
     {/if}
   </div>
+  <!-- {#if capacityReached}
+    <p class="p-0 mb-1">{$planetState.overflow + planetInfo.stats.cap}</p>
+    <p>Decrease Rate: {Math.floor(($planetState.overflow * 1800) / planetInfo.stats.cap)}</p>
+  {/if} -->
 
   <!-- <div class={`m-1 w-26 md:w-36 flex justify-between text-white`}>
     <p class="p-0 mb-1 text-white">
