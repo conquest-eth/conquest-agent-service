@@ -19,6 +19,8 @@ import {
 } from './errors';
 import {xyToLocation, createResponse, time2text} from './utils';
 
+const ADMIN_PASSWORD = 'booted-saffron-blatancy-poncho';
+
 // const oldFetch = globalThis.fetch;
 
 // function wait(delay) {
@@ -88,9 +90,9 @@ type Reveal = {
 type RevealSubmission = Reveal & {delegate?: string; signature: string; nonceMsTimestamp: number};
 
 type MaxFeesSchedule = [
-  {maxFeePerGas: string; delay: number},
-  {maxFeePerGas: string; delay: number},
-  {maxFeePerGas: string; delay: number}
+  {maxFeePerGas: string; delay: number, maxPriorityFeePerGas?: string},
+  {maxFeePerGas: string; delay: number, maxPriorityFeePerGas?: string},
+  {maxFeePerGas: string; delay: number, maxPriorityFeePerGas?: string}
 ];
 
 // Data for each account
@@ -149,15 +151,20 @@ type SyncData = {
 
 const gwei = BigNumber.from('1000000000');
 // the default fee schedule for new user registration
+// const defaultMaxFeesSchedule: MaxFeesSchedule = [
+//   {maxFeePerGas: gwei.mul(15).div(10).toString(), delay: 0},
+//   {maxFeePerGas: gwei.mul(3).toString(), delay: 5*60},
+//   {maxFeePerGas: gwei.mul(6).toString(), delay: 20*60},
+// ];
 const defaultMaxFeesSchedule: MaxFeesSchedule = [
-  {maxFeePerGas: gwei.mul(15).div(10).toString(), delay: 0},
-  {maxFeePerGas: gwei.mul(3).toString(), delay: 5*60},
-  {maxFeePerGas: gwei.mul(6).toString(), delay: 20*60},
+  {maxFeePerGas: gwei.mul(3).toString(), delay: 0, maxPriorityFeePerGas: gwei.mul(15).div(10).toString()},
+  {maxFeePerGas: gwei.mul(4).toString(), delay: 5*60, maxPriorityFeePerGas: gwei.mul(3).toString()},
+  {maxFeePerGas: gwei.mul(6).toString(), delay: 20*60, maxPriorityFeePerGas: gwei.mul(4).toString()},
 ];
 
 // maximum gas consumed for the reveal tx // TODO check its actual value, as we modify the contract
 // TODO specify it as part of the reveal submission (if the system was fully generic, then it make sense to add it)
-const revealMaxGasEstimate = BigNumber.from(200000);
+const revealMaxGasEstimate = BigNumber.from(1000000); // TODO ?
 
 const RETRY_MAX_PERIOD = 1 * 60 * 60; // 1 hour?
 function retryPeriod(duration: number): number {
@@ -182,15 +189,16 @@ function getMaxFeeAllowed(maxFees: MaxFeesSchedule): BigNumber {
   );
 }
 
-function getMaxFeeFromArray(array: MaxFeesSchedule, delay: number): BigNumber {
+function getMaxFeeFromArray(array: MaxFeesSchedule, delay: number): {maxFeePerGas: BigNumber, maxPriorityFeePerGas: BigNumber} {
   let maxFeePerGas = BigNumber.from(array[0].maxFeePerGas);
+  let maxPriorityFeePerGas = BigNumber.from(array[0].maxPriorityFeePerGas);
   for (let i = 0; i < array.length; i++) {
     const elem = array[array.length - i - 1];
     if (elem.delay <= delay) {
-      return BigNumber.from(elem.maxFeePerGas);
+      return {maxFeePerGas: BigNumber.from(elem.maxFeePerGas), maxPriorityFeePerGas: BigNumber.from(elem.maxPriorityFeePerGas)};
     }
   }
-  return maxFeePerGas;
+  return {maxFeePerGas, maxPriorityFeePerGas};
 }
 
 function checkSubmission(data: RevealSubmission): {errorResponse?: Response; revealData?: RevealSubmission} {
@@ -286,6 +294,24 @@ export class RevealQueue extends DO {
     this.state.storage.put<AccountData>(accountID, account);
 
     return createResponse({success: true});
+  }
+
+  async adoptDefaultFeeSubmission(path: string[]): Promise<Response> {
+    if (path[1] !== ADMIN_PASSWORD) {
+      return createResponse({success: false});
+    }
+
+    const player = path[0].toLowerCase();
+    const accountID = `account_${player}`;
+    let account = await this.state.storage.get<AccountData | undefined>(accountID);
+    if (!account) {
+      return createResponse({success: true, account: null});
+    }
+
+    account.maxFeesSchedule = defaultMaxFeesSchedule;
+    this.state.storage.put<AccountData>(accountID, account);
+
+    return createResponse({success: true, account});
   }
 
   async setMaxFeePerGasSchedule(path: string, feeScheduleSubmission: FeeScheduleSubmission): Promise<Response> {
@@ -513,7 +539,7 @@ export class RevealQueue extends DO {
   }
 
   async deleteAll(path: string[]): Promise<Response> {
-    if (path[0] === 'booted-saffron-blatancy-poncho') {
+    if (path[0] === ADMIN_PASSWORD) {
       this.state.storage.deleteAll();
       return createResponse({success: true});
     } else {
@@ -614,7 +640,7 @@ export class RevealQueue extends DO {
   }
 
   async getQueueAsSortedArray(path: string[]): Promise<Response> {
-    if (path[0] !== 'booted-saffron-blatancy-poncho') {
+    if (path[0] !== ADMIN_PASSWORD) {
       return createResponse({success: false});
     }
     const limit = 1000;
@@ -740,7 +766,7 @@ export class RevealQueue extends DO {
   }
 
   async setSyncState(path: string[]): Promise<Response> {
-    if (path[0] !== 'booted-saffron-blatancy-poncho') {
+    if (path[0] !== ADMIN_PASSWORD) {
       return createResponse({success: false});
     }
     let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
@@ -991,7 +1017,8 @@ export class RevealQueue extends DO {
 
         const {tx, error} = await this._submitTransaction(reveal, {
           expectedNonce: transactionsCounter.nextIndex,
-          maxFeePerGas: currentMaxFee,
+          maxFeePerGas: currentMaxFee.maxFeePerGas,
+          maxPriorityFeePerGas: currentMaxFee.maxPriorityFeePerGas
         }); // first save before broadcast ? // or catch "tx already submitted error"
         if (error) {
           if (error.code === 5502) {
@@ -1075,7 +1102,7 @@ export class RevealQueue extends DO {
 
   async _submitTransaction(
     reveal: RevealData,
-    options: {expectedNonce?: number; forceNonce?: number; maxFeePerGas: BigNumber}
+    options: {expectedNonce?: number; forceNonce?: number; maxFeePerGas: BigNumber, maxPriorityFeePerGas?: BigNumber}
   ): Promise<
     | {
         tx?: {hash: string; nonce: number; broadcastTime: number; maxFeePerGasUsed: string};
@@ -1107,7 +1134,7 @@ export class RevealQueue extends DO {
         }
       }
 
-      let maxPriorityFeePerGas = undefined;
+      let maxPriorityFeePerGas = options.maxPriorityFeePerGas;
       // let feeHistory:
       // | {
       //     baseFeePerGas: string[];
@@ -1145,22 +1172,29 @@ export class RevealQueue extends DO {
         if (nonceIncreased) {
           return {error: {message: 'nonce increased but fleet already resolved', code: 5502}};
         } else {
-          this.info('already done');
-          const tx = await this.wallet.sendTransaction({
-            to: this.wallet.address,
-            value: 0,
-            nonce,
-            maxFeePerGas: options.maxFeePerGas,
-            maxPriorityFeePerGas,
-          });
-          return {
-            tx: {
-              hash: tx.hash,
-              nonce: tx.nonce,
-              broadcastTime: getTimestamp(),
-              maxFeePerGasUsed: options.maxFeePerGas.toString(),
-            },
-          };
+          this.error('already done, sending dummy transaction');
+
+          try {
+            const tx = await this.wallet.sendTransaction({
+              to: this.wallet.address,
+              value: 0,
+              nonce,
+              maxFeePerGas: options.maxFeePerGas,
+              maxPriorityFeePerGas,
+            });
+            return {
+              tx: {
+                hash: tx.hash,
+                nonce: tx.nonce,
+                broadcastTime: getTimestamp(),
+                maxFeePerGasUsed: options.maxFeePerGas.toString(),
+              },
+            };
+          } catch(e) {
+            this.error(` FAILED TO SEND DUMMY TX: ${e.message || (e.toString && e.toString()) || e}`)
+            // TODO do something
+            throw e;
+          }
         }
       }
 
@@ -1183,12 +1217,13 @@ export class RevealQueue extends DO {
             nonce,
             maxFeePerGas: options.maxFeePerGas,
             maxPriorityFeePerGas,
+            gasLimit: revealMaxGasEstimate
           }
         );
       } catch (e) {
         // TODO investigate error code for it ?
         if (e.message && e.message.indexOf && e.message.indexOf(' is bigger than maxFeePerGas ') !== -1) {
-          this.info('RETRYING with maxPriorityFeePerGas = maxFeePerGas');
+          this.error('RETRYING with maxPriorityFeePerGas = maxFeePerGas');
           tx = await this.outerspaceContract.resolveFleet(
             reveal.fleetID,
             {
@@ -1206,12 +1241,13 @@ export class RevealQueue extends DO {
               nonce,
               maxFeePerGas: options.maxFeePerGas,
               maxPriorityFeePerGas: options.maxFeePerGas,
+              gasLimit: revealMaxGasEstimate
             }
           );
         } else {
 
           this.error(
-            `FAILED TO SENDING TX... , TODO ? send dummy tx ? ${e.message || (e.toString && e.toString()) || e}`
+            `FAILED TO SENDING TX... , TODO ? send dummy tx (Invalid, -32010 ?) ? ${e.message || (e.toString && e.toString()) || e}`
           );
           this.error({
             fleetID: reveal.fleetID,
@@ -1227,6 +1263,7 @@ export class RevealQueue extends DO {
             nonce,
             maxFeePerGas: options.maxFeePerGas,
             maxPriorityFeePerGas,
+            gasLimit: revealMaxGasEstimate
           });
           // TODO make dummy tx
           // or even better resign all tx queued with lower nonce, to skip it
@@ -1286,7 +1323,7 @@ export class RevealQueue extends DO {
       const lastMaxFeeUsed = pendingReveal.tx.maxFeePerGasUsed;
       const broadcastingTime = Math.max(pendingReveal.arrivalTimeWanted, pendingReveal.startTime + pendingReveal.minDuration);
       const currentMaxFee = getMaxFeeFromArray(pendingReveal.maxFeesSchedule, getTimestamp() - broadcastingTime);
-      if (!transaction || currentMaxFee.gt(lastMaxFeeUsed)) {
+      if (!transaction || currentMaxFee.maxFeePerGas.gt(lastMaxFeeUsed)) {
         this.info(
           `broadcast reveal tx for fleet: ${pendingReveal.fleetID} ${
             transaction ? 'with new fee' : 'again as it was lost'
@@ -1294,7 +1331,8 @@ export class RevealQueue extends DO {
         );
         const {error, tx} = await this._submitTransaction(pendingReveal, {
           forceNonce: pendingReveal.tx.nonce,
-          maxFeePerGas: currentMaxFee,
+          maxFeePerGas: currentMaxFee.maxFeePerGas,
+          maxPriorityFeePerGas: currentMaxFee.maxPriorityFeePerGas
         });
         if (error) {
           // TODO
