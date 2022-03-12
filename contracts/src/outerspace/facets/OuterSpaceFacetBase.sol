@@ -1112,6 +1112,7 @@ contract OuterSpaceFacetBase is
         if (!toPlanetUpdate.active && toPlanetUpdate.numSpaceships < _natives(toPlanetUpdate.data)) {
             _updatePlanetUpdateStateAndResolutionStateForNativeAttack(rState, toPlanetUpdate);
         } else {
+            // TODO 45min config ?
             if (block.timestamp < rState.arrivalTime + 45 minutes) {
                 if (!rState.taxed) {
                     AccumulatedAttack memory acc =
