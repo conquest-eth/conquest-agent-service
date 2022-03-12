@@ -866,7 +866,7 @@ contract OuterSpaceFacetBase is
                             destinationOwner,
                             rState.fleetLaunchTime
                         );
-                    return (joinTime > 0, joinTime == 0 || joinTime > rState.fleetLaunchTime);
+                    return (joinTime > 0, joinTime > rState.fleetLaunchTime);
                 } else {
                     (, uint96 fleetOwnerJoinTime) =
                         _allianceRegistry.havePlayersAnAllianceInCommon(
@@ -925,7 +925,7 @@ contract OuterSpaceFacetBase is
                             destinationOwner,
                             rState.fleetLaunchTime
                         );
-                    return (joinTime > 0, joinTime == 0 || joinTime > rState.fleetLaunchTime);
+                    return (joinTime > 0, joinTime > rState.fleetLaunchTime);
                 } else {
                     (, uint96 fleetOwnerJoinTime) =
                         _allianceRegistry.havePlayersAnAllianceInCommon(
