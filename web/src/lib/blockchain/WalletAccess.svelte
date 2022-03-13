@@ -222,10 +222,14 @@
         </Button>
       </div>
     {:else if $privateWallet.step === 'READY'}
-      <div class="text-center">
+      <p>...</p>
+      <!-- <div class="text-center">
         <p>Connection Aborted</p>
+        <p>chain: {$chain.state}</p>
+        <p>wallet: {$wallet.state}</p>
+        <p>flow: {$flow.inProgress}</p>
         <Button class="mt-4" label="Retry" on:click={() => privateWallet.cancel()}>OK</Button>
-      </div>
+      </div> -->
     {:else}
       <div class="text-center">
         <p>Flow aborted {$privateWallet.step}</p>

@@ -97,9 +97,9 @@ export class ErrorsStore implements Readable<SpaceError[]> {
       }
     }
 
-    const newPlayer = update.queryState.data?.player;
-    if (this.currentOwner !== newPlayer) {
-      this.tmpPlayer = newPlayer;
+    const newPlayerID = update.queryState.data?.player?.id;
+    if (this.currentOwner !== newPlayerID) {
+      this.tmpPlayer = newPlayerID;
       this.tmpErrors = newErrors;
       this.errors.length = 0;
       // TODO loading ?

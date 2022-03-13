@@ -315,6 +315,11 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         checkedAction.action.txOrigin || ownerAddress,
         blockNumber - finality
       );
+      // NOTE: we feteched it again to ensure the call was not lost
+      const txFromPeers = await wallet.provider.getTransaction(checkedAction.id);
+      if (txFromPeers) {
+        return; // TODO should we do the above here : `if (txFromPeers.blockNumber) {`
+      }
       if (finalityNonce > checkedAction.action.nonce) {
         pending = false;
         // replaced

@@ -533,6 +533,7 @@ class Account implements Readable<AccountState> {
   }
 
   private async _handlePrivateWalletChange($privateWallet: PrivateWalletState): Promise<void> {
+    // console.log({$privateWallet});
     if ($privateWallet.step !== 'READY') {
       if (this.unsubscribeFromSync) {
         this.unsubscribeFromSync();

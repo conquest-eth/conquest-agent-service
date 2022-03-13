@@ -270,7 +270,13 @@ class PrivateWallet implements Readable<PrivateWalletState> {
               this.state.chainId = chainId;
               this._notify();
             }
+          } else {
+            this.state.ownerAddress = walletAddress;
+            this._notify();
           }
+        } else {
+          this.state.ownerAddress = walletAddress;
+          this._notify();
         }
       }
 

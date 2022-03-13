@@ -112,7 +112,7 @@ export type FleetSentParsedEvent = PlanetParsedEvent & {
 export type SpaceQueryResult = {
   otherplanets: PlanetQueryState[];
   myplanets?: PlanetQueryState[];
-  owner?: {id: string};
+  owner?: {id: string; tokenBalance: string; tokenToWithdraw: string};
   space?: {minX: string; maxX: string; minY: string; maxY: string};
   chain?: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou?: FleetArrivedEvent[]; // TODO
@@ -122,7 +122,7 @@ export type SpaceQueryResult = {
 };
 
 export type SpaceState = {
-  player: string;
+  player?: {id: string; tokenBalance: BigNumber; tokenToWithdraw: BigNumber};
   planets: PlanetContractState[];
   loading: boolean;
   space: {x1: number; x2: number; y1: number; y2: number};
@@ -217,7 +217,11 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     maxY
   }
   ?$owner?
-  owner(id: $owner) {id}
+  owner(id: $owner) {
+    id
+    tokenBalance
+    tokenToWithdraw
+  }
   myplanets: planets(first: 1000 where: {owner: $owner}) {
     id
     owner {
@@ -338,6 +342,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
 
   private async _handleAccountChange($account: AccountState): Promise<void> {
     const accountAddress = $account.ownerAddress?.toLowerCase();
+    // console.log({$account});
     if (this.queryStore.runtimeVariables.owner !== accountAddress) {
       this.queryStore.runtimeVariables.owner = accountAddress;
       this.store.update((v) => {
@@ -363,7 +368,19 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     const planets = (data.myplanets || []).concat(data.otherplanets);
     return {
       loading: false,
-      player: data.owner?.id,
+      player: data.owner
+        ? {
+            id: data.owner.id,
+            tokenBalance: BigNumber.from(data.owner.tokenBalance),
+            tokenToWithdraw: BigNumber.from(data.owner.tokenToWithdraw),
+          }
+        : this.queryStore.runtimeVariables.owner
+        ? {
+            id: this.queryStore.runtimeVariables.owner,
+            tokenBalance: BigNumber.from(0),
+            tokenToWithdraw: BigNumber.from(0),
+          }
+        : undefined,
       planets: planets.map((v) => {
         return {
           id: v.id,

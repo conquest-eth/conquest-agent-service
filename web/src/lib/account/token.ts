@@ -104,6 +104,7 @@ class TokenAccount extends BaseStore<TokenAccountData> {
           });
         }
       } catch (e) {
+        console.error(`failed to fetch token balance`, e);
         this.setPartial({
           error: e,
         });
@@ -117,6 +118,7 @@ class TokenAccount extends BaseStore<TokenAccountData> {
           );
         }
       } catch (e) {
+        console.error(`failed to fetch token allowance`, e);
         this.setPartial({
           error: e,
         });

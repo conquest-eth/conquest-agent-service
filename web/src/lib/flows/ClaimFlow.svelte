@@ -4,6 +4,7 @@
   import Button from '$lib/components/generic/PanelButton.svelte';
   import {planets} from '$lib/space/planets';
   import {wallet} from '$lib/blockchain/wallet';
+  // TODO use myTokens ?
   import {tokenAccount} from '$lib/account/token';
   import {BigNumber} from '@ethersproject/bignumber';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';

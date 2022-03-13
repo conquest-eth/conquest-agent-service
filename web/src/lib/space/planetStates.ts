@@ -196,7 +196,8 @@ export class PlanetStates {
     const pendingActions = pendingActionsPerPlanet[planetInfo.location.id];
     if (pendingActions) {
       for (const pendingAction of pendingActions) {
-        if (pendingAction.status === 'LOADING') {
+        // TODO better? we give LOADING 60 seconds counting from tx submission
+        if (pendingAction.status === 'LOADING' && now() - pendingAction.action.timestamp > 60) {
           continue;
         }
 

@@ -104,9 +104,9 @@ export class MyEventsStore implements Readable<MyEvent[]> {
       }
     }
 
-    const newPlayer = update.queryState.data?.player;
-    if (this.currentOwner !== newPlayer) {
-      this.tmpPlayer = newPlayer;
+    const newPlayerID = update.queryState.data?.player?.id;
+    if (this.currentOwner !== newPlayerID) {
+      this.tmpPlayer = newPlayerID;
       this.tmpEvents = newEvents;
       this.events.length = 0;
       // TODO loading ?
