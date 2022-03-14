@@ -42,8 +42,17 @@ export class ErrorsStore implements Readable<SpaceError[]> {
       if (pendingAction.action.type === 'SEND') {
         location = pendingAction.action.from;
 
+        let pendingResolution;
         const sendAction = pendingAction.action;
-        if (!sendAction.resolution) {
+        if (sendAction.resolution) {
+          for (const reso of sendAction.resolution) {
+            pendingResolution = update.pendingActions.find((v) => v.id === reso);
+            if (pendingResolution) {
+              break;
+            }
+          }
+        }
+        if (!pendingResolution) {
           // copied from fleets, TODO DRY
           const from = spaceInfo.getPlanetInfo(sendAction.from.x, sendAction.from.y);
           const to = spaceInfo.getPlanetInfo(sendAction.to.x, sendAction.to.y);

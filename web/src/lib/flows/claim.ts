@@ -132,7 +132,6 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
         {gasLimit}
       );
     } catch (e) {
-      console.error(e);
       if (this.$store.step === 'WAITING_TX') {
         if (e.message && e.message.indexOf('User denied') >= 0) {
           this.setPartial({
@@ -140,8 +139,11 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
             error: undefined,
           });
         } else {
+          console.error(`Error on transferAndCall:`, e);
           this.setPartial({error: e, step: 'CHOOSE_STAKE'});
         }
+      } else {
+        throw e;
       }
       return;
     }
