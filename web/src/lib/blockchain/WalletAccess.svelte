@@ -237,4 +237,8 @@
       </div>
     {/if}
   </Modal>
+{:else if $privateWallet.step === 'CONNECTING'}
+  <Modal>
+    <p>Connecting....</p>
+  </Modal>
 {/if}

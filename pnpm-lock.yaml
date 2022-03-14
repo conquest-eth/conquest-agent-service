@@ -319,7 +319,7 @@ importers:
       tslib: ^2.3.1
       typescript: ^4.5.4
       vite: 2.7.10
-      web3w: ^0.3.2-beta.22
+      web3w: ^0.3.2-beta.23
       web3w-portis-loader: ^0.3.3
       web3w-walletconnect-loader: ^0.3.2
       wonka: ^4.0.15
@@ -347,7 +347,7 @@ importers:
       named-logs: 0.1.0
       pretty-ms: github.com/wighawag/pretty-ms/320ba46c464052ebbe605e48ad05df9e9801e956
       sveltejs-tippy: 3.0.0
-      web3w: 0.3.2-beta.22_625ee2c6f98dbc4100dea14abcb2ec53
+      web3w: 0.3.2-beta.23_625ee2c6f98dbc4100dea14abcb2ec53
       web3w-portis-loader: 0.3.3
       web3w-walletconnect-loader: 0.3.2
       wonka: 4.0.15
@@ -15568,8 +15568,8 @@ packages:
       named-logs: 0.1.0
     dev: false
 
-  /web3w/0.3.2-beta.22_625ee2c6f98dbc4100dea14abcb2ec53:
-    resolution: {integrity: sha512-cM7aaIRcCvMeUHYv7SG6r4sugryRXCGFhHY0/S27iCLu2n85kFGejyh7X5bgE+th9qm2XV/A5wJyJXIByQTsxA==}
+  /web3w/0.3.2-beta.23_625ee2c6f98dbc4100dea14abcb2ec53:
+    resolution: {integrity: sha512-CpguUyxDtz1FWYyCXnkT859QN8RUPSN+3Lq3h9MBBxYg1fduM+GRZhulaKnwfYJTw4KJQ4zQo1JHxiigdxIETA==}
     peerDependencies:
       '@ethersproject/abi': ^5.0.0
       '@ethersproject/bignumber': ^5.0.0
