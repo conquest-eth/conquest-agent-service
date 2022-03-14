@@ -257,7 +257,11 @@ async function performAction(rawArgs) {
     const env = getEnv(network);
     await execute(`${env}npm --prefix account-service run deploy ${network}`);
   } else if (firstArg === 'web:dev') {
-    const {fixedArgs, options, extra} = parseArgs(args, 1, {skipContracts: 'boolean', waitContracts: 'boolean'});
+    const {fixedArgs, options, extra} = parseArgs(args, 1, {
+      skipContracts: 'boolean',
+      waitContracts: 'boolean',
+      inspect: 'boolean',
+    });
     const network = fixedArgs[0] || 'localhost';
     if (!options.skipContracts) {
       await performAction(['contracts:export', network]);
@@ -266,7 +270,11 @@ async function performAction(rawArgs) {
       await execute(`wait-on web/src/lib/contracts.json`);
     }
     const env = getEnv(network);
-    await execute(`${env}npm --prefix web run dev -- ${extra.join(' ')}`);
+    if (options.inspect) {
+      await execute(`${env}npm --prefix web run dev:inspect -- ${extra.join(' ')}`);
+    } else {
+      await execute(`${env}npm --prefix web run dev -- ${extra.join(' ')}`);
+    }
   } else if (firstArg === 'web:build') {
     const {fixedArgs, extra} = parseArgs(args, 1, {});
     const network = fixedArgs[0] || (await getNetworkName()) || 'localhost';
