@@ -1113,22 +1113,21 @@ contract OuterSpaceFacetBase is
             _updatePlanetUpdateStateAndResolutionStateForNativeAttack(rState, toPlanetUpdate);
         } else {
             // TODO 45min config ?
-            if (block.timestamp < rState.arrivalTime + 45 minutes) {
-                if (!rState.taxed) {
-                    AccumulatedAttack memory acc =
-                        _attacks[toPlanetUpdate.location][rState.fleetOwner][rState.arrivalTime];
-                    if (acc.target == toPlanetUpdate.owner && acc.numAttackSpent != 0) {
-                        rState.attackPower = uint16(
-                            (uint256(rState.attackPower) *
-                                rState.fleetQuantity +
-                                acc.averageAttackPower *
-                                acc.numAttackSpent) / (uint256(rState.fleetQuantity) + acc.numAttackSpent)
-                        );
-                        rState.accumulatedAttackAdded = acc.numAttackSpent;
-                        rState.accumulatedDefenseAdded = acc.damageCausedSoFar;
-                    }
+            // if (block.timestamp < rState.arrivalTime + 45 minutes) {
+            if (!rState.taxed) {
+                AccumulatedAttack memory acc = _attacks[toPlanetUpdate.location][rState.fleetOwner][rState.arrivalTime];
+                if (acc.target == toPlanetUpdate.owner && acc.numAttackSpent != 0) {
+                    rState.attackPower = uint16(
+                        (uint256(rState.attackPower) *
+                            uint256(rState.fleetQuantity) +
+                            uint256(acc.averageAttackPower) *
+                            uint256(acc.numAttackSpent)) / (uint256(rState.fleetQuantity) + uint256(acc.numAttackSpent))
+                    );
+                    rState.accumulatedAttackAdded = acc.numAttackSpent;
+                    rState.accumulatedDefenseAdded = acc.damageCausedSoFar;
                 }
             }
+            // }
 
             _updatePlanetUpdateStateAndResolutionStateForPlanetAttack(rState, toPlanetUpdate);
         }
@@ -1370,7 +1369,8 @@ contract OuterSpaceFacetBase is
 
         uint256 capWhenActive = _capWhenActive(production);
 
-        int256 totalLoss = int256(uint256(rState.defenderLoss + rState.inFlightPlanetLoss + rState.attackerLoss));
+        int256 totalLoss =
+            int256(uint256(rState.defenderLoss) + uint256(rState.inFlightPlanetLoss) + uint256(rState.attackerLoss));
         int256 newTravelingUpkeep = int256(toPlanetUpdate.travelingUpkeep) - totalLoss;
         if (newTravelingUpkeep < -int256(capWhenActive)) {
             newTravelingUpkeep = -int256(capWhenActive);
