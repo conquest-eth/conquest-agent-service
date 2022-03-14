@@ -82,7 +82,7 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
     }
 
     // console.log('HELLO');
-    const planetInfo = spaceInfo.getPlanetInfo(flow.data.coords.x + 1, flow.data.coords.y);
+    const planetInfo = spaceInfo.getPlanetInfo(flow.data.coords.x, flow.data.coords.y);
     if (!planetInfo) {
       this.setPartial({
         step: 'CHOOSE_STAKE',
