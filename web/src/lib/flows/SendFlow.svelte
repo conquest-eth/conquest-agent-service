@@ -9,6 +9,7 @@
   import {url} from '$lib/utils/url';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import VirtualFleetInfoPanel from '$lib/components/planets/VirtualFleetInfoPanel.svelte';
+  import {formatError} from '$lib/utils';
 
   $: pickNeeded =
     $sendFlow.step === 'PICK_DESTINATION' ? 'destination' : $sendFlow.step === 'PICK_ORIGIN' ? 'origin' : undefined;
@@ -19,7 +20,7 @@
     {#if $sendFlow.error.type === 'AGENT_SERVICE_SUBMISSION_ERROR'}
       <div class="text-center">
         <h2 class="text-red-500 text-xl">Failed to submit to agent-service</h2>
-        <p class="mt-2 text-sm">{$sendFlow.error.message || $sendFlow.error}</p>
+        <p class="mt-2 text-sm">{formatError($sendFlow.error)}</p>
         <p class="mt-2">
           You can always retry on the <a class="underline" href={url('agent-service/')}>agent-service page</a>
         </p>
@@ -28,7 +29,7 @@
     {:else}
       <div class="text-center">
         <h2 class="text-xl">An error happenned</h2>
-        <p class="text-red-500 mt-2 text-sm">{$sendFlow.error.message || $sendFlow.error}</p>
+        <p class="mt-2 text-red-500 text-xl">{formatError($sendFlow.error)}</p>
         <Button class="mt-5" label="Stake" on:click={() => sendFlow.acknownledgeError()}>Ok</Button>
       </div>
     {/if}

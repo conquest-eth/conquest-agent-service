@@ -39,14 +39,19 @@
   let lineColor = 'white';
   $: if (fleet.state === 'SEND_BROADCASTED') {
     color = 'orange';
+    showLine = true;
   } else if (fleet.state === 'LOADING') {
     color = '#FFFFFF';
+    showLine = true;
   } else if (fleet.state === 'TRAVELING') {
     color = '#00FF00';
+    showLine = true;
   } else if (fleet.state === 'READY_TO_RESOLVE') {
     color = '#ff0000';
+    showLine = true;
   } else if (fleet.state === 'TOO_LATE_TO_RESOLVE') {
     color = '#ff0000';
+    showLine = true;
   } else if (fleet.state === 'RESOLVE_BROADCASTED') {
     color = '#0000ff';
     showLine = false;

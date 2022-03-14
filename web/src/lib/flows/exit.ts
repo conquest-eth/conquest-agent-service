@@ -2,6 +2,7 @@ import {wallet} from '$lib/blockchain/wallet';
 import {xyToLocation} from 'conquest-eth-common';
 import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {account} from '$lib/account/account';
+import type {BigNumber} from '@ethersproject/bignumber';
 
 type Data = {
   txHash?: string;
@@ -9,7 +10,7 @@ type Data = {
 };
 export type ExitFlow = {
   type: 'EXIT';
-  step: 'IDLE' | 'CONNECTING' | 'WAITING_CONFIRMATION' | 'WAITING_TX' | 'SUCCESS';
+  step: 'IDLE' | 'CONNECTING' | 'WAITING_CONFIRMATION' | 'CREATING_TX' | 'WAITING_TX' | 'SUCCESS';
   cancelingConfirmation?: boolean;
   data?: Data;
   error?: {message?: string};
@@ -29,20 +30,41 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
   }
 
   async confirm(): Promise<void> {
-    const flow = this.setPartial({step: 'WAITING_TX'});
+    const flow = this.setPartial({step: 'CREATING_TX'});
     if (!flow.data) {
       throw new Error(`no flow data`);
     }
-    const latestBlock = await wallet.provider.getBlock('latest');
+
+    let latestBlock;
+    try {
+      latestBlock = await wallet.provider.getBlock('latest');
+    } catch (e) {
+      this.setPartial({
+        step: 'WAITING_CONFIRMATION',
+        error: e,
+      });
+      return;
+    }
     const location = flow.data.location;
     const locationId = xyToLocation(location.x, location.y);
-    // const latestBlock = await wallet.provider?.getBlock('latest');
-    // if (!latestBlock) {
-    //   throw new Error(`can't fetch latest block`);
-    // }
+
+    let gasEstimation: BigNumber;
+    try {
+      gasEstimation = await wallet.contracts?.OuterSpace.estimateGas.exitFor(wallet.address, locationId);
+    } catch (e) {
+      this.setPartial({
+        step: 'WAITING_CONFIRMATION',
+        error: e,
+      });
+      return;
+    }
+    // TODO gasEstimation for EXIT
+    const gasLimit = gasEstimation.add(100000);
+
+    this.setPartial({step: 'WAITING_TX'});
     let tx: {hash: string; nonce: number};
     try {
-      tx = await wallet.contracts?.OuterSpace.exitFor(wallet.address, locationId);
+      tx = await wallet.contracts?.OuterSpace.exitFor(wallet.address, locationId, {gasLimit});
     } catch (e) {
       console.error(e);
       if (e.message && e.message.indexOf('User denied') >= 0) {

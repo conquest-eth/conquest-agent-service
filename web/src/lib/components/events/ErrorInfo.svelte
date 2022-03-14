@@ -35,17 +35,32 @@
     {#if error.action.type === 'CAPTURE'}
       <li>
         You didn't capture planet {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error
-        ocurred on the transaction.
+        ocurred on the
+        <a
+          target="_blank"
+          class="underline text-cyan-100"
+          href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${error.txHash}`}>transaction</a
+        >.
       </li>
     {:else if error.action.type === 'EXIT'}
       <li>
         You can't exit on {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error ocurred
-        on the transaction.
+        on the
+        <a
+          target="_blank"
+          class="underline text-cyan-100"
+          href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${error.txHash}`}>transaction</a
+        >.
       </li>
     {:else if error.action.type === 'RESOLUTION'}
       <li>
         You didn't resolve on {spaceInfo.getPlanetInfo(error.location.x, error.location.y).stats.name} because an error ocurred
-        on the transaction.
+        on the
+        <a
+          target="_blank"
+          class="underline text-cyan-100"
+          href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${error.txHash}`}>transaction</a
+        >.
       </li>
     {:else}
       <li>

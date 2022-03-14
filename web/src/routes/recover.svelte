@@ -6,6 +6,7 @@
   import Modal from '$lib/components/generic/Modal.svelte';
   import Button from '$lib/components/generic/PanelButton.svelte';
   import {spaceInfo} from '$lib/space/spaceInfo';
+  import {now} from '$lib/time';
   import {decodeCoords} from '$lib/utils';
   import type {BigNumber} from '@ethersproject/bignumber';
   import {locationToXY} from 'conquest-eth-common';
@@ -29,6 +30,7 @@
     privateWallet.execute(async () => {
       const tx = await wallet.provider.getTransaction(transactionHash);
       const receipt = await wallet.provider.getTransactionReceipt(transactionHash);
+      const block = await wallet.provider.getBlock(receipt.blockHash);
       const eventInterface = $chain.contracts.OuterSpace.interface;
 
       const decodedEvents = receipt.logs
@@ -88,6 +90,7 @@
               txHash: string;
               timestamp: number;
               nonce: number;
+              overrideTimestamp: number;
             }
           | undefined = undefined;
         for (let nonce = tx.nonce; nonce < tx.nonce + 5; nonce++) {
@@ -122,7 +125,8 @@
                 },
                 nonce: nonce,
                 txHash: tx.hash,
-                timestamp: tx.timestamp,
+                timestamp: block.timestamp,
+                overrideTimestamp: now(),
               };
 
               console.log('found!!!!!!!!!!!!!!!!!!!!');
@@ -138,10 +142,17 @@
         }
 
         if (fleetFound) {
-          if ($account.data.pendingActions[fleetFound.txHash]) {
+          const pendingActionFound = $account.data.pendingActions[fleetFound.txHash];
+          if (pendingActionFound && typeof pendingActionFound !== 'number') {
             error = 'already recovered';
           } else {
-            account.recordFleet(fleetFound.fleet, fleetFound.txHash, fleetFound.timestamp, fleetFound.nonce);
+            account.recordFleet(
+              fleetFound.fleet,
+              fleetFound.txHash,
+              fleetFound.timestamp,
+              fleetFound.nonce,
+              fleetFound.overrideTimestamp
+            );
           }
         } else {
           error = 'no fleet matching';
@@ -189,7 +200,8 @@
           />
         </div>
         <div>
-          <label class="text-gray-100 font-semibold block my-3 text-md" for="arrivalTimeWanted">arrivalTimeWanted</label>
+          <label class="text-gray-100 font-semibold block my-3 text-md" for="arrivalTimeWanted">arrivalTimeWanted</label
+          >
           <input
             class="w-full bg-gray-800 px-4 py-2 rounded-lg focus:outline-none"
             type="text"

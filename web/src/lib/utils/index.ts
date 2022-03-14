@@ -21,9 +21,9 @@ export function bitMaskMatch(value: number | undefined, bit: number): boolean {
   return value === undefined ? false : (value & Math.pow(2, bit)) == Math.pow(2, bit);
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function formatError(e: any): string {
-  return e.message || (e.toString ? e.toString() : JSON.stringify(e));
+  return e.data?.data ? JSON.stringify(e.data?.data) : e.message ? e.message : JSON.stringify(e); //(e.toString ? e.toString() : ;
 }
 
 export function decodeCoords(coords: string): {x: number; y: number} {

@@ -133,20 +133,28 @@ export class FleetsStore implements Readable<FleetListState> {
           let resolution: SyncedPendingAction | undefined;
           if (sendAction.resolution) {
             // console.log('RESOLUTION', sendAction.resolution);
-            // TODO handle multiple resolution
-            const pendingResolution = update.pendingActions.find((v) => v.id === sendAction.resolution[0]);
+            let pendingResolution;
+            for (const reso of sendAction.resolution) {
+              pendingResolution = update.pendingActions.find((v) => v.id === reso);
+              if (pendingResolution) {
+                break;
+              }
+            }
             if (pendingResolution) {
               resolution = pendingResolution;
-              state = 'RESOLVE_BROADCASTED';
 
-              if (pendingResolution.action.acknowledged) {
-                continue; // alterady acknowledged
-              }
+              if (!(resolution.status === 'FAILURE' && resolution.action.acknowledged)) {
+                state = 'RESOLVE_BROADCASTED';
 
-              if (resolution.status === 'SUCCESS' || resolution.counted) {
-                // TODO error
-                state = 'WAITING_ACKNOWLEDGMENT';
-                // continue; // acknowledgement go through events // TODO enable even though but should be required
+                if (resolution.status === 'SUCCESS' && resolution.action.acknowledged) {
+                  continue; // alterady acknowledged
+                }
+
+                if (resolution.status === 'SUCCESS' || resolution.counted) {
+                  // TODO error
+                  state = 'WAITING_ACKNOWLEDGMENT';
+                  // continue; // acknowledgement go through events // TODO enable even though but should be required
+                }
               }
             } else {
               // TODO error ?
@@ -178,7 +186,7 @@ export class FleetsStore implements Readable<FleetListState> {
           }
 
           // console.log({state})
-          if (!(resolution && resolution.action.acknowledged)) {
+          if (!(resolution && resolution.status === 'SUCCESS' && resolution.action.acknowledged)) {
             this.state.fleets.push({
               txHash: pendingAction.id, // TODO better id
               from,

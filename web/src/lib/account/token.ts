@@ -1,7 +1,7 @@
 import {wallet} from '../blockchain/wallet';
 import {BigNumber} from '@ethersproject/bignumber';
 import type {WalletStore} from 'web3w';
-import {BaseStore} from '$lib/utils/stores/base';
+import {AutoStartBaseStore} from '$lib/utils/stores/base';
 import {highFrequencyFetch} from '$lib/config';
 import type {SpaceQueryWithPendingState} from '$lib/space/optimisticSpace';
 import {spaceQueryWithPendingActions} from '$lib/space/optimisticSpace';
@@ -16,14 +16,21 @@ type TokenAccountData = {
   error?: unknown;
 };
 
-class TokenAccount extends BaseStore<TokenAccountData> {
+class TokenAccount extends AutoStartBaseStore<TokenAccountData> {
   protected lastWalletStatus: string;
   protected tokenPending: BigNumber = BigNumber.from(0);
+
+  private stopWalletSubscription: () => void;
+  private stoOptimisticSpaceSubscription: () => void;
+
   constructor(private wallet: WalletStore) {
     super({
       status: 'Idle',
     });
-    this.wallet.subscribe(($wallet) => {
+  }
+
+  _onStart(): () => void {
+    this.stopWalletSubscription = this.wallet.subscribe(($wallet) => {
       if ($wallet.address !== this.$store.account || $wallet.state !== this.lastWalletStatus) {
         this.lastWalletStatus = $wallet.state;
         if ($wallet.address !== this.$store.account) {
@@ -35,7 +42,19 @@ class TokenAccount extends BaseStore<TokenAccountData> {
         this.triggerUpdates();
       }
     });
-    spaceQueryWithPendingActions.subscribe(this.onSpaceUpdate.bind(this));
+    this.stoOptimisticSpaceSubscription = spaceQueryWithPendingActions.subscribe(this.onSpaceUpdate.bind(this));
+    return this.onStop.bind(this);
+  }
+
+  private onStop() {
+    if (this.stopWalletSubscription) {
+      this.stopWalletSubscription();
+      this.stopWalletSubscription = undefined;
+    }
+    if (this.stoOptimisticSpaceSubscription) {
+      this.stoOptimisticSpaceSubscription();
+      this.stoOptimisticSpaceSubscription = undefined;
+    }
   }
 
   private onSpaceUpdate(update: SpaceQueryWithPendingState): void {

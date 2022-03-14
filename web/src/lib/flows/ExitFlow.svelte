@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {timeToText} from '$lib//utils';
+  import {formatError, timeToText} from '$lib//utils';
   import Button from '$lib/components/generic/PanelButton.svelte';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import Modal from '$lib/components/generic/Modal.svelte';
@@ -14,7 +14,8 @@
   <Modal on:close={() => exitFlow.acknownledgeError()}>
     <div class="text-center">
       <h2>An error happenned</h2>
-      <p class="text-gray-300 mt-2 text-sm">{$exitFlow.error.message || $exitFlow.error}</p>
+      <p class="text-red-300 mt-2 text-sm">{formatError($exitFlow.error)}</p>
+      <!-- <p class="text-gray-300 mt-2 text-sm">{JSON.stringify($exitFlow.error?.data?.data)}</p> -->
       <Button class="mt-5" label="Stake" on:click={() => exitFlow.acknownledgeError()}>Ok</Button>
     </div>
   </Modal>
@@ -45,6 +46,8 @@
       <PanelButton class="mt-5" label="Exit" on:click={() => exitFlow.confirm()}>Confirm Exit</PanelButton>
     </p>
   </Modal>
+{:else if $exitFlow.step === 'CREATING_TX'}
+  <Modal>Preparing the Transaction...</Modal>
 {:else if $exitFlow.step === 'WAITING_TX'}
   <Modal closeButton={true} globalCloseButton={true} closeOnOutsideClick={false} on:close={() => exitFlow.cancel(true)}>
     Please Accept the Transaction...

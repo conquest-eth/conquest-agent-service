@@ -46,7 +46,6 @@
   import {showFleets} from '$lib/map/showFleets';
   import {showAlliances} from '$lib/map/showAlliances';
 
-
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
   // import {camera} from '$lib/map/camera';

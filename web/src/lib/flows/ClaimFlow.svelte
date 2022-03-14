@@ -8,11 +8,10 @@
   import {tokenAccount} from '$lib/account/token';
   import {BigNumber} from '@ethersproject/bignumber';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
-  import {timeToText} from '$lib/utils';
+  import {formatError, timeToText} from '$lib/utils';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
-  import {time} from '$lib/time';
 
   $: coords = $claimFlow.data?.coords;
   $: planetInfo = coords ? spaceInfo.getPlanetInfo(coords.x, coords.y) : undefined;
@@ -28,9 +27,22 @@
 {#if $claimFlow.error}
   <Modal on:close={() => claimFlow.acknownledgeError()}>
     <div class="text-center">
-      <h2>An error happenned</h2>
-      <p class="text-gray-300 mt-2 text-sm">{$claimFlow.error.message || $claimFlow.error}</p>
+      <h2>An error happenned For Planet Staking</h2>
+      <p class="text-red-500 mt-2 text-sm">{formatError($claimFlow.error)}</p>
       <Button class="mt-5" label="Stake" on:click={() => claimFlow.acknownledgeError()}>Ok</Button>
+    </div>
+  </Modal>
+{:else if $claimFlow.cancelingConfirmation}
+  <Modal
+    closeButton={true}
+    globalCloseButton={true}
+    on:close={() => claimFlow.cancelCancelation()}
+    on:confirm={() => claimFlow.cancel()}
+  >
+    <div class="text-center">
+      <p class="pb-4">Are you sure to cancel ?</p>
+      <p class="pb-4">(This will prevent the game to record your transaction, if you were to execute it afterward)</p>
+      <Button label="OK" on:click={() => claimFlow.cancel()}>Yes</Button>
     </div>
   </Modal>
 {:else if $claimFlow.step === 'CONNECTING'}
@@ -84,6 +96,18 @@
         </div>
       {/if}
     {/if}
+  </Modal>
+{:else if $claimFlow.step === 'CREATING_TX'}
+  <!-- {@debug $claimFlow} -->
+  <Modal>Preparing the Transaction...</Modal>
+{:else if $claimFlow.step === 'WAITING_TX'}
+  <Modal
+    closeButton={true}
+    globalCloseButton={true}
+    closeOnOutsideClick={false}
+    on:close={() => claimFlow.cancel(true)}
+  >
+    Please Accept the Transaction...
   </Modal>
 {:else if $claimFlow.step === 'PROFILE_INFO'}
   <Modal on:close={() => claimFlow.acknowledgeProfileSuggestion()}>

@@ -4,6 +4,7 @@ import {BaseStore} from '$lib/utils/stores/base';
 import {account} from '$lib/account/account';
 import {isCorrected, correctTime} from '$lib/time';
 import type {Fleet} from '$lib/space/fleets';
+import type {BigNumber} from '@ethersproject/bignumber';
 
 export type ResolveFlow = {
   type: 'RESOLVE';
@@ -25,14 +26,20 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
     this.setPartial({step: 'CREATING_TX', cancelingConfirmation: undefined});
 
     let nonce = fleet.sending.action.nonce;
-
     if (!nonce) {
       console.error('NO NONCE FOUND, fetching from transaciton hash');
-      const tx = await wallet.provider.getTransaction(fleet.sending.id);
 
-      // console.log(tx);
+      let tx: {nonce: number};
+      try {
+        tx = await wallet.provider.getTransaction(fleet.sending.id);
+      } catch (e) {
+        this.setPartial({
+          step: 'IDLE',
+          error: e,
+        });
+        return;
+      }
       nonce = tx.nonce;
-
       // TODO why the following was needed in one instance?
       // nonce = tx.nonce - 1;
     }
@@ -48,7 +55,17 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
       fleet.fleetSender,
       fleet.operator
     );
-    const latestBlock = await wallet.provider.getBlock('latest');
+
+    let latestBlock;
+    try {
+      latestBlock = await wallet.provider.getBlock('latest');
+    } catch (e) {
+      this.setPartial({
+        step: 'IDLE',
+        error: e,
+      });
+      return;
+    }
     if (!isCorrected) {
       // TODO extreact or remove (assume time will be corrected by then)
       correctTime(latestBlock.timestamp);
@@ -68,18 +85,43 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
       fleet,
     });
 
-    const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
+    // let currentGasPrice;
+    // try {
+    //   currentGasPrice = await wallet.provider.getGasPrice();
+    // } catch (e) {
+    //   this.setPartial({
+    //     step: 'IDLE',
+    //     error: e,
+    //   });
+    //   return;
+    // }
+    // const gasPrice = currentGasPrice.mul(2);
+    const gasPrice = undefined;
 
-    // TODO remove
-    let alliance = '0x0000000000000000000000000000000000000000';
-    if (fleet.gift) {
-      if (fleet.potentialAlliances) {
-        // TODO
-        alliance = '0x0000000000000000000000000000000000000001';
-      } else {
-        alliance = '0x0000000000000000000000000000000000000001';
-      }
+    let gasEstimation: BigNumber;
+    try {
+      gasEstimation = await wallet.contracts?.OuterSpace.estimateGas.resolveFleet(fleetData.fleetId, {
+        from: xyToLocation(fleet.from.location.x, fleet.from.location.y),
+        to: xyToLocation(fleet.to.location.x, fleet.to.location.y),
+        distance,
+        arrivalTimeWanted: fleet.arrivalTimeWanted,
+        secret: secretHash,
+        gift: fleet.gift,
+        specific: fleet.specific,
+        fleetSender: fleet.fleetSender || fleet.owner,
+        operator: fleet.operator || fleet.owner,
+      });
+    } catch (e) {
+      this.setPartial({
+        step: 'IDLE',
+        error: e,
+      });
+      return;
     }
+    // TODO gasEstimation for resolve
+    const gasLimit = gasEstimation.add(200000);
+
+    // const gasLimit = 1000000;
 
     this.setPartial({step: 'WAITING_TX'});
     try {
@@ -96,7 +138,7 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
           fleetSender: fleet.fleetSender || fleet.owner,
           operator: fleet.operator || fleet.owner,
         },
-        {gasPrice}
+        {gasPrice, gasLimit}
       );
       account.recordFleetResolvingTxhash(
         fleet.txHash,

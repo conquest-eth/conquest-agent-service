@@ -10,7 +10,6 @@ import {privateWallet} from './privateWallet';
 import {keccak256} from '@ethersproject/solidity';
 import type {MyEvent} from '$lib/space/myevents';
 import {now, time} from '$lib/time';
-import {BigNumber} from '@ethersproject/bignumber';
 import {wallet} from '$lib/blockchain/wallet';
 
 export type AccountState = {
@@ -31,6 +30,7 @@ type PendingActionBase = {
   acknowledged?: 'ERROR' | 'SUCCESS';
   acknowledgementTime?: number;
   external?: {status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT'; final?: number};
+  overrideTimestamp?: number;
 };
 
 export type PendingSend = PendingActionBase & {
@@ -227,7 +227,8 @@ class Account implements Readable<AccountState> {
     },
     txHash: string,
     timestamp: number,
-    nonce: number
+    nonce: number,
+    overrideTimestamp?: number
   ): Promise<void> {
     this.check();
     this.state.data.pendingActions[txHash] = {
@@ -245,6 +246,7 @@ class Account implements Readable<AccountState> {
       fleetSender: fleet.fleetSender,
       operator: fleet.operator,
       fleetOwner: fleet.owner,
+      overrideTimestamp,
     };
     await this.accountDB.save(this.state.data);
     this._notify();
@@ -449,8 +451,6 @@ class Account implements Readable<AccountState> {
         pendingAction.acknowledged = statusType;
         pendingAction.acknowledgementTime = now();
         if (sendAction) {
-          sendAction.acknowledged = statusType;
-          sendAction.acknowledgementTime = now();
           if (sendAction.resolution) {
             for (const resolutionId of sendAction.resolution) {
               const resolution = this.state.data.pendingActions[resolutionId];
@@ -472,17 +472,19 @@ class Account implements Readable<AccountState> {
     const action = this.state.data.pendingActions[txHash];
     if (action && typeof action !== 'number') {
       this.state.data.pendingActions[txHash] = timestamp;
-      if (action.type === 'RESOLUTION') {
-        for (const txHashToCheck of Object.keys(this.state.data.pendingActions)) {
-          const p = this.state.data.pendingActions[txHashToCheck];
-          if (typeof p !== 'number' && p.type === 'SEND') {
-            if (p.resolution && p.resolution.indexOf(txHash) !== -1) {
-              this.state.data.pendingActions[txHashToCheck] = timestamp;
-              break;
-            }
-          }
-        }
-      }
+      // TODO test
+      // this is not needed : we handle late resolution via acknolaedgeError final param
+      // if (action.type === 'RESOLUTION') {
+      //   for (const txHashToCheck of Object.keys(this.state.data.pendingActions)) {
+      //     const p = this.state.data.pendingActions[txHashToCheck];
+      //     if (typeof p !== 'number' && p.type === 'SEND') {
+      //       if (p.resolution && p.resolution.indexOf(txHash) !== -1) {
+      //         this.state.data.pendingActions[txHashToCheck] = timestamp;
+      //         break;
+      //       }
+      //     }
+      //   }
+      // }
       await this.accountDB.save(this.state.data);
       this._notify();
     }
@@ -658,10 +660,19 @@ class Account implements Readable<AccountState> {
           newDataOnRemote = true;
         } else {
           if (typeof pendingAction === 'number' && typeof remotePendingAction !== 'number') {
-            newDataOnLocal = true;
+            if (remotePendingAction.overrideTimestamp && remotePendingAction.overrideTimestamp > pendingAction) {
+              newDataOnRemote = true;
+              newData.pendingActions[txHash] = remotePendingAction;
+            } else {
+              newDataOnLocal = true;
+            }
           } else if (typeof pendingAction !== 'number' && typeof remotePendingAction === 'number') {
-            newDataOnRemote = true;
-            newData.pendingActions[txHash] = remotePendingAction;
+            if (pendingAction.overrideTimestamp && pendingAction.overrideTimestamp > remotePendingAction) {
+              newDataOnLocal = true;
+            } else {
+              newDataOnRemote = true;
+              newData.pendingActions[txHash] = remotePendingAction;
+            }
           } else if (typeof pendingAction !== 'number' && typeof remotePendingAction !== 'number') {
             if (pendingAction.acknowledged !== remotePendingAction.acknowledged) {
               if (

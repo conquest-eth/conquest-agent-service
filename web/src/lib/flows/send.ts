@@ -278,7 +278,16 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     const operator = flow.data.config?.contractAddress || walletAddress;
     const arrivalTimeWanted = flow.data.config?.arrivalTimeWanted || 0;
 
-    const latestBlock = await wallet.provider.getBlock('latest');
+    let latestBlock;
+    try {
+      latestBlock = await wallet.provider.getBlock('latest');
+    } catch (e) {
+      this.setPartial({
+        step: 'CHOOSE_FLEET_AMOUNT',
+        error: e,
+      });
+      return;
+    }
     if (!isCorrected) {
       // TODO extreact or remove (assume time will be corrected by then)
       correctTime(latestBlock.timestamp);
@@ -292,7 +301,15 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     const destinationPlanetState = get(planets.planetStateFor(toPlanetInfo));
     let destinationOwner: Player | undefined;
     if (destinationPlanetState.owner) {
-      await playersQuery.triggerUpdate();
+      try {
+        await playersQuery.triggerUpdate();
+      } catch (e) {
+        this.setPartial({
+          step: 'CHOOSE_FLEET_AMOUNT',
+          error: e,
+        });
+        return;
+      }
       const me = playersQuery.getPlayer(fleetOwner);
       destinationOwner = playersQuery.getPlayer(destinationPlanetState.owner);
       console.log({me, destinationOwner});
@@ -321,7 +338,16 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       // or switch to gifting based on a signature
     }
 
-    const nonce = await wallet.provider.getTransactionCount(walletAddress);
+    let nonce: number;
+    try {
+      nonce = await wallet.provider.getTransactionCount(walletAddress);
+    } catch (e) {
+      this.setPartial({
+        step: 'CHOOSE_FLEET_AMOUNT',
+        error: e,
+      });
+      return;
+    }
 
     const distance = spaceInfo.distance(fromPlanetInfo, toPlanetInfo);
     const minDuration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
@@ -353,7 +379,18 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       secretHash,
     });
 
-    const gasPrice = (await wallet.provider.getGasPrice()).mul(2);
+    // let currentGasPrice;
+    // try {
+    //   currentGasPrice = await wallet.provider.getGasPrice();
+    // } catch (e) {
+    //   this.setPartial({
+    //     step: 'IDLE',
+    //     error: e,
+    //   });
+    //   return;
+    // }
+    // const gasPrice = currentGasPrice.mul(2);
+    const gasPrice = undefined;
 
     // console.log({potentialAlliances});
 
@@ -382,11 +419,35 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       msgValue = BigNumber.from(msgValueString);
     }
 
-    this.setPartial({step: 'WAITING_TX'});
+    let gasEstimation: BigNumber;
+    try {
+      if (abi) {
+        // create a contract interface for the purchase call
+        const contract = new Contract(operator, [abi], wallet.provider.getSigner());
+        gasEstimation = await contract.estimateGas[abi.name](...args, {
+          value: msgValue,
+        });
+      } else {
+        gasEstimation = await wallet.contracts?.OuterSpace.estimateGas.sendFor({
+          fleetSender,
+          fleetOwner,
+          from: xyToLocation(from.x, from.y),
+          quantity: fleetAmount,
+          toHash,
+        });
+      }
+    } catch (e) {
+      this.setPartial({
+        step: 'CHOOSE_FLEET_AMOUNT',
+        error: e,
+      });
+      return;
+    }
+    // TODO gasEstimation for SEND
+    const gasLimit = gasEstimation.add(100000);
 
-    // TODO type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let tx: any;
+    this.setPartial({step: 'WAITING_TX'});
+    let tx: {hash: string; nonce: number};
     try {
       if (abi) {
         // create a contract interface for the purchase call
@@ -395,6 +456,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
           nonce,
           gasPrice,
           value: msgValue,
+          gasLimit,
         });
       } else {
         tx = await wallet.contracts?.OuterSpace.sendFor(
@@ -408,6 +470,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
           {
             nonce,
             gasPrice,
+            gasLimit,
           }
         );
         // tx = await wallet.contracts?.OuterSpace.send(xyToLocation(from.x, from.y), fleetAmount, toHash, {
