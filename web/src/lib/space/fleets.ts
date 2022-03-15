@@ -236,7 +236,7 @@ export class FleetsStore implements Readable<FleetListState> {
       console.log(`still loading some fleets`);
     } else {
       this.state.step = 'LOADED';
-      console.log(`no more loading of fleets`);
+      // console.log(`no more loading of fleets`);
     }
 
     this.store.set(this.state);
