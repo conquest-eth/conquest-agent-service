@@ -256,7 +256,7 @@ animation-timing-function: linear;
   </svg>
 {/if}
 <!-- TODO zoom -->
-{#if ($fleetselection && $fleetselection.txHash == fleet.txHash) || ($camera && $camera.zoom > 60)}
+{#if ($fleetselection && $fleetselection.txHash == fleet.txHash) || ($camera && $camera.width * $camera.height < 1024)}
   <!-- svelte-ignore a11y-mouse-events-have-key-events -->
   <div
     class="w-32 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300"
