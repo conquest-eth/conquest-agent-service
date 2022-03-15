@@ -9,6 +9,7 @@
   import {spaceInfo} from '$lib/space/spaceInfo';
   import {now, time} from '$lib/time';
   import {timeToText} from '$lib/utils';
+  import Coord from '../utils/Coord.svelte';
   export let fleet: Fleet;
   export let actionAvailable: boolean;
 
@@ -50,13 +51,19 @@
   }
 
   function forget() {
-    account.markAsFullyAcknwledged(fleet.sending.id, now());
+    // account.markAsFullyAcknwledged(fleet.sending.id, now()); ?/ TODO thrid param succes ?
   }
 </script>
 
 <p>
-  fleets of {fleet.quantity} spaceships sent from {from.stats.name} ({from.location.x},{from.location.y}) to reach {to
-    .stats.name} ({to.location.x},{to.location.y}) in {timeToText(timeLeft)}
+  fleets of {fleet.quantity} spaceships sent from {from.stats.name}
+  <Coord location={from.location.id} /> to reach {to.stats.name}
+  <Coord location={to.location.id} />
+  {#if timeLeft >= 0}
+    in {timeToText(timeLeft)}
+  {:else}
+    ({timeToText(spaceInfo.resolveWindow + timeLeft)} left to resolve)
+  {/if}
   {#if fleet.resolution}
     (tx to resolve on its way...)
   {/if}

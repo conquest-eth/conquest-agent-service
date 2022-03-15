@@ -121,57 +121,24 @@ export class MyEventsStore implements Readable<MyEvent[]> {
     for (const event of events) {
       const eventId = event.id;
       const acknowledgment = this.acknowledgements && this.acknowledgements[eventId];
-      if (event.type === 'internal_fleet' || event.type === 'external_fleet') {
-        if (!acknowledgment) {
-          if (event.type === 'internal_fleet') {
-            const pendingAction =
-              this.pendingActions && (this.pendingActions[event.event.transaction.id] || this.pendingActions[eventId]);
-            if (!pendingAction) {
-              event.acknowledged = 'YES';
-              // const pendingAction = this.pendingActions && this.pendingActions[event.event.transaction.id];
-              // if (!pendingAction) {
-              //   event.acknowledged = 'YES';
-              //   for (const txId of Object.keys(this.pendingActions)) {
-              //     const pendingAction = this.pendingActions[txId];
-              //     if (typeof pendingAction !== 'number') {
-              //       if (pendingAction.type === 'SEND' && !pendingAction.resolution) {
-              //         if (pendingAction.fleetId === fleetId) {
-              //           event.acknowledged = 'NO';
-              //         }
-              //       }
-              //     }
-              //   }
-            } else if (typeof pendingAction === 'number') {
-              event.acknowledged = 'YES';
-            } else if (pendingAction.acknowledged) {
-              event.acknowledged = 'YES';
-            } else {
-              event.acknowledged = 'NO';
-            }
-          } else {
-            event.acknowledged = 'NO';
-          }
-        } else {
-          const eventStateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won;
-          if (acknowledgment.stateHash !== eventStateHash) {
-            event.acknowledged = 'UPDATED_SINCE';
-          } else {
-            event.acknowledged = 'YES';
-          }
+      if (!acknowledgment) {
+        event.acknowledged = 'NO';
+      } else {
+        let eventStateHash;
+        if (event.type === 'internal_fleet' || event.type === 'external_fleet') {
+          eventStateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won;
+        } else if (event.type === 'exit_complete') {
+          eventStateHash = `${event.interupted}`;
         }
-      } else if (event.type === 'exit_complete') {
-        if (!acknowledgment) {
-          event.acknowledged = 'NO';
+
+        if (acknowledgment.stateHash !== eventStateHash) {
+          event.acknowledged = 'UPDATED_SINCE';
         } else {
-          const eventStateHash = `${event.interupted}`;
-          if (acknowledgment.stateHash !== eventStateHash) {
-            event.acknowledged = 'UPDATED_SINCE';
-          } else {
-            event.acknowledged = 'YES';
-          }
+          event.acknowledged = 'YES';
         }
       }
     }
+
     // TODO should we include all and filter in UI instead ?
     return events.filter((v) => v.acknowledged !== 'YES').sort((a, b) => a.event.timestamp - b.event.timestamp);
   }

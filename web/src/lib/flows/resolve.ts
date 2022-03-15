@@ -141,6 +141,7 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
         {gasPrice, gasLimit}
       );
       account.recordFleetResolvingTxhash(
+        fleetData.fleetId,
         fleet.txHash,
         tx.hash,
         fleet.to.location,

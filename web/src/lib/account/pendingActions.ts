@@ -1,6 +1,6 @@
 import {writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
-import type {AccountState, PendingAction, PendingSend} from './account';
+import type {AccountState, PendingAction, PendingResolution, PendingSend} from './account';
 import {account} from './account';
 import type {ChainTempoInfo} from '$lib/blockchain/chainTempo';
 import {chainTempo} from '$lib/blockchain/chainTempo';
@@ -150,6 +150,13 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
           } catch (e) {
             console.error(e);
           }
+        } else {
+          if (item.action.type === 'RESOLUTION' && item.action.fleetId) {
+            if (account.getAcknowledgement(item.action.fleetId)) {
+              // TODO should wait final or call _checkResolutionViaSend and check finality
+              await account.markAsFullyAcknwledged(item.id, now());
+            }
+          }
         }
         continue;
       }
@@ -181,29 +188,49 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     this.checkingInProgress = false;
   }
 
-  private _handleFinalAcknowledgement(
+  private async _handleFinalAcknowledgement(
     checkedAction: CheckedPendingAction,
     timestamp: number,
     finalStatus: 'SUCCESS' | 'ERROR'
-  ) {
+  ): Promise<boolean> {
     if (now() - timestamp > deletionDelay) {
       console.log(`delay over, deleting ${checkedAction.id}`);
-      account.deletePendingAction(checkedAction.id);
+      await account.deletePendingAction(checkedAction.id);
+      return true;
     } else {
       if (checkedAction.action.acknowledged) {
         if (checkedAction.action.acknowledged !== finalStatus) {
           console.log(`cancel acknowledgement as not matching new status ${checkedAction.id}`);
           console.log({type: checkedAction.action.type, acknowledged: checkedAction.action.acknowledged, finalStatus});
           console.log(checkedAction);
-          account.cancelAcknowledgment(checkedAction.id);
+          await account.cancelActionAcknowledgment(checkedAction.id);
+          return true;
         } else if (typeof checkedAction.action !== 'number') {
           console.log(`acknowledgedment final for ${checkedAction.id}`);
-          account.markAsFullyAcknwledged(checkedAction.id, timestamp);
+          await account.markAsFullyAcknwledged(checkedAction.id, timestamp);
+          return true;
+        }
+      } else if (finalStatus === 'SUCCESS') {
+        if (checkedAction.action.type === 'SEND') {
+          if (account.getAcknowledgement(checkedAction.action.fleetId)) {
+            await account.markAsFullyAcknwledged(checkedAction.id, now());
+            return true;
+          }
+        } else if (checkedAction.action.type === 'RESOLUTION') {
+          if (account.getAcknowledgement(checkedAction.action.fleetId)) {
+            await account.markAsFullyAcknwledged(checkedAction.id, now());
+            return true;
+          }
+        } else {
+          // auto resolve all success
+          await account.markAsFullyAcknwledged(checkedAction.id, now());
+          return true;
         }
       } else {
         // console.log(`not acknowledged yet`);
       }
     }
+    return false;
   }
 
   private async _checkResolutionViaSend(
@@ -219,7 +246,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
       return;
     }
 
-    if (checkedAction.status === 'SUCCESS' && checkedAction.final) {
+    if (checkedAction.status === 'SUCCESS' && checkedAction.final && checkedAction.action.acknowledged !== 'SUCCESS') {
       if (checkedAction.action.actualLaunchTime) {
         // TODO store minDuration in the pendingAction (PendingSend) so as not to need to compute it here?
         const fromPlanetInfo = spaceInfo.getPlanetInfo(checkedAction.action.from.x, checkedAction.action.from.y);
@@ -255,7 +282,6 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
       }
     }
   }
-
   private async _checkAction(ownerAddress: string, checkedAction: CheckedPendingAction, blockNumber: number) {
     if (!wallet.provider) {
       console.log('provider not available....');
@@ -274,7 +300,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
       (checkedAction.action.external || (checkedAction.status !== 'PENDING' && checkedAction.status !== 'LOADING'))
     ) {
       const status = checkedAction.status === 'SUCCESS' ? 'SUCCESS' : 'ERROR';
-      this._handleFinalAcknowledgement(checkedAction, checkedAction.final, status);
+      await this._handleFinalAcknowledgement(checkedAction, checkedAction.final, status);
       return;
     }
 
@@ -283,9 +309,12 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     const txFromPeers = await wallet.provider.getTransaction(checkedAction.id);
     let pending = true;
     if (txFromPeers) {
+      let receipt;
       if (txFromPeers.blockNumber) {
+        receipt = await wallet.provider.getTransactionReceipt(checkedAction.id);
+      }
+      if (receipt) {
         pending = false;
-        const receipt = await wallet.provider.getTransactionReceipt(checkedAction.id);
         const block = await wallet.provider.getBlock(txFromPeers.blockHash);
         const final = receipt.confirmations >= finality;
         if (receipt.status === 0) {
@@ -294,9 +323,9 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
             checkedAction.txTimestamp = block.timestamp;
             changes = true;
             checkedAction.final = final ? block.timestamp : undefined;
-            if (final) {
-              this._handleFinalAcknowledgement(checkedAction, block.timestamp, 'ERROR');
-            }
+          }
+          if (final) {
+            await this._handleFinalAcknowledgement(checkedAction, block.timestamp, 'ERROR');
           }
         } else {
           if (checkedAction.status !== 'SUCCESS' || checkedAction.final !== block.timestamp) {
@@ -304,9 +333,9 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
             checkedAction.txTimestamp = block.timestamp;
             changes = true;
             checkedAction.final = final ? block.timestamp : undefined;
-            if (final) {
-              this._handleFinalAcknowledgement(checkedAction, txFromPeers.timestamp, 'ERROR');
-            }
+          }
+          if (final) {
+            await this._handleFinalAcknowledgement(checkedAction, txFromPeers.timestamp, 'SUCCESS');
           }
         }
       }
@@ -326,7 +355,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         if (checkedAction.status !== 'CANCELED' || checkedAction.final !== checkedAction.action.timestamp) {
           checkedAction.status = 'CANCELED';
           checkedAction.final = checkedAction.action.timestamp;
-          this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'ERROR');
+          await this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'ERROR');
           changes = true;
         }
       }
@@ -338,7 +367,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         if (checkedAction.status !== 'TIMEOUT' || checkedAction.final !== checkedAction.action.timestamp) {
           checkedAction.status = 'TIMEOUT';
           checkedAction.final = checkedAction.action.timestamp;
-          this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'ERROR');
+          await this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'ERROR');
           changes = true;
         }
       } else {

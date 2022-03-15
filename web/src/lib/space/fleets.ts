@@ -127,9 +127,11 @@ export class FleetsStore implements Readable<FleetListState> {
             }
           } else if (pendingAction.status === 'LOADING') {
             state = 'LOADING';
+            // console.log(`still loading some fleets ${pendingAction.id}`);
             loading = true;
           }
 
+          let resolved = false;
           let resolution: SyncedPendingAction | undefined;
           if (sendAction.resolution) {
             // console.log('RESOLUTION', sendAction.resolution);
@@ -140,24 +142,41 @@ export class FleetsStore implements Readable<FleetListState> {
                 break;
               }
             }
-            if (pendingResolution) {
-              resolution = pendingResolution;
 
-              if (!(resolution.status === 'FAILURE' && resolution.action.acknowledged)) {
-                state = 'RESOLVE_BROADCASTED';
+            // if (!pendingResolution) {
+            //   let rawPendingResolutionAction;
+            //   for (const reso of sendAction.resolution) {
+            //     rawPendingResolutionAction = account.getPendingAction(reso);
+            //     if (rawPendingResolutionAction) {
+            //       break;
+            //     }
+            //   }
+            //   if (typeof rawPendingResolutionAction === 'number') {
+            //     resolved = true;
+            //   }
+            // }
 
-                if (resolution.status === 'SUCCESS' && resolution.action.acknowledged) {
-                  continue; // alterady acknowledged
+            if (!resolved) {
+              if (pendingResolution) {
+                resolution = pendingResolution;
+
+                if (!(resolution.status === 'FAILURE' && resolution.action.acknowledged)) {
+                  state = 'RESOLVE_BROADCASTED';
+
+                  if (resolution.status === 'SUCCESS' && resolution.action.acknowledged) {
+                    continue; // alterady acknowledged
+                  }
+
+                  if (resolution.status === 'SUCCESS' || resolution.counted) {
+                    // TODO error
+                    state = 'WAITING_ACKNOWLEDGMENT';
+                    // continue; // acknowledgement go through events // TODO enable even though but should be required
+                  }
                 }
-
-                if (resolution.status === 'SUCCESS' || resolution.counted) {
-                  // TODO error
-                  state = 'WAITING_ACKNOWLEDGMENT';
-                  // continue; // acknowledgement go through events // TODO enable even though but should be required
-                }
+              } else {
+                // TODO error ?
               }
-            } else {
-              // TODO error ?
+              resolved = resolution ? resolution.status === 'SUCCESS' && !!resolution.action.acknowledged : false;
             }
           } else if (
             state === 'READY_TO_RESOLVE' &&
@@ -169,24 +188,23 @@ export class FleetsStore implements Readable<FleetListState> {
             state = 'RESOLVE_BROADCASTED'; //TODO add another state for agent-service handling
           }
 
-          const gift = sendAction.gift;
-          if (gift) {
-            if (sendAction.specific === '0x0000000000000000000000000000000000000001') {
-              // if ()
-              // TODO make gift based on current destination owner
-            }
-            // TODO other
-          } else {
-            if (sendAction.specific === '0x0000000000000000000000000000000000000001') {
-              // TODO make gift based on current destination owner
-            } else if (sendAction.specific === '0x0000000000000000000000000000000000000000') {
-              // never gift // except if destination is you
-            }
-            // other
-          }
-
           // console.log({state})
-          if (!(resolution && resolution.status === 'SUCCESS' && resolution.action.acknowledged)) {
+          if (!resolved) {
+            const gift = sendAction.gift;
+            if (gift) {
+              if (sendAction.specific === '0x0000000000000000000000000000000000000001') {
+                // if ()
+                // TODO make gift based on current destination owner
+              }
+              // TODO other
+            } else {
+              if (sendAction.specific === '0x0000000000000000000000000000000000000001') {
+                // TODO make gift based on current destination owner
+              } else if (sendAction.specific === '0x0000000000000000000000000000000000000000') {
+                // never gift // except if destination is you
+              }
+              // other
+            }
             this.state.fleets.push({
               txHash: pendingAction.id, // TODO better id
               from,
@@ -215,8 +233,10 @@ export class FleetsStore implements Readable<FleetListState> {
 
     if (loading) {
       this.state.step = 'LOADING';
+      console.log(`still loading some fleets`);
     } else {
       this.state.step = 'LOADED';
+      console.log(`no more loading of fleets`);
     }
 
     this.store.set(this.state);

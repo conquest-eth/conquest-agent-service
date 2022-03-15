@@ -27,9 +27,9 @@ type PendingActionBase = {
   txOrigin?: string; // used if the controller is not owner
   timestamp: number;
   nonce: number;
-  acknowledged?: 'ERROR' | 'SUCCESS';
+  acknowledged?: 'ERROR' | 'SUCCESS'; // SUCCESS is that ever used ?
   acknowledgementTime?: number;
-  external?: {status: 'SUCCESS' | 'FAILURE' | 'LOADING' | 'PENDING' | 'CANCELED' | 'TIMEOUT'; final?: number};
+  external?: {status: 'SUCCESS'; final?: number};
   overrideTimestamp?: number;
 };
 
@@ -54,6 +54,7 @@ export type PendingSend = PendingActionBase & {
 export type PendingResolution = PendingActionBase & {
   type: 'RESOLUTION';
   to: PlanetCoords;
+  fleetId: string;
 };
 
 export type PendingExit = PendingActionBase & {
@@ -265,6 +266,7 @@ class Account implements Readable<AccountState> {
   }
 
   async recordFleetResolvingTxhash(
+    fleetId,
     sendTxHash: string,
     txHash: string,
     to: {x: number; y: number},
@@ -279,6 +281,7 @@ class Account implements Readable<AccountState> {
       timestamp,
       nonce,
       to,
+      fleetId,
     };
     await this.accountDB.save(this.state.data);
     // TODO agent ?
@@ -296,26 +299,40 @@ class Account implements Readable<AccountState> {
     if (typeof sendAction === 'number') {
       return;
     }
+    let changes = false;
     if (sendAction.resolution) {
-      if (sendAction.resolution.indexOf(fleetId) !== -1) {
-        return;
+      if (sendAction.resolution.indexOf(fleetId) === -1) {
+        sendAction.resolution.push(fleetId);
+        changes = true;
       }
-      sendAction.resolution.push(fleetId);
     } else {
       sendAction.resolution = [fleetId];
+      changes = true;
     }
-    if (!this.state.data.pendingActions[fleetId]) {
-      const resolutionAction: PendingResolution = {
-        type: 'RESOLUTION',
-        external: {status: 'SUCCESS', final},
-        timestamp: final,
-        to,
-        nonce: 0,
-      };
-      this.state.data.pendingActions[fleetId] = resolutionAction;
+    const existing = this.state.data.pendingActions[fleetId];
+    if (typeof existing !== 'number') {
+      if (!existing) {
+        const resolutionAction: PendingResolution = {
+          type: 'RESOLUTION',
+          external: {status: 'SUCCESS', final},
+          timestamp: final,
+          to,
+          nonce: 0,
+          fleetId,
+        };
+        this.state.data.pendingActions[fleetId] = resolutionAction;
+        changes = true;
+      } else {
+        if (!existing.external?.final || existing.external?.final < final) {
+          existing.external = {status: 'SUCCESS', final};
+          changes = true;
+        }
+      }
     }
-    await this.accountDB.save(this.state.data);
-    this._notify();
+    if (changes) {
+      await this.accountDB.save(this.state.data);
+      this._notify();
+    }
   }
 
   async recordExit(
@@ -346,7 +363,7 @@ class Account implements Readable<AccountState> {
     this._notify();
   }
 
-  async cancelAcknowledgment(txHash: string): Promise<void> {
+  async cancelActionAcknowledgment(txHash: string): Promise<void> {
     this.check();
     const action = this.state.data.pendingActions[txHash];
     if (action && typeof action !== 'number') {
@@ -357,44 +374,36 @@ class Account implements Readable<AccountState> {
     }
   }
 
+  getAcknowledgement(id: string): Acknowledgement | undefined {
+    return this.state.data?.acknowledgements && this.state.data?.acknowledgements[id];
+  }
+
+  getPendingAction(id: string): PendingAction | number {
+    return this.state.data?.pendingActions && this.state.data?.pendingActions[id];
+  }
+
   async acknowledgeEvent(event: MyEvent): Promise<void> {
+    this.check();
     const eventId = event.id;
-    if (event.type === 'internal_fleet') {
-      this.acknowledgeSuccess(event.event.transaction.id, eventId);
-    } else if (event.type === 'external_fleet') {
-      this.check();
-      const stateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won; // TODO ensure we use same stateHash across code paths
-      const acknowledgement = this.state.data?.acknowledgements[eventId];
-      if (!acknowledgement) {
-        this.state.data.acknowledgements[eventId] = {
-          timestamp: now(),
-          stateHash,
-        };
-        await this.accountDB.save(this.state.data);
-        this._notify();
-      } else if (acknowledgement.stateHash !== stateHash) {
-        acknowledgement.timestamp = now();
-        acknowledgement.stateHash = stateHash;
-        await this.accountDB.save(this.state.data);
-        this._notify();
-      }
+    let eventStateHash;
+    if (event.type === 'external_fleet' || event.type === 'internal_fleet') {
+      eventStateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won; // TODO ensure we use same stateHash across code paths
     } else if (event.type === 'exit_complete') {
-      this.check();
-      const stateHash = `${event.interupted}`; // TODO ensure we use same stateHash across code paths
-      const acknowledgement = this.state.data?.acknowledgements[eventId];
-      if (!acknowledgement) {
-        this.state.data.acknowledgements[eventId] = {
-          timestamp: now(),
-          stateHash,
-        };
-        await this.accountDB.save(this.state.data);
-        this._notify();
-      } else if (acknowledgement.stateHash !== stateHash) {
-        acknowledgement.timestamp = now();
-        acknowledgement.stateHash = stateHash;
-        await this.accountDB.save(this.state.data);
-        this._notify();
-      }
+      eventStateHash = `${event.interupted}`; // TODO ensure we use same stateHash across code paths
+    }
+    const acknowledgement = this.state.data?.acknowledgements[eventId];
+    if (!acknowledgement) {
+      this.state.data.acknowledgements[eventId] = {
+        timestamp: now(),
+        stateHash: eventStateHash,
+      };
+      await this.accountDB.save(this.state.data);
+      this._notify();
+    } else if (acknowledgement.stateHash !== eventStateHash) {
+      acknowledgement.timestamp = now();
+      acknowledgement.stateHash = eventStateHash;
+      await this.accountDB.save(this.state.data);
+      this._notify();
     }
   }
 
@@ -413,58 +422,17 @@ class Account implements Readable<AccountState> {
     final?: number
   ): Promise<void> {
     this.check();
-    let idUsed = txHash;
-    let pendingAction = this.state.data.pendingActions[txHash];
-    if (!pendingAction) {
-      pendingAction = this.state.data.pendingActions[fleetId];
-      idUsed = fleetId;
-    }
+    const pendingAction = this.state.data.pendingActions[txHash];
     if (pendingAction && typeof pendingAction !== 'number') {
-      let sendAction: PendingSend;
-      let sendActionTxHash: string;
-      if (statusType === 'SUCCESS' && pendingAction.type === 'RESOLUTION') {
-        for (const txHashToCheck of Object.keys(this.state.data.pendingActions)) {
-          const p = this.state.data.pendingActions[txHashToCheck];
-          if (typeof p !== 'number' && p.type === 'SEND') {
-            if (p.resolution && p.resolution.indexOf(idUsed) !== -1) {
-              sendAction = p;
-              sendActionTxHash = txHashToCheck;
-              break;
-            }
-          }
-        }
-      }
-      // if (!sendAction || !sendActionTxHash) {
-      //   console.error(`cannot find send action for resolution`);
-      // }
       if (final) {
-        this.state.data.pendingActions[idUsed] = final;
-        if (sendAction) {
-          this.state.data.pendingActions[sendActionTxHash] = final;
-          if (sendAction.resolution) {
-            for (const resolution of sendAction.resolution) {
-              this.state.data.pendingActions[resolution] = final;
-            }
-          }
-        }
+        this.state.data.pendingActions[txHash] = final;
       } else {
         pendingAction.acknowledged = statusType;
         pendingAction.acknowledgementTime = now();
-        if (sendAction) {
-          if (sendAction.resolution) {
-            for (const resolutionId of sendAction.resolution) {
-              const resolution = this.state.data.pendingActions[resolutionId];
-              if (resolution && typeof resolution !== 'number') {
-                resolution.acknowledged = statusType;
-                resolution.acknowledgementTime = now();
-              }
-            }
-          }
-        }
       }
+      await this.accountDB.save(this.state.data);
+      this._notify();
     }
-    await this.accountDB.save(this.state.data);
-    this._notify();
   }
 
   async markAsFullyAcknwledged(txHash: string, timestamp: number): Promise<void> {
@@ -472,19 +440,6 @@ class Account implements Readable<AccountState> {
     const action = this.state.data.pendingActions[txHash];
     if (action && typeof action !== 'number') {
       this.state.data.pendingActions[txHash] = timestamp;
-      // TODO test
-      // this is not needed : we handle late resolution via acknolaedgeError final param
-      // if (action.type === 'RESOLUTION') {
-      //   for (const txHashToCheck of Object.keys(this.state.data.pendingActions)) {
-      //     const p = this.state.data.pendingActions[txHashToCheck];
-      //     if (typeof p !== 'number' && p.type === 'SEND') {
-      //       if (p.resolution && p.resolution.indexOf(txHash) !== -1) {
-      //         this.state.data.pendingActions[txHashToCheck] = timestamp;
-      //         break;
-      //       }
-      //     }
-      //   }
-      // }
       await this.accountDB.save(this.state.data);
       this._notify();
     }
@@ -500,21 +455,6 @@ class Account implements Readable<AccountState> {
         this._notify();
       }
     }
-  }
-
-  async acknowledgeActionFailure(txHash: string, final?: number): Promise<void> {
-    this.check();
-    const pendingAction = this.state.data.pendingActions[txHash];
-    if (pendingAction && typeof pendingAction !== 'number') {
-      if (final) {
-        this.state.data.pendingActions[txHash] = final;
-      } else {
-        pendingAction.acknowledged = 'ERROR';
-        pendingAction.acknowledgementTime = now();
-      }
-    }
-    await this.accountDB.save(this.state.data);
-    this._notify();
   }
 
   private check() {
