@@ -13,7 +13,7 @@ function LOCAL_STORAGE_KEY(address: string, chainId: string) {
 
 export type SyncingState<T> = {
   data?: T;
-  syncing: boolean;
+  // syncing: boolean;
   remoteFetchedAtLeastOnce: boolean;
   remoteSyncEnabled: boolean;
   error?: unknown;
@@ -37,7 +37,12 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     private merge: (localData?: T, remoteData?: T) => {newData: T; newDataOnLocal: boolean; newDataOnRemote: boolean},
     remoteSyncEnabled: boolean
   ) {
-    this.state = {data: undefined, syncing: false, remoteFetchedAtLeastOnce: false, remoteSyncEnabled};
+    this.state = {
+      data: undefined,
+      // syncing: false,
+      remoteFetchedAtLeastOnce: false,
+      remoteSyncEnabled,
+    };
     this.store = writable(this.state);
   }
 
@@ -68,7 +73,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     this.state.data = data;
     const notified = await this._syncLocal();
     if (!notified) {
-      this._notify();
+      this._notify('save');
     }
 
     console.log(`SYNC: _syncLater after save`);
@@ -78,7 +83,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
   async requestSync(): Promise<void> {
     const notified = await this._syncLocal();
     if (!notified) {
-      this._notify();
+      this._notify('requestSync');
     }
     this._syncRemote();
   }
@@ -101,8 +106,8 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
       this._postToRemote(this.state.data, counter);
     }
 
-    this.state.syncing = false;
-    this._notify();
+    // this.state.syncing = false;
+    this._notify('clearData');
   }
 
   private async _syncRemote(): Promise<void> {
@@ -110,8 +115,8 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     if (!this.state.remoteSyncEnabled) {
       return;
     }
-    this.state.syncing = true;
-    this._notify();
+    // this.state.syncing = true;
+    // this._notify('_syncRemote, syncing: true');
 
     let error: unknown | undefined = undefined;
     let remoteData: T;
@@ -131,7 +136,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
         this.state.data = newData;
         const notified = await this._syncLocal();
         if (!notified) {
-          this._notify();
+          this._notify('_syncRemote, _syncLocal');
         }
       }
       if (newDataOnLocal) {
@@ -140,8 +145,8 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
       this.state.remoteFetchedAtLeastOnce = true;
     }
 
-    this.state.syncing = false;
-    this._notify();
+    // this.state.syncing = false;
+    // this._notify('_syncRemote, syncing: false');
   }
 
   private async _syncLocal(): Promise<boolean> {
@@ -153,7 +158,7 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     }
     if (newDataOnRemote) {
       this.state.data = newData;
-      this._notify();
+      this._notify('_syncLocal: newDataOnRemote');
       notified = true;
     }
     if (newDataOnLocal) {
@@ -279,7 +284,8 @@ export class AccountDB<T extends Record<string, unknown>> implements Readable<Sy
     return decompressFromUint8Array(decryptedBytes) || ''; // return aes.utils.utf8.fromBytes(decryptedBytes);
   }
 
-  private _notify(): void {
+  private _notify(message: string): void {
+    console.log(`AccountDB:notify: ${message}`);
     this.store.set(this.state);
   }
 }

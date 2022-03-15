@@ -15,7 +15,6 @@ import {wallet} from '$lib/blockchain/wallet';
 export type AccountState = {
   step: 'IDLE' | 'READY';
   data?: AccountData;
-  syncing: boolean;
   remoteDisabledOrSynced: boolean;
   syncError?: unknown;
   ownerAddress?: string;
@@ -26,6 +25,7 @@ type PlanetCoords = {x: number; y: number};
 type PendingActionBase = {
   txOrigin?: string; // used if the controller is not owner
   timestamp: number;
+  final?: {status: 'SUCCESS' | 'FAILURE' | 'CANCELED' | 'TIMEOUT'; timestamp: number};
   nonce: number;
   acknowledged?: 'ERROR' | 'SUCCESS'; // SUCCESS is that ever used ?
   acknowledgementTime?: number;
@@ -131,7 +131,6 @@ class Account implements Readable<AccountState> {
     this.state = {
       step: 'IDLE',
       data: undefined,
-      syncing: false,
       remoteDisabledOrSynced: false,
     };
     this.store = writable(this.state, this._start.bind(this));
@@ -160,7 +159,7 @@ class Account implements Readable<AccountState> {
     this.state.data.agentServiceDefault.activated = activated;
     this.state.data.agentServiceDefault.timestamp = now();
     await this.accountDB.save(this.state.data);
-    this._notify();
+    this._notify('recordAgentServiceDefault');
   }
 
   isAgentServiceActivatedByDefault(): boolean {
@@ -176,7 +175,7 @@ class Account implements Readable<AccountState> {
       planetCoords: {...planetCoords},
     };
     await this.accountDB.save(this.state.data);
-    this._notify();
+    this._notify('recordCapture');
   }
 
   async hashFleet(
@@ -250,7 +249,7 @@ class Account implements Readable<AccountState> {
       overrideTimestamp,
     };
     await this.accountDB.save(this.state.data);
-    this._notify();
+    this._notify('recordFleet');
   }
 
   async recordFleetLaunchTime(txHash: string, launchTime: number): Promise<void> {
@@ -285,7 +284,7 @@ class Account implements Readable<AccountState> {
     };
     await this.accountDB.save(this.state.data);
     // TODO agent ?
-    this._notify();
+    this._notify('recordFleetResolvingTxhash');
   }
 
   async recordExternalResolution(
@@ -331,7 +330,7 @@ class Account implements Readable<AccountState> {
     }
     if (changes) {
       await this.accountDB.save(this.state.data);
-      this._notify();
+      this._notify('recordExternalResolution');
     }
   }
 
@@ -350,7 +349,7 @@ class Account implements Readable<AccountState> {
     };
     await this.accountDB.save(this.state.data);
     // TODO agent ?
-    this._notify();
+    this._notify('recordExit');
   }
 
   async deletePendingAction(txHash: string): Promise<void> {
@@ -360,7 +359,7 @@ class Account implements Readable<AccountState> {
     }
     delete this.state.data.pendingActions[txHash];
     await this.accountDB.save(this.state.data);
-    this._notify();
+    this._notify('deletePendingAction');
   }
 
   async cancelActionAcknowledgment(txHash: string): Promise<void> {
@@ -370,7 +369,7 @@ class Account implements Readable<AccountState> {
       action.acknowledged = undefined;
       action.acknowledgementTime = now();
       await this.accountDB.save(this.state.data);
-      this._notify();
+      this._notify('cancelActionAcknowledgment');
     }
   }
 
@@ -398,12 +397,12 @@ class Account implements Readable<AccountState> {
         stateHash: eventStateHash,
       };
       await this.accountDB.save(this.state.data);
-      this._notify();
+      this._notify('acknowledgeEvent new');
     } else if (acknowledgement.stateHash !== eventStateHash) {
       acknowledgement.timestamp = now();
       acknowledgement.stateHash = eventStateHash;
       await this.accountDB.save(this.state.data);
-      this._notify();
+      this._notify('acknowledgeEvent changed');
     }
   }
 
@@ -431,7 +430,21 @@ class Account implements Readable<AccountState> {
         pendingAction.acknowledgementTime = now();
       }
       await this.accountDB.save(this.state.data);
-      this._notify();
+      this._notify('acknowledgeAction');
+    }
+  }
+
+  async recordTxActionAsFinal(
+    txHash: string,
+    statusType: 'SUCCESS' | 'FAILURE' | 'CANCELED' | 'TIMEOUT',
+    final: number
+  ): Promise<void> {
+    this.check();
+    const pendingAction = this.state.data.pendingActions[txHash];
+    if (pendingAction && typeof pendingAction !== 'number' && !pendingAction.final) {
+      pendingAction.final = {timestamp: final, status: statusType};
+      await this.accountDB.save(this.state.data);
+      this._notify('recordTxActionAsFinal');
     }
   }
 
@@ -441,7 +454,7 @@ class Account implements Readable<AccountState> {
     if (action && typeof action !== 'number') {
       this.state.data.pendingActions[txHash] = timestamp;
       await this.accountDB.save(this.state.data);
-      this._notify();
+      this._notify('markAsFullyAcknwledged');
     }
   }
 
@@ -452,7 +465,7 @@ class Account implements Readable<AccountState> {
       if (pendingAction.queueID !== queueID) {
         pendingAction.queueID = queueID;
         await this.accountDB.save(this.state.data);
-        this._notify();
+        this._notify('recordQueueID');
       }
     }
   }
@@ -484,7 +497,7 @@ class Account implements Readable<AccountState> {
       this.state.step = 'IDLE';
       this.state.data = undefined;
       this.state.ownerAddress = $privateWallet.ownerAddress;
-      this._notify();
+      this._notify('_handlePrivateWalletChange not READY');
       return;
     }
     if (
@@ -502,7 +515,7 @@ class Account implements Readable<AccountState> {
       // if (this.state.data) {this.state.data.pendingActions = {};}
       // if (this.state.data) {this.state.data.welcomingStep = undefined;}
       this.state.ownerAddress = $privateWallet.ownerAddress;
-      this._notify();
+      this._notify('_handlePrivateWalletChange READY');
 
       if ($privateWallet.ownerAddress) {
         this.accountDB = new AccountDB(
@@ -525,14 +538,13 @@ class Account implements Readable<AccountState> {
   private onSync(syncingState: SyncingState<AccountData>): void {
     this.state.syncError = syncingState.error;
     this.state.data = syncingState.data;
-    this.state.syncing = syncingState.syncing;
     this.state.remoteDisabledOrSynced = syncingState.remoteFetchedAtLeastOnce || !syncingState.remoteSyncEnabled;
     if (this.state.data) {
       this.state.step = 'READY';
     } else {
       this.state.step = 'IDLE';
     }
-    this._notify();
+    this._notify('onSync');
   }
 
   private _merge(
@@ -626,6 +638,20 @@ class Account implements Readable<AccountState> {
                 pendingAction.acknowledged = remotePendingAction.acknowledged;
                 pendingAction.acknowledgementTime = remotePendingAction.acknowledgementTime;
               }
+            }
+            if (pendingAction.final && !remotePendingAction.final) {
+              newDataOnLocal = true;
+            } else if (!pendingAction.final && remotePendingAction.final) {
+              newDataOnRemote = true;
+              pendingAction.final = remotePendingAction.final;
+            } else {
+              // TODO ?
+            }
+            if (pendingAction.external && !remotePendingAction.external) {
+              newDataOnLocal = true;
+            } else if (!pendingAction.external && remotePendingAction.external) {
+              newDataOnRemote = true;
+              pendingAction.external = remotePendingAction.external;
             }
             if (pendingAction.type === 'SEND' && remotePendingAction.type === 'SEND') {
               const {newOnLocal, newOnRemote, newArray} = mergeStringArrays(
@@ -722,7 +748,8 @@ class Account implements Readable<AccountState> {
     }
   }
 
-  private _notify(): void {
+  private _notify(message: string): void {
+    console.log(`notify: ${message}`);
     this.store.set(this.state);
   }
 
