@@ -219,8 +219,11 @@
             <div class="w-20 text-red-500">
               Conquer
               <Help class="inline w-4 h-4">
-                You can send out spaceships to non-productive planet but note that the planet will remain non-active.
-                You ll need to stake <PlayCoin class="w-4 h-4 inline" /> to make it produce spaceships.
+                You can send out spaceships to inactive planet to get hold of it and prevent other player to stake on
+                it. But note that the planet will remain non-active and spaceships population will decrease until it
+                reaches zero at which point, it ll be in th ehand of the native population again. You ll need to stake <PlayCoin
+                  class="w-4 h-4 inline"
+                /> to make it produce spaceships.
               </Help>
             </div>
           </PanelButton>
@@ -290,50 +293,32 @@
           <div class="w-20">Transfer</div>
         </PanelButton> -->
       {:else}
-        <PanelButton label="Send" class="m-2" on:click={sendTo}>
-          <div class="w-20">
-            Send Here
-            <Help class="inline w-4 h-4">
-              You can send out spaceships in the form of fleets to either attack or send reinforcement.
-            </Help>
-          </div>
-        </PanelButton>
-        {#if !$planetState.active}
-          <PanelButton
-            label="Stake"
-            class="m-2"
-            color="text-yellow-400"
-            borderColor="border-yellow-400"
-            disabled={!$planetState.inReach || (captureResult && !captureResult.success)}
-            on:click={capture}
-          >
+        {#if $planetState.active}
+          <PanelButton label="Send" class="m-2" on:click={sendTo}>
             <div class="w-20">
-              Stake
-              <span class="text-sm">
-                {#if !$planetState.inReach}
-                  (unreachable)
-                  <Help class="inline w-4 h-4">
-                    The Reachable Universe expands as more planets get captured. Note though that you can still send
-                    attack unreachable planets. But these planets cannot produce spaceships until they get in range and
-                    you stake on it.
-                  </Help>
-                {:else if captureResult && !captureResult.success}
-                  <Help class="inline w-4 h-4">
-                    <!-- The planet cannot be captured at the moment as it has too strong defense -->
-                    To claim a planet, it first need to be either without spaceships or controlled by you.
-                  </Help>
-                {:else}
-                  <Help class="inline w-4 h-4">
-                    To claim a planet and make it produce spaceships for you, you have to deposit a certain number of
-                    <PlayCoin class="w-4 inline" />
-                    (Play token) on it. If you lose your planet, you lose the ability to withdraw them.
-                    <br />
-                    The capture will be resolved as if it was a 10,000 attack power with 100,000
-                    <!-- TODO config -->
-                    spaceships. The capture will only be succesful if the attack succeed
-                  </Help>
-                {/if}
-              </span>
+              Send Here
+              <Help class="inline w-4 h-4">
+                You can send out spaceships in the form of fleets to either attack or send reinforcement.
+              </Help>
+            </div>
+          </PanelButton>
+        {:else}
+          <PanelButton
+            color="text-red-500"
+            borderColor="border-red-500"
+            label="Send Here"
+            class="m-2"
+            on:click={sendToInactivePlanet}
+          >
+            <div class="w-20 text-red-500">
+              Conquer
+              <Help class="inline w-4 h-4">
+                You can send out spaceships to inactive planet to get hold of it and prevent other player to stake on
+                it. But note that the planet will remain non-active and spaceships population will decrease until it
+                reaches zero at which point, it ll be in th ehand of the native population again. You ll need to stake <PlayCoin
+                  class="w-4 h-4 inline"
+                /> to make it produce spaceships.
+              </Help>
             </div>
           </PanelButton>
         {/if}

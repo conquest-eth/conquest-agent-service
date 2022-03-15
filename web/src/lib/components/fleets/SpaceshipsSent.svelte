@@ -16,10 +16,9 @@
   // $: toPlanetState = planets.planetStateFor(toPlanetInfo);
 
   $: minDuration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
-  $: duration = $sendFlow.data?.config?.arrivalTimeWanted ? Math.max(
-          minDuration,
-          $sendFlow.data?.config?.arrivalTimeWanted - now()
-        ) : minDuration;
+  $: duration = $sendFlow.data?.config?.arrivalTimeWanted
+    ? Math.max(minDuration, $sendFlow.data?.config?.arrivalTimeWanted - now())
+    : minDuration;
   $: arrival = duration + now();
 </script>
 
@@ -56,8 +55,9 @@
         for more details.
       </p>
       <p class="mb-4">
-        Or as always if you can have a computer running permanently, you can setup an agent
-        <a class="underline" href={`${base}/agent-service/`} target="_blank">here</a>
+        Alternatively, you can always setup an agent
+        <a class="underline" href={`${base}/agent-service/`} target="_blank">here</a>. As long as it is topped up, it
+        can resolve the fleets for you.
       </p>
 
       <p class="mb-4">You can also create a reminder here</p>

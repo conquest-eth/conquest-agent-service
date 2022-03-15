@@ -198,7 +198,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     const acknowledgementStatus = finalStatus === 'SUCCESS' ? 'SUCCESS' : 'ERROR';
     await account.recordTxActionAsFinal(checkedAction.id, finalStatus, timestamp);
     if (now() - timestamp > deletionDelay) {
-      console.log(`delay over, deleting ${checkedAction.id}`);
+      console.log(`delay over, deleting ${checkedAction.id} directly`);
       await account.deletePendingAction(checkedAction.id);
       return true;
     } else {
@@ -299,7 +299,9 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
     }
 
     if (typeof checkedAction.action === 'number') {
+      // NOTE: this cannot reach in here, as the number are filtered in onAccountCHange
       if (now() - checkedAction.action > deletionDelay) {
+        console.log(`already number, delay over, deleting ${checkedAction.id}`);
         account.deletePendingAction(checkedAction.id);
       }
       return;

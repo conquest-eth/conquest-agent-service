@@ -89,8 +89,8 @@ if (fallbackProviderOrUrl && typeof fallbackProviderOrUrl === 'string') {
 
 const graphNodeURL = import.meta.env.VITE_THE_GRAPH_HTTP as string;
 
-const logPeriod = 7 * 24 * 60 * 60;
-const deletionDelay = 7 * 24 * 60 * 60;
+const logPeriod = Math.floor((7 * 24 * 60 * 60) / contractsInfos.contracts.OuterSpace.linkedData.productionSpeedUp);
+const deletionDelay = Math.floor((7 * 24 * 60 * 60) / contractsInfos.contracts.OuterSpace.linkedData.productionSpeedUp);
 
 const lowFrequencyFetch = blockTime * 8;
 const mediumFrequencyFetch = blockTime * 4;

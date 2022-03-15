@@ -1,4 +1,4 @@
-import {SYNC_DB_NAME, SYNC_URI, setGetName} from '$lib/config';
+import {SYNC_DB_NAME, SYNC_URI, setGetName, deletionDelay} from '$lib/config';
 import {bitMaskMatch} from '$lib/utils';
 import type {SyncingState} from '$lib/utils/sync';
 import {AccountDB} from '$lib/utils/sync';
@@ -9,7 +9,7 @@ import type {PrivateWalletState} from './privateWallet';
 import {privateWallet} from './privateWallet';
 import {keccak256} from '@ethersproject/solidity';
 import type {MyEvent} from '$lib/space/myevents';
-import {now, time} from '$lib/time';
+import {isCorrected, now, time} from '$lib/time';
 import {wallet} from '$lib/blockchain/wallet';
 
 export type AccountState = {
@@ -693,6 +693,31 @@ class Account implements Readable<AccountState> {
       }
     } else {
       newDataOnLocal = true;
+    }
+
+    const txHashesToDelete: string[] = [];
+    const currentTime = isCorrected() ? now() : undefined;
+    if (currentTime) {
+      for (const txHash of Object.keys(newData.pendingActions)) {
+        const actionTimestamp = newData.pendingActions[txHash];
+        if (typeof actionTimestamp === 'number') {
+          if (currentTime - actionTimestamp > deletionDelay) {
+            txHashesToDelete.push(txHash);
+            newDataOnLocal = true;
+            if (!remoteData.pendingActions[txHash]) {
+              // already deleted on remote
+              newDataOnRemote = true;
+            }
+          }
+        }
+      }
+
+      if (txHashesToDelete.length > 0) {
+        console.log(`deleting ${txHashesToDelete.length} expired actions`);
+        for (const txHash of txHashesToDelete) {
+          delete newData.pendingActions[txHash];
+        }
+      }
     }
 
     if (remoteData.acknowledgements) {

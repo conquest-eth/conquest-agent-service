@@ -51,8 +51,9 @@
         <p class="m-2 text-orange-400">
           Maybe your wallet encountered an error and the tx got confirmed ? (it happens on Metamask, see <a
             class="underline"
-            href="">here</a
-          > and upvote)
+            href="https://github.com/MetaMask/metamask-extension/issues/13928">here</a
+          >
+          or <a class="underline" href="https://github.com/MetaMask/metamask-extension/issues/13929">here</a> and upvote)
         </p>
         <p class="m-2">If so please enter the transaction hash so we can recover the fleet.</p>
         <p class="m-2">
@@ -80,6 +81,11 @@
     <p class="mb-3">
       You are sending spaceships to an inactive planets. Note that once your fleet capture the planet, its population
       will decrease until you stake <PlayCoin class="w-4 h-4 inline" /> on it.
+    </p>
+
+    <p>
+      While no other players can stake on it while you still have spaceships there, once the number of spaceships
+      reaches zero, anyone can stake on it.
     </p>
 
     <div class="text-center">
