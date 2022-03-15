@@ -8,7 +8,7 @@
   import {spaceInfo} from '$lib/space/spaceInfo';
 
   import {timeToText} from '$lib/utils';
-  import {time} from '$lib/time';
+  import {time, now} from '$lib/time';
   import {url} from '$lib/utils/url';
   import Help from '../utils/Help.svelte';
   import {agentService} from '$lib/account/agentService';
@@ -424,7 +424,9 @@
                 gift,
                 useAgentService,
                 fleetOwnerSpecified,
-                arrivalTimeWanted ? Math.floor(arrivalTimeWanted.getTime() / 1000) : undefined
+                arrivalTimeWanted
+                  ? Math.floor(arrivalTimeWanted.getTime() / 1000)
+                  : Math.ceil((spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo) + now()) / 60) * 60
               )}
           >
             <p>Confirm</p>
