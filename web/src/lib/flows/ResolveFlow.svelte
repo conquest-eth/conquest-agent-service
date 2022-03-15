@@ -4,6 +4,7 @@
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import resolveFlow from '$lib/flows/resolve';
   import {formatError} from '$lib/utils';
+  import PendingResolutions from './PendingResolutions.svelte';
 </script>
 
 {#if $resolveFlow.error}
@@ -38,6 +39,8 @@
   <Modal>Connecting...</Modal>
 {:else if $resolveFlow.step === 'CREATING_TX'}
   <Modal>Preparing the Transaction...</Modal>
+{:else if $resolveFlow.step === 'SHOW_LIST'}
+  <PendingResolutions />
 {:else if $resolveFlow.step === 'WAITING_TX'}
   <Modal
     closeButton={true}

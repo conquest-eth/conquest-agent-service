@@ -6,10 +6,12 @@ import {isCorrected, correctTime} from '$lib/time';
 import type {Fleet} from '$lib/space/fleets';
 import type {BigNumber} from '@ethersproject/bignumber';
 
+export type ResolveStep = 'IDLE' | 'SHOW_LIST' | 'CONNECTING' | 'CREATING_TX' | 'WAITING_TX' | 'SUCCESS';
 export type ResolveFlow = {
   type: 'RESOLVE';
-  step: 'IDLE' | 'CONNECTING' | 'CREATING_TX' | 'WAITING_TX' | 'SUCCESS';
+  step: ResolveStep;
   cancelingConfirmation?: boolean;
+  pastStep: ResolveStep;
   error?: unknown;
 };
 
@@ -18,12 +20,20 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
     super({
       type: 'RESOLVE',
       step: 'IDLE',
+      pastStep: 'IDLE',
     });
   }
 
-  async resolve(fleet: Fleet): Promise<void> {
-    this.setPartial({step: 'CONNECTING'});
-    this.setPartial({step: 'CREATING_TX', cancelingConfirmation: undefined});
+  showList() {
+    this.setPartial({step: 'SHOW_LIST', pastStep: 'SHOW_LIST'});
+  }
+
+  async back(): Promise<void> {
+    this.setPartial({step: this.$store.pastStep || 'IDLE'});
+  }
+
+  async resolve(fleet: Fleet, pastStep?: ResolveStep): Promise<void> {
+    this.setPartial({step: 'CREATING_TX', cancelingConfirmation: undefined, pastStep: pastStep || 'IDLE'});
 
     let nonce = fleet.sending.action.nonce;
     if (!nonce) {
@@ -112,10 +122,7 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
         operator: fleet.operator || fleet.owner,
       });
     } catch (e) {
-      this.setPartial({
-        step: 'IDLE',
-        error: e,
-      });
+      this.setPartial({error: e, step: this.$store.pastStep || 'IDLE'});
       return;
     }
     // TODO gasEstimation for resolve
@@ -155,14 +162,15 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
       // TODO get next Fleet instead ?
       if (e.message && e.message.indexOf('User denied') >= 0) {
         this.setPartial({
-          step: 'IDLE',
+          step: this.$store.pastStep || 'IDLE',
           error: undefined,
         });
         return;
       }
-      this.setPartial({error: e, step: 'IDLE'});
+      this.setPartial({error: e, step: this.$store.pastStep || 'IDLE'});
       return;
     }
+    this.setPartial({error: undefined, step: this.$store.pastStep || 'IDLE'});
   }
 
   async cancelCancelation(): Promise<void> {
