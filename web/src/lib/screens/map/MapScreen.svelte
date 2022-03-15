@@ -129,7 +129,7 @@
   <ShowPlanetDeparturesFlow />
 {/if}
 
-{#if $privateWallet.step === 'READY' && $myprofile.step === 'READY' && !$myprofile.account}
+{#if $privateWallet && $privateWallet.step === 'READY' && $myprofile && $myprofile.step === 'READY' && !$myprofile.account}
   <FirstTimeProfile />
 {/if}
 

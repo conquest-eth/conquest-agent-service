@@ -101,6 +101,10 @@ export type FleetArrivedParsedEvent = PlanetParsedEvent & {
   quantity: number;
   planet: {id: string};
   newNumspaceships: number;
+  newTravelingUpkeep: number;
+  newOverflow: number;
+  accumulatedDefenseAdded: number;
+  accumulatedAttackAdded: number;
 };
 
 export type FleetSentParsedEvent = PlanetParsedEvent & {
@@ -152,6 +156,10 @@ function parseFleetArrived(v: FleetArrivedEvent): FleetArrivedParsedEvent {
     won: v.won,
     quantity: parseInt(v.quantity),
     newNumspaceships: parseInt(v.newNumspaceships),
+    newOverflow: parseInt(v.newOverflow),
+    newTravelingUpkeep: parseInt(v.newTravelingUpkeep),
+    accumulatedAttackAdded: parseInt(v.accumulatedAttackAdded),
+    accumulatedDefenseAdded: parseInt(v.accumulatedDefenseAdded),
   };
 }
 
@@ -277,6 +285,10 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     inFlightPlanetLoss
     won
     newNumspaceships
+    newTravelingUpkeep
+    newOverflow
+    accumulatedDefenseAdded
+    accumulatedAttackAdded
     from {id}
     quantity
   }
@@ -297,6 +309,10 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     inFlightPlanetLoss
     won
     newNumspaceships
+    newTravelingUpkeep
+    newOverflow
+    accumulatedDefenseAdded
+    accumulatedAttackAdded
     from {id}
     quantity
   }
@@ -348,6 +364,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       this.store.update((v) => {
         if (v.data) {
           v.data.loading = true;
+          // console.log(`change of account: loading query`);
         }
         return v;
       });
@@ -362,10 +379,12 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
 
   _transform(data?: SpaceQueryResult): SpaceState | undefined {
     if (!data) {
+      // console.log(`still loading query, no data!`);
       return undefined;
     }
 
     const planets = (data.myplanets || []).concat(data.otherplanets);
+    // console.log(`stop loading query!`);
     return {
       loading: false,
       player: data.owner

@@ -159,18 +159,20 @@
     </p>
   </div> -->
 
-  <NegativeStat
-    name="Upkeep"
-    value={$planetState.travelingUpkeep}
-    max={planetInfo.stats.maxTravelingUpkeep}
-    min={-planetInfo.stats.maxTravelingUpkeep}
-  >
-    <Help class="inline w-4 h-4"
-      >When fleets are traveling, the planet need to keep maintaining it. When the upkeep is green you can send some
-      spaceships and continue to produce at full capacity. When it is red (after sending fleets), the planet produce at
-      half power until all ukeeep is paid for</Help
+  {#if $planetState}
+    <NegativeStat
+      name="Upkeep"
+      value={$planetState.travelingUpkeep}
+      max={planetInfo.stats.maxTravelingUpkeep}
+      min={-planetInfo.stats.maxTravelingUpkeep}
     >
-  </NegativeStat>
+      <Help class="inline w-4 h-4"
+        >When fleets are traveling, the planet need to keep maintaining it. When the upkeep is green you can send some
+        spaceships and continue to produce at full capacity. When it is red (after sending fleets), the planet produce
+        at half power until all ukeeep is paid for</Help
+      >
+    </NegativeStat>
+  {/if}
 
   <div class="m-1 w-26 md:w-36 text-yellow-400 ">
     <div class="w-full box-border">

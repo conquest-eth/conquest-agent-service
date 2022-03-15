@@ -32,7 +32,7 @@ selection.subscribe((v) => {
       planetInfo = newPlanetInfo;
       planetState = planets.planetStateFor(planetInfo);
       stopSubscribtion = planetState.subscribe(($planetState) => {
-        if ($planetState.owner && $planetState.owner != '0x0000000000000000000000000000000000000000') {
+        if ($planetState && $planetState.owner && $planetState.owner != '0x0000000000000000000000000000000000000000') {
           store.set(playersQuery.getPlayer($planetState.owner));
         } else {
           store.set(undefined);

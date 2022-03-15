@@ -48,6 +48,10 @@ export type FleetArrivedEvent = PlanetEvent & {
   quantity: string;
   planet: {id: string};
   newNumspaceships: string;
+  newTravelingUpkeep: string;
+  newOverflow: string;
+  accumulatedDefenseAdded: string;
+  accumulatedAttackAdded: string;
 };
 
 export type FleetSentEvent = PlanetEvent & {

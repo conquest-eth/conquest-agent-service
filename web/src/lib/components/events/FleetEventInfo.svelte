@@ -6,6 +6,7 @@
   import Button from '$lib/components/generic/PanelButton.svelte';
   import {wallet} from '$lib/blockchain/wallet';
   import Blockie from '../account/Blockie.svelte';
+  import Coord from '../utils/Coord.svelte';
 
   export let event: InternalFleetEvent | ExternalFleetEvent;
   export let okLabel: string = 'OK';
@@ -28,12 +29,12 @@
           toYou = true;
           title = 'Your spaceships landed!';
         } else {
-          title = 'Your spaceships arrived to your friend!';
+          title = 'Your spaceships arrived!';
         }
       } else if (event.event.won) {
         title = 'You captured a planet!';
       } else {
-        title = 'Your attack did not capture the planet!';
+        title = 'Your attack failed to capture!';
       }
     } else {
       toYou = true;
@@ -58,61 +59,117 @@
 {#if event}
   <Modal {title} globalCloseButton={closeButton} cancelable={closeButton} on:close>
     {#if toYou && fromYou}
-      <!-- TODO add description-->
+      <p>
+        Your {event.event.quantity - event.event.inFlightFleetLoss} spacesships arrived! from planet <Coord
+          location={event.event.from.id}
+        />
+      </p>
+      {#if event.event.inFlightFleetLoss > 0}
+        <p>({event.event.inFlightFleetLoss} spacesships were destroyed at launch)</p>
+      {/if}
     {:else if fromYou}
       {#if gift}
-        Your {event.event.quantity - event.event.inFlightFleetLoss} spacesships arrived to <Blockie
-          class="w-6 h-6 inline-block"
-          address={event.event.destinationOwner.id}
-        />
+        <p>
+          Your {event.event.quantity - event.event.inFlightFleetLoss} spacesships arrived! from planet <Coord
+            location={event.event.from.id}
+          /> to <Blockie class="w-6 h-6 inline-block" address={event.event.destinationOwner.id} />
+        </p>
+        {#if event.event.inFlightFleetLoss > 0}
+          <p>({event.event.inFlightFleetLoss} spacesships were destroyed at launch)</p>
+        {/if}
       {:else if attackCaptured}
-        You managed to capture a planet {#if event.event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}from
-          <Blockie class="w-6 h-6 inline-block" address={event.event.destinationOwner.id} />
+        <p>
+          You captured the planet {#if event.event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}from
+            <Blockie class="w-6 h-6 inline-block" address={event.event.destinationOwner.id} />
+          {/if} with your fleet of {event.event.quantity - event.event.inFlightFleetLoss} spacesships sent from planet <Coord
+            location={event.event.from.id}
+          />
+        </p>
+        {#if event.event.accumulatedAttackAdded > 0}
+          <p>
+            The attack was combined with the previous fleet making a total of {event.event.quantity -
+              event.event.inFlightFleetLoss +
+              event.event.accumulatedAttackAdded} spaceships attacking {event.event.planetLoss +
+              event.event.inFlightPlanetLoss}
+          </p>
+        {/if}
+
+        {#if event.event.inFlightFleetLoss > 0}
+          <p>({event.event.inFlightFleetLoss} spacesships were destroyed at launch)</p>
         {/if}
       {:else}
-        Your attack did not succeed but you killed {event.event.planetLoss} spaceships {#if event.event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}from
-          <Blockie class="w-6 h-6 inline-block" address={event.event.destinationOwner.id} />{/if}
+        <p>
+          Your attack did not succeed but you killed {event.event.planetLoss + event.event.inFlightPlanetLoss} spaceships
+          {#if event.event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}from
+            <Blockie class="w-6 h-6 inline-block" address={event.event.destinationOwner.id} />
+          {/if} with your fleet of {event.event.quantity - event.event.inFlightFleetLoss} spacesships sent from planet <Coord
+            location={event.event.from.id}
+          />. {#if event.event.inFlightPlanetLoss > 0}
+            There was {event.event.inFlightPlanetLoss} spaceships destroyed in orbit defense
+          {/if}
+        </p>
+
+        {#if event.event.accumulatedAttackAdded > 0}
+          <p>
+            The attack was combined with the previous fleet making a total of {event.event.quantity -
+              event.event.inFlightFleetLoss +
+              event.event.accumulatedAttackAdded} spaceships attacking
+            <!-- TODO get info about total defenses-->
+          </p>
+        {/if}
+
+        {#if event.event.inFlightFleetLoss > 0}
+          <p>({event.event.inFlightFleetLoss} spacesships were destroyed at launch)</p>
+        {/if}
       {/if}
     {:else if gift}
-      <Blockie class="w-6 h-6 inline-block" address={event.event.destinationOwner.id} /> sent you {event.event
-        .quantity - event.event.inFlightFleetLoss}
-      spacesships
+      <p>
+        You received {event.event.quantity - event.event.inFlightFleetLoss} spacesships by <Blockie
+          class="w-6 h-6 inline-block"
+          address={event.event.owner.id}
+        /> from planet <Coord location={event.event.from.id} />.
+      </p>
     {:else if attackCaptured}
-      <p><Blockie class="w-6 h-6 inline-block" address={event.event.destinationOwner.id} /> captured your planet!</p>
       <p>
-        The fleet had {event.event.quantity - event.event.inFlightFleetLoss} spaceships and planet had {event.event
-          .planetLoss + event.event.inFlightPlanetLoss}
+        You lost your planet from <Blockie class="w-6 h-6 inline-block" address={event.event.owner.id} />
       </p>
+      <p>
+        The fleet had {event.event.quantity - event.event.inFlightFleetLoss} spaceships and planet defended with {event
+          .event.planetLoss + event.event.inFlightPlanetLoss}. {#if event.event.inFlightPlanetLoss > 0}
+          Including {event.event.inFlightPlanetLoss} spacesships in orbit. (this will be deduced to your traveling fleets)
+        {/if}
+      </p>
+
+      {#if event.event.accumulatedAttackAdded > 0}
+        <p>
+          The attack was combined with the previous fleet making a total of {event.event.quantity -
+            event.event.inFlightFleetLoss +
+            event.event.accumulatedAttackAdded} spaceships attacking
+          <!-- TODO get info about total defenses-->
+        </p>
+      {/if}
     {:else}
       <p>
-        <Blockie class="w-6 h-6 inline-block" address={event.event.owner.id} /> attempted to capture your planet but only
-        managed to kill {event.event.planetLoss} spaceships
+        Your planet defended succesfully from <Blockie class="w-6 h-6 inline-block" address={event.event.owner.id} /> but
+        lost {event.event.planetLoss} spaceships.
       </p>
       <p>
-        The fleet had {event.event.quantity - event.event.inFlightFleetLoss} spaceships and planet had {event.event
-          .newNumspaceships +
-          event.event.planetLoss +
-          event.event.inFlightPlanetLoss}
+        The fleet had {event.event.quantity - event.event.inFlightFleetLoss} spaceships and planet defended with {event
+          .event.planetLoss + event.event.inFlightPlanetLoss}.{#if event.event.inFlightPlanetLoss > 0}
+          Including {event.event.inFlightPlanetLoss} spacesships in orbit. (this will be deduced to your traveling fleets)
+        {/if}
       </p>
+
+      {#if event.event.accumulatedAttackAdded > 0}
+        <p>
+          The attack was combined with the previous fleet making a total of {event.event.quantity -
+            event.event.inFlightFleetLoss +
+            event.event.accumulatedAttackAdded} spaceships attacking {event.event.planetLoss +
+            event.event.inFlightPlanetLoss}
+        </p>
+      {/if}
     {/if}
-    {#if event.event}
-      <ul class="mt-10 text-white">
-        <li>From planet: {spaceInfo.getPlanetInfoViaId(event.event.from.id).stats.name}</li>
-        <li>To planet: {spaceInfo.getPlanetInfoViaId(event.event.planet.id).stats.name}</li>
-        {#if event.event.inFlightFleetLoss > 0}
-          <!-- TODO add text to explain this-->
-          <li>In flight fleet loss: {event.event.inFlightFleetLoss}</li>
-        {/if}
-        {#if event.event.inFlightPlanetLoss > 0}
-          <!-- TODO add text to explain this-->
-          <li>In flight planet loss: {event.event.inFlightPlanetLoss}</li>
-        {/if}
-        <!-- <li>New spaceships: {event.event.newNumspaceships}</li> do not want to display that as it is stale -->
-        <!-- <li>Planet loss: {event.event.planetLoss}</li>
-      <li>Fleet loss: {event.event.fleetLoss}</li>
-      <li>Quantity: {event.event.quantity}</li> -->
-      </ul>
-    {:else}
+    {#if !event.event}
       Void Event <!-- TODO is that possible ?-->
     {/if}
 

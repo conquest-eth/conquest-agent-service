@@ -64,7 +64,6 @@ class BaseQueryStore<T, V extends Record<string, unknown> = Record<string, unkno
   }
 
   async fetch(extraVariables?: Record<string, unknown>): Promise<void> {
-    console.info('fetching....');
     const first =
       typeof this.options?.variables?.first === 'number' ? (this.options?.variables?.first as number) : 1000;
     let numEntries = first;
