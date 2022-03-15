@@ -26,7 +26,7 @@
       <!-- <div class="border border-cyan-400 w-24 mx-auto">Agent Resolving...</div> -->
       <!-- {:else} -->
       <p class="m-2">
-        Next: {timeToText(min)}
+        {timeToText(min)}
         left
       </p>
       <PanelButton class="m-1" label="Resolve Fleet" on:click={() => showResolutions()}>SHOW LIST</PanelButton>

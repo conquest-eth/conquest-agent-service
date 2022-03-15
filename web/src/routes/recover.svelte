@@ -96,45 +96,59 @@
         for (let nonce = tx.nonce; nonce < tx.nonce + 5; nonce++) {
           for (let i = 0; i < 2; i++) {
             const gift = i == 0;
-            const specific = '0x0000000000000000000000000000000000000001';
-            const fleetData = await account.hashFleet(
-              fromCoords,
-              destinationCoords,
-              gift,
-              specific,
-              arrivalTimeWanted,
-              nonce,
-              fleetOwner,
-              fleetSender,
-              operator
-            );
-            if (fleetData.fleetId == fleet.toHexString()) {
-              fleetFound = {
-                fleet: {
-                  fleetAmount: quantity,
-                  from: fromCoords,
-                  to: destinationCoords,
-                  gift: gift,
-                  arrivalTimeWanted,
-                  id: fleetData.fleetId,
-                  owner: fleetOwner,
-                  specific: specific,
-                  fleetSender: fleetSender,
-                  operator: operator,
-                  // potentialAlliances: // TODO
-                },
-                nonce: nonce,
-                txHash: tx.hash,
-                timestamp: block.timestamp,
-                overrideTimestamp: now(),
-              };
+            const specific = '0x0000000000000000000000000000000000000001'; // TODO
+            const listOfArrivalTimeWanted = [arrivalTimeWanted];
+            if (arrivalTimeWanted === 0) {
+              const numTimesToTry = 64;
+              const startTime = Math.floor(block.timestamp / 60) * 60 - Math.floor(numTimesToTry / 2) * 60;
+              for (let k = 0; k < numTimesToTry; k++) {
+                listOfArrivalTimeWanted.push(startTime + k * 60);
+              }
+              console.log({listOfArrivalTimeWanted});
+            }
+            for (const arrivalTime of listOfArrivalTimeWanted) {
+              const fleetData = await account.hashFleet(
+                fromCoords,
+                destinationCoords,
+                gift,
+                specific,
+                arrivalTime,
+                nonce,
+                fleetOwner,
+                fleetSender,
+                operator
+              );
+              if (fleetData.fleetId == fleet.toHexString()) {
+                fleetFound = {
+                  fleet: {
+                    fleetAmount: quantity,
+                    from: fromCoords,
+                    to: destinationCoords,
+                    gift: gift,
+                    arrivalTimeWanted: arrivalTime,
+                    id: fleetData.fleetId,
+                    owner: fleetOwner,
+                    specific: specific,
+                    fleetSender: fleetSender,
+                    operator: operator,
+                    // potentialAlliances: // TODO
+                  },
+                  nonce: nonce,
+                  txHash: tx.hash,
+                  timestamp: block.timestamp,
+                  overrideTimestamp: now(),
+                };
 
-              console.log('found!!!!!!!!!!!!!!!!!!!!');
+                console.log('found!!!!!!!!!!!!!!!!!!!!');
+                break;
+              }
+              console.error(
+                `fleetID generated: ${fleetData.fleetId} not matching expected fleetID ${fleet.toHexString()} `
+              );
+            }
+            if (fleetFound) {
               break;
             }
-            console.error(
-              `fleetID generated: ${fleetData.fleetId} not matching expected fleetID ${fleet.toHexString()} `
-            );
           }
           if (fleetFound) {
             break;

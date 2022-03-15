@@ -21,6 +21,31 @@ export type VirtualFleet = {
   to: PlanetInfo;
 };
 
+type PlanetCoords = {x: number; y: number};
+export type LastFleet = {
+  fleet: {
+    owner: string;
+    id: string;
+    from: PlanetCoords;
+    to: PlanetCoords;
+    gift: boolean;
+    specific: string;
+    potentialAlliances?: string[];
+    fleetAmount: number;
+    arrivalTimeWanted: number;
+    fleetSender?: string;
+    operator?: string;
+  };
+  timestamp: number;
+  nonce: number;
+  useAgentService: boolean;
+  extra: {
+    secretHash;
+    distance;
+    minDuration;
+  };
+};
+
 type SendConfig = {
   fleetOwner?: string;
   numSpaceshipsToKeep?: number;
@@ -76,6 +101,7 @@ export type SendFlow = {
     | 'SUCCESS';
   data?: Data;
   error?: {message?: string; type?: string};
+  lastFleet?: LastFleet;
 };
 
 export function virtualFleetFrom(sendFlowData: Data, pos: {x: number; y: number}): VirtualFleet {
@@ -446,7 +472,32 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     // TODO gasEstimation for SEND
     const gasLimit = gasEstimation.add(100000);
 
-    this.setPartial({step: 'WAITING_TX'});
+    this.setPartial({
+      step: 'WAITING_TX',
+      lastFleet: {
+        fleet: {
+          id: fleetId,
+          to, // TODO handle it better
+          from,
+          fleetAmount,
+          arrivalTimeWanted,
+          gift,
+          specific,
+          potentialAlliances,
+          owner: fleetOwner,
+          fleetSender,
+          operator,
+        },
+        timestamp: latestBlock.timestamp,
+        nonce, // tx.nounce can be different it seems, metamask can change it, or maybe be even user
+        useAgentService,
+        extra: {
+          secretHash,
+          distance,
+          minDuration,
+        },
+      },
+    });
     let tx: {hash: string; nonce: number};
     try {
       if (abi) {
@@ -546,6 +597,44 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
 
   async cancelCancelation(): Promise<void> {
     this.setPartial({cancelingConfirmation: false});
+  }
+
+  async recoverFleetFromTxHash(txHash: string) {
+    const lastFleet = this.$store.lastFleet;
+    if (lastFleet) {
+      console.log({lastFleet});
+      account.recordFleet(
+        lastFleet.fleet,
+        txHash,
+        lastFleet.timestamp,
+        lastFleet.nonce // tx.nounce can be different it seems, metamask can change it, or maybe be even user
+      );
+
+      this.setData({txHash: txHash}, {step: 'SUCCESS', cancelingConfirmation: false});
+
+      if (lastFleet.useAgentService) {
+        try {
+          const {queueID} = await agentService.submitReveal(
+            lastFleet.fleet.id,
+            lastFleet.extra.secretHash,
+            lastFleet.fleet.from,
+            lastFleet.fleet.to,
+            lastFleet.extra.distance,
+            lastFleet.fleet.arrivalTimeWanted,
+            lastFleet.fleet.gift,
+            lastFleet.fleet.specific,
+            lastFleet.fleet.potentialAlliances,
+            lastFleet.timestamp,
+            lastFleet.extra.minDuration,
+            lastFleet.fleet.fleetSender,
+            lastFleet.fleet.operator
+          );
+          account.recordQueueID(txHash, queueID);
+        } catch (e) {
+          this.setPartial({error: {message: formatError(e), type: 'AGENT_SERVICE_SUBMISSION_ERROR'}});
+        }
+      }
+    }
   }
 
   async cancel(cancelingConfirmation = false): Promise<void> {

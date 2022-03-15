@@ -104,23 +104,16 @@
     if (toPlanetState && fromPlanetState) {
       prediction = {
         numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(
-          fromPlanetInfo,
           toPlanetInfo,
           $toPlanetState,
-          currentTimeToArrive > defaultTimeToArrive
-            ? -(arrivalTimeWanted.getTime() / 1000 - $toPlanetState.lastUpdatedSaved)
-            : 0
+          currentTimeToArrive > defaultTimeToArrive ? currentTimeToArrive : defaultTimeToArrive
         ),
         outcome: spaceInfo.outcome(
           fromPlanetInfo,
-          $fromPlanetState,
           toPlanetInfo,
           $toPlanetState,
           fleetAmount,
-          $time,
-          currentTimeToArrive > defaultTimeToArrive
-            ? -(arrivalTimeWanted.getTime() / 1000 - $toPlanetState.lastUpdatedSaved)
-            : 0,
+          currentTimeToArrive > defaultTimeToArrive ? currentTimeToArrive : defaultTimeToArrive,
           senderPlayer,
           fromPlayer,
           toPlayer,

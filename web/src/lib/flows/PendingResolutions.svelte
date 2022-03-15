@@ -8,6 +8,12 @@
   import Coord from '$lib/components/utils/Coord.svelte';
   import {planets} from '$lib/space/planets';
   import PlanetStateVar from '$lib/components/planets/PlanetStateVar.svelte';
+  import {get} from 'svelte/store';
+  import {time} from '$lib/time';
+  import {spaceInfo} from '$lib/space/spaceInfo';
+  import {playersQuery} from '$lib/space/playersQuery';
+  import OutcomeVis from '$lib/components/fleets/OutcomeVis.svelte';
+  import FleetRow from '$lib/components/fleets/FleetRow.svelte';
 
   type FleetsGroup = {destination: PlanetInfo; arrivalTimeWanted: number; fleets: Fleet[]};
 
@@ -43,8 +49,23 @@
     resolveFlow.cancel();
   }
 
-  function resolve(fleet: Fleet) {
-    resolveFlow.resolve(fleet, 'SHOW_LIST');
+  function outcomeFor(fleet: Fleet) {
+    const toPlanetState = get(planets.planetStateFor(fleet.to));
+    const playerSender = playersQuery.getPlayer(fleet.fleetSender);
+    const fleetOwner = playersQuery.getPlayer(fleet.owner);
+    const destinationOwner = playersQuery.getPlayer(toPlanetState.owner);
+    return spaceInfo.outcome(
+      fleet.from,
+      fleet.to,
+      toPlanetState,
+      fleet.quantity,
+      fleet.timeLeft,
+      playerSender,
+      fleetOwner,
+      destinationOwner,
+      fleet.gift,
+      fleet.specific
+    );
   }
 
   // $: console.log(fleetsToResolve);
@@ -101,7 +122,8 @@
                   >
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-100">Quantity</th>
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-100">Power</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-100">Defense</th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-100">On Planet</th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-100">Outcome</th>
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-100">Time Left</th>
                   <!-- <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-100">Defense</th> -->
                   <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
@@ -113,7 +135,7 @@
                 {#each fleetsGroups as group}
                   <tr class="border-t border-gray-200">
                     <th
-                      colspan="6"
+                      colspan="7"
                       scope="colgroup"
                       class="bg-gray-950 px-4 py-2 text-left text-sm font-semibold text-gray-100 sm:px-6"
                       >Destination: <Coord location={group.destination.location.id} />
@@ -125,26 +147,7 @@
 
                   {#each group.fleets as fleet}
                     <tr class="border-t border-gray-700">
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-100 sm:pl-6"
-                        >Origin <Coord location={fleet.from.location.id} /></td
-                      >
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-100">{fleet.quantity}</td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-100"
-                        >{fleet.from.stats.attack} VS {fleet.to.stats.defense}</td
-                      >
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-100"
-                        ><PlanetStateVar planet={fleet.to} field="numSpaceships" /></td
-                      >
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-100"
-                        >{timeToText(fleet.timeToResolve)}</td
-                      >
-                      <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <button
-                          on:click={() => resolve(fleet)}
-                          class="border-2 border-orange-500 rounded-md p-2 text-orange-600 hover:text-orange-900 hover:border-orange-900"
-                          >Resolve<span class="sr-only">, {'x,y'}</span></button
-                        >
-                      </td>
+                      <FleetRow {fleet} outcome={outcomeFor(fleet)} />
                     </tr>
                   {/each}
                 {/each}

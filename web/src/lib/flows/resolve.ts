@@ -5,6 +5,7 @@ import {account} from '$lib/account/account';
 import {isCorrected, correctTime} from '$lib/time';
 import type {Fleet} from '$lib/space/fleets';
 import type {BigNumber} from '@ethersproject/bignumber';
+import selection from '$lib/map/selection';
 
 export type ResolveStep = 'IDLE' | 'SHOW_LIST' | 'CONNECTING' | 'CREATING_TX' | 'WAITING_TX' | 'SUCCESS';
 export type ResolveFlow = {
@@ -26,6 +27,7 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
 
   showList() {
     this.setPartial({step: 'SHOW_LIST', pastStep: 'SHOW_LIST'});
+    selection.unselect();
   }
 
   async back(): Promise<void> {

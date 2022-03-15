@@ -39,18 +39,11 @@
     | undefined = undefined;
   $: {
     if (toPlanetInfo && fromPlanetInfo) {
+      const duration = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
       prediction = {
-        arrivalTime: timeToText(spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo)),
-        numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(fromPlanetInfo, toPlanetInfo, $toPlanetState),
-        outcome: spaceInfo.outcome(
-          fromPlanetInfo,
-          $fromPlanetState,
-          toPlanetInfo,
-          $toPlanetState,
-          fleetAmount,
-          $time,
-          0
-        ),
+        arrivalTime: timeToText(duration),
+        numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(toPlanetInfo, $toPlanetState, duration),
+        outcome: spaceInfo.outcome(fromPlanetInfo, toPlanetInfo, $toPlanetState, fleetAmount, duration),
       };
     }
   }

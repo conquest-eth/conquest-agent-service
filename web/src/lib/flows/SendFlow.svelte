@@ -13,6 +13,8 @@
 
   $: pickNeeded =
     $sendFlow.step === 'PICK_DESTINATION' ? 'destination' : $sendFlow.step === 'PICK_ORIGIN' ? 'origin' : undefined;
+
+  let transactionHashToRecover: string;
 </script>
 
 {#if $sendFlow.error}
@@ -44,7 +46,27 @@
     <div class="text-center">
       <p class="pb-4">Are you sure to cancel ?</p>
       <p class="pb-4">(This will prevent the game to record your transaction, if you were to execute it afterward)</p>
-      <PanelButton label="OK" on:click={() => sendFlow.cancel()}>Yes</PanelButton>
+
+      <div class="border-amber-400 border-2 m-4">
+        <p class="m-2 text-orange-400">
+          Maybe your wallet encountered an error and the tx got confirmed ? (it happens on Metamask, see <a
+            class="underline"
+            href="">here</a
+          > and upvote)
+        </p>
+        <p class="m-2">If so please enter the transaction hash so we can recover the fleet.</p>
+        <p class="m-2">
+          Transacion Hash: <input type="text" bind:value={transactionHashToRecover} class="bg-black text-white" />
+        </p>
+
+        <PanelButton
+          color="text-orange-400"
+          class="m-2"
+          label="recover"
+          on:click={() => sendFlow.recoverFleetFromTxHash(transactionHashToRecover)}>Recover</PanelButton
+        >
+      </div>
+      <PanelButton label="nevermind" on:click={() => sendFlow.cancel()}>Skip</PanelButton>
     </div>
   </Modal>
 {:else if pickNeeded}
@@ -108,8 +130,8 @@
   <Modal>Preparing The Transaction...</Modal>
 {:else if $sendFlow.step === 'WAITING_TX'}
   <Modal closeButton={true} globalCloseButton={true} closeOnOutsideClick={false} on:close={() => sendFlow.cancel(true)}
-    >Please Accept the Transaction...</Modal
-  >
+    >Please Accept the Transaction...
+  </Modal>
 {:else}
   <Modal>...</Modal>
 {/if}

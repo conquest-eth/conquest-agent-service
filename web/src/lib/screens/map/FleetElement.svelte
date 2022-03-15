@@ -84,16 +84,14 @@
   $: {
     if ($toPlanetState && $fromPlanetState) {
       prediction = {
-        arrivalTime: timeToText(spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo)),
-        numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(fromPlanetInfo, toPlanetInfo, $toPlanetState),
+        arrivalTime: timeToText(fleet.timeLeft),
+        numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(toPlanetInfo, $toPlanetState, fleet.timeLeft),
         outcome: spaceInfo.outcome(
           fromPlanetInfo,
-          $fromPlanetState,
           toPlanetInfo,
           $toPlanetState,
           fleet.quantity,
-          fleet.launchTime,
-          Math.min($time - fleet.launchTime, fleet.duration),
+          fleet.timeLeft,
           senderPlayer,
           fromPlayer,
           toPlayer,
