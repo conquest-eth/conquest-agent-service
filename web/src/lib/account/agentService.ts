@@ -169,6 +169,10 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
         });
       }
     } catch (e) {
+      this.setPartial({
+        state: 'Loading',
+        account: undefined,
+      });
       console.error(e);
     }
 
@@ -179,3 +183,8 @@ class AgentServiceStore extends AutoStartBaseStore<AgentServiceState> {
 }
 
 export const agentService = new AgentServiceStore();
+
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).agentService = agentService;
+}

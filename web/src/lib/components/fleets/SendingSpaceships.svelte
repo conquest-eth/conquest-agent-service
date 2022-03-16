@@ -75,6 +75,10 @@
 
   $: agentServiceAccount = $agentService.account;
 
+  $: if (!agentServiceAccount || agentServiceAccount.requireTopUp || !agentServiceAccount.delegate) {
+    useAgentService = false;
+  }
+
   $: defaultTimeToArrive = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
   // $: arrivalTime = $time + defaultTimeToArrive;
 
@@ -386,13 +390,17 @@
             type="checkbox"
             class="form-checkbox"
             bind:checked={useAgentService}
-            disabled={!agentServiceAccount || agentServiceAccount.requireTopUp}
+            disabled={!agentServiceAccount || agentServiceAccount.requireTopUp || !agentServiceAccount.delegate}
           />
 
-          <span class={`ml-2${!agentServiceAccount || agentServiceAccount.requireTopUp ? ' opacity-25' : ''}`}
-            >submit to agent-service</span
+          <span
+            class={`ml-2${
+              !agentServiceAccount || agentServiceAccount.requireTopUp || !agentServiceAccount.delegate
+                ? ' opacity-25'
+                : ''
+            }`}>submit to agent-service</span
           >
-          {#if !agentServiceAccount || agentServiceAccount.requireTopUp}
+          {#if !agentServiceAccount || agentServiceAccount.requireTopUp || !agentServiceAccount.delegate}
             <span class="ml-2 text-xs"
               >( Enable <a class="underline" href={url('agent-service/')}>Agent-Service</a>
               <Help class="w-4"
