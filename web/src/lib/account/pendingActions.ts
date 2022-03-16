@@ -4,7 +4,7 @@ import type {AccountState, PendingAction, PendingResolution, PendingSend} from '
 import {account} from './account';
 import type {ChainTempoInfo} from '$lib/blockchain/chainTempo';
 import {chainTempo} from '$lib/blockchain/chainTempo';
-import {wallet} from '$lib/blockchain/wallet';
+import {fallback, wallet} from '$lib/blockchain/wallet';
 import {now} from '$lib/time';
 import {deletionDelay, finality} from '$lib/config';
 import {spaceInfo} from '$lib/space/spaceInfo';
@@ -266,8 +266,14 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
           minDuration,
           checkedAction.action.arrivalTimeWanted - checkedAction.action.actualLaunchTime
         );
+
         if (now() > checkedAction.action.actualLaunchTime + duration) {
-          const fleet = await wallet.contracts.OuterSpace.getFleet(checkedAction.action.fleetId, '0');
+          const contracts = wallet.contracts || fallback.contracts;
+          if (!contracts) {
+            console.log(`no contracts setup, skip for now`);
+            return;
+          }
+          const fleet = await contracts.OuterSpace.getFleet(checkedAction.action.fleetId, '0');
           if (fleet.owner != '0x0000000000000000000000000000000000000000' && fleet.quantity == 0) {
             let final = false;
             const finalisedBlockNumber = Math.max(0, blockNumber - finality);
