@@ -635,6 +635,7 @@ contract OuterSpaceFacetBase is
     struct ResolutionState {
         address fleetOwner;
         uint40 fleetLaunchTime;
+        uint32 originalQuantity;
         uint32 fleetQuantity;
         bytes32 fromData;
         uint32 inFlightFleetLoss;
@@ -687,6 +688,8 @@ contract OuterSpaceFacetBase is
         // -----------------------------------------------------------------------------------------------------------
         _computePlanetUpdateForTimeElapsed(toPlanetUpdate);
 
+        uint32 numSpaceshipsAtArrival = toPlanetUpdate.numSpaceships;
+
         // -----------------------------------------------------------------------------------------------------------
         // Traveling logic...
         // -----------------------------------------------------------------------------------------------------------
@@ -724,23 +727,43 @@ contract OuterSpaceFacetBase is
         // -----------------------------------------------------------------------------------------------------------
         // Events
         // -----------------------------------------------------------------------------------------------------------
-        emit FleetArrived(
+        _emitFleetArrived(
             fleetId,
-            rState.fleetOwner,
+            rState,
             toPlanetUpdate.owner,
             resolution.to,
-            rState.gifting,
-            rState.attackerLoss,
-            rState.defenderLoss,
-            rState.inFlightFleetLoss,
-            rState.inFlightPlanetLoss,
-            rState.victory,
-            toPlanetUpdate.numSpaceships,
-            toPlanetUpdate.travelingUpkeep,
-            toPlanetUpdate.overflow,
-            rState.accumulatedDefenseAdded,
-            rState.accumulatedAttackAdded
+            _arrivalData(rState, toPlanetUpdate, numSpaceshipsAtArrival)
         );
+    }
+
+    function _arrivalData(
+        ResolutionState memory rState,
+        PlanetUpdateState memory toPlanetUpdate,
+        uint32 numSpaceshipsAtArrival
+    ) internal pure returns (ArrivalData memory arrivalData) {
+        arrivalData.newNumspaceships = toPlanetUpdate.numSpaceships;
+        arrivalData.newTravelingUpkeep = toPlanetUpdate.travelingUpkeep;
+        arrivalData.newOverflow = toPlanetUpdate.overflow;
+        arrivalData.numSpaceshipsAtArrival = numSpaceshipsAtArrival;
+        arrivalData.taxLoss = rState.taxed
+            ? (rState.originalQuantity - rState.inFlightFleetLoss) - rState.fleetQuantity
+            : 0;
+        arrivalData.fleetLoss = rState.attackerLoss;
+        arrivalData.planetLoss = rState.defenderLoss;
+        arrivalData.inFlightFleetLoss = rState.inFlightFleetLoss;
+        arrivalData.inFlightPlanetLoss = rState.inFlightPlanetLoss;
+        arrivalData.accumulatedDefenseAdded = rState.accumulatedDefenseAdded;
+        arrivalData.accumulatedAttackAdded = rState.accumulatedAttackAdded;
+    }
+
+    function _emitFleetArrived(
+        uint256 fleetId,
+        ResolutionState memory rState,
+        address planetOwner,
+        uint256 to,
+        ArrivalData memory arrivalData
+    ) internal {
+        emit FleetArrived(fleetId, rState.fleetOwner, planetOwner, to, rState.gifting, rState.victory, arrivalData);
     }
 
     function _requireCorrectDistance(
@@ -1044,6 +1067,7 @@ contract OuterSpaceFacetBase is
     {
         rState.fleetOwner = fleet.owner;
         rState.fleetLaunchTime = fleet.launchTime;
+        rState.originalQuantity = fleet.quantity;
         rState.fleetQuantity = fleet.quantity;
         rState.fromData = _planetData(from);
         rState.attackPower = _attack(rState.fromData);

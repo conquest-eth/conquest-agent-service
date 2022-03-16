@@ -22,22 +22,28 @@ interface ImportingOuterSpaceEvents {
         uint32 newOverflow
     );
 
+    struct ArrivalData {
+        uint32 newNumspaceships;
+        int40 newTravelingUpkeep;
+        uint32 newOverflow;
+        uint32 numSpaceshipsAtArrival;
+        uint32 taxLoss;
+        uint32 fleetLoss;
+        uint32 planetLoss;
+        uint32 inFlightFleetLoss;
+        uint32 inFlightPlanetLoss;
+        uint32 accumulatedDefenseAdded;
+        uint32 accumulatedAttackAdded;
+    }
+
     event FleetArrived(
         uint256 indexed fleet,
         address indexed fleetOwner,
         address indexed destinationOwner,
         uint256 destination,
         bool gift,
-        uint32 fleetLoss,
-        uint32 planetLoss,
-        uint32 inFlightFleetLoss,
-        uint32 inFlightPlanetLoss,
         bool won,
-        uint32 newNumspaceships,
-        int40 newTravelingUpkeep,
-        uint32 newOverflow,
-        uint32 accumulatedDefenseAdded,
-        uint32 accumulatedAttackAdded
+        ArrivalData data
     );
 
     event TravelingUpkeepReductionFromDestruction(
