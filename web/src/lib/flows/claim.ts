@@ -49,7 +49,7 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
   async claim(coords: {x: number; y: number}): Promise<void> {
     this.setPartial({data: {coords}, step: 'CONNECTING'});
     await privateWallet.login();
-    this.setPartial({step: 'CHOOSE_STAKE'});
+    this.setPartial({step: 'CHOOSE_STAKE', cancelingConfirmation: false});
   }
 
   async confirm(): Promise<void> {
@@ -167,7 +167,7 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
   }
 
   private _reset() {
-    this.setPartial({step: 'IDLE', data: undefined});
+    this.setPartial({step: 'IDLE', data: undefined, cancelingConfirmation: false});
   }
 }
 const store = new ClaimFlowStore();

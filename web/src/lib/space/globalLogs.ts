@@ -57,8 +57,13 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
       stake
     }
     ... on  FleetArrivedEvent{
+      sender {id}
+      operator
       fleet {id}
       destinationOwner {id}
+      taxLoss
+      planetActive
+      numSpaceshipsAtArrival
       gift
       fleetLoss
       planetLoss

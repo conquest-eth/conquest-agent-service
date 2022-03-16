@@ -30,7 +30,7 @@
 </script>
 
 <div class="px-4 sm:px-6 lg:px-8">
-  <div class="sm:flex sm:items-center">
+  <div class="sm:flex sm:items-center sticky top-0 bg-black z-10">
     <div class="sm:flex-auto">
       <h1 class="text-xl font-semibold text-gray-100 mt-4">Logs</h1>
       <p class="mt-2 text-sm text-gray-300">
@@ -172,7 +172,7 @@
 </div>
 
 {#if eventToShowDetails}
-  <Modal on:close={closeDetals}>
+  <Modal maxWidth="max-w-screen-xl" on:close={closeDetals}>
     <EventDetails event={eventToShowDetails} />
   </Modal>
 {/if}

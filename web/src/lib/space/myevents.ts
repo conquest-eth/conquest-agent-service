@@ -76,6 +76,15 @@ export class MyEventsStore implements Readable<MyEvent[]> {
           location: fleetArrived.planet.id,
         });
       }
+      for (const fleetArrived of update.queryState.data.fleetsArrivedAsYou) {
+        newEvents.push({
+          type: 'external_fleet',
+          effect: fleetArrived.gift ? 'good' : 'bad', // TODO
+          event: fleetArrived,
+          id: BigNumber.from(fleetArrived.fleet.id).toHexString(), // TODO remove BigNumber conversion by makign fleetId bytes32 on OuterSPace.sol
+          location: fleetArrived.planet.id,
+        });
+      }
     }
 
     if (update.queryState.data?.planetTimePassedExitEvents) {

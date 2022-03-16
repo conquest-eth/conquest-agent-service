@@ -80,6 +80,7 @@
           : 'Planet is exiting in ' + timeToText(spaceInfo.exitDuration - timePassedSinceExit),
       };
     } else if (event.__typename === 'FleetSentEvent') {
+      // TODO sender = event.sender.id
       origin = spaceInfo.getPlanetInfoViaId(event.planet.id);
       type = 'Sending Fleet';
       quantity = {
@@ -92,6 +93,8 @@
         description: `${quantity.amount} spaceships on their way`,
       };
     } else if (event.__typename === 'FleetArrivedEvent') {
+      sender = event.sender.id;
+      owner = event.owner.id;
       origin = spaceInfo.getPlanetInfoViaId(event.from.id);
       destination = spaceInfo.getPlanetInfoViaId(event.planet.id);
       // owner = event.fl; // TODO
@@ -149,6 +152,7 @@
   $: filteredIn =
     (!filterAddress ||
       sender == filterAddress.toLowerCase() ||
+      owner == filterAddress.toLowerCase() ||
       (!onlySender && (owner === filterAddress.toLowerCase() || destinationOwner === filterAddress.toLowerCase()))) &&
     (!filterType || type.toLowerCase().startsWith(filterType.toLowerCase())) &&
     (!filterOrigin || originStr == filterOrigin) &&
@@ -162,14 +166,16 @@
   >
   <td class={`whitespace-nowrap px-2 py-2 text-sm font-medium ${color} text-center `}
     ><Blockie class="ml-2 w-6 h-6 inline my-1/2 mr-2" address={sender} />{#if owner && owner !== sender}
-      / <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={owner} />{/if}</td
+      <spam class="text-white">&gt;</spam> <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={owner} />{/if}</td
   >
   <td class={`whitespace-nowrap px-2 py-2 text-sm font-medium ${color} text-center `}>{type}</td>
   <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `}
-    >{#if origin}<Coord location={origin.location.id} />{/if}</td
+    >{#if origin}<p class="mb-1">{origin.stats.name}</p>
+      <Coord location={origin.location.id} />{/if}</td
   >
   <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `}
-    >{#if destination}<Coord location={destination.location.id} />{/if}
+    >{#if destination}<p>{destination.stats.name}</p>
+      <Coord location={destination.location.id} />{/if}
     {#if destinationOwner} <Blockie class="m-1 w-6 h-6 inline my-1/2 mr-2" address={destinationOwner} />{/if}</td
   >
   <!-- <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `}

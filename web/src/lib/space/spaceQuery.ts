@@ -57,6 +57,7 @@ export type SpaceQueryResult = {
   chain?: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou?: FleetArrivedEvent[]; // TODO
   fleetsArrivedToYou?: FleetArrivedEvent[]; // TODO
+  fleetsArrivedAsYou?: FleetArrivedEvent[]; // TODO
   planetInteruptedExitEvents?: PlanetInteruptedExitEvent[];
   planetTimePassedExitEvents?: PlanetTimePassedExitEvent[];
 };
@@ -69,6 +70,7 @@ export type SpaceState = {
   chain: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou: FleetArrivedParsedEvent[]; // TODO
   fleetsArrivedToYou: FleetArrivedParsedEvent[]; // TODO
+  fleetsArrivedAsYou?: FleetArrivedParsedEvent[]; // TODO
   planetInteruptedExitEvents?: PlanetInteruptedExitParsedEvent[];
   planetTimePassedExitEvents?: PlanetTimePassedExitParsedEvent[];
 };
@@ -155,7 +157,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     complete
     success
   }
-  fleetsArrivedFromYou: fleetArrivedEvents(where: {owner: $owner timestamp_gt: $fromTime} orderBy: timestamp, orderDirection: desc) {
+  fleetsArrivedFromYou: fleetArrivedEvents(where: {sender: $owner timestamp_gt: $fromTime} orderBy: timestamp, orderDirection: desc) {
     id
     blockNumber
     timestamp
@@ -179,7 +181,31 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     quantity
   }
 
-  fleetsArrivedToYou: fleetArrivedEvents(where: {destinationOwner: $owner owner_not: $owner timestamp_gt: $fromTime} orderBy: timestamp, orderDirection: desc) {
+  fleetsArrivedAsYou: fleetArrivedEvents(where: {sender_not: $owner owner: $owner destinationOwner_not: $owner timestamp_gt: $fromTime} orderBy: timestamp, orderDirection: desc) {
+    id
+    blockNumber
+    timestamp
+    transaction {id}
+    owner {id}
+    planet {id}
+    fleet {id}
+    destinationOwner {id}
+    gift
+    fleetLoss
+    planetLoss
+    inFlightFleetLoss
+    inFlightPlanetLoss
+    won
+    newNumspaceships
+    newTravelingUpkeep
+    newOverflow
+    accumulatedDefenseAdded
+    accumulatedAttackAdded
+    from {id}
+    quantity
+  }
+
+  fleetsArrivedToYou: fleetArrivedEvents(where: {destinationOwner: $owner sender_not: $owner timestamp_gt: $fromTime} orderBy: timestamp, orderDirection: desc) {
     id
     blockNumber
     timestamp
@@ -311,6 +337,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       },
       fleetsArrivedFromYou: !data.fleetsArrivedFromYou ? [] : data.fleetsArrivedFromYou.map(parseFleetArrived),
       fleetsArrivedToYou: !data.fleetsArrivedToYou ? [] : data.fleetsArrivedToYou.map(parseFleetArrived),
+      fleetsArrivedAsYou: !data.fleetsArrivedAsYou ? [] : data.fleetsArrivedAsYou.map(parseFleetArrived),
       planetInteruptedExitEvents: !data.planetInteruptedExitEvents
         ? []
         : data.planetInteruptedExitEvents.map(parsePlanetInteruptedExitEvent),

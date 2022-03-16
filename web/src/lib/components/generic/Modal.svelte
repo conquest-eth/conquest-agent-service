@@ -5,6 +5,7 @@
   export let title = '';
   export let cancelable = true;
   export let closeOnOutsideClick = true;
+  export let maxWidth = 'md:max-w-md';
 
   export let border_color = 'border-cyan-300';
 
@@ -64,11 +65,16 @@
 <!-- container -->
 <div class="z-50 fixed w-full h-full top-0 left-0 flex items-center justify-center">
   <!-- clickable dark overlay -->
-  <div on:click={() => {if (closeOnOutsideClick) close()}} class="absolute w-full h-full bg-gray-900 opacity-80" />
+  <div
+    on:click={() => {
+      if (closeOnOutsideClick) close();
+    }}
+    class="absolute w-full h-full bg-gray-900 opacity-80"
+  />
 
   <!--modal-->
   <div
-    class={`absolute border-2 w-11/12 md:max-w-md mx-auto overflow-y-auto bg-gray-900 max-h-screen text-cyan-300 ${border_color}`}
+    class={`absolute border-2 w-11/12 ${maxWidth} mx-auto overflow-y-auto bg-gray-900 max-h-screen text-cyan-300 ${border_color}`}
   >
     {#if globalCloseButton}
       <div
