@@ -2,21 +2,31 @@
   import {base} from '$app/paths';
 
   import {globalLogs} from '$lib/space/globalLogs';
-  import {BigNumber} from '@ethersproject/bignumber';
   import {onMount} from 'svelte';
   import LogRow from '$lib/components/events/LogRow.svelte';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
+  import type {GenericParsedEvent} from '$lib/space/subgraphTypes';
+  import Modal from '$lib/components/generic/Modal.svelte';
+  import EventDetails from '$lib/components/events/EventDetails.svelte';
   onMount(() => {
     globalLogs.start();
   });
 
   $: logs = $globalLogs?.data ? $globalLogs.data : [];
 
-  let onlySender: boolean = true;
+  let onlySender: boolean = false;
   let filterAddress: string | undefined;
   let filterType: string | undefined;
   let filterOrigin: string | undefined;
   let filterDestination: string | undefined;
+
+  let eventToShowDetails: GenericParsedEvent | undefined;
+  function showDetails(event: GenericParsedEvent) {
+    eventToShowDetails = event;
+  }
+  function closeDetals() {
+    eventToShowDetails = undefined;
+  }
 </script>
 
 <div class="px-4 sm:px-6 lg:px-8">
@@ -76,9 +86,7 @@
                   scope="col"
                   class="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-100">Outcome</th
                 >
-                <th scope="col" class="relative whitespace-nowrap text-right py-3.5 pl-3 pr-4 sm:pr-6">
-                  Transaction
-                </th>
+                <th scope="col" class="relative whitespace-nowrap text-right py-3.5 pl-3 pr-4 sm:pr-6" />
               </tr>
             </thead>
             <thead class="bg-gray-950">
@@ -95,6 +103,12 @@
                     name="filterAddress"
                     class="bg-black text-white ring-1 ring-gray-500 m-2 w-20"
                     bind:value={filterAddress}
+                  /><br />
+                  <label class="text-xs" for="onlySender">sender only: </label><input
+                    class="w-3 h-3"
+                    name="onlySender"
+                    type="checkbox"
+                    bind:checked={onlySender}
                   />
                 </th>
                 <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
@@ -136,7 +150,15 @@
             <tbody class="divide-y divide-gray-800 bg-black">
               {#each logs as event}
                 <tr>
-                  <LogRow {filterType} {filterAddress} {filterDestination} {filterOrigin} {onlySender} {event} />
+                  <LogRow
+                    on:click={() => showDetails(event)}
+                    {filterType}
+                    {filterAddress}
+                    {filterDestination}
+                    {filterOrigin}
+                    {onlySender}
+                    {event}
+                  />
                 </tr>
               {/each}
 
@@ -148,3 +170,9 @@
     </div>
   </div>
 </div>
+
+{#if eventToShowDetails}
+  <Modal on:close={closeDetals}>
+    <EventDetails event={eventToShowDetails} />
+  </Modal>
+{/if}

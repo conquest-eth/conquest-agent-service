@@ -1,11 +1,12 @@
 import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {blockTime, finality, logPeriod, lowFrequencyFetch} from '$lib/config';
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
-import type {GenericEvent} from './subgraphTypes';
+import type {GenericEvent, GenericParsedEvent} from './subgraphTypes';
+import {parseEvent} from './subgraphTypes';
 
 export type GlobalLogs = {
   step: 'IDLE' | 'LOADING' | 'READY';
-  data?: GenericEvent[];
+  data?: GenericParsedEvent[];
   error?: string;
 };
 
@@ -17,7 +18,7 @@ type QueryData = {
 //  __typename cannot be used for that. should maybe add a manual typename
 const eventsToFilterOut = ['TravelingUpkeepReductionFromDestructionEvent', 'StakeToWithdrawEvent', 'ExitCompleteEvent'];
 
-class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericEvent[]> {
+class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]> {
   private timeout: NodeJS.Timeout;
   public constructor() {
     super({
@@ -100,7 +101,9 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericEvent[]> {
         throw new Error(`cannot fetch from thegraph node`);
       }
 
-      const events = result.data.ownerEvents.filter((v) => eventsToFilterOut.indexOf(v.__typename) === -1);
+      const events = result.data.ownerEvents
+        .filter((v) => eventsToFilterOut.indexOf(v.__typename) === -1)
+        .map(parseEvent);
 
       this.setPartial({data: events});
 

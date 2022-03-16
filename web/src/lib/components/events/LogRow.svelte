@@ -2,7 +2,7 @@
   import Blockie from '$lib/components/account/Blockie.svelte';
   import Coord from '$lib/components/utils/Coord.svelte';
   import {spaceInfo} from '$lib/space/spaceInfo';
-  import type {GenericEvent} from '$lib/space/subgraphTypes';
+  import type {GenericParsedEvent} from '$lib/space/subgraphTypes';
   import {time} from '$lib/time';
 
   import {timeToText} from '$lib/utils';
@@ -10,7 +10,7 @@
   import type {PlanetInfo} from 'conquest-eth-common';
   import PlayCoin from '../utils/PlayCoin.svelte';
 
-  export let event: GenericEvent;
+  export let event: GenericParsedEvent;
 
   export let onlySender: boolean = true;
   export let filterAddress: string | undefined = undefined;
@@ -69,7 +69,7 @@
         type: 'Stake',
         amount: origin.stats.stake,
       };
-      const timePassedSinceExit = $time - parseInt(event.exitTime);
+      const timePassedSinceExit = $time - event.exitTime;
       outcome = {
         winner: undefined,
         stake: origin.stats.stake,
@@ -84,7 +84,7 @@
       type = 'Sending Fleet';
       quantity = {
         type: 'Spaceships',
-        amount: parseInt(event.quantity),
+        amount: event.quantity,
       };
       outcome = {
         winner: undefined,
@@ -108,14 +108,14 @@
       }
       quantity = {
         type: 'Spaceships',
-        amount: parseInt(event.quantity),
+        amount: event.quantity,
       };
       const winner = event.gift ? undefined : event.won ? event.owner.id : event.destinationOwner.id;
-      let description: string | string[] = `${quantity.amount - parseInt(event.inFlightFleetLoss)} spaceships arrived`;
+      let description: string | string[] = `${quantity.amount - event.inFlightFleetLoss} spaceships arrived`;
       if (!event.gift) {
         description = [
-          `The fleet had ${parseInt(event.quantity) - parseInt(event.inFlightFleetLoss)} spaceships`,
-          `Planet had ${parseInt(event.planetLoss) + parseInt(event.inFlightPlanetLoss)} spaceships`,
+          `The fleet had ${event.quantity - event.inFlightFleetLoss} spaceships`,
+          `Planet had ${event.planetLoss + event.inFlightPlanetLoss} spaceships`,
         ];
       }
       outcome = {
@@ -147,7 +147,9 @@
   }
 
   $: filteredIn =
-    (!filterAddress || sender == filterAddress.toLowerCase()) &&
+    (!filterAddress ||
+      sender == filterAddress.toLowerCase() ||
+      (!onlySender && (owner === filterAddress.toLowerCase() || destinationOwner === filterAddress.toLowerCase()))) &&
     (!filterType || type.toLowerCase().startsWith(filterType.toLowerCase())) &&
     (!filterOrigin || originStr == filterOrigin) &&
     (!filterDestination || destinationStr == filterDestination);
@@ -155,7 +157,7 @@
 
 {#if filteredIn}
   <td class={`whitespace-nowrap py-2 pl-4 pr- text-sm sm:pl-6 ${color} text-center `}>
-    {timeToText($time - parseInt(event.timestamp), {compact: true})}
+    {timeToText($time - event.timestamp, {compact: true})}
     ago</td
   >
   <td class={`whitespace-nowrap px-2 py-2 text-sm font-medium ${color} text-center `}
@@ -168,7 +170,7 @@
   >
   <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `}
     >{#if destination}<Coord location={destination.location.id} />{/if}
-    {#if destinationOwner}<Blockie class="w-6 h-6 inline my-1/2 mr-2" address={destinationOwner} />{/if}</td
+    {#if destinationOwner} <Blockie class="m-1 w-6 h-6 inline my-1/2 mr-2" address={destinationOwner} />{/if}</td
   >
   <!-- <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `}
     >{#if quantity}{#if quantity.type === 'Spaceships'}
@@ -213,10 +215,6 @@
   {/if}
 
   <td class="relative whitespace-nowrap py-2 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-    <a
-      href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transaction.id}`}
-      target="_blank"
-      class="text-indigo-600 hover:text-indigo-100">Transaction</a
-    >
+    <button on:click class="text-indigo-600 hover:text-indigo-100">Details</button>
   </td>
 {/if}

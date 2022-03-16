@@ -10,10 +10,13 @@ import type {AccountState} from '$lib/account/account';
 import {account} from '$lib/account/account';
 import type {
   FleetArrivedEvent,
-  PlanetExitEvent,
+  FleetArrivedParsedEvent,
   PlanetInteruptedExitEvent,
-  planetTimePassedExitEvent,
+  PlanetInteruptedExitParsedEvent,
+  PlanetTimePassedExitEvent,
+  PlanetTimePassedExitParsedEvent,
 } from './subgraphTypes';
+import {parseFleetArrived, parsePlanetInteruptedExitEvent, parseplanetTimePassedExitEvent} from './subgraphTypes';
 import {deletionDelay} from '$lib/config';
 import {now} from '$lib/time';
 import {BigNumber} from '@ethersproject/bignumber';
@@ -46,73 +49,6 @@ export type PlanetContractState = {
   rewardGiver: string;
 };
 
-export type OwnerParsedEvent = {
-  transaction: {id: string};
-  owner: {id: string};
-  timestamp: number;
-  blockNumber: number;
-};
-
-export type GenericParsedEvent =
-  | PlanetStakeParsedEvent
-  | PlanetExitParsedEvent
-  | FleetArrivedParsedEvent
-  | FleetSentParsedEvent
-  | PlanetExitParsedEvent;
-
-export type PlanetParsedEvent = OwnerParsedEvent & {
-  __typename: 'PlanetStakeEvent' | 'PlanetExitEvent' | 'FleetSentEvent' | 'FleetArrivedEvent';
-  planet: {id: string};
-};
-
-export type PlanetStakeParsedEvent = PlanetParsedEvent & {
-  __typename: 'PlanetStakeEvent';
-  numSpaceships: string;
-  stake: string;
-};
-
-export type PlanetExitParsedEvent = PlanetParsedEvent & {
-  __typename: 'PlanetExitEvent';
-  exitTime: number;
-  stake: BigNumber;
-  interupted: boolean;
-  complete: boolean;
-  success: boolean;
-};
-
-export type PlanetInteruptedExitParsedEvent = PlanetExitParsedEvent & {
-  interupted: true;
-};
-export type planetTimePassedExitParsedEvent = PlanetExitParsedEvent & {
-  interupted: false;
-};
-
-export type FleetArrivedParsedEvent = PlanetParsedEvent & {
-  __typename: 'FleetArrivedEvent';
-  fleetLoss: number;
-  planetLoss: number;
-  inFlightFleetLoss: number;
-  inFlightPlanetLoss: number;
-  destinationOwner: {id: string};
-  gift: boolean;
-  fleet: {id: string};
-  from: {id: string};
-  won: boolean;
-  quantity: number;
-  planet: {id: string};
-  newNumspaceships: number;
-  newTravelingUpkeep: number;
-  newOverflow: number;
-  accumulatedDefenseAdded: number;
-  accumulatedAttackAdded: number;
-};
-
-export type FleetSentParsedEvent = PlanetParsedEvent & {
-  __typename: 'FleetSentEvent';
-  fleet: {id: string};
-  quantity: number;
-};
-
 export type SpaceQueryResult = {
   otherplanets: PlanetQueryState[];
   myplanets?: PlanetQueryState[];
@@ -122,7 +58,7 @@ export type SpaceQueryResult = {
   fleetsArrivedFromYou?: FleetArrivedEvent[]; // TODO
   fleetsArrivedToYou?: FleetArrivedEvent[]; // TODO
   planetInteruptedExitEvents?: PlanetInteruptedExitEvent[];
-  planetTimePassedExitEvents?: planetTimePassedExitEvent[];
+  planetTimePassedExitEvents?: PlanetTimePassedExitEvent[];
 };
 
 export type SpaceState = {
@@ -134,58 +70,8 @@ export type SpaceState = {
   fleetsArrivedFromYou: FleetArrivedParsedEvent[]; // TODO
   fleetsArrivedToYou: FleetArrivedParsedEvent[]; // TODO
   planetInteruptedExitEvents?: PlanetInteruptedExitParsedEvent[];
-  planetTimePassedExitEvents?: planetTimePassedExitParsedEvent[];
+  planetTimePassedExitEvents?: PlanetTimePassedExitParsedEvent[];
 };
-
-function parseFleetArrived(v: FleetArrivedEvent): FleetArrivedParsedEvent {
-  return {
-    __typename: v.__typename,
-    transaction: v.transaction,
-    owner: v.owner,
-    timestamp: parseInt(v.timestamp),
-    blockNumber: v.blockNumber,
-    planet: v.planet,
-    fleetLoss: parseInt(v.fleetLoss),
-    planetLoss: parseInt(v.planetLoss),
-    inFlightFleetLoss: parseInt(v.inFlightFleetLoss),
-    inFlightPlanetLoss: parseInt(v.inFlightPlanetLoss),
-    destinationOwner: v.destinationOwner,
-    gift: v.gift,
-    fleet: v.fleet,
-    from: v.from,
-    won: v.won,
-    quantity: parseInt(v.quantity),
-    newNumspaceships: parseInt(v.newNumspaceships),
-    newOverflow: parseInt(v.newOverflow),
-    newTravelingUpkeep: parseInt(v.newTravelingUpkeep),
-    accumulatedAttackAdded: parseInt(v.accumulatedAttackAdded),
-    accumulatedDefenseAdded: parseInt(v.accumulatedDefenseAdded),
-  };
-}
-
-function parsePlanetExitEvent(v: PlanetExitEvent, interupted: boolean): PlanetExitParsedEvent {
-  return {
-    __typename: v.__typename,
-    transaction: v.transaction,
-    owner: v.owner,
-    timestamp: parseInt(v.timestamp),
-    blockNumber: v.blockNumber,
-    planet: v.planet,
-    stake: BigNumber.from(v.stake),
-    exitTime: parseInt(v.exitTime),
-    complete: v.complete,
-    interupted, // : v.interupted,
-    success: v.success,
-  };
-}
-
-function parsePlanetInteruptedExitEvent(v: PlanetExitEvent): PlanetInteruptedExitParsedEvent {
-  return parsePlanetExitEvent(v, true) as PlanetInteruptedExitParsedEvent;
-}
-
-function parseplanetTimePassedExitEvent(v: PlanetExitEvent): planetTimePassedExitParsedEvent {
-  return parsePlanetExitEvent(v, false) as planetTimePassedExitParsedEvent;
-}
 
 // TODO fleetArrivedEvents need to be capped from 7 days / latest acknowledged block number
 export class SpaceQueryStore implements QueryStore<SpaceState> {
