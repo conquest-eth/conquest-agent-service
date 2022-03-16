@@ -12,17 +12,7 @@
   import {spaceInfo} from '$lib/space/spaceInfo';
   import type {PlanetInfo, PlanetState} from 'conquest-eth-common';
   import type {Readable} from 'svelte/store';
-
-  function _select(elem: HTMLElement) {
-    const range = document.createRange();
-    const selection = window.getSelection();
-    range.selectNodeContents(elem);
-    (selection as any).removeAllRanges();
-    (selection as any).addRange(range);
-  }
-  function select(e: MouseEvent) {
-    _select(e.currentTarget as HTMLElement);
-  }
+  import Copiable from '../generic/Copiable.svelte';
 
   $: walletIsOwner = $wallet.address && $wallet.address?.toLowerCase() === $planetState?.owner?.toLowerCase();
   $: textColor =
@@ -61,15 +51,15 @@
     </Tooltip> -->
   {/if}
 </div>
-{#if $planetState && $planetState.owner}
-  <h2 on:click={select} class={`flex-auto text-center -m-2 font-bold text-white`}>
-    {planetInfo.location.x},{planetInfo.location.y}
-  </h2>
-{:else}
-  <h2 on:click={select} class={`flex-auto text-center font-bold text-white`}>
-    {planetInfo.location.x},{planetInfo.location.y}
-  </h2>
-{/if}
+<p class={`flex-auto text-center -m-2 font-bold text-white`}>
+  <Copiable text={`${planetInfo.location.x},${planetInfo.location.y}`}>
+    {#if $planetState && $planetState.owner}
+      <span style="user-select: all; cursor: pointer;">{planetInfo.location.x},{planetInfo.location.y}</span>
+    {:else}
+      <span style="user-select: all; cursor: pointer;">{planetInfo.location.x},{planetInfo.location.y}</span>
+    {/if}
+  </Copiable>
+</p>
 <div class="w-full h-1 bg-cyan-300 my-2" />
 
 <div class="m-2 text-xs ">

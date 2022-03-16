@@ -1,6 +1,7 @@
 <script lang="ts">
   // blockie generation code from https://github.com/stephensprinkle/react-blockies, itself referenced from https://github.com/alexvandesande/blockies
-  import {afterUpdate} from 'svelte';
+  import {afterUpdate, tick} from 'svelte';
+  import Copiable from '../generic/Copiable.svelte';
 
   export let _class = '';
   export {_class as class};
@@ -134,9 +135,18 @@
   }
 
   afterUpdate(update);
+
+  let copied = false;
+  async function copy() {
+    navigator.clipboard.writeText(address);
+    copied = true;
+    setTimeout(() => (copied = false), 600);
+  }
 </script>
 
-<canvas class={_class} bind:this={canvas} alt={address} />
+<Copiable text={address}>
+  <canvas class={_class} bind:this={canvas} alt={address} />
+</Copiable>
 
 <style>
   canvas {

@@ -18,6 +18,18 @@
   function formatStake(stake: string): number {
     return BigNumber.from(stake).div('1000000000000000000').toNumber();
   }
+
+  $: logs = $globalLogs?.data
+    ? $globalLogs.data.filter(
+        (v) =>
+          !filterAddress ||
+          v.owner?.id.toLowerCase() == filterAddress.toLowerCase() ||
+          (!onlySender && v.destinationOwner?.id.toLowerCase() == filterAddress.toLowerCase())
+      )
+    : [];
+
+  let onlySender: boolean = true;
+  let filterAddress: string | undefined;
 </script>
 
 <!-- TODO https://tailwindui.com/components/application-ui/lists/feeds ?-->
@@ -36,6 +48,14 @@
         <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div class="shadow overflow-hidden border-b border-cyan-200 sm:rounded-lg">
+              <label for="filterAddress">Filter per Player address: </label><input
+                type="text"
+                onClick="this.select();"
+                name="filterAddress"
+                class="bg-black text-white ring-1 ring-gray-500 m-2"
+                bind:value={filterAddress}
+              />
+              <label for="anyField">onlySender</label><input type="checkbox" bind:checked={onlySender} />
               <table class="min-w-full divide-y divide-cyan-200">
                 <thead class="bg-black-50">
                   <tr>
@@ -55,7 +75,7 @@
                   </tr>
                 </thead>
                 <tbody class="bg-black divide-y divide-cyan-200">
-                  {#each $globalLogs?.data as event}
+                  {#each logs as event}
                     <tr>
                       {#if event.__typename === 'FleetSentEvent'}
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -64,9 +84,6 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
-                          <div class="w-6 h-6 text-xs" style={`white-space: nowrap;overflow: hidden;`}>
-                            {event.owner.id}
-                          </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           sent
@@ -89,9 +106,6 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
-                          <div class="w-6 h-6 text-xs" style={`white-space: nowrap;overflow: hidden;`}>
-                            {event.owner.id}
-                          </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           {#if event.destinationOwner.id !== event.owner.id}
@@ -105,9 +119,6 @@
                                 {#if event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}
                                   from
                                   <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
-                                  <div class="w-6 h-6 text-xs" style={`white-space: nowrap;overflow: hidden;`}>
-                                    {event.destinationOwner.id}
-                                  </div>
                                 {/if}
                               </p>
                               <p>
@@ -125,12 +136,6 @@
                                 {event.planetLoss}
                                 spaceships from
                                 <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
-                                <span
-                                  class="w-6 h-6 text-xs inline-block -my-1/2 -ml-2"
-                                  style={`white-space: nowrap;overflow: hidden;`}
-                                >
-                                  {event.destinationOwner.id}
-                                </span>
                                 at
                                 <Coord location={event.planet.id} />
                               </p>
@@ -171,9 +176,6 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
-                          <div class="w-6 h-6 text-xs" style={`white-space: nowrap;overflow: hidden;`}>
-                            {event.owner.id}
-                          </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           attempting to exit planet
@@ -199,9 +201,6 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
-                          <div class="w-6 h-6 text-xs" style={`white-space: nowrap;overflow: hidden;`}>
-                            {event.owner.id}
-                          </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                           claimed planet
