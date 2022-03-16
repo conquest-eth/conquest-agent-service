@@ -1,243 +1,150 @@
 <script lang="ts">
   import {base} from '$app/paths';
 
-  import Blockie from '$lib/components/account/Blockie.svelte';
-  import Coord from '$lib/components/utils/Coord.svelte';
-  import NavButton from '$lib/components/navigation/NavButton.svelte';
-  import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
-
   import {globalLogs} from '$lib/space/globalLogs';
-  import {now, time} from '$lib/time';
-  import {timeToText} from '$lib/utils';
   import {BigNumber} from '@ethersproject/bignumber';
   import {onMount} from 'svelte';
+  import LogRow from '$lib/components/events/LogRow.svelte';
+  import NavButton from '$lib/components/navigation/NavButton.svelte';
   onMount(() => {
     globalLogs.start();
   });
 
-  function formatStake(stake: string): number {
-    return BigNumber.from(stake).div('1000000000000000000').toNumber();
-  }
-
-  $: logs = $globalLogs?.data
-    ? $globalLogs.data.filter(
-        (v) =>
-          !filterAddress ||
-          v.owner?.id.toLowerCase() == filterAddress.toLowerCase() ||
-          (!onlySender && v.destinationOwner?.id.toLowerCase() == filterAddress.toLowerCase())
-      )
-    : [];
+  $: logs = $globalLogs?.data ? $globalLogs.data : [];
 
   let onlySender: boolean = true;
   let filterAddress: string | undefined;
+  let filterType: string | undefined;
+  let filterOrigin: string | undefined;
+  let filterDestination: string | undefined;
 </script>
 
-<!-- TODO https://tailwindui.com/components/application-ui/lists/feeds ?-->
+<div class="px-4 sm:px-6 lg:px-8">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-xl font-semibold text-gray-100 mt-4">Logs</h1>
+      <p class="mt-2 text-sm text-gray-300">
+        {#if $globalLogs.error}
+          {$globalLogs.error}
+        {:else if $globalLogs.step === 'IDLE'}
+          Please wait...
+        {:else if $globalLogs.step === 'LOADING'}
+          Loading...
+        {:else}
+          Game events
+        {/if}
+      </p>
+    </div>
+    <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+      <!-- <button
+        type="button"
+        class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto"
+        >Back To Game</button
+      > -->
+      <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
+    </div>
+  </div>
+  <div class="mt-8 flex flex-col">
+    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+        <div class="overflow-hidden shadow ring-1 ring-white ring-opacity-5 md:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-700">
+            <thead class="bg-gray-950">
+              <tr>
+                <th
+                  scope="col"
+                  class="whitespace-nowrap py-3.5 pl-4 pr-3 text-center text-sm font-semibold text-gray-100 sm:pl-6"
+                  >Time</th
+                >
+                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-100"
+                  >Sender</th
+                >
+                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-100"
+                  >Type</th
+                >
+                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-100"
+                  >Origin</th
+                >
+                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-100"
+                  >Destination</th
+                >
+                <!-- <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-100"
+                  >Quantity</th
+                > -->
+                <th
+                  colspan="2"
+                  scope="col"
+                  class="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-100">Outcome</th
+                >
+                <th scope="col" class="relative whitespace-nowrap text-right py-3.5 pl-3 pr-4 sm:pr-6">
+                  Transaction
+                </th>
+              </tr>
+            </thead>
+            <thead class="bg-gray-950">
+              <tr>
+                <th
+                  scope="col"
+                  class="whitespace-nowrap py-3.5 pl-4 pr-3 text-right text-sm font-semibold text-gray-500 sm:pl-6"
+                  >Filters:</th
+                >
+                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
+                  ><input
+                    type="text"
+                    onClick="this.select();"
+                    name="filterAddress"
+                    class="bg-black text-white ring-1 ring-gray-500 m-2 w-20"
+                    bind:value={filterAddress}
+                  />
+                </th>
+                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
+                  ><input
+                    type="text"
+                    onClick="this.select();"
+                    name="filterType"
+                    class="bg-black text-white ring-1 ring-gray-500 m-2 w-20"
+                    bind:value={filterType}
+                  /></th
+                >
+                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
+                  ><input
+                    type="text"
+                    onClick="this.select();"
+                    name="filterOrigin"
+                    class="bg-black text-white ring-1 ring-gray-500 m-2 w-20"
+                    bind:value={filterOrigin}
+                  /></th
+                >
+                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
+                  ><input
+                    type="text"
+                    onClick="this.select();"
+                    name="filterDestination"
+                    class="bg-black text-white ring-1 ring-gray-500 m-2 w-20"
+                    bind:value={filterDestination}
+                  /></th
+                >
+                <!-- <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500" /> -->
+                <th
+                  colspan="2"
+                  scope="col"
+                  class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
+                />
+                <th scope="col" class="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-6" />
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800 bg-black">
+              {#each logs as event}
+                <tr>
+                  <LogRow {filterType} {filterAddress} {filterDestination} {filterOrigin} {onlySender} {event} />
+                </tr>
+              {/each}
 
-<div class="w-full h-full bg-black text-white">
-  <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
-  <div class="markdown text-white p-3">
-    {#if $globalLogs.error}
-      {$globalLogs.error}
-    {:else if $globalLogs.step === 'IDLE'}
-      Please wait...
-    {:else if $globalLogs.step === 'LOADING'}
-      Loading...
-    {:else}
-      <div class="flex flex-col">
-        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div class="shadow overflow-hidden border-b border-cyan-200 sm:rounded-lg">
-              <label for="filterAddress">Filter per Player address: </label><input
-                type="text"
-                onClick="this.select();"
-                name="filterAddress"
-                class="bg-black text-white ring-1 ring-gray-500 m-2"
-                bind:value={filterAddress}
-              />
-              <label for="anyField">onlySender</label><input type="checkbox" bind:checked={onlySender} />
-              <table class="min-w-full divide-y divide-cyan-200">
-                <thead class="bg-black-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-medium text-white-500 uppercase tracking-wider">Time</th
-                    >
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-medium text-white-500 uppercase tracking-wider">User</th
-                    >
-                    <th
-                      scope="col"
-                      class="px-6 py-3 text-left text-xs font-medium text-white-500 uppercase tracking-wider">Action</th
-                    >
-                    <th scope="col" class="relative px-6 py-3"> <span class="sr-only">tx</span></th>
-                  </tr>
-                </thead>
-                <tbody class="bg-black divide-y divide-cyan-200">
-                  {#each logs as event}
-                    <tr>
-                      {#if event.__typename === 'FleetSentEvent'}
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          {timeToText($time - parseInt(event.timestamp), {compact: true})}
-                          ago
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          sent
-                          {event.quantity}
-                          spaceships from
-                          <Coord location={event.planet.id} />
-                        </td>
-                        <!-- {timeToText(now() - event.timestamp)} -->
-                        <!-- ago -->
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <a
-                            href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transaction.id}`}
-                            class="underline">(see tx)</a
-                          >
-                        </td>
-                      {:else if event.__typename === 'FleetArrivedEvent'}
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          {timeToText($time - parseInt(event.timestamp), {compact: true})}
-                          ago
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          {#if event.destinationOwner.id !== event.owner.id}
-                            {#if event.won}
-                              <p>
-                                fleet from
-                                <Coord location={event.from.id} />
-
-                                captured planet
-                                <Coord location={event.planet.id} />
-                                {#if event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'}
-                                  from
-                                  <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
-                                {/if}
-                              </p>
-                              <p>
-                                The fleet had {parseInt(event.quantity) - parseInt(event.inFlightFleetLoss)} spaceships
-                              </p>
-                              <p>
-                                Planet had {parseInt(event.planetLoss) + parseInt(event.inFlightPlanetLoss)} spaceships
-                              </p>
-                            {:else}
-                              <p>
-                                fleet from
-                                <Coord location={event.from.id} />
-
-                                destroyed
-                                {event.planetLoss}
-                                spaceships from
-                                <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.destinationOwner.id} />
-                                at
-                                <Coord location={event.planet.id} />
-                              </p>
-                              <p>
-                                The fleet had {parseInt(event.quantity) - parseInt(event.inFlightFleetLoss)} spaceships
-                              </p>
-                              <p>
-                                Planet had {parseInt(event.newNumspaceships) +
-                                  parseInt(event.planetLoss) +
-                                  parseInt(event.inFlightPlanetLoss)} spaceships
-                              </p>
-                            {/if}
-                          {:else}
-                            <p>
-                              fleet from
-                              <Coord location={event.from.id} />
-
-                              arrived at
-                              <Coord location={event.planet.id} />
-                              with
-                              {parseInt(event.quantity) - parseInt(event.inFlightFleetLoss)}
-                              spaceships
-                            </p>
-                          {/if}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <!-- {timeToText(now() - event.timestamp)} -->
-                          <!-- ago -->
-                          <a
-                            href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transaction.id}`}
-                            class="underline">(see tx)</a
-                          >
-                        </td>
-                      {:else if event.__typename === 'PlanetExitEvent'}
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          {timeToText($time - parseInt(event.timestamp), {compact: true})}
-                          ago
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          attempting to exit planet
-                          <Coord location={event.planet.id} />
-                          with
-                          {formatStake(event.stake)}
-                          <PlayCoin class="w-4 h-4 inline" />
-                          <!-- will complete on
-                {timeToText($time - (parseInt(event.exitTime) + spaceInfo.exitDuration))} -->
-                          <!-- {timeToText(now() - event.timestamp)} -->
-                          <!-- ago -->
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <a
-                            href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transaction.id}`}
-                            class="underline">(see tx)</a
-                          >
-                        </td>
-                      {:else if event.__typename === 'PlanetStakeEvent'}
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          {timeToText($time - parseInt(event.timestamp), {compact: true})}
-                          ago
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          claimed planet
-                          <Coord location={event.planet.id} />
-                          with
-                          {formatStake(event.stake)}
-                          <PlayCoin class="w-4 h-4 inline" />
-                          <!-- {timeToText(now() - event.timestamp)} -->
-                          <!-- ago -->
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                          <a
-                            href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transaction.id}`}
-                            class="underline">(see tx)</a
-                          >
-                        </td>
-                        <!-- {:else if event.__typename === 'StakeToWithdrawEvent'} -->
-                        <!-- TODO ?-->
-                        <!-- {:else if event.__typename === 'ExitCompleteEvent'} -->
-                        <!-- TODO ?-->
-                        <!-- {:else if event.__typename === 'RewardToWithdrawEvent'} -->
-                        <!-- TODO ?-->
-                      {:else}
-                        <!-- unknown event -->
-                        <!-- <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={event.owner.id} />
-                <a
-                href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${event.transaction.id}`}
-                class="underline">(see tx)</a> -->
-                      {/if}
-                    </tr>
-                  {/each}
-                </tbody>
-              </table>
-            </div>
-          </div>
+              <!-- More transactions... -->
+            </tbody>
+          </table>
         </div>
       </div>
-    {/if}
+    </div>
   </div>
 </div>

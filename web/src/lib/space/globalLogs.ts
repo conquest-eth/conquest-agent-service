@@ -13,6 +13,10 @@ type QueryData = {
   ownerEvents: GenericEvent[];
 };
 
+// TODO __typename_not_in: [""]
+//  __typename cannot be used for that. should maybe add a manual typename
+const eventsToFilterOut = ['TravelingUpkeepReductionFromDestructionEvent', 'StakeToWithdrawEvent', 'ExitCompleteEvent'];
+
 class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericEvent[]> {
   private timeout: NodeJS.Timeout;
   public constructor() {
@@ -31,6 +35,7 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericEvent[]> {
         orderBy: blockNumber
         where: {
           timestamp_gt: $timestamp
+          # TODO : __typename_not_in: [""]
         }
         first: 1000
       ) {
@@ -51,16 +56,21 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericEvent[]> {
       stake
     }
     ... on  FleetArrivedEvent{
+      fleet {id}
+      destinationOwner {id}
+      gift
       fleetLoss
       planetLoss
       inFlightFleetLoss
       inFlightPlanetLoss
-      destinationOwner{id}
-      fleet{id}
-      from{id}
       won
-      quantity
       newNumspaceships
+      newTravelingUpkeep
+      newOverflow
+      accumulatedDefenseAdded
+      accumulatedAttackAdded
+      from {id}
+      quantity
     }
     ... on FleetSentEvent{
       fleet{id}
@@ -90,7 +100,7 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericEvent[]> {
         throw new Error(`cannot fetch from thegraph node`);
       }
 
-      const events = result.data.ownerEvents;
+      const events = result.data.ownerEvents.filter((v) => eventsToFilterOut.indexOf(v.__typename) === -1);
 
       this.setPartial({data: events});
 
