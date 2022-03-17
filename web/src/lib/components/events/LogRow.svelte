@@ -207,7 +207,15 @@
               color = 'text-red-400';
             }
           } else {
-            color = 'text-blue-500';
+            if (walletAddress === destinationOwner) {
+              if (outcome.captured) {
+                color = 'text-red-400';
+              } else {
+                color = 'text-green-400';
+              }
+            } else {
+              color = 'text-blue-500';
+            }
           }
         } else if (walletAddress === destinationOwner) {
           if (outcome.captured) {

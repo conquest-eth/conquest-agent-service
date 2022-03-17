@@ -74,7 +74,11 @@ export class MyEventsStore implements Readable<MyEvent[]> {
           event: fleetArrived,
           effect:
             fleetArrived.operator !== fleetArrived.sender.id
-              ? 'neutral'
+              ? fleetArrived.destinationOwner.id === this.currentOwner?.toLowerCase()
+                ? fleetArrived.gift || !fleetArrived.won
+                  ? 'good'
+                  : 'bad'
+                : 'neutral'
               : fleetArrived.won || fleetArrived.gift
               ? 'good'
               : 'neutral',
