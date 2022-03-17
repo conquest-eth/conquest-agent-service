@@ -68,9 +68,9 @@
     (v) => v.fleet.timeLeft <= (currentTimeToArrive > defaultTimeToArrive ? currentTimeToArrive : defaultTimeToArrive)
   );
 
-  $: futureToPlanetState =
+  $: futureState =
     futureStatesAtFleetArrival.length > 0
-      ? futureStatesAtFleetArrival[futureStatesAtFleetArrival.length - 1].state
+      ? futureStatesAtFleetArrival[futureStatesAtFleetArrival.length - 1]
       : undefined;
 
   $: toPlayer = $playersQuery.data?.players[$toPlanetState?.owner?.toLowerCase()];
@@ -195,19 +195,28 @@
       }
     | undefined = undefined;
   $: {
-    if (!gift && futureToPlanetState && fromPlanetState) {
+    if (!gift && futureState && futureState.state && fromPlanetState) {
       futurePrediction = {
-        numSpaceshipsAtArrival: {min: futureToPlanetState.numSpaceships, max: futureToPlanetState.numSpaceships}, // TODO max
+        numSpaceshipsAtArrival: {min: futureState.state.numSpaceships, max: futureState.state.numSpaceships}, // TODO max
         outcome: spaceInfo.outcome(
           fromPlanetInfo,
           toPlanetInfo,
-          futureToPlanetState,
-          fleetAmount,
+          futureState.state,
+          fleetAmount + futureState.accumulatedAttack,
           0,
           senderPlayer,
           fromPlayer,
-          playersQuery.getPlayer(futureToPlanetState.owner),
-          gift
+          playersQuery.getPlayer(futureState.state.owner),
+          gift,
+          undefined, //TODO ?
+          {
+            attackPowerOverride: Math.floor(
+              (futureState.accumulatedAttack * futureState.averageAttackPower +
+                fleetAmount * fromPlanetInfo.stats.attack) /
+                (fleetAmount + futureState.accumulatedAttack)
+            ),
+            defense: futureState.accumulatedDefense,
+          }
         ),
       };
     }
@@ -490,7 +499,7 @@
         </div>
         <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
 
-        {#if futureToPlanetState}
+        {#if futureState && futureState.state}
           <div class="flex flex-row  justify-center mt-2 text-xs text-yellow-500">
             <span>Predicted outcome Including Traveling Fleets (fleet needs to reach in time)</span>
           </div>
@@ -504,6 +513,10 @@
             {:else}<span class="text-red-400">{futurePrediction?.outcome.min.numSpaceshipsLeft} (attack failed)</span
               >{/if}
           </div>
+
+          <!-- <div class="flex flex-row justify-center">
+            {futureState.accumulatedAttack} VS {futureState.accumulatedDefense} ({futureState.averageAttackPower})
+          </div> -->
 
           <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
         {/if}
