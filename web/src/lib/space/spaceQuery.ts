@@ -331,8 +331,6 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       return undefined;
     }
 
-    console.log(data.fleetsSentExternally);
-
     const planets = (data.myplanets || []).concat(data.otherplanets);
     // console.log(`stop loading query!`);
     return {
