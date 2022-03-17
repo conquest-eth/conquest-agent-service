@@ -7,6 +7,7 @@
 
   import {timeToText} from '$lib/utils';
   import type {PlanetInfo} from 'conquest-eth-common';
+  import {wallet} from '$lib/blockchain/wallet';
 
   export let event: FleetArrivedParsedEvent;
 
@@ -15,6 +16,10 @@
   let origin: PlanetInfo | undefined;
   let destination: PlanetInfo | undefined;
   let destinationOwner: string | undefined;
+  let walletIsSender: boolean;
+  let walletIsOwner: boolean;
+  let walletIsBothOwnerAndSender: boolean;
+  let walletIsDestinationOwner: boolean;
 
   $: {
     sender = event.sender.id;
@@ -25,13 +30,28 @@
       event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'
         ? event.destinationOwner.id
         : undefined;
+    const walletAddress = $wallet.address.toLowerCase();
+    walletIsBothOwnerAndSender = walletAddress === sender && sender === owner;
+    walletIsOwner = walletAddress === owner;
+    walletIsSender = walletAddress === sender;
+    walletIsDestinationOwner = walletAddress === destinationOwner;
   }
 </script>
 
 <div class="bg-black shadow sm:rounded-lg">
   <div class="px-4 py-5 sm:px-6">
     <h3 class="text-lg leading-6 font-medium text-red-400">
-      Fleet of {event.quantity} spaceships Failed To Capture {destination.stats.name}!
+      {#if walletIsBothOwnerAndSender || walletIsOwner}Your Fleet of {event.quantity} spaceships Failed To Capture {destination
+          .stats.name}!
+      {:else if walletIsSender}Fleet sent by you for <Blockie address={owner} /> with {event.quantity} spaceships Failed
+        To Capture {destination.stats.name}!{:else if walletIsDestinationOwner}
+        <span class="text-green-400"
+          >You succesffuly defended your planet from a Fleet of {event.quantity} spaceships</span
+        >
+      {:else}Fleet of {event.quantity} spaceships Failed To Capture {destination.stats.name}!{/if}
+      {#if walletIsOwner && !walletIsSender}
+        (Sent by <Blockie address={sender} /> )
+      {/if}
     </h3>
     <p class="mt-1 max-w-2xl text-sm text-gray-500">{timeToText($time - event.timestamp, {compact: true})} ago</p>
   </div>

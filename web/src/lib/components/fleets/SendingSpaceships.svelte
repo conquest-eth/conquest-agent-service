@@ -75,8 +75,12 @@
 
   $: agentServiceAccount = $agentService.account;
 
-  $: if (!agentServiceAccount || agentServiceAccount.requireTopUp || !agentServiceAccount.delegate) {
-    useAgentService = false;
+  $: if (
+    !useAgentService &&
+    account.isAgentServiceActivatedByDefault() &&
+    !(!agentServiceAccount || agentServiceAccount.requireTopUp || !agentServiceAccount.delegate)
+  ) {
+    useAgentService = true;
   }
 
   $: defaultTimeToArrive = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);

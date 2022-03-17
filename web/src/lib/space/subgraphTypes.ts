@@ -65,12 +65,16 @@ export type PlanetStakeParsedEvent = PlanetParsedEvent & {
 
 export type FleetSentEvent = PlanetEvent & {
   __typename: 'FleetSentEvent';
+  sender: {id: string};
+  operator: string;
   fleet: {id: string};
   quantity: string;
 };
 
 export type FleetSentParsedEvent = PlanetParsedEvent & {
   __typename: 'FleetSentEvent';
+  sender: {id: string};
+  operator: string;
   fleet: {id: string};
   quantity: number;
 };
@@ -269,6 +273,8 @@ export function parseFleetSentEvent(v: FleetSentEvent): FleetSentParsedEvent {
     planet: v.planet,
     fleet: v.fleet,
     quantity: parseInt(v.quantity),
+    sender: v.sender,
+    operator: v.operator,
   };
 }
 

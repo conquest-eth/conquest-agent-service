@@ -80,7 +80,8 @@
           : 'Planet is exiting in ' + timeToText(spaceInfo.exitDuration - timePassedSinceExit),
       };
     } else if (event.__typename === 'FleetSentEvent') {
-      // TODO sender = event.sender.id
+      sender = event.sender.id;
+      owner = event.owner.id;
       origin = spaceInfo.getPlanetInfoViaId(event.planet.id);
       type = 'Sending Fleet';
       quantity = {

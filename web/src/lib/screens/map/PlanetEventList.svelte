@@ -6,6 +6,7 @@
   import {errors} from '$lib/space/errors';
   import {xyToLocation} from 'conquest-eth-common';
   import selection from '$lib/map/selection';
+  import ErrorDetails from '$lib/components/events/ErrorDetails.svelte';
 
   export let location: string;
 
@@ -18,7 +19,7 @@
 </script>
 
 {#if planetErrors.length > 0}
-  <ErrorInfo
+  <ErrorDetails
     error={planetErrors[0]}
     okLabel={planetErrors.length > 1 || planetEvents.length > 0 ? 'Next' : 'OK'}
     closeButton={true}

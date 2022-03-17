@@ -8,6 +8,8 @@
   import {timeToText} from '$lib/utils';
   import type {PlanetInfo} from 'conquest-eth-common';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
+  import {wallet} from '$lib/blockchain/wallet';
+  import {planets} from '$lib/space/planets';
 
   export let event: FleetArrivedParsedEvent;
 
@@ -16,6 +18,10 @@
   let origin: PlanetInfo | undefined;
   let destination: PlanetInfo | undefined;
   let destinationOwner: string | undefined;
+  let walletIsSender: boolean;
+  let walletIsOwner: boolean;
+  let walletIsBothOwnerAndSender: boolean;
+  let walletIsNeither: boolean;
 
   $: {
     sender = event.sender.id;
@@ -26,13 +32,38 @@
       event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'
         ? event.destinationOwner.id
         : undefined;
+    const walletAddress = $wallet.address.toLowerCase();
+    walletIsBothOwnerAndSender = walletAddress === sender && sender === owner;
+    walletIsOwner = walletAddress === owner;
+    walletIsSender = walletAddress === sender;
+    walletIsNeither = !walletIsOwner && !walletIsSender;
   }
+
+  $: defense =
+    (event.numSpaceshipsAtArrival > 0 || event.planetActive
+      ? event.numSpaceshipsAtArrival
+      : destination.stats.natives) + event.inFlightPlanetLoss;
+
+  $: destinationState = planets.planetStateFor(destination);
 </script>
 
 <div class="bg-black shadow sm:rounded-lg">
   <div class="px-4 py-5 sm:px-6">
     <h3 class="text-lg leading-6 font-medium text-red-400">
-      Fleet of {event.quantity} spaceships Successfully Captured {destination.stats.name}!
+      {#if walletIsBothOwnerAndSender || walletIsOwner}
+        <span class="text-green-500"
+          >Your Fleet of {event.quantity} spaceships Successfully Captured
+          {destination.stats.name}!
+        </span>
+      {:else if walletIsSender}
+        <span
+          >Fleet sent by you for <Blockie address={owner} /> of {event.quantity} spaceships Successfully Captured
+          {destination.stats.name}!
+        </span>{:else}Fleet of {event.quantity} spaceships Successfully Captured
+        {destination.stats.name}!{/if}
+      {#if walletIsOwner && !walletIsSender}
+        <span class="text-gray-100">(Sent by <Blockie address={sender} /> )</span>
+      {/if}
     </h3>
     <p class="mt-1 max-w-2xl text-sm text-gray-500">{timeToText($time - event.timestamp, {compact: true})} ago</p>
   </div>
@@ -49,7 +80,11 @@
       <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
         <dt class="text-sm font-medium text-gray-500">Destination Owner, Defeated</dt>
         <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
-          <Blockie class="m-1 w-6 h-6 inline my-1/2 mr-2" address={destinationOwner} />
+          {#if destinationOwner}
+            <Blockie class="m-1 w-6 h-6 inline my-1/2 mr-2" address={destinationOwner} />
+          {:else}
+            <p class="text-blue-500">Natives</p>
+          {/if}
         </dd>
       </div>
 
@@ -99,7 +134,7 @@
         <dt class="text-sm font-medium text-gray-500">Defense</dt>
         <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
           <p class="text-gray-100">
-            {event.numSpaceshipsAtArrival + event.inFlightPlanetLoss} spaceships were protecting the planet
+            {defense} spaceships were protecting the planet
           </p>
           {#if event.inFlightPlanetLoss}
             <p class="text-red-400">
@@ -113,7 +148,7 @@
           {/if}
 
           <p class="my-1 text-md">
-            Total: {event.numSpaceshipsAtArrival - event.inFlightPlanetLoss + event.accumulatedDefenseAdded}
+            Total: {defense + event.accumulatedDefenseAdded}
           </p>
         </dd>
       </div>
@@ -122,8 +157,7 @@
         <dt class="text-sm font-medium text-gray-500">Outcome</dt>
         <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
           <p class="text-gray-100">
-            {event.quantity - event.inFlightFleetLoss - event.taxLoss + event.accumulatedAttackAdded} vs {event.numSpaceshipsAtArrival -
-              event.inFlightPlanetLoss +
+            {event.quantity - event.inFlightFleetLoss - event.taxLoss + event.accumulatedAttackAdded} vs {defense +
               event.accumulatedDefenseAdded}
           </p>
 
@@ -136,6 +170,9 @@
             <p class="text-lime-500">
               Native Planet was captured by <Blockie address={owner} /> with {event.newNumspaceships} spaceships left
             </p>
+            {#if $destinationState.natives}
+              <p class="mt-2 text-red-400 text-xs">Note that the natives took back control of the planet.</p>
+            {/if}
           {/if}
           {#if event.planetActive}
             <p>

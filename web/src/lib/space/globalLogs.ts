@@ -79,6 +79,8 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
       quantity
     }
     ... on FleetSentEvent{
+      sender {id}
+      operator
       fleet{id}
       quantity
     }

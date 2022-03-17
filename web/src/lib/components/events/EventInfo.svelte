@@ -1,6 +1,9 @@
 <script lang="ts">
   import type {ExitCompleteEvent, ExternalFleetEvent, InternalFleetEvent, MyEvent} from '$lib/space/myevents';
+  import ErrorDetails from './ErrorDetails.svelte';
+  import EventInfoDetailsWrapper from './EventInfoDetailsWrapper.svelte';
   import ExitEventInfo from './ExitEventInfo.svelte';
+  import ExitEventInfoDetailsWrapper from './ExitEventInfoDetailsWrapper.svelte';
   import FleetEventInfo from './FleetEventInfo.svelte';
 
   export let event: MyEvent;
@@ -12,7 +15,9 @@
 </script>
 
 {#if fleetEvent}
-  <FleetEventInfo event={fleetEvent} {okLabel} {closeButton} on:close />
+  <!-- <FleetEventInfo event={fleetEvent} {okLabel} {closeButton} on:close /> -->
+  <EventInfoDetailsWrapper event={fleetEvent} {okLabel} {closeButton} on:close />
 {:else}
-  <ExitEventInfo event={exitEvent} {okLabel} {closeButton} on:close />
+  <ExitEventInfoDetailsWrapper event={exitEvent} {okLabel} {closeButton} on:close />
+  <!-- <ExitEventInfo event={exitEvent} {okLabel} {closeButton} on:close /> -->
 {/if}

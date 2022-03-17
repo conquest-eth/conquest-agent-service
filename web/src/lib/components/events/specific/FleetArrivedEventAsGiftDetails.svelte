@@ -7,6 +7,7 @@
 
   import {timeToText} from '$lib/utils';
   import type {PlanetInfo} from 'conquest-eth-common';
+  import {wallet} from '$lib/blockchain/wallet';
 
   export let event: FleetArrivedParsedEvent;
 
@@ -15,6 +16,10 @@
   let origin: PlanetInfo | undefined;
   let destination: PlanetInfo | undefined;
   let destinationOwner: string | undefined;
+  let walletIsSender: boolean;
+  let walletIsOwner: boolean;
+  let walletIsBothOwnerAndSender: boolean;
+  let walletIsNeither: boolean;
 
   $: {
     sender = event.sender.id;
@@ -25,12 +30,23 @@
       event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'
         ? event.destinationOwner.id
         : undefined;
+    const walletAddress = $wallet.address.toLowerCase();
+    walletIsBothOwnerAndSender = walletAddress === sender && sender === owner;
+    walletIsOwner = walletAddress === owner;
+    walletIsSender = walletAddress === sender;
+    walletIsNeither = !walletIsOwner && !walletIsSender;
   }
 </script>
 
 <div class="bg-black shadow sm:rounded-lg">
   <div class="px-4 py-5 sm:px-6">
-    <h3 class="text-lg leading-6 font-medium text-green-400">Fleet of {event.quantity} spaceships Arrived</h3>
+    <h3 class="text-lg leading-6 font-medium text-green-400">
+      {#if walletIsBothOwnerAndSender || walletIsOwner}Your {/if}Fleet of {event.quantity} spaceships Arrived
+      {#if walletIsOwner && !walletIsSender}
+        (Sent by <Blockie address={sender} /> )
+      {/if}
+    </h3>
+
     <p class="mt-1 max-w-2xl text-sm text-gray-500">{timeToText($time - event.timestamp, {compact: true})} ago</p>
   </div>
   <div class="border-t border-gray-800 px-4 py-5 sm:p-0">

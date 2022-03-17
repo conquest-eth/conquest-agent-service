@@ -164,8 +164,13 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     transaction {id}
     owner {id}
     planet {id}
+    sender {id}
+    operator
     fleet {id}
     destinationOwner {id}
+    taxLoss
+    planetActive
+    numSpaceshipsAtArrival
     gift
     fleetLoss
     planetLoss
@@ -188,8 +193,13 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     transaction {id}
     owner {id}
     planet {id}
+    sender {id}
+    operator
     fleet {id}
     destinationOwner {id}
+    taxLoss
+    planetActive
+    numSpaceshipsAtArrival
     gift
     fleetLoss
     planetLoss
@@ -212,8 +222,13 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     transaction {id}
     owner {id}
     planet {id}
+    sender {id}
+    operator
     fleet {id}
     destinationOwner {id}
+    taxLoss
+    planetActive
+    numSpaceshipsAtArrival
     gift
     fleetLoss
     planetLoss
