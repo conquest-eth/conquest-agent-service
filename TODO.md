@@ -1,6 +1,6 @@
 - [ ] error report tool
 - [ ] implement the sign message with blockhash of last 255 block to perform a sneak attack/gifting before reveal time is open to everyone (allowing plausible deniability until that point : I reveal my secret to my so called "allies" so they know I am sending them gift, but just before reveal of gifting is allowed by anyone, I send a signed message making the attack, 10 minute before)
-- [ ] sending fleet flow, show queueReveal progress and error
+- [x] sending fleet flow, show queueReveal error
 - [ ] when revealTIme come check agent-service for registered queueID and show broadcast status
 - [ ] Optimistic agent-serve registration and topups (later we could use pendingAction system)
 - [ ] SHow list of fleets on agent-service page and allow to register them each or all
@@ -13,48 +13,48 @@
 - [ ] Alliance Screen
 - [ ] Alliance website
 - [ ] Documentation for smart contract
-- [ ] Better event popups
+- [x] Better event popups
 - [ ] Better planet/event/fleet list : do not get under "pick origin"
 - [ ] Better fleet to resolve fleet
 - [ ] Better handling of clicks => planet click take precedence ? => show list of fleets ?
-- [ ] fix Errors acknowledgements
+- [x] fix Errors acknowledgements
 
 - [ ] "once the tx is mined" message need to be reworded when time of arrival is specified
-- [ ] fix zoom to see fleet, and remove click ?
-- [ ] better event info, especially with cumulative attackes
-- [ ] show event for fleet you sent and / or fleet other send for you
-- [ ] PlanetElement: do not show red when no wallet connected
-- [ ] FLeetElement: fix disapeating fleets when select circle is on ?
+- [x] fix zoom to see fleet
+- [x] better event info, especially with cumulative attackes
+- [x] show event for fleet you sent and / or fleet other send for you
+- [x] PlanetElement: do not show red when no wallet connected
+- [ ] FLeetElement: fix disapeating fleets when select circle is on ? ????
 - [ ] drop down for allies ? when selecting owner
 - [ ] drop down for fleet on same planet if reachable in time ?
 - [ ] - ability to share fleets with friends ?
 - [ ] RevealQueue : check if not submitting twice
-- [ ] fix error acknowledgement not trigged syncrhonously
-- [ ] show JSON rpc error message
-- [ ] Clean log
-- [ ] Memory leak ?
-- [ ] plugin list
-- [ ] Plugin marker on map + condition (like buttons), Marketplace sale => show whenver there is a sale (even if you are the owner), color ? blue ? radius ?
+- [x] fix error acknowledgement not trigged syncrhonously
+- [x] show JSON rpc error message
+- [x] Clean log
+- [x] Memory leak ?
+- [x] plugin list
+- [x] Plugin marker on map + condition (like buttons), Marketplace sale => show whenver there is a sale (even if you are the owner), color ? blue ? radius ?
 - [ ] WITHDRAWAL PAGE
 - [ ] NEW PLANET LOGO AND TEST REWARDS
-- [ ] Fleet arrived event: does it need to provide more info ? (operator, sender, owner ?)
+- [x] Fleet arrived event: does it need to provide more info ? (operator, sender, owner ?)
 
 ## NEW
 
-- [ ] Tax on sale: implement on fleetOwner vs sender, and destinationOwner vs fleetOwner
+- [x] Tax on sale: implement on fleetOwner vs sender, and destinationOwner vs fleetOwner
 
-- [ ] event for sales / sender / operator
+- [x] event for sales / sender / operator
 - [ ] betrayal detection example
 - [ ] Better event messages
 - [ ] Show better time on selection
 - [ ] Clain token page, reload on error or timeout
-- [ ] Make that tax visible in the UI
-- [ ] Show alliance icon on front
+- [x] Make that tax visible in the UI
+- [x] Show alliance icon on front
 - [ ] Upkeep: event show upkeep given back ?
 - [ ] Native should not display sales
 - [ ] Batch resolution of fleet
-- [ ] Better event details
-- [ ] Make "Loading" faster
+- [x] Better event details
+- [x] Make "Loading" faster
 - [ ] Messages
 
 # ISSUES

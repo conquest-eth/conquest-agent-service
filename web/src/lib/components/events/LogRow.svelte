@@ -132,7 +132,11 @@
       if (!walletAddress) {
         color = 'text-gray-300';
       } else if (walletAddress === sender) {
-        color = 'text-green-400';
+        if (walletAddress === event.operator) {
+          color = 'text-green-400';
+        } else {
+          color = 'text-blue-500';
+        }
       } else {
         color = ally ? 'text-cyan-400' : 'text-gray-300';
       }
@@ -168,12 +172,20 @@
 
       const ownerAsPlayer = $playersQuery.data?.players[owner];
       const ally = ownerAsPlayer && ownerAsPlayer.ally;
+
+      const destinationOwnerAsPlayer = $playersQuery.data?.players[destinationOwner];
+      const destinationAlly = destinationOwnerAsPlayer && destinationOwnerAsPlayer.ally;
+
       if (event.gift) {
         type = 'Arrival';
         if (!walletAddress) {
           color = 'text-gray-300';
         } else if (walletAddress === sender) {
-          color = 'text-green-400';
+          if (walletAddress === event.operator) {
+            color = 'text-green-400';
+          } else {
+            color = 'text-blue-500';
+          }
         } else {
           color = ally ? 'text-cyan-400' : 'text-gray-300';
         }
@@ -188,7 +200,15 @@
             color = 'text-red-400';
           }
         } else if (walletAddress === sender) {
-          color = 'text-gray-300';
+          if (walletAddress === event.operator) {
+            if (outcome.captured) {
+              color = 'text-green-400';
+            } else {
+              color = 'text-red-400';
+            }
+          } else {
+            color = 'text-blue-500';
+          }
         } else if (walletAddress === destinationOwner) {
           if (outcome.captured) {
             color = 'text-red-400';
@@ -196,7 +216,27 @@
             color = 'text-green-400';
           }
         } else {
-          color = ally ? 'text-cyan-400' : 'text-yellow-300';
+          if (outcome.captured) {
+            if (ally && destinationAlly) {
+              color = 'text-gray-300';
+            } else if (ally) {
+              color = 'text-cyan-400';
+            } else if (destinationAlly) {
+              color = 'text-orange-400';
+            } else {
+              color = 'text-gray-300';
+            }
+          } else {
+            if (ally && destinationAlly) {
+              color = 'text-gray-300';
+            } else if (ally) {
+              color = 'text-green-400';
+            } else if (destinationAlly) {
+              color = 'text-green-400';
+            } else {
+              color = 'text-gray-300';
+            }
+          }
         }
       }
     } else if (event.__typename === 'TravelingUpkeepReductionFromDestructionEvent') {

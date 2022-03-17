@@ -72,7 +72,12 @@ export class MyEventsStore implements Readable<MyEvent[]> {
         newEvents.push({
           type: 'internal_fleet_arrived',
           event: fleetArrived,
-          effect: fleetArrived.won || fleetArrived.gift ? 'good' : 'neutral',
+          effect:
+            fleetArrived.operator !== fleetArrived.sender.id
+              ? 'neutral'
+              : fleetArrived.won || fleetArrived.gift
+              ? 'good'
+              : 'neutral',
           id: BigNumber.from(fleetArrived.fleet.id).toHexString(), // TODO remove BigNumber conversion by makign fleetId bytes32 on OuterSPace.sol
           location: fleetArrived.planet.id,
         });
@@ -99,7 +104,7 @@ export class MyEventsStore implements Readable<MyEvent[]> {
         // console.log({fleetSent});
         newEvents.push({
           type: 'external_fleet_sent',
-          effect: 'good',
+          effect: 'neutral',
           event: fleetSent,
           id: 'sent_' + BigNumber.from(fleetSent.fleet.id).toHexString(), // TODO remove BigNumber conversion by makign fleetId bytes32 on OuterSPace.sol
           location: fleetSent.planet.id,

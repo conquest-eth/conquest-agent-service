@@ -11,7 +11,6 @@
   $: multiplier = planetInfo.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
   $: scale = 0.025 * multiplier;
 
-  // $: color = event.type === 'external_fleet' ? 'blue' : event.type === 'exit_complete' ? '#FDE047' : ' #10B981'; // TODO
   $: color = event.effect === 'neutral' ? 'blue' : event.effect === 'good' ? ' #10B981' : '#FDE047';
 
   $: renderScale = $camera ? $camera.renderScale : 1;
