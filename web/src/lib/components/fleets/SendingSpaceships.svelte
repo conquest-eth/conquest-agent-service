@@ -20,6 +20,18 @@
   import Flatpickr from '../flatpickr/Flatpickr.svelte';
   import confirmDatePlugin from 'flatpickr/dist/plugins/confirmDate/confirmDate.js';
   import type {Outcome} from 'conquest-eth-common';
+  import {planetFutureStates} from '$lib/space/planetsFuture';
+
+  let travelingFleetSelected: string | undefined = undefined;
+  function onTravelingFleetSelected(event: Event) {
+    if (travelingFleetSelected) {
+      arrivalTimeWanted = new Date(parseInt(travelingFleetSelected) * 1000);
+      formatted_arrivalTimeWanted = arrivalTimeWanted.toLocaleString();
+    } else {
+      arrivalTimeWanted = undefined;
+      formatted_arrivalTimeWanted = undefined;
+    }
+  }
 
   let useAgentService = false;
   let gift = false;
@@ -43,6 +55,23 @@
 
   $: toPlanetInfo = spaceInfo.getPlanetInfo($sendFlow.data?.to.x, $sendFlow.data?.to.y);
   $: toPlanetState = planets.planetStateFor(toPlanetInfo);
+
+  $: planetFutures = planetFutureStates.futureStatesFor(toPlanetInfo);
+
+  $: currentFutures = $planetFutures.filter((v) => v.fleet.timeLeft > defaultTimeToArrive - 5 * 60);
+
+  $: travelingArrivals = currentFutures
+    .filter((v) => v.fleet.arrivalTimeWanted > 0)
+    .map((v) => v.fleet.arrivalTimeWanted);
+
+  $: futureStatesAtFleetArrival = currentFutures.filter(
+    (v) => v.fleet.timeLeft <= (currentTimeToArrive > defaultTimeToArrive ? currentTimeToArrive : defaultTimeToArrive)
+  );
+
+  $: futureToPlanetState =
+    futureStatesAtFleetArrival.length > 0
+      ? futureStatesAtFleetArrival[futureStatesAtFleetArrival.length - 1].state
+      : undefined;
 
   $: toPlayer = $playersQuery.data?.players[$toPlanetState?.owner?.toLowerCase()];
   $: fromPlayer = $playersQuery.data?.players[fleetOwner.toLowerCase()];
@@ -118,7 +147,13 @@
 
   let attentionRequired: 'TIME_PASSED' | undefined;
   $: {
-    if (arrivalTimeWanted && arrivalTimeWanted.getTime() / 1000 < actualDefaultArrivalDateTime) {
+    if (travelingFleetSelected) {
+      // TODO DIY 5 * 60
+      if (arrivalTimeWanted && arrivalTimeWanted.getTime() / 1000 < actualDefaultArrivalDateTime - 5 * 60) {
+        arrivalTimeWanted = undefined;
+        attentionRequired = 'TIME_PASSED';
+      }
+    } else if (arrivalTimeWanted && arrivalTimeWanted.getTime() / 1000 < actualDefaultArrivalDateTime) {
       arrivalTimeWanted = undefined;
       attentionRequired = 'TIME_PASSED';
     }
@@ -147,6 +182,31 @@
           senderPlayer,
           fromPlayer,
           toPlayer,
+          gift
+        ),
+      };
+    }
+  }
+
+  let futurePrediction:
+    | {
+        numSpaceshipsAtArrival: {max: number; min: number};
+        outcome: Outcome;
+      }
+    | undefined = undefined;
+  $: {
+    if (!gift && futureToPlanetState && fromPlanetState) {
+      futurePrediction = {
+        numSpaceshipsAtArrival: {min: futureToPlanetState.numSpaceships, max: futureToPlanetState.numSpaceships}, // TODO max
+        outcome: spaceInfo.outcome(
+          fromPlanetInfo,
+          toPlanetInfo,
+          futureToPlanetState,
+          fleetAmount,
+          0,
+          senderPlayer,
+          fromPlayer,
+          playersQuery.getPlayer(futureToPlanetState.owner),
           gift
         ),
       };
@@ -289,6 +349,7 @@
             options={flatpickrOptions}
             bind:value={arrivalTimeWanted}
             bind:formattedValue={formatted_arrivalTimeWanted}
+            on:change={() => (travelingFleetSelected = '')}
             name="arrivalTimeWanted"
             placeholder="Arrival Time"
             ><Help class="w-6 h-6"
@@ -300,6 +361,24 @@
           >
         {/if}
       </div>
+
+      {#if travelingArrivals.length > 0}
+        <select
+          class="bg-black mx-auto"
+          name="Fleet"
+          id="travelingFleets"
+          bind:value={travelingFleetSelected}
+          on:change={onTravelingFleetSelected}
+        >
+          <option value="">Or Pick a Traveling Fleet</option>
+          {#each travelingArrivals as arrival}
+            <option value={arrival}>{new Date(arrival * 1000).toLocaleString()}</option>
+          {/each}
+        </select>
+      {/if}
+
+      <!-- {travelingFleetSelected} -->
+
       <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
 
       {#if !gift}
@@ -410,6 +489,24 @@
           {/if}
         </div>
         <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
+
+        {#if futureToPlanetState}
+          <div class="flex flex-row  justify-center mt-2 text-xs text-yellow-500">
+            <span>Predicted outcome Including Traveling Fleets (fleet needs to reach in time)</span>
+          </div>
+          <div class="flex flex-row justify-center">
+            {#if futurePrediction?.outcome.min.captured}
+              <span class="text-green-600">{futurePrediction?.outcome.min.numSpaceshipsLeft} (captured)</span>
+            {:else if futurePrediction?.outcome.nativeResist}
+              <span class="text-red-400"
+                >{futurePrediction?.outcome.min.numSpaceshipsLeft} (native population resists)</span
+              >
+            {:else}<span class="text-red-400">{futurePrediction?.outcome.min.numSpaceshipsLeft} (attack failed)</span
+              >{/if}
+          </div>
+
+          <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
+        {/if}
 
         <label class="flex items-center">
           <input

@@ -270,6 +270,9 @@ animation-timing-function: linear;
         {new Date(
           (fleet.launchTime + Math.max(minDuration, fleet.arrivalTimeWanted - fleet.launchTime)) * 1000
         ).toLocaleString()}
+        {#if fleet.arrivalTimeWanted - fleet.launchTime < minDuration}
+          <span class="text-yellow-300">Combine at</span> {new Date(fleet.arrivalTimeWanted * 1000).toLocaleString()}
+        {/if}
       </li>
       <!-- <li><span class="text-yellow-300">launch+duration:</span> {fleet.launchTime + minDuration}</li>
       <li><span class="text-yellow-300">arrivalTimeWanted:</span> {fleet.arrivalTimeWanted}</li> -->

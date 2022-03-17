@@ -239,6 +239,7 @@ export class FleetsStore implements Readable<FleetListState> {
       // console.log(`no more loading of fleets`);
     }
 
+    this.state.fleets = this.state.fleets.sort((a, b) => a.timeLeft - b.timeLeft);
     this.store.set(this.state);
   }
 
