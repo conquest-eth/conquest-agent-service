@@ -8,8 +8,10 @@
   import type {GenericParsedEvent} from '$lib/space/subgraphTypes';
   import Modal from '$lib/components/generic/Modal.svelte';
   import EventDetails from '$lib/components/events/EventDetails.svelte';
+  import {planetStates} from '$lib/space/planetStates';
   onMount(() => {
     globalLogs.start();
+    planetStates.start();
   });
 
   $: logs = $globalLogs?.data ? $globalLogs.data : [];

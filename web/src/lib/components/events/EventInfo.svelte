@@ -10,13 +10,17 @@
   export let okLabel: string = 'OK';
   export let closeButton: boolean;
 
-  $: fleetEvent = event.type === 'external_fleet' || event.type === 'internal_fleet' ? event : undefined;
+  $: fleetEvent =
+    event.type === 'external_fleet_arrived' || event.type === 'internal_fleet_arrived' ? event : undefined;
+  $: fleetSentEvent = event.type === 'external_fleet_sent' ? event : undefined;
   $: exitEvent = event.type === 'exit_complete' ? event : undefined;
 </script>
 
 {#if fleetEvent}
   <!-- <FleetEventInfo event={fleetEvent} {okLabel} {closeButton} on:close /> -->
   <EventInfoDetailsWrapper event={fleetEvent} {okLabel} {closeButton} on:close />
+{:else if fleetSentEvent}
+  <EventInfoDetailsWrapper event={fleetSentEvent} {okLabel} {closeButton} on:close />
 {:else}
   <ExitEventInfoDetailsWrapper event={exitEvent} {okLabel} {closeButton} on:close />
   <!-- <ExitEventInfo event={exitEvent} {okLabel} {closeButton} on:close /> -->

@@ -32,7 +32,7 @@
       event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'
         ? event.destinationOwner.id
         : undefined;
-    const walletAddress = $wallet.address.toLowerCase();
+    const walletAddress = $wallet.address?.toLowerCase();
     walletIsBothOwnerAndSender = walletAddress === sender && sender === owner;
     walletIsOwner = walletAddress === owner;
     walletIsSender = walletAddress === sender;
@@ -170,7 +170,7 @@
             <p class="text-lime-500">
               Native Planet was captured by <Blockie address={owner} /> with {event.newNumspaceships} spaceships left
             </p>
-            {#if $destinationState.natives}
+            {#if $destinationState?.natives}
               <p class="mt-2 text-red-400 text-xs">Note that the natives took back control of the planet.</p>
             {/if}
           {/if}

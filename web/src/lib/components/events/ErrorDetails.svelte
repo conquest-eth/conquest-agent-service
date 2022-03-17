@@ -5,27 +5,52 @@
 
   import Modal from '$lib/components/generic/Modal.svelte';
   import type {SpaceError} from '$lib/space/errors';
-  import {account} from '$lib/account/account';
+  import {account, PendingSend} from '$lib/account/account';
   import Button from '$lib/components/generic/PanelButton.svelte';
   import {now} from '$lib/time';
+  import Blockie from '../account/Blockie.svelte';
+  import Coord from '../utils/Coord.svelte';
+  import {xyToLocation} from 'conquest-eth-common';
 
   export let error: SpaceError;
   export let okLabel: string = 'OK';
   export let closeButton: boolean;
 
-  let title;
+  let genericTitle;
   $: if (error?.status === 'FAILURE') {
-    title = 'Your transaction failed';
+    genericTitle = 'Transaction Failed';
   } else if (error?.status === 'CANCELED') {
-    title = 'Your transaction was canceled';
+    genericTitle = 'Transaction Cancelled';
   } else if (error?.status === 'TIMEOUT') {
     if (error?.action.type === 'SEND' && error?.action.actualLaunchTime) {
-      title = 'Your fleet has not been resolved in time';
+      genericTitle = 'Resolution Timeout';
     } else {
-      title = 'your transaction timed out';
+      genericTitle = 'Transaction Timeout';
     }
   } else {
-    title = 'loading...';
+    genericTitle = 'Loading...';
+  }
+
+  let actionTitle;
+  $: {
+    if (error.action.type === 'SEND') {
+      actionTitle = 'Could not send your fleet';
+    } else if (error.action.type === 'EXIT') {
+      actionTitle = 'Could not exit planet';
+    } else if (error.action.type === 'CAPTURE') {
+      actionTitle = 'Could not capture planet';
+    } else if (error.action.type === 'RESOLUTION') {
+      actionTitle = 'Could not resolve your fleet';
+    } else if (error.action.type === 'WITHDRAWAL') {
+      actionTitle = 'Could not withdraw';
+    }
+  }
+
+  let sendAction: PendingSend | undefined;
+  $: {
+    if (error.action.type === 'RESOLUTION') {
+      sendAction = account.getSendActionFromFleetId(error.action.fleetId);
+    }
   }
 
   async function acknowledge() {
@@ -43,8 +68,8 @@
   >
     <div class="bg-black shadow sm:rounded-lg">
       <div class="px-4 py-5 sm:px-6">
-        <h3 class="text-lg leading-6 font-medium text-green-400">
-          {title}
+        <h3 class="text-lg leading-6 font-medium text-red-400">
+          {actionTitle}
         </h3>
 
         <p class="mt-1 max-w-2xl text-sm text-gray-500">
@@ -53,33 +78,86 @@
       </div>
       <div class="border-t border-gray-800 px-4 py-5 sm:p-0">
         <dl class="sm:divide-y sm:divide-gray-800">
-          <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Sender / Owner</dt>
-            <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">...</dd>
-          </div>
+          {#if error.action.type === 'SEND'}
+            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Owner</dt>
+              <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
+                <Blockie address={error.action.fleetOwner} />
+              </dd>
+            </div>
 
-          <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Destination Owner</dt>
-            <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">...</dd>
-          </div>
+            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Destination</dt>
+              <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
+                <Coord location={xyToLocation(error.action.from.x, error.action.from.y)} />
+              </dd>
+            </div>
 
-          <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Origin</dt>
-            <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">...</dd>
-          </div>
-          <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Destination</dt>
-            <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">...</dd>
-          </div>
+            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Quantity</dt>
+              <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
+                {error.action.quantity}
+              </dd>
+            </div>
+          {:else if error.action.type === 'CAPTURE'}
+            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Planet</dt>
+              <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
+                <Coord location={xyToLocation(error.action.planetCoords.x, error.action.planetCoords.y)} />
+              </dd>
+            </div>
+          {:else if error.action.type === 'WITHDRAWAL'}
+            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Planet List</dt>
+              <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
+                {#each error.action.planets as planet}
+                  <Coord location={xyToLocation(planet.x, planet.y)} />,
+                {:else}
+                  Simple Withdrawal
+                {/each}
+              </dd>
+            </div>
+          {:else if error.action.type === 'RESOLUTION'}
+            {#if sendAction}
+              <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt class="text-sm font-medium text-gray-500">Owner</dt>
+                <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
+                  <Blockie address={sendAction.fleetOwner} />
+                </dd>
+              </div>
 
+              <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt class="text-sm font-medium text-gray-500">Destination</dt>
+                <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
+                  <Coord location={xyToLocation(sendAction.from.x, sendAction.from.y)} />
+                </dd>
+              </div>
+
+              <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt class="text-sm font-medium text-gray-500">Quantity</dt>
+                <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
+                  {sendAction.quantity}
+                </dd>
+              </div>
+            {:else}
+              <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt class="text-sm font-medium text-gray-500">FleetID</dt>
+                <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
+                  <p>{error.action.fleetId}</p>
+                  <p>Could not get more info...</p>
+                </dd>
+              </div>
+            {/if}
+          {:else if error.action.type === 'EXIT'}
+            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <dt class="text-sm font-medium text-gray-500">Planet</dt>
+              <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
+                <Coord location={xyToLocation(error.action.planetCoords.x, error.action.planetCoords.y)} />
+              </dd>
+            </div>
+          {/if}
           <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Outcome</dt>
-            <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
-              <p class="text-green-400">...</p>
-            </dd>
-          </div>
-          <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-            <dt class="text-sm font-medium text-gray-500">Transaction</dt>
+            <dt class="text-sm font-medium text-red-500">{genericTitle}</dt>
             <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
               <a
                 href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${error.txHash}`}

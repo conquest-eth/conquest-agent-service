@@ -381,12 +381,32 @@ class Account implements Readable<AccountState> {
     return this.state.data?.pendingActions && this.state.data?.pendingActions[id];
   }
 
+  getSendActionFromFleetId(fleetId): PendingSend | undefined {
+    if (!this.state.data?.pendingActions) {
+      return undefined;
+    }
+    for (const key of Object.keys(this.state.data?.pendingActions)) {
+      const pendingAction = this.state.data?.pendingActions[key];
+      if (
+        pendingAction &&
+        typeof pendingAction !== 'number' &&
+        pendingAction.type === 'SEND' &&
+        pendingAction.fleetId === fleetId
+      ) {
+        return pendingAction;
+      }
+    }
+  }
+
   async acknowledgeEvent(event: MyEvent): Promise<void> {
     this.check();
     const eventId = event.id;
     let eventStateHash;
-    if (event.type === 'external_fleet' || event.type === 'internal_fleet') {
+    if (event.type === 'external_fleet_arrived' || event.type === 'internal_fleet_arrived') {
+      // TODO other event type
       eventStateHash = event.event.planetLoss + ':' + event.event.fleetLoss + ':' + event.event.won; // TODO ensure we use same stateHash across code paths
+    } else if (event.type === 'external_fleet_sent') {
+      eventStateHash = '' + event.event.quantity;
     } else if (event.type === 'exit_complete') {
       eventStateHash = `${event.interupted}`; // TODO ensure we use same stateHash across code paths
     }

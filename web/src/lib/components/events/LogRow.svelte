@@ -1,6 +1,9 @@
 <script lang="ts">
+  import {wallet} from '$lib/blockchain/wallet';
+
   import Blockie from '$lib/components/account/Blockie.svelte';
   import Coord from '$lib/components/utils/Coord.svelte';
+  import {playersQuery} from '$lib/space/playersQuery';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import type {GenericParsedEvent} from '$lib/space/subgraphTypes';
   import {time} from '$lib/time';
@@ -40,16 +43,17 @@
         captured?: boolean;
       }
     | undefined;
+
   $: {
+    const walletAddress = $wallet.address?.toLowerCase();
     sender = event.owner.id;
-    color = 'text-gray-100';
+    color = 'text-gray-300';
     destination = undefined;
     destinationOwner = undefined;
     origin = undefined;
     originStr = undefined;
     quantity = undefined;
     if (event.__typename === 'PlanetStakeEvent') {
-      color = 'text-blue-400';
       origin = spaceInfo.getPlanetInfoViaId(event.planet.id);
       type = 'Stake';
       quantity = {
@@ -61,9 +65,15 @@
         stake: origin.stats.stake,
         description: 'Planet is now active',
       };
+      if (!walletAddress) {
+        color = 'text-yellow-400';
+      } else if (walletAddress === sender) {
+        color = 'text-green-400';
+      } else {
+        color = 'text-yellow-400';
+      }
     } else if (event.__typename === 'PlanetExitEvent') {
       origin = spaceInfo.getPlanetInfoViaId(event.planet.id);
-      color = 'text-yellow-400';
       type = 'Exiting';
       quantity = {
         type: 'Stake',
@@ -79,6 +89,29 @@
           ? 'Planet Exited, No More Active'
           : 'Planet is exiting in ' + timeToText(spaceInfo.exitDuration - timePassedSinceExit),
       };
+
+      const ownerAsPlayer = $playersQuery.data?.players[sender];
+      const ally = ownerAsPlayer && ownerAsPlayer.ally;
+
+      if (!walletAddress) {
+        if (event.interupted) {
+          color = 'text-gray-300';
+        } else {
+          color = 'text-yellow-400';
+        }
+      } else if (walletAddress === sender) {
+        if (event.interupted) {
+          color = 'text-red-400';
+        } else {
+          color = 'text-green-400';
+        }
+      } else {
+        if (event.interupted) {
+          color = ally ? 'text-yellow-400' : 'text-gray-300';
+        } else {
+          color = ally ? 'text-cyan-400' : 'text-yellow-400';
+        }
+      }
     } else if (event.__typename === 'FleetSentEvent') {
       sender = event.sender.id;
       owner = event.owner.id;
@@ -93,6 +126,16 @@
         stake: undefined,
         description: `${quantity.amount} spaceships on their way`,
       };
+
+      const ownerAsPlayer = $playersQuery.data?.players[owner];
+      const ally = ownerAsPlayer && ownerAsPlayer.ally;
+      if (!walletAddress) {
+        color = 'text-gray-300';
+      } else if (walletAddress === sender) {
+        color = 'text-green-400';
+      } else {
+        color = ally ? 'text-cyan-400' : 'text-gray-300';
+      }
     } else if (event.__typename === 'FleetArrivedEvent') {
       sender = event.sender.id;
       owner = event.owner.id;
@@ -103,13 +146,7 @@
         event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'
           ? event.destinationOwner.id
           : undefined;
-      if (event.gift) {
-        type = 'Arrival';
-        color = 'text-green-500';
-      } else {
-        color = 'text-red-400';
-        type = 'Battle';
-      }
+
       quantity = {
         type: 'Spaceships',
         amount: event.quantity,
@@ -128,6 +165,40 @@
         stake: destinationOwner && event.won ? destination.stats.stake : undefined,
         description,
       };
+
+      const ownerAsPlayer = $playersQuery.data?.players[owner];
+      const ally = ownerAsPlayer && ownerAsPlayer.ally;
+      if (event.gift) {
+        type = 'Arrival';
+        if (!walletAddress) {
+          color = 'text-gray-300';
+        } else if (walletAddress === sender) {
+          color = 'text-green-400';
+        } else {
+          color = ally ? 'text-cyan-400' : 'text-gray-300';
+        }
+      } else {
+        type = 'Battle';
+        if (!walletAddress) {
+          color = 'text-gray-300';
+        } else if (walletAddress === owner) {
+          if (outcome.captured) {
+            color = 'text-green-400';
+          } else {
+            color = 'text-red-400';
+          }
+        } else if (walletAddress === sender) {
+          color = 'text-gray-300';
+        } else if (walletAddress === destinationOwner) {
+          if (outcome.captured) {
+            color = 'text-red-400';
+          } else {
+            color = 'text-green-400';
+          }
+        } else {
+          color = ally ? 'text-cyan-400' : 'text-yellow-300';
+        }
+      }
     } else if (event.__typename === 'TravelingUpkeepReductionFromDestructionEvent') {
       origin = spaceInfo.getPlanetInfoViaId(event.planet.id);
       // destination = spaceInfo.getPlanetInfoViaId(event.planet.id);

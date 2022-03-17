@@ -11,6 +11,7 @@ import {account} from '$lib/account/account';
 
 export type Player = {
   address: string;
+  ally: boolean;
   alliances: {address: string; ally: boolean; frontendURI: string}[];
 };
 
@@ -138,10 +139,10 @@ export class PlayersQueryStore implements QueryStore<PlayersState> {
       return undefined;
     }
 
-    // TODO remove, but for now delete alliance
-    for (const owner of data.owners) {
-      owner.alliances = owner.alliances.filter((v) => v.alliance.id !== '0x1b4d6f16c224b32661da98362a123106a7c731f8');
-    }
+    // // TODO remove, but for now delete alliance
+    // for (const owner of data.owners) {
+    //   owner.alliances = owner.alliances.filter((v) => v.alliance.id !== '0x1b4d6f16c224b32661da98362a123106a7c731f8');
+    // }
 
     const playerAlliances = {};
     if (this.queryStore.runtimeVariables.owner) {
@@ -157,11 +158,18 @@ export class PlayersQueryStore implements QueryStore<PlayersState> {
     this.$players = {};
     this.$alliances = {};
     for (const owner of data.owners) {
+      let allyAtLeastOnce = false;
+      const alliancesForPlayer = owner.alliances.map((v) => {
+        const ally = playerAlliances[v.alliance.id];
+        if (ally) {
+          allyAtLeastOnce = true;
+        }
+        return {address: v.alliance.id, ally, frontendURI: v.alliance.frontendURI};
+      });
       const player = (this.$players[owner.id] = {
         address: owner.id,
-        alliances: owner.alliances.map((v) => {
-          return {address: v.alliance.id, ally: playerAlliances[v.alliance.id], frontendURI: v.alliance.frontendURI};
-        }),
+        alliances: alliancesForPlayer,
+        ally: allyAtLeastOnce,
       });
       for (const alliance of owner.alliances) {
         let existingAlliance = this.$alliances[alliance.alliance.id];

@@ -3,10 +3,10 @@
 
   import Modal from '$lib/components/generic/Modal.svelte';
   import Button from '$lib/components/generic/PanelButton.svelte';
-  import type {ExternalFleetEvent, InternalFleetEvent} from '$lib/space/myevents';
+  import type {ExternalFleetEvent, ExternalFleetSentEvent, InternalFleetEvent} from '$lib/space/myevents';
   import EventDetails from './EventDetails.svelte';
 
-  export let event: InternalFleetEvent | ExternalFleetEvent;
+  export let event: InternalFleetEvent | ExternalFleetEvent | ExternalFleetSentEvent;
   export let okLabel: string = 'OK';
   export let closeButton: boolean;
 
@@ -15,6 +15,7 @@
   }
 </script>
 
+<!-- {@debug event} -->
 {#if event}
   <Modal maxWidth="max-w-screen-xl" globalCloseButton={closeButton} cancelable={closeButton} on:close>
     <EventDetails event={event.event} />

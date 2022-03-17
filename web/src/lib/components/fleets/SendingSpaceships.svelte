@@ -59,9 +59,27 @@
   let fleetAmount = 1;
   let maxSpaceships: number;
   $: {
-    maxSpaceships = fromPlanetState
+    maxSpaceships = $fromPlanetState
       ? Math.max(0, $fromPlanetState.numSpaceships - ($sendFlow.data?.config?.numSpaceshipsToKeep || 0))
       : 0;
+
+    if ($fromPlanetState && $fromPlanetState.numSpaceships > fromPlanetInfo.stats.cap) {
+      const timePassed = Math.max((5 * 60) / spaceInfo.productionSpeedUp, 60);
+
+      let decreaseRate = 1800;
+      if ($fromPlanetState.overflow > 0) {
+        decreaseRate = Math.floor(($fromPlanetState.overflow * 1800) / fromPlanetInfo.stats.cap);
+        if (decreaseRate < 1800) {
+          decreaseRate = 1800;
+        }
+      }
+
+      let decrease = Math.floor((timePassed * spaceInfo.productionSpeedUp * decreaseRate) / 3600);
+      if (decrease > $fromPlanetState.numSpaceships - fromPlanetInfo.stats.cap) {
+        decrease = $fromPlanetState.numSpaceships - fromPlanetInfo.stats.cap;
+      }
+      maxSpaceships -= decrease;
+    }
 
     if ($sendFlow.data?.config?.numSpaceshipsAvailable) {
       maxSpaceships = Math.min(maxSpaceships, $sendFlow.data?.config?.numSpaceshipsAvailable);
@@ -70,6 +88,10 @@
       // TODO loading
       fleetAmount = Math.floor(maxSpaceships / 2);
       fleetAmountSet = true;
+    }
+
+    if (fleetAmount > maxSpaceships) {
+      fleetAmount = maxSpaceships;
     }
   }
 

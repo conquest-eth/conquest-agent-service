@@ -19,10 +19,15 @@ export class PlanetStates {
   private pendingActionsPerPlanet: {[location: string]: SyncedPendingActions};
   private metadataTable: MetadataTable = {};
 
+  private started = false;
   start(): void {
-    time.subscribe(this.onTime.bind(this));
-    spaceQueryWithPendingActions.subscribe(this.onSpaceUpdate.bind(this));
-    planetMetadata.subscribe(this.onMetadataUpdated.bind(this));
+    // TODO auto start on subscribe
+    if (!this.started) {
+      this.started = true;
+      time.subscribe(this.onTime.bind(this));
+      spaceQueryWithPendingActions.subscribe(this.onSpaceUpdate.bind(this));
+      planetMetadata.subscribe(this.onMetadataUpdated.bind(this));
+    }
   }
 
   onPlannetUpdates(planetInfo: PlanetInfo, func: (planetState: PlanetState) => void): number {

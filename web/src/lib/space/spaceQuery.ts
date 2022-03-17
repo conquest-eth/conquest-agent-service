@@ -11,12 +11,19 @@ import {account} from '$lib/account/account';
 import type {
   FleetArrivedEvent,
   FleetArrivedParsedEvent,
+  FleetSentEvent,
+  FleetSentParsedEvent,
   PlanetInteruptedExitEvent,
   PlanetInteruptedExitParsedEvent,
   PlanetTimePassedExitEvent,
   PlanetTimePassedExitParsedEvent,
 } from './subgraphTypes';
-import {parseFleetArrived, parsePlanetInteruptedExitEvent, parseplanetTimePassedExitEvent} from './subgraphTypes';
+import {
+  parseFleetArrived,
+  parseFleetSentEvent,
+  parsePlanetInteruptedExitEvent,
+  parseplanetTimePassedExitEvent,
+} from './subgraphTypes';
 import {deletionDelay} from '$lib/config';
 import {now} from '$lib/time';
 import {BigNumber} from '@ethersproject/bignumber';
@@ -58,6 +65,7 @@ export type SpaceQueryResult = {
   fleetsArrivedFromYou?: FleetArrivedEvent[]; // TODO
   fleetsArrivedToYou?: FleetArrivedEvent[]; // TODO
   fleetsArrivedAsYou?: FleetArrivedEvent[]; // TODO
+  fleetsSentExternally?: FleetSentEvent[];
   planetInteruptedExitEvents?: PlanetInteruptedExitEvent[];
   planetTimePassedExitEvents?: PlanetTimePassedExitEvent[];
 };
@@ -70,7 +78,8 @@ export type SpaceState = {
   chain: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou: FleetArrivedParsedEvent[]; // TODO
   fleetsArrivedToYou: FleetArrivedParsedEvent[]; // TODO
-  fleetsArrivedAsYou?: FleetArrivedParsedEvent[]; // TODO
+  fleetsArrivedAsYou: FleetArrivedParsedEvent[]; // TODO
+  fleetsSentExternally: FleetSentParsedEvent[];
   planetInteruptedExitEvents?: PlanetInteruptedExitParsedEvent[];
   planetTimePassedExitEvents?: PlanetTimePassedExitParsedEvent[];
 };
@@ -243,6 +252,18 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     from {id}
     quantity
   }
+  fleetsSentExternally: fleetSentEvents(where: {sender: $owner owner_not: $owner operator_not: $owner timestamp_gt: $fromTime} orderBy: timestamp, orderDirection: desc) {
+    id
+    blockNumber
+    timestamp
+    transaction {id}
+    owner {id}
+    planet {id}
+    sender {id}
+    operator
+    fleet {id}
+    quantity
+  }
   ?
 }`,
       chainTempo, // replayTempo, //
@@ -310,6 +331,8 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       return undefined;
     }
 
+    console.log(data.fleetsSentExternally);
+
     const planets = (data.myplanets || []).concat(data.otherplanets);
     // console.log(`stop loading query!`);
     return {
@@ -353,6 +376,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       fleetsArrivedFromYou: !data.fleetsArrivedFromYou ? [] : data.fleetsArrivedFromYou.map(parseFleetArrived),
       fleetsArrivedToYou: !data.fleetsArrivedToYou ? [] : data.fleetsArrivedToYou.map(parseFleetArrived),
       fleetsArrivedAsYou: !data.fleetsArrivedAsYou ? [] : data.fleetsArrivedAsYou.map(parseFleetArrived),
+      fleetsSentExternally: !data.fleetsSentExternally ? [] : data.fleetsSentExternally.map(parseFleetSentEvent),
       planetInteruptedExitEvents: !data.planetInteruptedExitEvents
         ? []
         : data.planetInteruptedExitEvents.map(parsePlanetInteruptedExitEvent),

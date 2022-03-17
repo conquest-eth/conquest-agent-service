@@ -30,7 +30,7 @@
       event.destinationOwner.id !== '0x0000000000000000000000000000000000000000'
         ? event.destinationOwner.id
         : undefined;
-    const walletAddress = $wallet.address.toLowerCase();
+    const walletAddress = $wallet.address?.toLowerCase();
     walletIsBothOwnerAndSender = walletAddress === sender && sender === owner;
     walletIsOwner = walletAddress === owner;
     walletIsSender = walletAddress === sender;

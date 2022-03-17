@@ -3,6 +3,7 @@ import {blockTime, finality, logPeriod, lowFrequencyFetch} from '$lib/config';
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
 import type {GenericEvent, GenericParsedEvent} from './subgraphTypes';
 import {parseEvent} from './subgraphTypes';
+import {now} from '$lib/time';
 
 export type GlobalLogs = {
   step: 'IDLE' | 'LOADING' | 'READY';
@@ -27,7 +28,7 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
   }
 
   async fetch() {
-    const timestamp = '0'; // TODO
+    const timestamp = '' + (now() - logPeriod);
 
     const query = `
     query($timestamp: BigInt!){
@@ -88,7 +89,6 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
 }
 
 `;
-
     try {
       const result = await SUBGRAPH_ENDPOINT.query<
         QueryData,
