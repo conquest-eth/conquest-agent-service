@@ -137,7 +137,11 @@
   $: defaultTimeToArrive = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
   // $: arrivalTime = $time + defaultTimeToArrive;
 
-  $: currentTimeToArrive = arrivalTimeWanted ? arrivalTimeWanted.getTime() / 1000 - $time : defaultTimeToArrive;
+  $: currentTimeToArrive = arrivalTimeWanted
+    ? arrivalTimeWanted.getTime() / 1000 - $time > defaultTimeToArrive
+      ? arrivalTimeWanted.getTime() / 1000 - $time
+      : defaultTimeToArrive
+    : defaultTimeToArrive;
 
   $: currentTimeToArriveFormatted = timeToText(currentTimeToArrive);
 
