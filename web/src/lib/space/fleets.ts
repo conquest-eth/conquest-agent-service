@@ -102,15 +102,19 @@ export class FleetsStore implements Readable<FleetListState> {
           if (!to) {
             console.error(`not planet found at ${sendAction.to.x}, ${sendAction.to.y}`);
           }
-          const minDuration = spaceInfo.timeToArrive(from, to);
-          const duration = Math.max(minDuration, sendAction.arrivalTimeWanted - sendAction.timestamp); // TODO check actualLaunchTime consideration
+
           let launchTime = now(); // TODO  update.queryState.data?.chain.timestamp ?
           if (sendAction.actualLaunchTime) {
             launchTime = sendAction.actualLaunchTime;
+            // console.log({actualLaunchTime: launchTime});
           } else if (pendingAction.txTimestamp) {
             launchTime = pendingAction.txTimestamp;
+            // console.log({savingActualLaunchTime: launchTime});
             account.recordFleetLaunchTime(pendingAction.id, launchTime);
           }
+
+          const minDuration = spaceInfo.timeToArrive(from, to);
+          const duration = Math.max(minDuration, sendAction.arrivalTimeWanted - launchTime);
 
           const timeLeft = Math.max(duration - (now() - launchTime), 0);
           let timeToResolve = 0;

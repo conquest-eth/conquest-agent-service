@@ -195,7 +195,8 @@
       }
     | undefined = undefined;
   $: {
-    if (!gift && futureState && futureState.state && fromPlanetState) {
+    futurePrediction = undefined;
+    if (!gift && futureState && futureState.state) {
       futurePrediction = {
         numSpaceshipsAtArrival: {min: futureState.state.numSpaceships, max: futureState.state.numSpaceships}, // TODO max
         outcome: spaceInfo.outcome(
@@ -499,7 +500,7 @@
         </div>
         <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
 
-        {#if futureState && futureState.state}
+        {#if futurePrediction}
           <div class="flex flex-row  justify-center mt-2 text-xs text-yellow-500">
             <span>Predicted outcome Including Traveling Fleets (fleet needs to reach in time)</span>
           </div>
