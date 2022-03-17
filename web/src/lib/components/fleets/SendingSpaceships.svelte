@@ -61,7 +61,7 @@
   $: currentFutures = $planetFutures.filter((v) => v.fleet.timeLeft > defaultTimeToArrive - 5 * 60);
 
   $: travelingArrivals = currentFutures
-    .filter((v) => v.fleet.arrivalTimeWanted > 0)
+    .filter((v) => v.fleet.arrivalTimeWanted > 0 && v.fleet.arrivalTimeWanted - now() > -5 * 60)
     .map((v) => v.fleet.arrivalTimeWanted);
 
   $: futureStatesAtFleetArrival = currentFutures.filter(
@@ -201,27 +201,33 @@
   $: {
     futurePrediction = undefined;
     if (!gift && futureState && futureState.state) {
+      let extraAttack = 0;
+      let extra = undefined;
+      if (arrivalTimeWanted && Math.floor(arrivalTimeWanted.getTime() / 1000) === futureState.arrivalTime) {
+        extra = {
+          attackPowerOverride: Math.floor(
+            (futureState.accumulatedAttack * futureState.averageAttackPower +
+              fleetAmount * fromPlanetInfo.stats.attack) /
+              (fleetAmount + futureState.accumulatedAttack)
+          ),
+          defense: futureState.accumulatedDefense,
+        };
+        extraAttack = futureState.accumulatedAttack;
+      }
       futurePrediction = {
         numSpaceshipsAtArrival: {min: futureState.state.numSpaceships, max: futureState.state.numSpaceships}, // TODO max
         outcome: spaceInfo.outcome(
           fromPlanetInfo,
           toPlanetInfo,
           futureState.state,
-          fleetAmount + futureState.accumulatedAttack,
-          0,
+          fleetAmount + extraAttack,
+          currentTimeToArrive + $time - futureState.arrivalTime,
           senderPlayer,
           fromPlayer,
           playersQuery.getPlayer(futureState.state.owner),
           gift,
           undefined, //TODO ?
-          {
-            attackPowerOverride: Math.floor(
-              (futureState.accumulatedAttack * futureState.averageAttackPower +
-                fleetAmount * fromPlanetInfo.stats.attack) /
-                (fleetAmount + futureState.accumulatedAttack)
-            ),
-            defense: futureState.accumulatedDefense,
-          }
+          extra
         ),
       };
     }
@@ -506,7 +512,10 @@
 
         {#if futurePrediction}
           <div class="flex flex-row  justify-center mt-2 text-xs text-yellow-500">
-            <span>Predicted outcome Including Traveling Fleets (fleet needs to reach in time)</span>
+            <span>Predicted outcome Including Traveling Fleets</span>
+          </div>
+          <div class="flex flex-row  justify-center mt-0 mb-1 text-xs text-yellow-700">
+            <span>(assuming they all reaches in time)</span>
           </div>
           <div class="flex flex-row justify-center">
             {#if futurePrediction?.outcome.min.captured}

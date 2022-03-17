@@ -20,6 +20,7 @@ export type FutureInfo = {
 export type PlanetFutureState = FutureInfo[];
 
 class PlanetFutureStateStores {
+  // TODO weakmap
   private stores: Record<string, Readable<PlanetFutureState>> = {};
 
   futureStatesFor(planetInfo: PlanetInfo): Readable<PlanetFutureState> {
@@ -35,14 +36,22 @@ class PlanetFutureStateStores {
 
         const currentTime = now();
         let lastTime = currentTime;
+        let firstTime = true;
 
         for (const fleet of fleets) {
+          // console.log(fleet);
           let accumulatedAttackAdded = 0;
           let accumulatedDefenseAdded = 0;
           let attackPower = fleet.from.stats.attack;
 
           if (fleet.arrivalTimeWanted > 0) {
-            if (lastInfo && lastInfo.arrivalTime === fleet.arrivalTimeWanted) {
+            // TODO fleet Owner  a cheval : TODO, maybe order the fleet by owner ?
+            if (
+              lastInfo &&
+              lastInfo.arrivalTime === fleet.arrivalTimeWanted &&
+              !fleet.gift &&
+              fleet.owner === lastInfo.fleet.owner
+            ) {
               attackPower = Math.floor(
                 (lastInfo.accumulatedAttack * lastInfo.averageAttackPower + fleet.quantity * fleet.from.stats.attack) /
                   (fleet.quantity + lastInfo.accumulatedAttack)
@@ -56,18 +65,18 @@ class PlanetFutureStateStores {
           const extraTime = expectedArrivalTime - lastTime;
           lastTime = expectedArrivalTime;
 
-          if (extraTime > 0) {
+          if (extraTime > 0 || firstTime) {
             futureState = spaceInfo.computeFuturePlanetState(planetInfo, futureState, extraTime);
           }
           const outcome = spaceInfo.outcome(
             fleet.from,
             planetInfo,
-            $planetState,
+            futureState,
             fleet.quantity + accumulatedAttackAdded,
             fleet.timeLeft,
             playersQuery.getPlayer(fleet.fleetSender),
             playersQuery.getPlayer(fleet.owner),
-            playersQuery.getPlayer($planetState.owner),
+            playersQuery.getPlayer(futureState.owner),
             fleet.gift,
             fleet.specific,
             {
@@ -85,22 +94,23 @@ class PlanetFutureStateStores {
           }
           // TODO accumulated
 
-          if (extraTime > 0) {
+          if (extraTime > 0 || firstTime || outcome.gift) {
             futures.push({
               arrivalTime: lastTime,
-              accumulatedAttack: outcome.combat.attackerLoss,
-              accumulatedDefense: outcome.combat.defenderLoss,
-              averageAttackPower: attackPower,
+              accumulatedAttack: outcome.gift ? 0 : outcome.combat.attackerLoss,
+              accumulatedDefense: outcome.gift ? 0 : outcome.combat.defenderLoss,
+              averageAttackPower: outcome.gift ? 0 : attackPower,
               state: futureState,
               fleet,
             });
           } else {
             if (lastInfo) {
-              lastInfo.accumulatedAttack = outcome.combat.attackerLoss;
-              lastInfo.accumulatedDefense = outcome.combat.defenderLoss;
-              lastInfo.averageAttackPower = attackPower;
+              lastInfo.accumulatedAttack = outcome.gift ? 0 : outcome.combat.attackerLoss;
+              lastInfo.accumulatedDefense = outcome.gift ? 0 : outcome.combat.defenderLoss;
+              lastInfo.averageAttackPower = outcome.gift ? 0 : attackPower;
             }
           }
+          firstTime = false;
         }
         return futures;
       });
@@ -110,3 +120,8 @@ class PlanetFutureStateStores {
 }
 
 export const planetFutureStates = new PlanetFutureStateStores();
+
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).planetFutureStates = planetFutureStates;
+}
