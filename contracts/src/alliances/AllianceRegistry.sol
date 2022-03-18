@@ -5,6 +5,7 @@ pragma solidity 0.8.9;
 import "hardhat-deploy/solc_0.8/proxy/Proxied.sol";
 import "../interfaces/IAlliance.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 // import "hardhat/console.sol";
 
@@ -55,11 +56,7 @@ contract AllianceRegistry is Proxied {
         nonce = _allianceNonces[player][alliance];
     }
 
-    function getAllianceData(address player, IAlliance alliance)
-        external
-        view
-        returns (uint96 joinTime, uint256 nonce)
-    {
+    function getAllianceData(address player, IAlliance alliance) public view returns (uint96 joinTime, uint256 nonce) {
         nonce = _allianceNonces[player][alliance];
 
         Alliances storage alliances = _alliances[player];
@@ -292,6 +289,9 @@ contract AllianceRegistry is Proxied {
         _allianceNonces[player][alliance] = nonce + 1;
 
         emit AllianceLink(alliance, player, true);
+
+        _checkERC1155AndCallSafeTransfer(msg.sender, address(0), player, uint256(uint160(address(alliance))), 1);
+        emit TransferSingle(msg.sender, address(0), player, uint256(uint160(address(alliance))), 1);
     }
 
     bytes internal constant hexAlphabet = "0123456789abcdef";
@@ -369,9 +369,75 @@ contract AllianceRegistry is Proxied {
         }
 
         emit AllianceLink(alliance, player, false);
+        emit TransferSingle(msg.sender, player, address(0), uint256(uint160(address(alliance))), 1);
     }
 
     function _msgSender() internal view returns (address) {
         return msg.sender; // TODO metatx
     }
+
+    // ---------------------------------------------------------------------
+    // Support For ERC-1155
+    // ---------------------------------------------------------------------
+
+    event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value);
+
+    function balanceOf(address owner, uint256 id) external view returns (uint256 balance) {
+        require(id == uint160(id), "INVALID_ID");
+        (uint96 joinTime, ) = getAllianceData(owner, IAlliance(address(uint160(id))));
+        if (joinTime > 0) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    function balanceOfBatch(address[] calldata owners, uint256[] calldata ids)
+        external
+        view
+        returns (uint256[] memory balances)
+    {
+        balances = new uint256[](owners.length);
+        for (uint256 i = 0; i < owners.length; i++) {
+            require(ids[i] == uint160(ids[i]), "INVALID_ID");
+            (uint96 joinTime, ) = getAllianceData(owners[i], IAlliance(address(uint160(ids[i]))));
+            if (joinTime > 0) {
+                balances[i] = 1;
+            } else {
+                balances[i] = 0;
+            }
+        }
+    }
+
+    function isApprovedForAll(address, address) external pure returns (bool) {
+        return false;
+    }
+
+    function supportsInterface(bytes4 interfaceID) external pure returns (bool) {
+        return interfaceID == 0xd9b67a26 || interfaceID == 0x01ffc9a7;
+    }
+
+    function _checkERC1155AndCallSafeTransfer(
+        address operator,
+        address from,
+        address to,
+        uint256 id,
+        uint256 value
+    ) internal returns (bool) {
+        if (!Address.isContract(to)) {
+            return true;
+        }
+
+        return ERC1155TokenReceiver(to).onERC1155Received(operator, from, id, value, "") == 0xf23a6e61;
+    }
+}
+
+interface ERC1155TokenReceiver {
+    function onERC1155Received(
+        address _operator,
+        address _from,
+        uint256 _id,
+        uint256 _value,
+        bytes calldata _data
+    ) external returns (bytes4);
 }
