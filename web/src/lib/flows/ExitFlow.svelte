@@ -15,7 +15,6 @@
     <div class="text-center">
       <h2>An error happenned</h2>
       <p class="text-red-300 mt-2 text-sm">{formatError($exitFlow.error)}</p>
-      <!-- <p class="text-gray-300 mt-2 text-sm">{JSON.stringify($exitFlow.error?.data?.data)}</p> -->
       <Button class="mt-5" label="Stake" on:click={() => exitFlow.acknownledgeError()}>Ok</Button>
     </div>
   </Modal>

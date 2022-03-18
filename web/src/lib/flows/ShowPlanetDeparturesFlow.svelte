@@ -3,7 +3,7 @@
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import showPlanetDepartures from '$lib/flows/showPlanetDepartures';
   import {now} from '$lib/time';
-  import {timeToText} from '$lib/utils';
+  import {formatError, timeToText} from '$lib/utils';
   import {logPeriod} from '$lib/config';
   import Blockie from '$lib/components/account/Blockie.svelte';
 </script>
@@ -12,7 +12,7 @@
   <Modal on:close={() => showPlanetDepartures.acknownledgeError()}>
     <div class="text-center">
       <h2>An error happenned</h2>
-      <p class="text-gray-300 mt-2 text-sm">{$showPlanetDepartures.error.message || $showPlanetDepartures.error}</p>
+      <p class="text-gray-300 mt-2 text-sm">{formatError($showPlanetDepartures.error)}</p>
       <PanelButton class="mt-5" label="Stake" on:click={() => showPlanetDepartures.acknownledgeError()}>Ok</PanelButton>
     </div>
   </Modal>

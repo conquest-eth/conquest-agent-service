@@ -2,13 +2,14 @@
   import Modal from '$lib/components/generic/Modal.svelte';
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import messageFlow from '$lib/flows/message';
+  import {formatError} from '$lib/utils';
 </script>
 
 {#if $messageFlow.error}
   <Modal on:close={() => messageFlow.acknownledgeError()}>
     <div class="text-center">
       <h2>An error happenned</h2>
-      <p class="text-gray-300 mt-2 text-sm">{$messageFlow.error.message || $messageFlow.error}</p>
+      <p class="text-gray-300 mt-2 text-sm">{formatError($messageFlow.error)}</p>
       <PanelButton class="mt-5" label="Stake" on:click={() => messageFlow.acknownledgeError()}>Ok</PanelButton>
     </div>
   </Modal>
