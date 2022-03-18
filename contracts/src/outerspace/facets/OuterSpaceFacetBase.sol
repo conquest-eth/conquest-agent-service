@@ -667,7 +667,10 @@ contract OuterSpaceFacetBase is
         // check requirements
         // -----------------------------------------------------------------------------------------------------------
 
-        require(rState.fleetQuantity > 0, "FLEET_DO_NOT_EXIST");
+        require(
+            rState.fleetQuantity > 0, // TODO use other indicator, maybe even result: gift / failed attack / success
+            rState.fleetOwner != address(0) ? "FLEET_RESOLVED_ALREADY" : "FLEET_DO_NOT_EXIST"
+        );
         _requireCorrectDistance(
             resolution.distance,
             resolution.from,
