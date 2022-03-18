@@ -23,7 +23,7 @@ export function bitMaskMatch(value: number | undefined, bit: number): boolean {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function formatError(e: any): string {
-  return e.data?.data ? JSON.stringify(e.data?.data) : e.message ? e.message : JSON.stringify(e); //(e.toString ? e.toString() : ;
+  return e.data?.message || e.data?.data ? JSON.stringify(e.data?.data) : e.message ? e.message : JSON.stringify(e); //(e.toString ? e.toString() : ;
 }
 
 export function decodeCoords(coords: string): {x: number; y: number} {
