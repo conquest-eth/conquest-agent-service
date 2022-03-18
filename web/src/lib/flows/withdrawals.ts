@@ -40,7 +40,8 @@ class WithdrawalsStore extends AutoStartBaseStore<Withdrawals> {
     if (wallet.address && wallet.contracts) {
       const locations = this.exits.map((v) => v.planet.id);
       const tx = await wallet.contracts.OuterSpace.fetchAndWithdrawFor(wallet.address, locations);
-      // account.recordWithdrawal(tx.hash, tx.nonce);
+      // TODO :
+      //  account.recordWithdrawal(tx.hash, tx.nonce);
     } else {
       throw new Error(` not wallet or contracts`);
     }

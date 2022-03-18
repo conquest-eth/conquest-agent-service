@@ -366,7 +366,7 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
       if (txFromPeers) {
         return; // TODO should we do the above here : `if (txFromPeers.blockNumber) {`
       }
-      if (finalityNonce > checkedAction.action.nonce) {
+      if (typeof checkedAction.action.nonce === 'number' && finalityNonce > checkedAction.action.nonce) {
         pending = false;
         // replaced
         if (checkedAction.status !== 'CANCELED' || checkedAction.final !== checkedAction.action.timestamp) {

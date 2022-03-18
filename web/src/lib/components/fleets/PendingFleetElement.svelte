@@ -27,7 +27,8 @@
       fleet.gift,
       fleet.specific,
       fleet.arrivalTimeWanted,
-      fleet.sending.action.nonce,
+      fleet.sending.action.nonce, // this might not be tx nonce // TODO use a different fieldName : secretNonce
+      //  and then we can have action.nonce optional
       fleet.owner,
       fleet.fleetSender,
       fleet.operator

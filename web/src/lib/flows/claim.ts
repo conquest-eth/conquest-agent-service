@@ -120,7 +120,7 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
     const gasLimit = gasEstimation.add(100000);
 
     this.setPartial({step: 'WAITING_TX'});
-    let tx: {hash: string; nonce: number};
+    let tx: {hash: string; nonce?: number};
     try {
       tx = await wallet.contracts?.ConquestToken.transferAndCall(
         wallet.contracts?.OuterSpace.address,
@@ -132,20 +132,31 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
         {gasLimit}
       );
     } catch (e) {
-      if (this.$store.step === 'WAITING_TX') {
-        if (e.message && e.message.indexOf('User denied') >= 0) {
-          this.setPartial({
-            step: 'IDLE',
-            error: undefined,
-          });
-        } else {
-          console.error(`Error on transferAndCall:`, e);
-          this.setPartial({error: e, step: 'CHOOSE_STAKE'});
+      if (e.transactionHash) {
+        tx = {hash: e.transactionHash};
+        try {
+          const tResponse = await wallet.provider.getTransaction(e.transactionHash);
+          tx = tResponse;
+        } catch (e) {
+          console.log(`could not fetch tx, to get the nonce`);
         }
-      } else {
-        throw e;
       }
-      return;
+      if (!tx || !tx.hash) {
+        if (this.$store.step === 'WAITING_TX') {
+          if (e.message && e.message.indexOf('User denied') >= 0) {
+            this.setPartial({
+              step: 'IDLE',
+              error: undefined,
+            });
+          } else {
+            console.error(`Error on transferAndCall:`, e);
+            this.setPartial({error: e, step: 'CHOOSE_STAKE'});
+          }
+        } else {
+          throw e;
+        }
+        return;
+      }
     }
 
     // TODO check ? check what ? (need to give better comments :D)

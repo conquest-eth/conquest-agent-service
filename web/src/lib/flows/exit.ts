@@ -62,23 +62,34 @@ class ExitFlowStore extends BaseStoreWithData<ExitFlow, Data> {
     const gasLimit = gasEstimation.add(100000);
 
     this.setPartial({step: 'WAITING_TX'});
-    let tx: {hash: string; nonce: number};
+    let tx: {hash: string; nonce?: number};
     try {
       tx = await wallet.contracts?.OuterSpace.exitFor(wallet.address, locationId, {gasLimit});
     } catch (e) {
-      console.error(e);
-      if (e.message && e.message.indexOf('User denied') >= 0) {
+      if (e.transactionHash) {
+        tx = {hash: e.transactionHash};
+        try {
+          const tResponse = await wallet.provider.getTransaction(e.transactionHash);
+          tx = tResponse;
+        } catch (e) {
+          console.log(`could not fetch tx, to get the nonce`);
+        }
+      }
+      if (!tx || !tx.hash) {
+        console.error(e);
+        if (e.message && e.message.indexOf('User denied') >= 0) {
+          this.setPartial({
+            step: 'IDLE',
+            error: undefined,
+          });
+          return;
+        }
         this.setPartial({
-          step: 'IDLE',
-          error: undefined,
+          step: 'WAITING_CONFIRMATION',
+          error: e,
         });
         return;
       }
-      this.setPartial({
-        step: 'WAITING_CONFIRMATION',
-        error: e,
-      });
-      return;
     }
 
     account.recordExit(location, tx.hash, latestBlock.timestamp, tx.nonce);

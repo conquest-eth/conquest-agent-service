@@ -498,7 +498,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         },
       },
     });
-    let tx: {hash: string; nonce: number};
+    let tx: {hash: string; nonce?: number};
     try {
       if (abi) {
         // create a contract interface for the purchase call
@@ -530,16 +530,27 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         // });
       }
     } catch (e) {
-      console.error(e);
-      if (e.message && e.message.indexOf('User denied') >= 0) {
-        this.setPartial({
-          step: 'IDLE',
-          error: undefined,
-        });
+      if (e.transactionHash) {
+        tx = {hash: e.transactionHash};
+        try {
+          const tResponse = await wallet.provider.getTransaction(e.transactionHash);
+          tx = tResponse;
+        } catch (e) {
+          console.log(`could not fetch tx, to get the nonce`);
+        }
+      }
+      if (!tx || !tx.hash) {
+        console.error(e);
+        if (e.message && e.message.indexOf('User denied') >= 0) {
+          this.setPartial({
+            step: 'IDLE',
+            error: undefined,
+          });
+          return;
+        }
+        this.setPartial({error: e, step: 'CHOOSE_FLEET_AMOUNT'});
         return;
       }
-      this.setPartial({error: e, step: 'CHOOSE_FLEET_AMOUNT'});
-      return;
     }
 
     // const gToX = toPlanetInfo.location.globalX;
@@ -607,7 +618,8 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         lastFleet.fleet,
         txHash,
         lastFleet.timestamp,
-        lastFleet.nonce // tx.nounce can be different it seems, metamask can change it, or maybe be even user
+        lastFleet.nonce // tx.nonce can be different it seems, metamask can change it, or maybe be even user
+        //  so we should actually use a different fieldName: secretNonce to save lastFleet.nonce
       );
 
       this.setData({txHash: txHash}, {step: 'SUCCESS', cancelingConfirmation: false});

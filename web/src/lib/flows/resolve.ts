@@ -41,19 +41,33 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
     if (!nonce) {
       console.error('NO NONCE FOUND, fetching from transaciton hash');
 
-      let tx: {nonce: number};
+      let tx: {hash: string; nonce?: number};
       try {
         tx = await wallet.provider.getTransaction(fleet.sending.id);
       } catch (e) {
-        this.setPartial({
-          step: 'IDLE',
-          error: e,
-        });
-        return;
+        if (e.transactionHash) {
+          tx = {hash: e.transactionHash};
+          try {
+            const tResponse = await wallet.provider.getTransaction(e.transactionHash);
+            tx = tResponse;
+          } catch (e) {
+            console.log(`could not fetch tx, to get the nonce`);
+          }
+        }
+        if (!tx || !tx.hash) {
+          this.setPartial({
+            step: 'IDLE',
+            error: e,
+          });
+          return;
+        }
       }
       nonce = tx.nonce;
       // TODO why the following was needed in one instance?
       // nonce = tx.nonce - 1;
+
+      // TODO tx.nonce might not be correct, we need to have fleet.sending.action.nonce
+      //  what we could do though, is to use a different name, like secretNonce
     }
 
     const fleetData = await account.hashFleet(
