@@ -10,6 +10,10 @@ export const contractsInfos = readable(_contractsInfos, (set) => {
 
 if (import.meta.hot) {
   import.meta.hot.accept((newModule) => {
-    _set(newModule.initialContractsInfos);
+    try {
+      _set(newModule.initialContractsInfos);
+    } catch (e) {
+      console.error('_set contracts', e);
+    }
   });
 }
