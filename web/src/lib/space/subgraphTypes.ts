@@ -19,6 +19,7 @@ export type GenericParsedEvent =
   | ExitCompleteParsedEvent;
 
 export type OwnerEvent = {
+  id: string;
   __typename: EventTypeName;
   transaction: {id: string};
   owner: {id: string};
@@ -27,6 +28,7 @@ export type OwnerEvent = {
 };
 
 export type OwnerParsedEvent = {
+  id: string;
   __typename: EventTypeName;
   transaction: {id: string};
   owner: {id: string};
@@ -197,6 +199,7 @@ export type TravelingUpkeepReductionFromDestructionParsedEvent = PlanetParsedEve
 
 export function parseFleetArrived(v: FleetArrivedEvent): FleetArrivedParsedEvent {
   return {
+    id: v.id,
     __typename: v.__typename,
     transaction: v.transaction,
     owner: v.owner,
@@ -228,6 +231,7 @@ export function parseFleetArrived(v: FleetArrivedEvent): FleetArrivedParsedEvent
 
 export function parsePlanetExitEvent(v: PlanetExitEvent, interupted: boolean): PlanetExitParsedEvent {
   return {
+    id: v.id,
     __typename: v.__typename,
     transaction: v.transaction,
     owner: v.owner,
@@ -252,6 +256,7 @@ export function parseplanetTimePassedExitEvent(v: PlanetExitEvent): PlanetTimePa
 
 export function parsePlanetStakeEvent(v: PlanetStakeEvent): PlanetStakeParsedEvent {
   return {
+    id: v.id,
     __typename: v.__typename,
     transaction: v.transaction,
     owner: v.owner,
@@ -265,6 +270,7 @@ export function parsePlanetStakeEvent(v: PlanetStakeEvent): PlanetStakeParsedEve
 
 export function parseFleetSentEvent(v: FleetSentEvent): FleetSentParsedEvent {
   return {
+    id: v.id,
     __typename: v.__typename,
     transaction: v.transaction,
     owner: v.owner,
@@ -282,6 +288,7 @@ export function parseTravelingUpkeepReductionFromDestructionEvent(
   v: TravelingUpkeepReductionFromDestructionEvent
 ): TravelingUpkeepReductionFromDestructionParsedEvent {
   return {
+    id: v.id,
     __typename: v.__typename,
     transaction: v.transaction,
     owner: v.owner,
@@ -297,6 +304,7 @@ export function parseTravelingUpkeepReductionFromDestructionEvent(
 
 export function parseStakeToWithdrawEvent(v: StakeToWithdrawEvent): StakeToWithdrawParsedEvent {
   return {
+    id: v.id,
     __typename: v.__typename,
     transaction: v.transaction,
     owner: v.owner,
@@ -308,6 +316,7 @@ export function parseStakeToWithdrawEvent(v: StakeToWithdrawEvent): StakeToWithd
 
 export function parseExitCompleteEvent(v: ExitCompleteEvent): ExitCompleteParsedEvent {
   return {
+    id: v.id,
     __typename: v.__typename,
     transaction: v.transaction,
     owner: v.owner,

@@ -186,7 +186,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-800 bg-black">
-              {#each logs as event}
+              {#each logs as event (event.id)}
                 <tr>
                   <LogRow
                     on:click={() => showDetails(event)}
