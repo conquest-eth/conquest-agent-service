@@ -5,13 +5,18 @@ import "./AllianceRegistry.sol";
 // import "../interfaces/IAlliance.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract BasicAlliance {
+    using ECDSA for bytes32;
+
     bool internal _original;
     AllianceRegistry internal immutable _allianceRegistry;
     address public admin;
 
     string internal _baseURI;
+
+    mapping(address => uint32) public memberNonces;
 
     // constructor(AllianceRegistry allianceRegistry, AllianceRegistry.PlayerSubmission[] memory playerSubmissions) {
     //     _allianceRegistry = allianceRegistry;
@@ -50,6 +55,41 @@ contract BasicAlliance {
         _allianceRegistry.addMultiplePlayersToAlliance(playerSubmissions);
     }
 
+    function claimInvite(
+        address player,
+        uint32 nonce,
+        bytes calldata signature,
+        bytes calldata inviteSignature
+    ) external {
+        uint256 currentNonce = memberNonces[player];
+        require(currentNonce == nonce, "INVALID_NONCE");
+        memberNonces[player] = nonce + 1;
+
+        bytes memory message;
+        if (nonce == 0) {
+            message = abi.encodePacked(
+                "\x19Ethereum Signed Message:\n111",
+                "Invite Player 0x0000000000000000000000000000000000000000 To Alliance 0x0000000000000000000000000000000000000000"
+            );
+            _writeUintAsHex(message, 29 + 55, uint160(player));
+            _writeUintAsHex(message, 29 + 110, uint160(address(this)));
+        } else {
+            message = abi.encodePacked(
+                "\x19Ethereum Signed Message:\n131",
+                "Invite Player 0x0000000000000000000000000000000000000000 To Alliance 0x0000000000000000000000000000000000000000 (nonce:          0)"
+            );
+            _writeUintAsHex(message, 29 + 55, uint160(player));
+            _writeUintAsHex(message, 29 + 110, uint160(address(this)));
+            _writeUintAsDecimal(message, 29 + 129, nonce);
+        }
+        bytes32 digest = keccak256(message);
+
+        address signer = digest.recover(inviteSignature);
+        require(admin == signer, "INVALID_INVITE_SIGNATURE");
+
+        _allianceRegistry.addPlayerToAlliance(player, nonce, signature);
+    }
+
     function instantiate(
         address initialAdmin,
         AllianceRegistry.PlayerSubmission[] calldata playerSubmissions,
@@ -84,4 +124,30 @@ contract BasicAlliance {
     // function playerHasLeft(address player) external {
 
     // }
+
+    // TODO library
+    bytes internal constant hexAlphabet = "0123456789abcdef";
+    bytes internal constant decimalAlphabet = "0123456789";
+
+    function _writeUintAsHex(
+        bytes memory data,
+        uint256 endPos,
+        uint256 num
+    ) internal pure {
+        while (num != 0) {
+            data[endPos--] = bytes1(hexAlphabet[num % 16]);
+            num /= 16;
+        }
+    }
+
+    function _writeUintAsDecimal(
+        bytes memory data,
+        uint256 endPos,
+        uint256 num
+    ) internal pure {
+        while (num != 0) {
+            data[endPos--] = bytes1(decimalAlphabet[num % 10]);
+            num /= 10;
+        }
+    }
 }
