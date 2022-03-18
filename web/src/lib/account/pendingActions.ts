@@ -331,28 +331,30 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         receipt = await wallet.provider.getTransactionReceipt(checkedAction.id);
       }
       if (receipt) {
-        pending = false;
         const block = await wallet.provider.getBlock(txFromPeers.blockHash);
-        const final = receipt.confirmations >= finality;
-        if (receipt.status === 0) {
-          if (checkedAction.status !== 'FAILURE' || checkedAction.final !== block.timestamp) {
-            checkedAction.status = 'FAILURE';
-            checkedAction.txTimestamp = block.timestamp;
-            changes = true;
-            checkedAction.final = final ? block.timestamp : undefined;
-          }
-          if (final) {
-            await this._handleFinalAcknowledgement(checkedAction, block.timestamp, 'FAILURE');
-          }
-        } else {
-          if (checkedAction.status !== 'SUCCESS' || checkedAction.final !== block.timestamp) {
-            checkedAction.status = 'SUCCESS';
-            checkedAction.txTimestamp = block.timestamp;
-            changes = true;
-            checkedAction.final = final ? block.timestamp : undefined;
-          }
-          if (final) {
-            await this._handleFinalAcknowledgement(checkedAction, block.timestamp, 'SUCCESS');
+        if (block) {
+          pending = false;
+          const final = receipt.confirmations >= finality;
+          if (receipt.status === 0) {
+            if (checkedAction.status !== 'FAILURE' || checkedAction.final !== block.timestamp) {
+              checkedAction.status = 'FAILURE';
+              checkedAction.txTimestamp = block.timestamp;
+              changes = true;
+              checkedAction.final = final ? block.timestamp : undefined;
+            }
+            if (final) {
+              await this._handleFinalAcknowledgement(checkedAction, block.timestamp, 'FAILURE');
+            }
+          } else {
+            if (checkedAction.status !== 'SUCCESS' || checkedAction.final !== block.timestamp) {
+              checkedAction.status = 'SUCCESS';
+              checkedAction.txTimestamp = block.timestamp;
+              changes = true;
+              checkedAction.final = final ? block.timestamp : undefined;
+            }
+            if (final) {
+              await this._handleFinalAcknowledgement(checkedAction, block.timestamp, 'SUCCESS');
+            }
           }
         }
       }
