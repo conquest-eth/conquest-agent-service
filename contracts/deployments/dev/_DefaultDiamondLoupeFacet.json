@@ -81,7 +81,7 @@
   "args": [],
   "numDeployments": 1,
   "linkedData": {
-    "genesisHash": "0xee563ebbe85edccc120c5082a5066539b0e9b7958b5fbac114523a95a8162671",
+    "genesisHash": "0xee563ebbe85edccc120c5082a5066539b0e9b7958b5fbac114523a95a8162672",
     "resolveWindow": 1728,
     "timePerDistance": 72,
     "exitDuration": 2592,
