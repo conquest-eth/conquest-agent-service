@@ -82,7 +82,7 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
     ... on FleetSentEvent{
       sender {id}
       operator
-      fleet{id}
+      fleet{id resolveTransaction{id}}
       quantity
     }
   }

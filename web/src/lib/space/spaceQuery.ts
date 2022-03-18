@@ -261,7 +261,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     planet {id}
     sender {id}
     operator
-    fleet {id}
+    fleet {id resolveTransaction {id}}
     quantity
   }
   ?

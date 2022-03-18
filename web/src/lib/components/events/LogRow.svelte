@@ -20,6 +20,7 @@
   export let filterType: string | undefined = undefined;
   export let filterOrigin: string | undefined = undefined;
   export let filterDestination: string | undefined = undefined;
+  export let onlyUnresolved: boolean = false;
 
   function formatStake(stake: string): number {
     return BigNumber.from(stake).div('1000000000000000000').toNumber();
@@ -43,9 +44,11 @@
         captured?: boolean;
       }
     | undefined;
+  let unresolved: boolean;
 
   $: {
     const walletAddress = $wallet.address?.toLowerCase();
+    unresolved = false;
     sender = event.owner.id;
     color = 'text-gray-300';
     destination = undefined;
@@ -90,6 +93,8 @@
           : 'Planet is exiting in ' + timeToText(spaceInfo.exitDuration - timePassedSinceExit),
       };
 
+      unresolved = !event.interupted && !event.complete && timePassedSinceExit < spaceInfo.exitDuration;
+
       const ownerAsPlayer = $playersQuery.data?.players[sender];
       const ally = ownerAsPlayer && ownerAsPlayer.ally;
 
@@ -124,8 +129,12 @@
       outcome = {
         winner: undefined,
         stake: undefined,
-        description: `${quantity.amount} spaceships on their way`,
+        description: event.fleet.resolveTransaction
+          ? `${quantity.amount} spaceships have arrived`
+          : `${quantity.amount} spaceships on their way`,
       };
+
+      unresolved = !event.fleet.resolveTransaction;
 
       const ownerAsPlayer = $playersQuery.data?.players[owner];
       const ally = ownerAsPlayer && ownerAsPlayer.ally;
@@ -276,7 +285,8 @@
       (!onlySender && (owner === filterAddress.toLowerCase() || destinationOwner === filterAddress.toLowerCase()))) &&
     (!filterType || type.toLowerCase().startsWith(filterType.toLowerCase())) &&
     (!filterOrigin || originStr == filterOrigin) &&
-    (!filterDestination || destinationStr == filterDestination);
+    (!filterDestination || destinationStr == filterDestination) &&
+    (!onlyUnresolved || unresolved);
 </script>
 
 {#if filteredIn}

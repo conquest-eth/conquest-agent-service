@@ -67,7 +67,7 @@ export type FleetSentEvent = PlanetEvent & {
   __typename: 'FleetSentEvent';
   sender: {id: string};
   operator: string;
-  fleet: {id: string};
+  fleet: {id: string; resolveTransaction?: {id: string}};
   quantity: string;
 };
 
@@ -75,7 +75,7 @@ export type FleetSentParsedEvent = PlanetParsedEvent & {
   __typename: 'FleetSentEvent';
   sender: {id: string};
   operator: string;
-  fleet: {id: string};
+  fleet: {id: string; resolveTransaction?: {id: string}};
   quantity: number;
 };
 

@@ -9,6 +9,7 @@
   import Modal from '$lib/components/generic/Modal.svelte';
   import EventDetails from '$lib/components/events/EventDetails.svelte';
   import {planetStates} from '$lib/space/planetStates';
+  import {wallet} from '$lib/blockchain/wallet';
   onMount(() => {
     globalLogs.start();
     planetStates.start();
@@ -21,6 +22,24 @@
   let filterType: string | undefined;
   let filterOrigin: string | undefined;
   let filterDestination: string | undefined;
+  let onlyUnresolved: boolean = false;
+  let onlyPlayer: boolean = false;
+
+  function onOnlyPlayerChanged(e) {
+    if (onlyPlayer) {
+      filterAddress = $wallet.address;
+    } else {
+      filterAddress = undefined;
+      onlySender = false;
+    }
+  }
+
+  function onFilterAddressChanged(e) {
+    onlyPlayer = false;
+    if (!filterAddress || filterAddress === '') {
+      onlySender = false;
+    }
+  }
 
   let eventToShowDetails: GenericParsedEvent | undefined;
   function showDetails(event: GenericParsedEvent) {
@@ -95,21 +114,31 @@
               <tr>
                 <th
                   scope="col"
-                  class="whitespace-nowrap py-3.5 pl-4 pr-3 text-right text-sm font-semibold text-gray-500 sm:pl-6"
-                  >Filters:</th
+                  class="whitespace-nowrap py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-500 sm:pl-6"
                 >
-                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
-                  ><input
+                  <label class="text-xs" for="onlySender">player: </label><input
                     type="text"
                     onClick="this.select();"
                     name="filterAddress"
                     class="bg-black text-white ring-1 ring-gray-500 m-2 w-20"
                     bind:value={filterAddress}
+                    on:change={onFilterAddressChanged}
                   /><br />
+                  <label class="text-xs" for="onlySender">My Events: </label><input
+                    class="w-3 h-3"
+                    name="onlySender"
+                    type="checkbox"
+                    disabled={!$wallet.address}
+                    bind:checked={onlyPlayer}
+                    on:change={onOnlyPlayerChanged}
+                  />
+                </th>
+                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500">
                   <label class="text-xs" for="onlySender">sender only: </label><input
                     class="w-3 h-3"
                     name="onlySender"
                     type="checkbox"
+                    disabled={!filterAddress}
                     bind:checked={onlySender}
                   />
                 </th>
@@ -146,7 +175,14 @@
                   scope="col"
                   class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
                 />
-                <th scope="col" class="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-6" />
+                <th scope="col" class="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-6"
+                  ><label class="text-xs" for="onlySender">unresolved only: </label><input
+                    class="w-3 h-3"
+                    name="onlySender"
+                    type="checkbox"
+                    bind:checked={onlyUnresolved}
+                  /></th
+                >
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-800 bg-black">
@@ -159,6 +195,7 @@
                     {filterDestination}
                     {filterOrigin}
                     {onlySender}
+                    {onlyUnresolved}
                     {event}
                   />
                 </tr>
