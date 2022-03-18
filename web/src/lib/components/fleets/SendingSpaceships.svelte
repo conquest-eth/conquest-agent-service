@@ -201,9 +201,10 @@
   $: {
     futurePrediction = undefined;
     if (!gift && futureState && futureState.state) {
+      let giving = futureState.state.owner.toLowerCase() === fleetOwner.toLowerCase(); // TODO more complex scenario
       let extraAttack = 0;
       let extra = undefined;
-      if (arrivalTimeWanted && Math.floor(arrivalTimeWanted.getTime() / 1000) === futureState.arrivalTime) {
+      if (!giving && arrivalTimeWanted && Math.floor(arrivalTimeWanted.getTime() / 1000) === futureState.arrivalTime) {
         extra = {
           attackPowerOverride: Math.floor(
             (futureState.accumulatedAttack * futureState.averageAttackPower +
@@ -225,7 +226,7 @@
           senderPlayer,
           fromPlayer,
           playersQuery.getPlayer(futureState.state.owner),
-          gift,
+          giving,
           undefined, //TODO ?
           extra
         ),
@@ -518,7 +519,9 @@
             <span>(assuming they all reaches in time)</span>
           </div>
           <div class="flex flex-row justify-center">
-            {#if futurePrediction?.outcome.min.captured}
+            {#if futurePrediction?.outcome.gift}
+              <span class="text-green-600">Will have {futurePrediction?.outcome.min.numSpaceshipsLeft} spaceships</span>
+            {:else if futurePrediction?.outcome.min.captured}
               <span class="text-green-600">{futurePrediction?.outcome.min.numSpaceshipsLeft} (captured)</span>
             {:else if futurePrediction?.outcome.nativeResist}
               <span class="text-red-400"
