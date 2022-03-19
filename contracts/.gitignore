@@ -18,6 +18,7 @@ yalc.lock
 contractsInfo.json
 deployments/hardhat
 deployments/localhost
+saved-networks/
 
 metadata/
 
