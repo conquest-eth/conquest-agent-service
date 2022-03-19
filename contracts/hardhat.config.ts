@@ -113,7 +113,7 @@ const config: HardhatUserConfig = {
       accounts: accounts('goerli'),
       deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
     },
-    beta1: {
+    beta: {
       url: node_url('gnosis_chain'),
       accounts: accounts('gnosis_chain'),
       deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
