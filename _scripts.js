@@ -369,6 +369,17 @@ async function performAction(rawArgs) {
     execute(`newsh "npm run subgraph:dev"`);
     await performAction(['common:build']);
     await performAction(['contracts:seed', 'localhost', '--waitContracts']);
+  } else if (firstArg === 'start:nonode') {
+    const {extra} = parseArgs(args, 0, {});
+    await execute(`docker-compose down -v --remove-orphans`); // required else we run in race conditions
+    execute(`newsh "npm run externals"`);
+    execute(`newsh "npm run common:dev"`);
+    execute(`newsh "npm run web:dev localhost -- --skipContracts --waitContracts ${extra.join(' ')}"`);
+    execute(`newsh "npm run agent-service:dev"`);
+    execute(`newsh "npm run account-service:dev"`);
+    execute(`newsh "npm run subgraph:dev"`);
+    await performAction(['common:build']);
+    await performAction(['contracts:seed', 'localhost', '--waitContracts']);
   } else if (firstArg === 'start:geth') {
     const {extra} = parseArgs(args, 0, {});
     await execute(`docker-compose down -v --remove-orphans`); // required else we run in race conditions
