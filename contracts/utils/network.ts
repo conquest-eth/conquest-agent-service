@@ -13,6 +13,13 @@ export function node_url(networkName: string): string {
     return 'http://localhost:8545';
   }
 
+  if (networkName.startsWith('localhost_')) {
+    const split = networkName.split('_');
+    if (split.length === 2) {
+      return `http://localhost:${split[1]}`;
+    }
+  }
+
   let uri = process.env.ETH_NODE_URI;
   if (uri) {
     uri = uri.replace('{{networkName}}', networkName);

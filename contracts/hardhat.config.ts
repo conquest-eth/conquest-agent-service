@@ -88,6 +88,11 @@ const config: HardhatUserConfig = {
       accounts: accounts(),
       deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
     },
+    localhost_8546: {
+      url: node_url('localhost_8546'),
+      accounts: accounts(),
+      deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
+    },
     dev: {
       url: node_url('gnosis_chain'),
       accounts: accounts('gnosis_chain'),
