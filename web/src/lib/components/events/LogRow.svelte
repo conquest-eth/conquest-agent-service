@@ -10,7 +10,8 @@
 
   import {timeToText} from '$lib/utils';
   import {BigNumber} from '@ethersproject/bignumber';
-  import type {PlanetInfo} from 'conquest-eth-common';
+  import {coordFromXYObject, PlanetInfo} from 'conquest-eth-common';
+  import Copiable from '../generic/Copiable.svelte';
   import PlayCoin from '../utils/PlayCoin.svelte';
 
   export let event: GenericParsedEvent;
@@ -21,6 +22,35 @@
   export let filterOrigin: string | undefined = undefined;
   export let filterDestination: string | undefined = undefined;
   export let onlyUnresolved: boolean = false;
+  export let originRadius: number = 0;
+  export let destinationRadius: number = 0;
+  export let orLocation: boolean = false;
+
+  let validOriginFilter: {x: number; y: number} | undefined;
+  let validDestinationFilter: {x: number; y: number} | undefined;
+  $: {
+    validOriginFilter = undefined;
+    validDestinationFilter = undefined;
+    const origSplit = filterOrigin && filterOrigin.split(',').map((v) => parseInt(v));
+    if (origSplit && origSplit.length === 2) {
+      if (!isNaN(origSplit[0]) && !isNaN(origSplit[1])) {
+        validOriginFilter = {
+          x: origSplit[0],
+          y: origSplit[1],
+        };
+      }
+    }
+
+    const destSplit = filterDestination && filterDestination.split(',').map((v) => parseInt(v));
+    if (destSplit && destSplit.length === 2) {
+      if (!isNaN(destSplit[0]) && !isNaN(destSplit[1])) {
+        validDestinationFilter = {
+          x: destSplit[0],
+          y: destSplit[1],
+        };
+      }
+    }
+  }
 
   function formatStake(stake: string): number {
     return BigNumber.from(stake).div('1000000000000000000').toNumber();
@@ -271,12 +301,63 @@
       console.log(event);
     }
     if (origin) {
-      originStr = `${origin.location.x},${origin.location.y}`;
+      originStr = coordFromXYObject(origin.location);
     }
     if (destination) {
-      destinationStr = `${destination.location.x},${destination.location.y}`;
+      destinationStr = coordFromXYObject(origin.location);
     }
   }
+
+  function matchesLocationFilter(planet, filter, str, validFilter, radius) {
+    // return (
+    //   !filter ||
+    //   str.startsWith(filter) ||
+    //   (validFilter &&
+    //     Math.abs(validFilter.x - planet.location.x) <= radius &&
+    //     Math.abs(validFilter.y - planet.location.y) <= radius)
+    // );
+    return (
+      !filter ||
+      (planet &&
+        (str.startsWith(filter) ||
+          (validFilter &&
+            Math.abs(validFilter.x - planet.location.x) <= radius &&
+            Math.abs(validFilter.y - planet.location.y) <= radius)))
+    );
+  }
+
+  function matchesBothLocation() {
+    return (
+      matchesLocationFilter(origin, filterOrigin, originStr, validOriginFilter, originRadius) &&
+      matchesLocationFilter(destination, filterDestination, destinationStr, validDestinationFilter, destinationRadius)
+    );
+  }
+  function matchesAnyLocation() {
+    return (
+      matchesLocationFilter(origin, filterOrigin, originStr, validOriginFilter, originRadius) ||
+      matchesLocationFilter(destination, filterDestination, destinationStr, validDestinationFilter, destinationRadius) // TODO radius
+    );
+  }
+
+  // function matchesLocation() {
+  //   return !destination
+  //     ? matchesLocationFilter(origin, filterOrigin, originStr, validOriginFilter, originRadius)
+  //     : matchesLocationFilter(origin, filterOrigin, originStr, validOriginFilter, originRadius) ||
+  //         matchesLocationFilter(destination, filterOrigin, destinationStr, validOriginFilter, originRadius);
+  // }
+
+  // $: {
+  //   console.log({
+  //     origin: matchesLocationFilter(origin, filterOrigin, originStr, validOriginFilter, originRadius),
+  //     destination: matchesLocationFilter(
+  //       destination,
+  //       filterDestination,
+  //       destinationStr,
+  //       validDestinationFilter,
+  //       destinationRadius
+  //     ),
+  //   });
+  // }
 
   $: filteredIn =
     (!filterAddress ||
@@ -284,8 +365,12 @@
       owner == filterAddress.toLowerCase() ||
       (!onlySender && (owner === filterAddress.toLowerCase() || destinationOwner === filterAddress.toLowerCase()))) &&
     (!filterType || type.toLowerCase().startsWith(filterType.toLowerCase())) &&
-    (!filterOrigin || originStr == filterOrigin) &&
-    (!filterDestination || destinationStr == filterDestination) &&
+    (orLocation
+      ? !destination
+        ? matchesLocationFilter(origin, filterOrigin, originStr, validOriginFilter, originRadius)
+        : matchesLocationFilter(origin, filterOrigin, originStr, validOriginFilter, originRadius) ||
+          matchesLocationFilter(destination, filterOrigin, destinationStr, validOriginFilter, originRadius)
+      : matchesBothLocation()) &&
     (!onlyUnresolved || unresolved);
 </script>
 
@@ -298,11 +383,14 @@
     ><Blockie class="ml-2 w-6 h-6 inline my-1/2 mr-2" address={sender} />{#if owner && owner !== sender}
       <spam class="text-white">&gt;</spam> <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={owner} />{/if}</td
   >
-  <td class={`whitespace-nowrap px-2 py-2 text-sm font-medium ${color} text-center `}>{type}</td>
+  <td class={`whitespace-nowrap px-2 py-2 text-sm font-medium ${color} text-center `}
+    ><Copiable text={type}>{type}</Copiable></td
+  >
   <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `}
     >{#if origin}<p class="mb-1">{origin.stats.name}</p>
       <Coord location={origin.location.id} />{/if}</td
   >
+  <!-- <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `} /> -->
   <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `}
     >{#if destination}<p>{destination.stats.name}</p>
       <Coord location={destination.location.id} />{/if}

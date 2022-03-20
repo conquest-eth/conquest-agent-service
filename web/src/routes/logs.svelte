@@ -10,6 +10,7 @@
   import EventDetails from '$lib/components/events/EventDetails.svelte';
   import {planetStates} from '$lib/space/planetStates';
   import {wallet} from '$lib/blockchain/wallet';
+  import Counter from '$lib/components/generic/Counter.svelte';
   onMount(() => {
     globalLogs.start();
     planetStates.start();
@@ -24,6 +25,9 @@
   let filterDestination: string | undefined;
   let onlyUnresolved: boolean = false;
   let onlyPlayer: boolean = false;
+  let originRadius = 0;
+  let destinationRadius = 0;
+  let orLocation: boolean = true;
 
   function onOnlyPlayerChanged(e) {
     if (onlyPlayer) {
@@ -96,6 +100,7 @@
                 <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-100"
                   >Origin</th
                 >
+                <!-- <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500" /> -->
                 <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-100"
                   >Destination</th
                 >
@@ -134,7 +139,7 @@
                   />
                 </th>
                 <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500">
-                  <label class="text-xs" for="onlySender">sender only: </label><input
+                  <input
                     class="w-3 h-3"
                     name="onlySender"
                     type="checkbox"
@@ -151,32 +156,53 @@
                     bind:value={filterType}
                   /></th
                 >
-                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
-                  ><input
+                <th
+                  colspan="2"
+                  scope="col"
+                  class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
+                >
+                  <!-- <p>location</p> -->
+                  <input
                     type="text"
                     onClick="this.select();"
                     name="filterOrigin"
                     class="bg-black text-white ring-1 ring-gray-500 m-2 w-20"
                     bind:value={filterOrigin}
-                  /></th
-                >
-                <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
-                  ><input
+                  /><br />
+
+                  <Counter min={0} class="w-20 h-6" bind:value={originRadius} />
+                </th>
+                <!-- <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500">
+                  Or<br />
+                  <input
+                    class="w-3 h-3"
+                    name="orLocation"
+                    type="checkbox"
+                    disabled={!filterDestination || !filterOrigin}
+                    bind:checked={orLocation}
+                  />
+                </th> -->
+                <!-- <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500">
+                  <input
                     type="text"
                     onClick="this.select();"
                     name="filterDestination"
                     class="bg-black text-white ring-1 ring-gray-500 m-2 w-20"
                     bind:value={filterDestination}
-                  /></th
-                >
+                  />
+                  <input type="checkbox" bind:value={orLocation} />
+                  <br />
+
+                  <Counter min={0} class="w-20 h-6" bind:value={destinationRadius} />
+                </th> -->
                 <!-- <th scope="col" class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500" /> -->
                 <th
                   colspan="2"
                   scope="col"
-                  class="whitespace-nowrap px-2 py-3.5 text-center text-sm font-semibold text-gray-500"
+                  class="whitespace-nowrap px-2 py-3.5 text-left text-sm font-semibold text-gray-500"
                 />
                 <th scope="col" class="relative whitespace-nowrap py-3.5 pl-3 pr-4 sm:pr-6"
-                  ><label class="text-xs" for="onlySender">unresolved only: </label><input
+                  ><label class="text-xs" for="onlySender">unresolved: </label><input
                     class="w-3 h-3"
                     name="onlySender"
                     type="checkbox"
@@ -196,6 +222,9 @@
                     {filterOrigin}
                     {onlySender}
                     {onlyUnresolved}
+                    {originRadius}
+                    {destinationRadius}
+                    {orLocation}
                     {event}
                   />
                 </tr>
