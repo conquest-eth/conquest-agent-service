@@ -43,10 +43,18 @@
     <li>- can send each other spaceships without any loss</li>
     <li>- do not carry risk of attacking each other</li>
   </ul>
-  <p>And they are programmable. Each alliance is a smart contract. You can create alliance with any rule you want. They can for example require a slashable deposit, taken away in case of betrayal.</p>
+  <p>
+    And they are programmable. Each alliance is a smart contract. You can create alliance with any rule you want. They
+    can for example require a slashable deposit, taken away in case of betrayal.
+  </p>
 
   <div class="mt-4">
-    <p>For now we have created a basic alliance that is managed by one admin user. Check it out <a class="underline" href="https://basic-alliances-dev.conquest.etherplay.io/">here</a></p>
+    <p>
+      For now we have created a basic alliance that is managed by one admin user. Check it out <a
+        class="underline"
+        href="https://basic-alliances-beta.conquest.etherplay.io/">here</a
+      >
+    </p>
   </div>
 </div>
 
@@ -62,10 +70,8 @@
           <h3 class="text-xl text-yellow-500">
             <Blockie class="inline w-10 h-10 m-1" address={entry[0]} /> Alliance {entry[0]}
           </h3>
-          <a
-            target="_blank"
-            class="inline-block border-2 border-yellow-400 p-1 m-1"
-            href={entry[1].frontendURI}>JOIN/MANAGE</a
+          <a target="_blank" class="inline-block border-2 border-yellow-400 p-1 m-1" href={entry[1].frontendURI}
+            >JOIN/MANAGE</a
           >
           <p>members:</p>
           <ul class="m-2">
