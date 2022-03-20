@@ -2,13 +2,8 @@
   export let location: string;
   export let link: boolean = false;
   import {url} from '$lib/utils/url';
-  import {locationToXY} from 'conquest-eth-common';
+  import {coordFromXYObject, locationToXY} from 'conquest-eth-common';
   import Copiable from '../generic/Copiable.svelte';
-
-  function coord(location: string): string {
-    const loc = locationToXY(location);
-    return `${loc.x},${loc.y}`;
-  }
 
   function _select(elem: HTMLElement) {
     const range = document.createRange();
@@ -20,12 +15,15 @@
   function select(e: MouseEvent) {
     _select(e.currentTarget as HTMLElement);
   }
+
+  $: xy = locationToXY(location);
+  $: coordStr = coordFromXYObject(xy);
 </script>
 
 {#if link}
-  <a href={url(`?x=${locationToXY(location).x}&y=${locationToXY(location).y}`)} class="underline">{coord(location)}</a>
+  <a href={url(`?x=${xy.x}&y=${xy.y}`)} class="underline">{coordStr}</a>
 {:else}
-  <Copiable text={`${coord(location)}`}>
-    <span style="user-select: all; cursor: pointer;" class="border">{coord(location)}</span>
+  <Copiable text={`${coordStr}`}>
+    <span style="user-select: all; cursor: pointer;" class="border">{coordStr}</span>
   </Copiable>
 {/if}
