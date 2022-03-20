@@ -1,27 +1,27 @@
 <script lang="ts">
   export let location: string;
   export let link: boolean = false;
+
   import {url} from '$lib/utils/url';
   import {coordFromXYObject, locationToXY} from 'conquest-eth-common';
   import Copiable from '../generic/Copiable.svelte';
-
-  function _select(elem: HTMLElement) {
-    const range = document.createRange();
-    const selection = window.getSelection();
-    range.selectNodeContents(elem);
-    (selection as any).removeAllRanges();
-    (selection as any).addRange(range);
-  }
-  function select(e: MouseEvent) {
-    _select(e.currentTarget as HTMLElement);
-  }
+  import Tooltip from '../generic/Tooltip.svelte';
 
   $: xy = locationToXY(location);
   $: coordStr = coordFromXYObject(xy);
 </script>
 
 {#if link}
-  <a href={url(`?x=${xy.x}&y=${xy.y}`)} class="underline">{coordStr}</a>
+  <Tooltip>
+    <div slot="tooltip">
+      <p class="m-1">
+        <a class="underline" href={url(`?x=${xy.x}&y=${xy.y}`)} style="cursor: pointer;">navigate to</a>
+      </p>
+    </div>
+    <Copiable text={`${coordStr}`}>
+      <span style="user-select: all; cursor: pointer;" class="border">{coordStr}</span>
+    </Copiable>
+  </Tooltip>
 {:else}
   <Copiable text={`${coordStr}`}>
     <span style="user-select: all; cursor: pointer;" class="border">{coordStr}</span>
