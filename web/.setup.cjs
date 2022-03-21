@@ -10,3 +10,10 @@ function copyFromDefault(p) {
 }
 
 [/*'.vscode/settings.json', */ '.env'].map(copyFromDefault);
+
+const overridesFolder = 'overrides';
+if (fs.existsSync(overridesFolder)) {
+  walk(overridesFolder, (fullpath) =>
+    fs.copyFileSync(fullpath, `node_modules/${fullpath.substring(overridesFolder.length + 1)}`)
+  );
+}
