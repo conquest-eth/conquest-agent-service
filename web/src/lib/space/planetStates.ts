@@ -93,6 +93,10 @@ export class PlanetStates {
         const location = xyToLocation(pendingAction.action.from.x, pendingAction.action.from.y);
         const currentlist = (this.pendingActionsPerPlanet[location] = this.pendingActionsPerPlanet[location] || []);
         currentlist.push(pendingAction);
+      } else if (pendingAction.action.type === 'EXIT') {
+        const location = xyToLocation(pendingAction.action.planetCoords.x, pendingAction.action.planetCoords.y);
+        const currentlist = (this.pendingActionsPerPlanet[location] = this.pendingActionsPerPlanet[location] || []);
+        currentlist.push(pendingAction);
       }
     }
 
@@ -226,6 +230,9 @@ export class PlanetStates {
             planetState.capturing = true;
           } else if (pendingAction.action.type === 'SEND') {
             planetState.numSpaceships -= pendingAction.action.quantity;
+          } else if (pendingAction.action.type === 'EXIT') {
+            planetState.exiting = true;
+            planetState.exitTimeLeft = spaceInfo.exitDuration;
           }
         } else if (!pendingAction.action.acknowledged) {
           if (pendingAction.action.type === 'CAPTURE') {

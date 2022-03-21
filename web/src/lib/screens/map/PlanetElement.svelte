@@ -261,29 +261,6 @@
     />
   {/if}
 
-  <!-- <div
-    style={`
-  width: ${frame.w}px;
-  height: ${frame.h}px;
-  animation-name: rotate-s-loader;
-  animation-iteration-count: infinite;
-  animation-duration: 1s;
-  animation-timing-function: linear;
-  `}
-  >
-    <div
-      style={`
-    position: absolute; transform: translate(${x}px,${y}px)  scale(${scale * 2}, ${scale * 2});
-  width: ${frame.w}px;
-  height: ${frame.h}px;
-  border: 2px solid green;
-  border-left-color: red;
-  border-radius: 50%;
-  background: transparent;
-`}
-    />
-  </div> -->
-
   {#if rewardAttached}
     <div
       style={`
@@ -349,6 +326,32 @@
           animation-duration: 2s;
           animation-timing-function: linear;
         `}
+      />
+    </div>
+  {/if}
+
+  {#if $planetState && $planetState.capturing}
+    <div
+      style={`
+    z-index: 3;
+    position: absolute;
+    transform: translate(${x}px,${y}px) scale(${blockieScale * 3}, ${blockieScale * 3});
+    width: ${frame.w}px;
+    height: ${frame.h}px;
+  `}
+    >
+      <div
+        style={`
+      width: ${frame.w}px;
+      height: ${frame.h}px;
+      border: ${selectionBorder}px solid white;
+      border-left-color: red;
+      border-radius: 50%;
+      animation-name: rotate-s-loader;
+      animation-iteration-count: infinite;
+      animation-duration: 1s;
+      animation-timing-function: linear;
+    `}
       />
     </div>
   {/if}
