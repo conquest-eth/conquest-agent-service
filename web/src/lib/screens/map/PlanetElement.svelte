@@ -259,17 +259,6 @@
   `}
       data={`${planetInfo.location.x}, ${planetInfo.location.y} : ${planetInfo.stats.subX}, ${planetInfo.stats.subY} -| ${planetInfo.location.globalX}, ${planetInfo.location.globalY}`}
     />
-  {:else if rewardAttached}
-    <!-- TODO remove, handled above-->
-    <div
-      style={`position: absolute; transform: translate(${x}px,${y}px) scale(${blockieScale * 2}, ${
-        blockieScale * 2
-      }); background: url(${base}${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
-        frame.w
-      }px; height: ${frame.h}px;
-  `}
-      data={`${planetInfo.location.x}, ${planetInfo.location.y} : ${planetInfo.stats.subX}, ${planetInfo.stats.subY} -| ${planetInfo.location.globalX}, ${planetInfo.location.globalY}`}
-    />
   {/if}
 
   <!-- <div
@@ -309,7 +298,7 @@
         style={`
         width: ${frame.w}px;
         height: ${frame.h}px;
-        border: ${selectionBorder}px solid gold;
+        border: ${selectionBorder}px dashed ${borderColor === 'white' || !owner ? 'gold' : borderColor};
       `}
       />
     </div>
@@ -423,9 +412,9 @@
           z-index: 2;
           position: absolute;
           transform:
-            translate(${x + 0.6 * multiplier - +0.5 / scale / 2}px,${
-          rewardAttached ? y - 1.4 * multiplier : y - 1.2 * multiplier - +0.5 / scale / 2
-        }px)
+            translate(${
+              rewardAttached ? x + 1.2 * multiplier - +0.5 / scale / 2 : x + 0.6 * multiplier - +0.5 / scale / 2
+            }px,${rewardAttached ? y - 1.8 * multiplier - +0.5 / scale / 2 : y - 1.2 * multiplier - +0.5 / scale / 2}px)
             scale(${blockieScale}, ${blockieScale});
           width: ${frame.w + 0.5 / scale}px; height: ${frame.h + 0.5 / scale}px;
           border: ${active ? 'solid ' + 0.25 / scale + 'px' : 'dashed ' + 0.12 / scale + 'px'}  ${borderColor};
