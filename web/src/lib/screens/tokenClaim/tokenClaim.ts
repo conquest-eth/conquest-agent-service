@@ -20,6 +20,7 @@ type TokenClaim = {
     | 'AlreadyClaimed'
     | 'AlreadyClaimedAnother';
   error?: unknown;
+  txHash?: string;
 };
 
 class TokenClaimStore extends BaseStore<TokenClaim> {
@@ -171,6 +172,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
         console.error(e);
       }
       if (tx) {
+        this.setPartial({txHash: tx.hash});
         try {
           await tx.wait();
           this.setPartial({state: 'Claimed'});
@@ -205,6 +207,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
         console.error(e);
       }
       if (tx) {
+        this.setPartial({txHash: tx.hash});
         try {
           await tx.wait();
           this.setPartial({state: 'Claimed'});

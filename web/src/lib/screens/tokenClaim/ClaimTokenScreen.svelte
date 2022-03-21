@@ -36,8 +36,26 @@
           <Button class="mt-4" label="claim" on:click={() => tokenClaim.claim()}>Claim</Button>
         {:else if $tokenClaim.state === 'SettingUpClaim'}
           <p class="mt-5">Please wait while the claim is being executed...</p>
+          {#if $tokenClaim.txHash}
+            <p>
+              <a
+                href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${$tokenClaim.txHash}`}
+                target="_blank"
+                class="text-indigo-600 hover:text-indigo-100 underline">{$tokenClaim.txHash}</a
+              >
+            </p>
+          {/if}
         {:else if $tokenClaim.state === 'Claiming'}
           <p class="mt-5">Please wait while the claim is being executed...</p>
+          {#if $tokenClaim.txHash}
+            <p>
+              <a
+                href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${$tokenClaim.txHash}`}
+                target="_blank"
+                class="text-indigo-600 hover:text-indigo-100 underline">{$tokenClaim.txHash}</a
+              >
+            </p>
+          {/if}
         {:else if $tokenClaim.state === 'Claimed'}
           <p class="m-5 text-green-500">The tokens are now yours!</p>
           <Button class="mt-4" label="continue" on:click={() => tokenClaim.clearURL()}>Continue</Button>
