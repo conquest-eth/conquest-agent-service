@@ -46,7 +46,7 @@ export type PlayersState = {
   loading: boolean;
   players: PlayersMap;
   alliances: AlliancesMap;
-  chain: {blockHash: string; blockNumber: string};
+  chain?: {blockHash: string; blockNumber: string};
 };
 
 export class PlayersQueryStore implements QueryStore<PlayersState> {
@@ -187,10 +187,12 @@ export class PlayersQueryStore implements QueryStore<PlayersState> {
     return {
       loading: false,
       players: this.$players,
-      chain: {
-        blockHash: data.chain.blockHash,
-        blockNumber: data.chain.blockNumber,
-      },
+      chain: data.chain
+        ? {
+            blockHash: data.chain.blockHash,
+            blockNumber: data.chain.blockNumber,
+          }
+        : undefined,
       alliances: this.$alliances,
     };
   }

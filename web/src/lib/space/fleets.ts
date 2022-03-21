@@ -103,7 +103,7 @@ export class FleetsStore implements Readable<FleetListState> {
             console.error(`not planet found at ${sendAction.to.x}, ${sendAction.to.y}`);
           }
 
-          let launchTime = now(); // TODO  update.queryState.data?.chain.timestamp ?
+          let launchTime = now(); // TODO  update.queryState.data?.chain?.timestamp ?
           if (sendAction.actualLaunchTime) {
             launchTime = sendAction.actualLaunchTime;
             // console.log({actualLaunchTime: launchTime});

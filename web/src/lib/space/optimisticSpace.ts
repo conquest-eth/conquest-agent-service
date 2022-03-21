@@ -93,7 +93,7 @@ export class SpaceQueryWithPendingActions implements Readable<SpaceQueryWithPend
 
   private async _handleSpaceQuery(space: QueryState<SpaceState>): Promise<void> {
     // if pending request ? abort ?
-    if (!space.data) {
+    if (!space.data || !space.data.chain) {
       // TODO error
       return;
     }

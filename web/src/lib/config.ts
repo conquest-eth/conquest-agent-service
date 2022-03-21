@@ -87,7 +87,7 @@ if (fallbackProviderOrUrl && typeof fallbackProviderOrUrl === 'string') {
   }
 }
 
-const graphNodeURL = import.meta.env.VITE_THE_GRAPH_HTTP as string;
+const graphNodeURL = params.subgraph || (import.meta.env.VITE_THE_GRAPH_HTTP as string);
 
 const logPeriod =
   Math.floor((7 * 24 * 60 * 60) / contractsInfos.contracts.OuterSpace.linkedData.productionSpeedUp) *

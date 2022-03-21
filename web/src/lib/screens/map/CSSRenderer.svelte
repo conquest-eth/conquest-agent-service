@@ -20,10 +20,10 @@
 
   $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
 
-  $: x1 = ($spaceQueryWithPendingActions.queryState.data?.space.x1 || -16) * 4 - 2; // TODO sync CONSTANTS with thegraph and contract
-  $: x2 = ($spaceQueryWithPendingActions.queryState.data?.space.x2 || 16) * 4 + 2;
-  $: y1 = ($spaceQueryWithPendingActions.queryState.data?.space.y1 || -16) * 4 - 2;
-  $: y2 = ($spaceQueryWithPendingActions.queryState.data?.space.y2 || 16) * 4 + 2;
+  $: x1 = ($spaceQueryWithPendingActions.queryState.data?.space?.x1 || 0) * 4 - 2; // TODO sync CONSTANTS with thegraph and contract
+  $: x2 = ($spaceQueryWithPendingActions.queryState.data?.space?.x2 || 0) * 4 + 2;
+  $: y1 = ($spaceQueryWithPendingActions.queryState.data?.space?.y1 || 0) * 4 - 2;
+  $: y2 = ($spaceQueryWithPendingActions.queryState.data?.space?.y2 || 0) * 4 + 2;
 </script>
 
 <div
@@ -118,42 +118,43 @@ width:100%; height: 100%;
       <rect x={x1-1000} y={y1} width={1000} height={y2-y1} fill="black" fill-opacity="0.5"/>
     </svg> -->
 
-    <svg style={`pointer-events: none; position: absolute; z-index: 50; overflow: visible;`}>
-      <defs>
-        <clipPath id="space">
-          <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} />
-        </clipPath>
-        <mask id="myMask">
-          <rect x={x1 - 1000000} y={y1 - 1000000} width={x2 - x1 + 2000000} height={y2 - y1 + 2000000} fill="white" />
-          <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} fill="black" />
-        </mask>
-      </defs>
+    {#if $spaceQueryWithPendingActions.queryState.data?.space}
+      <svg style={`pointer-events: none; position: absolute; z-index: 50; overflow: visible;`}>
+        <defs>
+          <clipPath id="space">
+            <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} />
+          </clipPath>
+          <mask id="myMask">
+            <rect x={x1 - 1000000} y={y1 - 1000000} width={x2 - x1 + 2000000} height={y2 - y1 + 2000000} fill="white" />
+            <rect x={x1} y={y1} width={x2 - x1} height={y2 - y1} fill="black" />
+          </mask>
+        </defs>
 
-      <!-- <rect x={x1-1000} y={y1-1000} width={(x2-x1) + 2000} height={(y2-y1) + 2000} fill="black" fill-opacity="0.6" clip-path="url(#space)" /> -->
-      <rect
-        x={x1 - 1000000}
-        y={y1 - 1000000}
-        width={x2 - x1 + 2000000}
-        height={y2 - y1 + 2000000}
-        fill="black"
-        fill-opacity="0.4"
-        mask="url(#myMask)"
-      />
-    </svg>
+        <!-- <rect x={x1-1000} y={y1-1000} width={(x2-x1) + 2000} height={(y2-y1) + 2000} fill="black" fill-opacity="0.6" clip-path="url(#space)" /> -->
+        <rect
+          x={x1 - 1000000}
+          y={y1 - 1000000}
+          width={x2 - x1 + 2000000}
+          height={y2 - y1 + 2000000}
+          fill="black"
+          fill-opacity="0.4"
+          mask="url(#myMask)"
+        />
+      </svg>
 
-    <svg style={`pointer-events: none; position: absolute; z-index: 50; overflow: visible;`}>
-      <rect
-        x={x1}
-        y={y1}
-        width={x2 - x1}
-        height={y2 - y1}
-        stroke="white"
-        stroke-opacity="0.5"
-        fill="none"
-        stroke-dasharray="2 10"
-      />
-    </svg>
-
+      <svg style={`pointer-events: none; position: absolute; z-index: 50; overflow: visible;`}>
+        <rect
+          x={x1}
+          y={y1}
+          width={x2 - x1}
+          height={y2 - y1}
+          stroke="white"
+          stroke-opacity="0.5"
+          fill="none"
+          stroke-dasharray="2 10"
+        />
+      </svg>
+    {/if}
     <!-- <svg style={`position: absolute; z-index: 50; overflow: visible;`}>
       <line stroke-width="1px" stroke="blue"  x1={x1} y1={y1} x2={x2} y2={y1}/>
     </svg>

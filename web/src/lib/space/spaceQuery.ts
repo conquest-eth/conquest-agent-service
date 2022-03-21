@@ -74,8 +74,8 @@ export type SpaceState = {
   player?: {id: string; tokenBalance: BigNumber; tokenToWithdraw: BigNumber};
   planets: PlanetContractState[];
   loading: boolean;
-  space: {x1: number; x2: number; y1: number; y2: number};
-  chain: {blockHash: string; blockNumber: string};
+  space?: {x1: number; x2: number; y1: number; y2: number};
+  chain?: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou: FleetArrivedParsedEvent[]; // TODO
   fleetsArrivedToYou: FleetArrivedParsedEvent[]; // TODO
   fleetsArrivedAsYou: FleetArrivedParsedEvent[]; // TODO
@@ -361,16 +361,20 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
           rewardGiver: v.rewardGiver,
         };
       }),
-      space: {
-        x1: -parseInt(data.space?.minX || '16'), // TODO sync CONSTANTS with thegraph and contract
-        x2: parseInt(data.space?.maxX || '16'),
-        y1: -parseInt(data.space?.minY || '16'),
-        y2: parseInt(data.space?.maxY || '16'),
-      },
-      chain: {
-        blockHash: data.chain.blockHash,
-        blockNumber: data.chain.blockNumber,
-      },
+      space: data.space
+        ? {
+            x1: -parseInt(data.space.minX),
+            x2: parseInt(data.space.maxX),
+            y1: -parseInt(data.space.minY),
+            y2: parseInt(data.space.maxY),
+          }
+        : undefined,
+      chain: data.chain
+        ? {
+            blockHash: data.chain.blockHash,
+            blockNumber: data.chain.blockNumber,
+          }
+        : undefined,
       fleetsArrivedFromYou: !data.fleetsArrivedFromYou ? [] : data.fleetsArrivedFromYou.map(parseFleetArrived),
       fleetsArrivedToYou: !data.fleetsArrivedToYou ? [] : data.fleetsArrivedToYou.map(parseFleetArrived),
       fleetsArrivedAsYou: !data.fleetsArrivedAsYou ? [] : data.fleetsArrivedAsYou.map(parseFleetArrived),
