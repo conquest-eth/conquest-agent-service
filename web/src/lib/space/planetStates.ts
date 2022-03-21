@@ -210,10 +210,10 @@ export class PlanetStates {
           continue;
         }
 
-        // TODO ?
-        if (pendingAction.status === 'SUCCESS' && pendingAction.final) {
-          continue;
-        }
+        // // TODO ?
+        // if (pendingAction.status === 'SUCCESS' && pendingAction.final) {
+        //   continue;
+        // }
 
         // TODO
         if (pendingAction.status === 'FAILURE') {
