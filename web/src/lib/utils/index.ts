@@ -1,3 +1,4 @@
+import {chainName} from '$lib/config';
 import * as base64Module from 'byte-base64';
 import * as lz from 'lz-string';
 import prettyMs from 'pretty-ms';
@@ -23,7 +24,14 @@ export function bitMaskMatch(value: number | undefined, bit: number): boolean {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function formatError(e: any): string {
-  return e.data?.message || (e.data?.data ? JSON.stringify(e.data?.data) : e.message ? e.message : JSON.stringify(e)); //(e.toString ? e.toString() : ;
+  const errorMessage =
+    e.data?.message || (e.data?.data ? JSON.stringify(e.data?.data) : e.message ? e.message : JSON.stringify(e)); //(e.toString ? e.toString() : ;
+  if (errorMessage.indexOf(' could not be found') !== -1) {
+    return `${chainName}'s node out of sync: "block ${errorMessage}"`;
+  } else if (errorMessage.indexOf('No state available for block ') !== -1) {
+    return `${chainName}'s node out of sync: "${errorMessage}"`;
+  }
+  return errorMessage;
 }
 
 export function decodeCoords(coords: string): {x: number; y: number} {

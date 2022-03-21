@@ -7,6 +7,7 @@
   import {base} from '$app/paths';
   import {wallet, builtin, chain, transactions, balance, flow, fallback, switchChain} from '$lib/blockchain/wallet';
   import {privateWallet} from '$lib/account/privateWallet';
+  import {formatError} from '$lib/utils';
 
   $: executionError = $flow.executionError as any;
 
@@ -179,7 +180,7 @@
         <p>
           {#if executionError.code === 4001}
             You rejected the request
-          {:else if executionError.message}{executionError.message}{:else}Error: {executionError}{/if}
+          {:else}{formatError(executionError)}{/if}
         </p>
         <Button class="mt-4" label="Retry" on:click={() => flow.retry()}>Retry</Button>
       </div>
