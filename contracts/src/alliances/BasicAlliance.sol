@@ -59,14 +59,15 @@ contract BasicAlliance {
         address player,
         uint32 nonce,
         bytes calldata signature,
+        uint32 inviteNonce,
         bytes calldata inviteSignature
     ) external {
         uint256 currentNonce = memberNonces[player];
-        require(currentNonce == nonce, "INVALID_NONCE");
-        memberNonces[player] = nonce + 1;
+        require(currentNonce == inviteNonce, "INVALID_NONCE");
+        memberNonces[player] = inviteNonce + 1;
 
         bytes memory message;
-        if (nonce == 0) {
+        if (inviteNonce == 0) {
             message = abi.encodePacked(
                 "\x19Ethereum Signed Message:\n111",
                 "Invite Player 0x0000000000000000000000000000000000000000 To Alliance 0x0000000000000000000000000000000000000000"
@@ -80,7 +81,7 @@ contract BasicAlliance {
             );
             _writeUintAsHex(message, 29 + 55, uint160(player));
             _writeUintAsHex(message, 29 + 110, uint160(address(this)));
-            _writeUintAsDecimal(message, 29 + 129, nonce);
+            _writeUintAsDecimal(message, 29 + 129, inviteNonce);
         }
         bytes32 digest = keccak256(message);
 
