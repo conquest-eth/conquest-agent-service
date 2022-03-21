@@ -14,15 +14,21 @@ if (sponsor === 'xaya') {
   giverAddress = '0xdddddddddddddddddddddddddddddddddddddddd';
 } else if (sponsor === 'pokt') {
   giverAddress = '0x1111111111111111111111111111111111111111';
-} else if (sponsor === 'da') {
+} else if (sponsor === 'gnosis') {
   giverAddress = '0x2222222222222222222222222222222222222222';
 }
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const planets = JSON.parse(await hre.deployments.readDotFile('.planets-chosen.json'));
 
-  if (planets.length !== 6) {
-    throw new Error(`6 required`);
+  if (sponsor === 'xaya') {
+    if (planets.length !== 9) {
+      throw new Error(`9 required`);
+    }
+  } else {
+    if (planets.length !== 7) {
+      throw new Error(`7 required`);
+    }
   }
 
   const {deployer} = await hre.getNamedAccounts();

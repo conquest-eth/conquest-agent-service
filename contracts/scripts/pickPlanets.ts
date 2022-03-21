@@ -47,7 +47,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   // fs.writeFileSync('../planets.json', data);
 
   const planetsChosen = [];
-  while (planetsChosen.length < 6) {
+  while (planetsChosen.length < 7) {
     const num = planetsInBound.length;
     const index = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) % num;
     const chosenPlanet = planetsInBound[index];

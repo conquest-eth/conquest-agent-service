@@ -232,7 +232,7 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
-            <key type="filename">DA_sun.png</key>
+            <key type="filename">Gnosis_sun.png</key>
             <key type="filename">Pokt_sun.png</key>
             <key type="filename">Xaya_sun.png</key>
             <struct type="IndividualSpriteSettings">
@@ -329,7 +329,7 @@
             <filename>Jungle48.png</filename>
             <filename>Xaya_sun.png</filename>
             <filename>Pokt_sun.png</filename>
-            <filename>DA_sun.png</filename>
+            <filename>Gnosis_sun.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

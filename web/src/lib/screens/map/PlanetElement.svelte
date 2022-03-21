@@ -78,7 +78,7 @@
     } else if ($planetState?.rewardGiver === '0x1111111111111111111111111111111111111111') {
       frameType = 'Pokt_sun.png';
     } else if ($planetState?.rewardGiver === '0x2222222222222222222222222222222222222222') {
-      frameType = 'DA_sun.png';
+      frameType = 'Gnosis_sun.png';
     }
 
     frameInfo = (planetsFrame.frames as any)[frameType] as {frame: Frame};
@@ -180,8 +180,8 @@
       ? `rgba(255, 255 ,255, ${capacityRatio})`
       : `rgba(255, 0 ,0, ${capacityRatio})`;
 
-    $: allianceBorderColor =
-      !$wallet.address || $privateWallet.step !== 'READY'
+  $: allianceBorderColor =
+    !$wallet.address || $privateWallet.step !== 'READY'
       ? isSelectedOwner
         ? 'red'
         : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])
@@ -201,27 +201,26 @@
       ? `white`
       : `red`;
 
-
-    // $: borderColorWithoutTransparency =
-    //   !$wallet.address || $privateWallet.step !== 'READY'
-    //   ? isSelectedOwner
-    //     ? 'red'
-    //     : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])
-    //     ? `rgb(255, 165 ,0)`
-    //     : 'white'
-    //   : playerIsOwner
-    //   ? `rgb(0, 255, 0)`
-    //   : isAlly
-    //   ? isSelectedOwner
-    //     ? `rgb(103, 232, 255)`
-    //     : `rgb(103, 232, 255)` // TODO different color on selection ?
-    //   : isSelectedOwner
-    //   ? `rgb(255, 0 ,0)`
-    //   : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])
-    //   ? `rgb(255, 165 ,0)`
-    //   : $selectionOwner
-    //   ? `rgb(255, 255 ,255)`
-    //   : `rgb(255, 0 ,0)`;
+  // $: borderColorWithoutTransparency =
+  //   !$wallet.address || $privateWallet.step !== 'READY'
+  //   ? isSelectedOwner
+  //     ? 'red'
+  //     : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])
+  //     ? `rgb(255, 165 ,0)`
+  //     : 'white'
+  //   : playerIsOwner
+  //   ? `rgb(0, 255, 0)`
+  //   : isAlly
+  //   ? isSelectedOwner
+  //     ? `rgb(103, 232, 255)`
+  //     : `rgb(103, 232, 255)` // TODO different color on selection ?
+  //   : isSelectedOwner
+  //   ? `rgb(255, 0 ,0)`
+  //   : hasCommonAlliance($selectionOwner, $playersQuery.data?.players[owner?.toLowerCase()])
+  //   ? `rgb(255, 165 ,0)`
+  //   : $selectionOwner
+  //   ? `rgb(255, 255 ,255)`
+  //   : `rgb(255, 0 ,0)`;
 
   $: plugins = !$planetState
     ? []
@@ -481,7 +480,7 @@
           translate(${x + alliancesOffset[i % 4] * 1.3 * multiplier}px,${
             y + alliancesOffset[(i + 3) % 4] * 1.3 * multiplier
           }px)
-          scale(${blockieScale* 1.5}, ${blockieScale* 1.5});
+          scale(${blockieScale * 1.5}, ${blockieScale * 1.5});
         width: ${frame.w}px; height: ${frame.h}px;
         border: solid 10px ${allianceBorderColor};
         border-radius: ${frame.w}px;
