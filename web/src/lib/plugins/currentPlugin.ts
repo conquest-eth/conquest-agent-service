@@ -54,7 +54,7 @@ function matchCondition(condition: string, data: ConditionData): boolean {
     return data.account?.toLowerCase() === data.planetState?.owner?.toLowerCase();
   } else if (condition.startsWith('planet')) {
     const split = condition.split(':');
-    return data.planetState.metadata[split[1]] !== undefined;
+    return data.planetState?.metadata[split[1]] !== undefined;
   }
 }
 
