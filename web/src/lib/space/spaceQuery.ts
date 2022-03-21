@@ -57,6 +57,7 @@ export type PlanetContractState = {
 };
 
 export type SpaceQueryResult = {
+  nullplanets: PlanetQueryState[]; // TODO remove: make owner == null => 0x00000
   otherplanets: PlanetQueryState[];
   myplanets?: PlanetQueryState[];
   owner?: {id: string; tokenBalance: string; tokenToWithdraw: string};
@@ -98,6 +99,16 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     this.queryStore = new HookedQueryStore( // TODO full list
       endpoint,
       `query($first: Int! $lastId: ID! $owner: String $fromTime: Int! $exitTimeEnd: Int!) {
+  nullplanets: planets(first: 1000 where: {owner: null}) {
+    id
+    numSpaceships
+    travelingUpkeep
+    overflow
+    lastUpdated
+    exitTime
+    active
+    rewardGiver
+  }
   otherplanets: planets(first: $first where: {id_gt: $lastId ?$owner?owner_not: $owner?}) {
     id
     owner {
@@ -331,7 +342,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       return undefined;
     }
 
-    const planets = (data.myplanets || []).concat(data.otherplanets);
+    const planets = (data.myplanets || []).concat(data.nullplanets.concat(data.otherplanets));
     // console.log(`stop loading query!`);
     return {
       loading: false,
