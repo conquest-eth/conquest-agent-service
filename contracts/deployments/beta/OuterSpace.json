@@ -1836,7 +1836,7 @@
       }
     ]
   ],
-  "numDeployments": 3,
+  "numDeployments": 1,
   "linkedData": {
     "genesisHash": "0x54cfc698a2dc6796e9cf1ab3cdbcc07c54b649287b791b14c040997bdc379b35",
     "resolveWindow": 43200,
