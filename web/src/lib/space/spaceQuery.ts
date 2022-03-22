@@ -349,6 +349,10 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       data.space &&
       data.space.address.toLowerCase() !== initialContractsInfos.contracts.OuterSpace.address.toLowerCase()
     ) {
+      console.log('INVALID', {
+        spaceAddress: data.space.address.toLowerCase(),
+        contractAddress: initialContractsInfos.contracts.OuterSpace.address.toLowerCase(),
+      });
       return {
         invalid: true,
         loading: false,

@@ -63,8 +63,8 @@
 
 <Map />
 
-{#if !$spaceQueryWithPendingActions.queryState.data?.loading && !$spaceQueryWithPendingActions.queryState.data?.invalid}
-  <div class="w-full flex items-center justify-center fixed top-0 pointer-events-none" style="z-index: 5;">
+{#if !$spaceQueryWithPendingActions.queryState.data?.loading && $spaceQueryWithPendingActions.queryState.data?.invalid}
+  <div class="w-full flex items-center justify-center fixed top-0" style="z-index: 5;">
     <p class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
       Invalid Caching Layer (subgraph) Space Not Ready. Please Contact us on <a
         href="https://discord.com/invite/Qb4gr2ekfr"
