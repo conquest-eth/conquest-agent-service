@@ -126,12 +126,14 @@
 
   $: agentServiceAccount = $agentService.account;
 
+  let useAgentServiceInitialised = false;
   $: if (
-    !useAgentService &&
+    !useAgentServiceInitialised &&
     account.isAgentServiceActivatedByDefault() &&
     !(!agentServiceAccount || agentServiceAccount.requireTopUp || !agentServiceAccount.delegate)
   ) {
     useAgentService = true;
+    useAgentServiceInitialised = true;
   }
 
   $: defaultTimeToArrive = spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo);
