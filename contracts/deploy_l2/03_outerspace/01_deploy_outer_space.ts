@@ -85,7 +85,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   if (networkName === 'beta') {
-    genesisHash = '0x54cfc698a2dc6796e9cf1ab3cdbcc07c54b649287b791b14c040997bdc379b35';
+    genesisHash = '0x54cfc698a2dc6796e9cf1ab3cdbcc07c54b649287b791b14c040997bdc379b36';
   }
 
   console.log({
