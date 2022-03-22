@@ -28,6 +28,7 @@ import {deletionDelay} from '$lib/config';
 import {now} from '$lib/time';
 import {BigNumber} from '@ethersproject/bignumber';
 import {spaceInfo} from './spaceInfo';
+import {initialContractsInfos} from '$lib/blockchain/contracts';
 
 // const blockRange = Math.floor(deletionDelay / blockTime);
 const timeRange = deletionDelay;
@@ -61,7 +62,7 @@ export type SpaceQueryResult = {
   otherplanets: PlanetQueryState[];
   myplanets?: PlanetQueryState[];
   owner?: {id: string; tokenBalance: string; tokenToWithdraw: string};
-  space?: {minX: string; maxX: string; minY: string; maxY: string};
+  space?: {minX: string; maxX: string; minY: string; maxY: string; address: string};
   chain?: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou?: FleetArrivedEvent[]; // TODO
   fleetsArrivedToYou?: FleetArrivedEvent[]; // TODO
@@ -72,10 +73,11 @@ export type SpaceQueryResult = {
 };
 
 export type SpaceState = {
+  invalid?: boolean;
   player?: {id: string; tokenBalance: BigNumber; tokenToWithdraw: BigNumber};
   planets: PlanetContractState[];
   loading: boolean;
-  space?: {x1: number; x2: number; y1: number; y2: number};
+  space?: {x1: number; x2: number; y1: number; y2: number; address: string};
   chain?: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou: FleetArrivedParsedEvent[]; // TODO
   fleetsArrivedToYou: FleetArrivedParsedEvent[]; // TODO
@@ -131,6 +133,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
     maxX
     minY
     maxY
+    address
   }
   ?$owner?
   owner(id: $owner) {
@@ -342,6 +345,51 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       return undefined;
     }
 
+    if (
+      data.space &&
+      data.space.address.toLowerCase() !== initialContractsInfos.contracts.OuterSpace.address.toLowerCase()
+    ) {
+      return {
+        invalid: true,
+        loading: false,
+        player: data.owner
+          ? {
+              id: data.owner.id,
+              tokenBalance: BigNumber.from(data.owner.tokenBalance),
+              tokenToWithdraw: BigNumber.from(data.owner.tokenToWithdraw),
+            }
+          : this.queryStore.runtimeVariables.owner
+          ? {
+              id: this.queryStore.runtimeVariables.owner,
+              tokenBalance: BigNumber.from(0),
+              tokenToWithdraw: BigNumber.from(0),
+            }
+          : undefined,
+        planets: [],
+        space: data.space
+          ? {
+              x1: -parseInt(data.space.minX),
+              x2: parseInt(data.space.maxX),
+              y1: -parseInt(data.space.minY),
+              y2: parseInt(data.space.maxY),
+              address: data.space.address,
+            }
+          : undefined,
+        chain: data.chain
+          ? {
+              blockHash: data.chain.blockHash,
+              blockNumber: data.chain.blockNumber,
+            }
+          : undefined,
+        fleetsArrivedFromYou: [],
+        fleetsArrivedToYou: [],
+        fleetsArrivedAsYou: [],
+        fleetsSentExternally: [],
+        planetInteruptedExitEvents: [],
+        planetTimePassedExitEvents: [],
+      };
+    }
+
     const planets = (data.myplanets || []).concat(data.nullplanets.concat(data.otherplanets));
     // console.log(`stop loading query!`);
     return {
@@ -378,6 +426,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
             x2: parseInt(data.space.maxX),
             y1: -parseInt(data.space.minY),
             y2: parseInt(data.space.maxY),
+            address: data.space.address,
           }
         : undefined,
       chain: data.chain

@@ -63,10 +63,19 @@
 
 <Map />
 
-{#if !$spaceQueryWithPendingActions.queryState.data?.loading && !$spaceQueryWithPendingActions.queryState.data?.space}
+{#if !$spaceQueryWithPendingActions.queryState.data?.loading && !$spaceQueryWithPendingActions.queryState.data?.invalid}
   <div class="w-full flex items-center justify-center fixed top-0 pointer-events-none" style="z-index: 5;">
     <p class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
-      Space Not Ready. Please Wait...
+      Invalid Caching Layer (subgraph) Space Not Ready. Please Contact us on <a
+        href="https://discord.com/invite/Qb4gr2ekfr"
+        class="underline">Discord</a
+      >.
+    </p>
+  </div>
+{:else if !$spaceQueryWithPendingActions.queryState.data?.loading && !$spaceQueryWithPendingActions.queryState.data?.space}
+  <div class="w-full flex items-center justify-center fixed top-0 pointer-events-none" style="z-index: 5;">
+    <p class="w-64 text-center rounded-bl-xl rounded-br-xl text-gray-200 bg-red-500 p-1">
+      Caching Layer (subgraph) Space Not Ready. Please Wait...
     </p>
   </div>
 {:else if $spaceQueryWithPendingActions.queryState.data?.loading || $fleetList.step === 'LOADING'}
