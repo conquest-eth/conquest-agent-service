@@ -56,6 +56,7 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
     ... on PlanetExitEvent{
       exitTime
       stake
+      interupted
     }
     ... on  FleetArrivedEvent{
       sender {id}
