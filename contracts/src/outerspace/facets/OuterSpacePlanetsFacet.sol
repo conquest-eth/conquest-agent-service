@@ -75,6 +75,7 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
         address to,
         uint256 location
     ) internal {
+        revert("DISABLED");
         require(from != address(0), "NOT_ZERO_ADDRESS");
         require(to != address(0), "NOT_ZERO_ADDRESS");
 
