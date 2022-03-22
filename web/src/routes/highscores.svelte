@@ -26,8 +26,8 @@
     <!-- <p class="text-yellow-400">Congrats to all players!</p> -->
 
     <!-- //TODO update date -->
-    <!-- <p class="text-gray-400">Score will be frozen past December 23rd 10PM UTC</p>
-    <p class="text-yellow-400">Time Left: {timeToText(1640296800 - $time)}</p> -->
+    <p class="text-gray-400">Score will be frozen past April 8th 10PM UTC</p>
+    <p class="text-yellow-400">Time Left: {timeToText(1649455200 - $time)}</p>
     {#if $highscores.error}
       <span class="text-red-600">{$highscores.error}</span>
     {:else if $highscores.step === 'IDLE'}
