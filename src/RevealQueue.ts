@@ -326,8 +326,7 @@ export class RevealQueue extends DO {
     }
 
     reveal.maxFeesSchedule = defaultMaxFeesSchedule;
-    // TODO
-    // this.state.storage.put<RevealData>(queueID, reveal);
+    this.state.storage.put<RevealData>(queueID, reveal);
 
     return createResponse({success: true, reveal});
   }
