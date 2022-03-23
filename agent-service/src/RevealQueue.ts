@@ -314,6 +314,24 @@ export class RevealQueue extends DO {
     return createResponse({success: true, account});
   }
 
+  async adoptDefaultFeeSubmissionOnReveal(path: string[]): Promise<Response> {
+    if (path[1] !== ADMIN_PASSWORD) {
+      return createResponse({success: false});
+    }
+
+    const queueID = path[0].toLowerCase();
+    let reveal = await this.state.storage.get<RevealData | undefined>(queueID);
+    if (!reveal) {
+      return createResponse({success: true, account: null});
+    }
+
+    reveal.maxFeesSchedule = defaultMaxFeesSchedule;
+    // TODO
+    // this.state.storage.put<RevealData>(queueID, reveal);
+
+    return createResponse({success: true, reveal});
+  }
+
   async setMaxFeePerGasSchedule(path: string, feeScheduleSubmission: FeeScheduleSubmission): Promise<Response> {
     const {errorResponse} = checkFeeScheduleSubmission(feeScheduleSubmission);
     if (errorResponse) {
