@@ -18,6 +18,7 @@ import {
   InvalidFeesScheduleSubmission,
 } from './errors';
 import {xyToLocation, createResponse, time2text} from './utils';
+import { parseEther } from 'ethers/lib/utils';
 
 const ADMIN_PASSWORD = 'booted-saffron-blatancy-poncho';
 
@@ -417,7 +418,8 @@ export class RevealQueue extends DO {
       };
     }
     const maxFeeAllowed = getMaxFeeAllowed(account.maxFeesSchedule);
-    const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
+    const minimumCost = maxFeeAllowed.mul(revealMaxGasEstimate);
+    const minimumBalance = minimumCost.sub(parseEther('1'));
     const reveal = {...revealData, retries: 0, sendConfirmed: false, maxFeesSchedule: account.maxFeesSchedule};
 
     if (
@@ -498,7 +500,7 @@ export class RevealQueue extends DO {
         maxFeesSchedule: defaultMaxFeesSchedule
       };
     }
-    const paymentSpending = BigNumber.from(accountRefected.paymentSpending).add(minimumBalance);
+    const paymentSpending = BigNumber.from(accountRefected.paymentSpending).add(minimumCost);
     accountRefected.paymentSpending = paymentSpending.toString();
 
     this.state.storage.put<AccountData>(accountID, accountRefected);
@@ -571,7 +573,8 @@ export class RevealQueue extends DO {
     const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
     if (accountData) {
       const maxFeeAllowed = getMaxFeeAllowed(accountData.maxFeesSchedule);
-      const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
+      const minimumCost = maxFeeAllowed.mul(revealMaxGasEstimate);
+      const minimumBalance = minimumCost.sub(parseEther('1'));
       let balance = BigNumber.from(accountData.paymentReceived).sub(BigNumber.from(accountData.paymentUsed).add(accountData.paymentSpending));
       if (balance.lt(minimumBalance)) {
         balance = await this._fetchExtraBalanceFromLogs(balance, player);
@@ -969,7 +972,8 @@ export class RevealQueue extends DO {
 
   private async _executeReveal(queueID: string, reveal: RevealData) {
     const maxFeeAllowed = getMaxFeeAllowed(reveal.maxFeesSchedule);
-    const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
+    const minimumCost = maxFeeAllowed.mul(revealMaxGasEstimate);
+    const minimumBalance = minimumCost.sub(parseEther('1'));
     const account = await this.state.storage.get<AccountData | undefined>(`account_${reveal.player}`);
     if (!account) {
       this.info(`no account registered for ${reveal.player}`);
@@ -977,9 +981,14 @@ export class RevealQueue extends DO {
     }
 
     let balanceWithoutConsideringPending = BigNumber.from(account.paymentReceived).sub(BigNumber.from(account.paymentUsed));
-    if (BigNumber.from(balanceWithoutConsideringPending).lt(minimumBalance)) {
-      this.info(`not enough fund for ${reveal.player}`);
-      // TODO return ?
+    if (BigNumber.from(balanceWithoutConsideringPending).lt(minimumCost)) {
+
+      if (BigNumber.from(balanceWithoutConsideringPending).lt(minimumBalance)) {
+        this.info(`not enough fund for ${reveal.player}`);
+        // TODO return ?
+      } else {
+        this.info(`paying for ${reveal.player}`);
+      }
     }
 
     const revealID = `l_${reveal.fleetID}`;
@@ -1104,16 +1113,17 @@ export class RevealQueue extends DO {
   async _reduceSpending(reveal: RevealData) {
     const accountID = `account_${reveal.player}`;
     const maxFeeAllowed = getMaxFeeAllowed(reveal.maxFeesSchedule);
-    const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
+    const minimumCost = maxFeeAllowed.mul(revealMaxGasEstimate);
+    // const minimumBalance = minimumCost.sub(parseEther('1'));
     let accountRefetched = await this.state.storage.get<AccountData | undefined>(accountID);
     if (!accountRefetched) {
       accountRefetched = {paymentReceived: '0', paymentUsed: '0', paymentSpending: '0', nonceMsTimestamp: 0, maxFeesSchedule: defaultMaxFeesSchedule};
     }
     let paymentSpending = BigNumber.from(accountRefetched.paymentSpending);
-    if (paymentSpending.lt(minimumBalance)) {
+    if (paymentSpending.lt(minimumCost)) {
       paymentSpending = BigNumber.from(0);
     } else {
-      paymentSpending = paymentSpending.sub(minimumBalance);
+      paymentSpending = paymentSpending.sub(minimumCost);
     }
     accountRefetched.paymentSpending = paymentSpending.toString();
     this.state.storage.put<AccountData>(accountID, accountRefetched);
@@ -1370,13 +1380,13 @@ export class RevealQueue extends DO {
       const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
       if (accountData) {
         const maxFeeAllowed = getMaxFeeAllowed(pendingReveal.maxFeesSchedule);
-        const minimumBalance = maxFeeAllowed.mul(revealMaxGasEstimate);
-        let gasCost = minimumBalance;
+        const minimumCost = maxFeeAllowed.mul(revealMaxGasEstimate);
+        let gasCost = minimumCost;
         if (txReceipt.gasUsed && txReceipt.effectiveGasPrice) {
           gasCost = txReceipt.gasUsed?.mul(txReceipt.effectiveGasPrice);
         }
         const paymentUsed = BigNumber.from((await accountData).paymentUsed).add(gasCost);
-        let paymentSpending = BigNumber.from((await accountData).paymentSpending).sub(minimumBalance);
+        let paymentSpending = BigNumber.from((await accountData).paymentSpending).sub(minimumCost);
         if (paymentSpending.lt(0)) {
           paymentSpending = BigNumber.from(0);
         }
