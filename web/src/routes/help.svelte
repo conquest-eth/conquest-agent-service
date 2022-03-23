@@ -106,7 +106,15 @@
 
 <div class="w-full h-full bg-black">
   <NavButton label="Back To Game" href={`${base}/`}>Back To Game</NavButton>
-  <div class="markdown text-white p-3">
+
+  <p>
+    Documentation can be found <a
+      href="https://knowledge.conquest.etherplay.io"
+      class="underline text-green-500"
+      target="_blank">here</a
+    >
+  </p>
+  <!-- <div class="markdown text-white p-3">
     <h1 id="introduction">Introduction</h1>
     <p>conquest.eth is a game of strategy and diplomacy where players compete to conquer the universe.</p>
     <h1 id="the-universe">The Universe</h1>
@@ -241,5 +249,5 @@
     </p>
     <h3 id="sending-spaceships-to-one-of-your-planet">Sending Spaceships to one of your planet</h3>
     <p>When you send a fleet to one of your planet, the spaceships will be added to the other planet&#39;s total.</p>
-  </div>
+  </div> -->
 </div>
