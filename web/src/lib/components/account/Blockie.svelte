@@ -3,6 +3,7 @@
   import {afterUpdate, tick} from 'svelte';
   import Copiable from '../generic/Copiable.svelte';
 
+  export let copiable = true;
   export let _class = '';
   export {_class as class};
   export let address: string;
@@ -144,9 +145,13 @@
   }
 </script>
 
-<Copiable text={address}>
+{#if copiable}
+  <Copiable text={address}>
+    <canvas class={_class} bind:this={canvas} alt={address} />
+  </Copiable>
+{:else}
   <canvas class={_class} bind:this={canvas} alt={address} />
-</Copiable>
+{/if}
 
 <style>
   canvas {

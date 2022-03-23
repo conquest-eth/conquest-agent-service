@@ -54,7 +54,7 @@
         {/if}
       </span>
       <span class="inline-block align-middle" on:click={() => (menu = !menu)}>
-        <Blockie class="w-10 h-10 m-1" address={$wallet.address} />
+        <Blockie copiable={false} class="w-10 h-10 m-1" address={$wallet.address} />
       </span>
     </div>
   </div>
