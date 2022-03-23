@@ -157,8 +157,8 @@ const gwei = BigNumber.from('1000000000');
 //   {maxFeePerGas: gwei.mul(6).toString(), delay: 20*60},
 // ];
 const defaultMaxFeesSchedule: MaxFeesSchedule = [
-  {maxFeePerGas: gwei.mul(10).toString(), delay: 0, maxPriorityFeePerGas: gwei.mul(15).div(10).toString()},
-  {maxFeePerGas: gwei.mul(20).toString(), delay: 5*60, maxPriorityFeePerGas: gwei.mul(3).toString()},
+  {maxFeePerGas: gwei.mul(58).toString(), delay: 0, maxPriorityFeePerGas: gwei.mul(15).div(10).toString()},
+  {maxFeePerGas: gwei.mul(59).toString(), delay: 5*60, maxPriorityFeePerGas: gwei.mul(3).toString()},
   {maxFeePerGas: gwei.mul(60).toString(), delay: 20*60, maxPriorityFeePerGas: gwei.mul(4).toString()},
 ];
 
