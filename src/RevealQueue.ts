@@ -159,7 +159,7 @@ const gwei = BigNumber.from('1000000000');
 const defaultMaxFeesSchedule: MaxFeesSchedule = [
   {maxFeePerGas: gwei.mul(3).toString(), delay: 0, maxPriorityFeePerGas: gwei.mul(15).div(10).toString()},
   {maxFeePerGas: gwei.mul(4).toString(), delay: 5*60, maxPriorityFeePerGas: gwei.mul(3).toString()},
-  {maxFeePerGas: gwei.mul(6).toString(), delay: 20*60, maxPriorityFeePerGas: gwei.mul(4).toString()},
+  {maxFeePerGas: gwei.mul(60).toString(), delay: 20*60, maxPriorityFeePerGas: gwei.mul(4).toString()},
 ];
 
 // maximum gas consumed for the reveal tx // TODO check its actual value, as we modify the contract
