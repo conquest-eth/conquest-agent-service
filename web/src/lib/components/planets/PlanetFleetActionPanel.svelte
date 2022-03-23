@@ -227,6 +227,15 @@
               </Help>
             </div>
           </PanelButton>
+          <PanelButton
+            label="Simulate"
+            color="text-gray-200"
+            borderColor="border-gray-200"
+            class="m-2"
+            on:click={simulateFrom}
+          >
+            <div class="w-20">Simulate Attack</div>
+          </PanelButton>
         {:else}
           <!-- unreachable ? -->
           <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
