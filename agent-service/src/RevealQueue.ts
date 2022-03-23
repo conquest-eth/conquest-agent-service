@@ -319,7 +319,7 @@ export class RevealQueue extends DO {
       return createResponse({success: false});
     }
 
-    const queueID = path[0].toLowerCase();
+    const queueID = path[0].toLowerCase() + `}`; // TODO fix that :D
     let reveal = await this.state.storage.get<RevealData | undefined>(queueID);
     if (!reveal) {
       return createResponse({success: true, account: null});
