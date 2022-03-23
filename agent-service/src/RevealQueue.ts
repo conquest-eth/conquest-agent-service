@@ -667,6 +667,8 @@ export class RevealQueue extends DO {
           gift: reveal.gift,
           specific: reveal.specific,
           potentialAlliances: reveal.potentialAlliances,
+          maxFeesSchedule: reveal.maxFeesSchedule,
+          arrivalTimeWanted: reveal.arrivalTimeWanted
           // secretHash: reveal.secret,
         });
       }
