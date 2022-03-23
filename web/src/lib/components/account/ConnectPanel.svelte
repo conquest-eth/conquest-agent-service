@@ -42,7 +42,7 @@
     </div>
   {/if}
 
-  <div on:click={(e) => e.stopPropagation()} class="absolute right-0 bg-gray-900 bg-opacity-80 z-10">
+  <div on:click={(e) => e.stopPropagation()} class="absolute right-0 bg-gray-900 bg-opacity-80 z-10 overflow-hidden">
     <div class="flex items-center">
       <span class="text-yellow-300 font-black pr-4">
         {#if $myTokens.balance}
