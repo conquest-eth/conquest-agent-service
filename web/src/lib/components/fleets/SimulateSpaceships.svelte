@@ -29,6 +29,15 @@
 
   $: aboveCurrentMax = $fromPlanetState ? fleetAmount > $fromPlanetState.numSpaceships : false;
 
+  let reachNumSpaceshipIn = 0;
+  $: {
+    reachNumSpaceshipIn = 0;
+    if (aboveCurrentMax) {
+      if ($fromPlanetState?.active) {
+      }
+    }
+  }
+
   // $: {
   //   console.log({
   //     fleetAmountSet,
@@ -46,6 +55,7 @@
           min: {captured: boolean; numSpaceshipsLeft: number};
           max: {captured: boolean; numSpaceshipsLeft: number};
         };
+        durationAndAmountAdded: {amount: number; duration: number};
       }
     | undefined = undefined;
   $: {
@@ -54,6 +64,7 @@
       prediction = {
         arrivalTime: timeToText(duration),
         numSpaceshipsAtArrival: spaceInfo.numSpaceshipsAtArrival(toPlanetInfo, $toPlanetState, duration),
+        durationAndAmountAdded: spaceInfo.durationToReachXSpaceships(fromPlanetInfo, $fromPlanetState, fleetAmount),
         outcome: spaceInfo.outcome(
           fromPlanetInfo,
           toPlanetInfo,
@@ -111,6 +122,12 @@
         bind:value={fleetAmount}
       />
     </div>
+
+    {#if prediction?.durationAndAmountAdded && prediction?.durationAndAmountAdded.amount > 0}
+      <p class="m-1 text-sm text-red-500">
+        will have that amount in {timeToText(prediction?.durationAndAmountAdded.duration)}
+      </p>
+    {/if}
     <div class="my-2 bg-cyan-300 border-cyan-300 w-full h-1" />
 
     {#if $fromPlanetState && $toPlanetState}
