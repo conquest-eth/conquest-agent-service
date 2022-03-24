@@ -227,72 +227,64 @@
               </Help>
             </div>
           </PanelButton>
-          <PanelButton
-            label="Simulate"
-            color="text-gray-200"
-            borderColor="border-gray-200"
-            class="m-2"
-            on:click={simulateFrom}
-          >
-            <div class="w-20">Simulate Attack</div>
-          </PanelButton>
         {:else}
           <!-- unreachable ? -->
           <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
             <div class="w-20">Send Here</div>
           </PanelButton>
         {/if}
-      {:else if walletIsOwner && $planetState.exiting}
-        <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
-          <div class="w-20">Send Here</div>
-        </PanelButton>
-      {:else if walletIsOwner && !$planetState.active}
-        <PanelButton
-          label="Stake"
-          class="m-2"
-          color="text-yellow-400"
-          borderColor="border-yellow-400"
-          disabled={!$planetState.inReach}
-          on:click={capture}
-        >
-          <div class="w-20">
-            Stake
-            <span class="text-sm">
-              {!$planetState.inReach ? ' (unreachable)' : ''}
-              <Help class="inline w-4 h-4">
-                The Reachable Universe expands as more planets get captured. Note though that you can still send attack
-                unreachable planets. But these planets cannot produce spaceships until they get in range and you stake
-                on it.
-              </Help></span
-            >
-          </div>
-        </PanelButton>
-        <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
-          <div class="w-20">Send Here</div>
-        </PanelButton>
-        {#if $planetState.numSpaceships > 0}
-          <!-- <PanelButton label="Send" class="m-2" on:click={sendFrom}>
+      {:else if walletIsOwner}
+        {#if $planetState.exiting}
+          <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+            <div class="w-20">Send Here</div>
+          </PanelButton>
+        {:else if !$planetState.active}
+          <PanelButton
+            label="Stake"
+            class="m-2"
+            color="text-yellow-400"
+            borderColor="border-yellow-400"
+            disabled={!$planetState.inReach}
+            on:click={capture}
+          >
+            <div class="w-20">
+              Stake
+              <span class="text-sm">
+                {!$planetState.inReach ? ' (unreachable)' : ''}
+                <Help class="inline w-4 h-4">
+                  The Reachable Universe expands as more planets get captured. Note though that you can still send
+                  attack unreachable planets. But these planets cannot produce spaceships until they get in range and
+                  you stake on it.
+                </Help></span
+              >
+            </div>
+          </PanelButton>
+          <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+            <div class="w-20">Send Here</div>
+          </PanelButton>
+          {#if $planetState.numSpaceships > 0}
+            <!-- <PanelButton label="Send" class="m-2" on:click={sendFrom}>
             <div class="w-20">Send</div>
           </PanelButton> -->
-        {/if}
-      {:else if walletIsOwner}
-        <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
-          <div class="w-20">Send Here</div>
-        </PanelButton>
-        <!-- <PanelButton label="Send" class="m-2" on:click={sendFrom}>
+          {/if}
+        {:else}
+          <PanelButton label="Send Here" class="m-2" on:click={sendTo}>
+            <div class="w-20">Send Here</div>
+          </PanelButton>
+          <!-- <PanelButton label="Send" class="m-2" on:click={sendFrom}>
           <div class="w-20">Send</div>
         </PanelButton> -->
-        <PanelButton
-          label="Exit"
-          color="text-yellow-400"
-          borderColor="border-yellow-400"
-          class="m-2"
-          on:click={exitFrom}
-        >
-          <div class="w-20">Exit</div>
-        </PanelButton>
+          <PanelButton
+            label="Exit"
+            color="text-yellow-400"
+            borderColor="border-yellow-400"
+            class="m-2"
+            on:click={exitFrom}
+          >
+            <div class="w-20">Exit</div>
+          </PanelButton>
 
-        <!-- <PanelButton
+          <!-- <PanelButton
           label="Transfer"
           color="text-yellow-400"
           borderColor="border-yellow-400"
@@ -301,6 +293,7 @@
         >
           <div class="w-20">Transfer</div>
         </PanelButton> -->
+        {/if}
       {:else}
         {#if $planetState.active}
           <PanelButton label="Send" class="m-2" on:click={sendTo}>
@@ -340,16 +333,16 @@
         >
           <div class="w-20">Message Owner</div>
         </PanelButton>
-        <PanelButton
-          label="Simulate"
-          color="text-gray-200"
-          borderColor="border-gray-200"
-          class="m-2"
-          on:click={simulateFrom}
-        >
-          <div class="w-20">Simulate Attack</div>
-        </PanelButton>
       {/if}
+      <PanelButton
+        label="Simulate"
+        color="text-gray-200"
+        borderColor="border-gray-200"
+        class="m-2"
+        on:click={simulateFrom}
+      >
+        <div class="w-20">Simulate</div>
+      </PanelButton>
       <PanelButton
         label="Departures"
         color="text-gray-200"
