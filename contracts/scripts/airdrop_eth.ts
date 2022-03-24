@@ -16,10 +16,10 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   for (const player of players) {
     const balance = await hre.ethers.provider.getBalance(player.id);
     const need = parseEther('1');
-    if (balance.lt(parseEther('0.4'))) {
+    if (balance.lt(parseEther('0.19'))) {
       const toSend = need.sub(balance);
       console.log(`(balance: ${formatEther(balance)}), sending ${formatEther(toSend)} ... `);
-      const tx = await hre.ethers.provider.getSigner(0).sendTransaction({to: player.id, value: toSend});
+      const tx = await hre.ethers.provider.getSigner(2).sendTransaction({to: player.id, value: toSend});
       console.log(`tx: ${tx.hash} ...`);
       await tx.wait();
     } else {

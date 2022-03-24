@@ -1,0 +1,344 @@
+[
+  {
+    "id": "0x0206171cdd913fc2df3d1b084291f424ef680d94",
+    "introducer": {
+      "id": "0x3ae9b53e3276e06d8d37fdf8ba960d157f3a18b8",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x0436e2e4ea467f9958403dc56635404ee1bb1e94",
+    "introducer": {
+      "id": "0x1ab4c0be6e006011d71f262b1dd769216309ffd9",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x11e9a30320d7a41ccf4e8765fe19354e376c35bb",
+    "introducer": {
+      "id": "0x6d1cbd0fbc7f8f50e03d45f378adc532cc840487",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x12bc2dfbd6339746b553bb13e473ea561bd39152",
+    "introducer": {
+      "id": "0x9eed613f6c84ada1343adb442d9ec585856dc019",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x134e5d58859c1fe004406d2c766f059b1341d2f8",
+    "introducer": {
+      "id": "0xbc1f05993ecc2dadad749d68bef03faaaeb2e1d3",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x292a535328dda6a45ce4815ac76701de86466409",
+    "introducer": {
+      "id": "0xd29b11313aba3031981c7eba7bd1fa8cd3dc097d",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x2ec54902c597bfee3cd736ef850c833b17877420",
+    "introducer": {
+      "id": "0x944883e31bd383dd2bc4648aac50a596163bfaca",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x3080d37b0e8b14a37250427b00257f12b191c455",
+    "introducer": {
+      "id": "0x279ae21f855af24d3e4c5df9eafe4ba19a858af1",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x31db0f7cc3c2ea472c3e0fa6619fa9f54969f0ea",
+    "introducer": {
+      "id": "0xf6f4bbf302cf3e74f67fc8f702ec675da80b4453",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x38daea6f17e4308b0da9647db9ca6d84a3a7e195",
+    "introducer": {
+      "id": "0xc0bf5caf9e474402ea63497986a901a0464bbbf2",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x41a7ce9d735815f333d9969de8225a6477afca17",
+    "introducer": {
+      "id": "0x5292096aaa7b35b6f97b0a17957efa79cedaeaee",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x4987e9d5f10b6760e16ec81e96fb2b2b03a7dd42",
+    "introducer": {
+      "id": "0x95bc3ed8d079f803a643d95ab3bf95b7b4da7c90",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x5028481d95df5f6a58a604a6b99ea16fccf47bb7",
+    "introducer": {
+      "id": "0x2219873b59965012d04ebf18a8a3737f1f69b347",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x60d38778adbbeeac88f741b833cbb9877228eea0",
+    "introducer": {
+      "id": "0x5bedfca0ee48e264085e729be69d5f9b5d6df2fa",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x636f3000173da0ecefd7aff904e902af23953ac1",
+    "introducer": {
+      "id": "0x1372c2ffa6956400ca9dd2cf4a5a55526c5b80df",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x752ae801cda83797ac73aebfb61ab5a5551e5739",
+    "introducer": {
+      "id": "0x9e2bac49dc63e97a4568fa475c0dc29ba5426c02",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x7a2c5cc45aafe03c2c16593eb04e802e9ce529c1",
+    "introducer": {
+      "id": "0xf136ade576027ee3a1771d06dfe30b5a901f8ce9",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x7a7029bc89182f61a15de8ee7ecbf14368b76916",
+    "introducer": {
+      "id": "0x8ffba87db5709153710d1bb5d71e3d0430280566",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x7dd04d3700a57e9c567f65fd8a670a0f8f135330",
+    "introducer": {
+      "id": "0xfddcc24ae06de8d542e9f845fa3c6245243000fa",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x84eca34e4a1732113883407e3666b014dcca0a16",
+    "introducer": {
+      "id": "0xe0061137779ec9b8c8a98f280729b4c7efa9c837",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x9258af909de4211bf5448ff5bc7c26fefde2af27",
+    "introducer": {
+      "id": "0x12331c82cb421527c40663b9e8d2acfa2388998e",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x964727f7bc5ca298f9c9b68958b063f861417392",
+    "introducer": {
+      "id": "0x1de57eea9d6f38b3014420532c934e8d0d95d56b",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x96595d81831d1b92002bb0b60bb8cc9596f3488a",
+    "introducer": {
+      "id": "0xf4c3d26fce1470ebfca5b133ce72349bce6fe471",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x9d375719442c8d57ca9658ede45336787648381f",
+    "introducer": {
+      "id": "0x2a35cb584153727e895974cbe90f80b96e5af4c1",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xaa1e77b982cbce1d109e9309aa120292b44eef0c",
+    "introducer": {
+      "id": "0xcef0fc30fbf7c87de3c56ed4c81681354f4e5c69",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xb006c644258e01b437eff06e16e56e938a239712",
+    "introducer": {
+      "id": "0xbc6980c9460fbaab1f81230897d23270ad475233",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xb19bc46c52a1352a071fe2389503b6fe1abd50ff",
+    "introducer": {
+      "id": "0x24a643741408c0f127682e705f6a0677081a8c4b",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xb2b80ef853cabb9f63f9087ac5f10e2e82e8b067",
+    "introducer": {
+      "id": "0x5d5b96c1dd2e7ba053efe5a14f63160325241d80",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xc1444642a8117803e4c4451ccb94d01738fd839e",
+    "introducer": {
+      "id": "0xd11c6b8717e1448291ff2251d4639ea138581b70",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xcda07ef8af07b5b8b203bf66f7bdd2b1562c169b",
+    "introducer": {
+      "id": "0xe62b69b158f774d83d55f3db1e3bbad8918786ff",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xcf1a82c49364d4523e23e24a1c342466613b1e03",
+    "introducer": {
+      "id": "0x784ded3f629dae1bdd742cc5773cfb95e23b69e3",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xd0f46a5d48596409264d4efc1f3b229878fff743",
+    "introducer": {
+      "id": "0x9380cad7d5e6ff12743850e63b7e57f9f8b71013",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xdd39c8deaeacdcdde35bd48a469349b9346fe7fa",
+    "introducer": {
+      "id": "0x4947d5ca51fc6608bb5ff0e06c46bf08ffade6cf",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xdfcddcc65f7a739d79e02071ea750500395fdd30",
+    "introducer": {
+      "id": "0x6e5ea1055da5caf403e92a1a9d6842e6fb0fb0c4",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xf162f8e62e4d8543a70af017557d18a859848452",
+    "introducer": {
+      "id": "0xa2b361744d5694a10270fb33d268cd712cb53146",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xf72c5dbf7a1e0becd9699ba4de535df47e0713ef",
+    "introducer": {
+      "id": "0x22ecf97d66c46bd463fc52c9465bcfe86d9a210c",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xf8b109af18cfa614bef1c2899e522d77b3c64c14",
+    "introducer": {
+      "id": "0x27e526f70260374ecfce0cbc5623ec77e7663ce9",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xfeff33456de40aa9ffc85b796cb731b91ea6eb04",
+    "introducer": {
+      "id": "0xc97b29cd60416204040818b8e5a8b4a0db4124f1",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  }
+]
