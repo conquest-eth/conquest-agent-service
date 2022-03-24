@@ -8,7 +8,8 @@
   import {onMount} from 'svelte';
   import {relativePathname, url} from '$lib/utils/url';
   import {logo} from '$lib/screens/loading/logo';
-  import {page} from '$app/stores';
+  import {navigating, page} from '$app/stores';
+  import Loading from '$lib/components/web/Loading.svelte';
   // import Install from './components/Install.svelte';
   onMount(() => {
     const relPath = relativePathname($page.url.pathname);
@@ -29,3 +30,7 @@
 
 <slot />
 <Notifications />
+
+{#if $navigating}
+  <Loading />
+{/if}
