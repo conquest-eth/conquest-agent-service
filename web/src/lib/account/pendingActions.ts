@@ -359,9 +359,11 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
         }
       }
     } else {
+      const latestFinalizedBlockNumber = Math.max(blockNumber - finality, 0);
+      const latestFinalizedBlock = await wallet.provider.getBlock(latestFinalizedBlockNumber);
       const finalityNonce = await wallet.provider.getTransactionCount(
         checkedAction.action.txOrigin || ownerAddress,
-        blockNumber - finality
+        latestFinalizedBlock.hash
       );
       // NOTE: we feteched it again to ensure the call was not lost
       const txFromPeers = await wallet.provider.getTransaction(checkedAction.id);
@@ -370,12 +372,47 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
       }
       if (typeof checkedAction.action.nonce === 'number' && finalityNonce > checkedAction.action.nonce) {
         pending = false;
-        // replaced
-        if (checkedAction.status !== 'CANCELED' || checkedAction.final !== checkedAction.action.timestamp) {
-          checkedAction.status = 'CANCELED';
-          checkedAction.final = checkedAction.action.timestamp;
-          await this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'CANCELED');
-          changes = true;
+
+        if (checkedAction.status !== 'CANCELED' || !checkedAction.final) {
+          let cancelled = false;
+          if (checkedAction.action.type === 'SEND') {
+            const contracts = wallet.contracts || fallback.contracts;
+            if (!contracts) {
+              console.log(`no contracts setup, skip for now`);
+              return;
+            }
+            const fleet = await contracts.OuterSpace.getFleet(checkedAction.action.fleetId, '0', {
+              blockTag: latestFinalizedBlock.hash,
+            });
+            if (fleet.owner != '0x0000000000000000000000000000000000000000') {
+              if (checkedAction.status !== 'SUCCESS' || !checkedAction.final) {
+                checkedAction.status = 'SUCCESS';
+                checkedAction.final = latestFinalizedBlock.timestamp;
+
+                // console.log({savingActualLaunchTime: launchTime});
+                // account.recordFleetLaunchTime(checkedAction.id, launchTime);
+                // TODO This is not the actual tx, we should probably specify somewhere that it is a replaced tx
+                checkedAction.txTimestamp = fleet.launchTime;
+
+                // TODO what if the fleet do not have time to record launchTime (see fleets.ts)
+                //  should we do it here instead ?
+                await this._handleFinalAcknowledgement(checkedAction, latestFinalizedBlock.timestamp, 'SUCCESS');
+                changes = true;
+              }
+            } else {
+              cancelled = true;
+            }
+          } else {
+            // TODO check other action for result,
+            cancelled = true;
+          }
+
+          if (cancelled) {
+            checkedAction.status = 'CANCELED';
+            checkedAction.final = checkedAction.action.timestamp;
+            await this._handleFinalAcknowledgement(checkedAction, checkedAction.action.timestamp, 'CANCELED');
+            changes = true;
+          }
         }
       }
     }

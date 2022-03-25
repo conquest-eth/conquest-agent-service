@@ -111,6 +111,8 @@ export class FleetsStore implements Readable<FleetListState> {
             launchTime = pendingAction.txTimestamp;
             // console.log({savingActualLaunchTime: launchTime});
             account.recordFleetLaunchTime(pendingAction.id, launchTime);
+          } else if (pendingAction.final) {
+            account.recordFleetLaunchTime(pendingAction.id, pendingAction.final);
           }
 
           const minDuration = spaceInfo.timeToArrive(from, to);
