@@ -240,11 +240,15 @@ width:100%; height: 100%;
             sector.y - 30
           }px);`}
         >
-          <p
-            style={`margin-left: ${5 / renderScale}px; color: cyan; font-weight: 900; font-size: ${10 / renderScale}px`}
-          >
-            S {sector.id}
-          </p>
+          <div style="font-family: Arial, Helvetica, sans-serif; letter-spacing: 0.4px;">
+            <p
+              style={`margin-left: ${5 / renderScale}px; color: cyan; font-weight: 900; font-size: ${
+                13 / renderScale
+              }px`}
+            >
+              S({sector.id})
+            </p>
+          </div>
         </div>
       {/each}
     {/if}
