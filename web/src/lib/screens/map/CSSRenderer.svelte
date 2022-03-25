@@ -17,43 +17,187 @@
   import VirtualFleetElement from './VirtualFleetElement.svelte';
   import simulateFlow, {virtualFleetSimulationTo} from '$lib/flows/simulateFlow';
   import VirtualFleetSimulationElement from './VirtualFleetSimulationElement.svelte';
+  import {showSectors} from '$lib/map/showSectors';
 
-  $: gridTickness = $camera ? Math.min(0.4, 1 / $camera.renderScale) : 0.4;
+  $: renderScale = $camera ? $camera.renderScale : 1;
+  $: renderX = $camera?.renderX || 0;
+  $: renderY = $camera?.renderY || 0;
+
+  $: gridTickness = Math.min(0.4, 1 / renderScale);
+
+  $: remGridTickness = Math.min(0.04, 1 / renderScale);
+
+  $: sectorGridColor = `rgb(0,255,255,${Math.min(2 / renderScale, 0.4)})`;
 
   $: x1 = ($spaceQueryWithPendingActions.queryState.data?.space?.x1 || 0) * 4 - 2; // TODO sync CONSTANTS with thegraph and contract
   $: x2 = ($spaceQueryWithPendingActions.queryState.data?.space?.x2 || 0) * 4 + 2;
   $: y1 = ($spaceQueryWithPendingActions.queryState.data?.space?.y1 || 0) * 4 - 2;
   $: y2 = ($spaceQueryWithPendingActions.queryState.data?.space?.y2 || 0) * 4 + 2;
+
+  let sectorsInView = [];
+  $: {
+    sectorsInView = [];
+    if ($camera) {
+      // console.log({x: $camera.x, y: $camera.y});
+      // console.log({width: $camera.width, height: $camera.height, zoom: $camera.zoom});
+      // console.log({rx: $camera.renderX, ry: $camera.renderY});
+      // console.log({rw: $camera.renderWidth, rh: $camera.renderHeight, rScale: $camera.renderScale});
+      const cx1 = $camera.x - $camera.width / 2;
+      const cx2 = $camera.x + $camera.width / 2;
+      const cy1 = $camera.y - $camera.height / 2;
+      const cy2 = $camera.y + $camera.height / 2;
+      // console.log({cx1, cx2, cy1, cy2});
+      for (let x = cx1; x < cx2 + 60; x += 60) {
+        for (let y = cy1; y < cy2 + 60; y += 60) {
+          // sectorsInView.push(`${Math.floor((x + 32) / 64) * 64},${Math.floor((y + 32) / 64) * 64} `);
+          const sectorX = Math.floor((x + 30) / 60) * 60;
+          const sectorY = Math.floor((y + 30) / 60) * 60;
+          sectorsInView.push({
+            x: sectorX,
+            y: sectorY,
+            id: `${sectorX / 60},${sectorY / 60}`,
+          });
+        }
+      }
+      // console.log(sectorsInView);
+    }
+  }
 </script>
+
+<!-- experiments -->
+<!-- <div
+  style={`
+    /*pointer-events: none;*/
+    position: absolute;
+    width:100%; height: 100%;
+    top: 0px;
+    left: 0px;
+
+    /*
+    background-image: linear-gradient(blue 1px, transparent 0px),linear-gradient(to right, blue 1px, transparent 0px);
+    */
+    /*
+    background-image: linear-gradient(blue 1px, transparent 0px);
+    */
+
+    /*background-image: linear-gradient(90deg, blue 0.51px, black 0.51px, black 100%);*/
+
+    background-image: repeating-linear-gradient(to right, blue 0 0.8px, transparent 0 60px),
+    repeating-linear-gradient(to bottom, blue 0 0.8px, transparent 0 60px);
+
+
+    transform: scale(${renderScale},${renderScale});
+    background-size: 60px 60px;
+    background-position: ${renderX - 30.4}px ${renderY - 30.8}px;
+
+
+
+    /*
+    background-size: ${60 * renderScale}px ${60 * renderScale}px;
+    background-position: ${(renderX - 30) * renderScale}px ${(renderY - 30) * renderScale}px;
+    */
+    `}
+/> -->
+
+{#if $showSectors}
+  <!--
+  SECTOR GRID
+  that works in both chrome and firefox but does not render well on firefox
+  but is quite thick (to make it work on firefox)
+-->
+  <div
+    style={`
+    /*pointer-events: none;*/
+    position: absolute;
+    width:100%; height: 100%;
+
+    background-image: repeating-linear-gradient(to right, ${sectorGridColor} 0 0.8px, transparent 0 60px),
+    repeating-linear-gradient(to bottom, ${sectorGridColor} 0 0.8px, transparent 0 60px);
+
+    transform: scale(${renderScale},${renderScale});
+    background-size: 60px 60px;
+    background-position: ${renderX - 30.4}px ${renderY - 30.8}px;
+    `}
+  />
+{/if}
+
+<!-- new grid , does not work in firefox-->
+<!-- <div
+  style={`
+/*pointer-events: none;*/
+position: absolute;
+width:100%; height: 100%;
+transform: scale(${renderScale},${renderScale});
+    background-size: 4px 4px;
+    background-position: ${renderX - 2}px ${renderY - 2}px;
+background-image: repeating-linear-gradient(to right, grey 0 0.1px, transparent 0 4px),
+repeating-linear-gradient(to bottom, grey 0 0.1px, transparent 0 4px);
+
+`}
+/> -->
 
 <div
   style={`
   /* pointer-events: none; */
 position: absolute;
-transform: scale(${$camera ? $camera.renderScale : 1},${$camera ? $camera.renderScale : 1});
+transform: scale(${renderScale},${renderScale});
 width:100%; height: 100%;
-  ${
-    $camera && $camera.zoom >= 10
-      ? `
-    background-size: 4px 4px;
-    /*background-image: linear-gradient(to right, grey ${gridTickness}px, transparent ${gridTickness}px),
-    linear-gradient(to bottom, grey ${gridTickness}px, transparent ${gridTickness}px);
-    background-position: ${($camera ? $camera.renderX : 0) - 2}px ${($camera ? $camera.renderY : 0) - 2}px;*/
-    background-image: radial-gradient(circle, #CCCCCC ${gridTickness}px, rgba(0.8, 0.8, 0.8, 0) ${gridTickness}px);
-    background-position: ${$camera ? $camera.renderX : 0}px ${$camera ? $camera.renderY : 0}px;
-  `
-      : ``
-  }
-
-     /* background-color: black;
-    background-image: radial-gradient(white, rgba(255, 255, 255, 0.2) 2px, transparent 40px),
-      radial-gradient(white, rgba(255, 255, 255, 0.15) 1px, transparent 30px),
-      radial-gradient(white, rgba(255, 255, 255, 0.1) 2px, transparent 40px),
-      radial-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1) 2px, transparent 30px);
-    background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px;
-    background-position: ${($camera ? $camera.renderX : 0) - 2}px ${($camera ? $camera.renderY : 0) - 2}px;*/
 `}
 >
+  {#if $camera && $camera.zoom >= 10}
+    <!-- OLD GRID WITH DOTS-->
+    <div
+      style={`
+    /*pointer-events: none;*/
+    position: absolute;
+    width:100%; height: 100%;
+    background-size: 4px 4px;
+    background-image: radial-gradient(circle, #CCCCCC ${gridTickness}px, rgba(0.8, 0.8, 0.8, 0) ${gridTickness}px);
+    background-position: ${$camera ? $camera.renderX : 0}px ${$camera ? $camera.renderY : 0}px;
+    `}
+    />
+
+    <!-- new grid -->
+    <!-- <div
+      style={`
+    /*pointer-events: none;*/
+    position: absolute;
+    width:100%; height: 100%;
+    background-size: 4px 4px;
+    /*background-image: linear-gradient(to right, grey ${gridTickness}px, transparent ${gridTickness}px),
+    linear-gradient(to bottom, grey ${gridTickness}px, transparent ${gridTickness}px);*/
+    background-image: linear-gradient(grey 0.4px, transparent 0.4px),linear-gradient(90deg, grey 0.4px, transparent 0.4px);
+    background-position: ${$camera ? $camera.renderX - 2 : -2}px ${$camera ? $camera.renderY - 2 : -2}px;
+    `}
+    /> -->
+
+    <!-- <div
+      style={`
+  /*pointer-events: none;*/
+  position: absolute;
+  width:100%; height: 100%;
+  background-image: repeating-linear-gradient(to right, grey 0 0.1px, transparent 0 4px),
+    repeating-linear-gradient(to bottom, grey 0 0.1px, transparent 0 4px);
+  background-position: ${$camera ? $camera.renderX - 2 : -2}px ${$camera ? $camera.renderY - 2 : -2}px;
+  `}
+    /> -->
+  {/if}
+
+  <!-- SECTOR GRID -->
+  <!-- <div
+    style={`
+    /*pointer-events: none;*/
+    position: absolute;
+    width:100%; height: 100%;
+    background-size: 60px 60px;
+    /*background-image: linear-gradient(blue ${remGridTickness}rem, transparent ${remGridTickness}rem),
+    linear-gradient(90deg, blue ${remGridTickness}rem, transparent ${remGridTickness}rem);*/
+    background-image: linear-gradient(blue 1px, transparent 1px),linear-gradient(90deg, blue 1px, transparent 1px);
+    /*background-image:  linear-gradient(white .4rem, transparent .4rem), linear-gradient(90deg, white .4rem, transparent .4rem);*/
+    background-position: ${$camera ? $camera.renderX - 30 : -30}px ${$camera ? $camera.renderY - 30 : -30}px;
+    `}
+  /> -->
+
   <div
     style={`
     /*pointer-events: none;*/
@@ -87,6 +231,22 @@ width:100%; height: 100%;
       {:else if $simulateFlow.step === 'PICK_DESTINATION'}
         <VirtualFleetSimulationElement fleet={virtualFleetSimulationTo($simulateFlow.data, $selection)} />
       {/if}
+    {/if}
+
+    {#if $showSectors}
+      {#each sectorsInView as sector (sector.id)}
+        <div
+          style={`background-color: black; z-index: 50; position: absolute; transform: translate(${sector.x - 30}px,${
+            sector.y - 30
+          }px);`}
+        >
+          <p
+            style={`margin-left: ${5 / renderScale}px; color: cyan; font-weight: 900; font-size: ${10 / renderScale}px`}
+          >
+            S {sector.id}
+          </p>
+        </div>
+      {/each}
     {/if}
 
     {#if $myevents}

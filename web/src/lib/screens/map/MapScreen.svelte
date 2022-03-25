@@ -45,6 +45,7 @@
   import {select_option} from 'svelte/internal';
   import {showFleets} from '$lib/map/showFleets';
   import {showAlliances} from '$lib/map/showAlliances';
+  import {showSectors} from '$lib/map/showSectors';
 
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
@@ -219,6 +220,7 @@
       >
         <p class="text-white text-xs"><input type="checkbox" bind:checked={$showFleets} /> Fleet</p>
         <p class="text-white text-xs"><input type="checkbox" bind:checked={$showAlliances} /> alliances</p>
+        <p class="text-white text-xs"><input type="checkbox" bind:checked={$showSectors} /> sectors</p>
       </div>
     </div>
   </div>
