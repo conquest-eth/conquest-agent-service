@@ -16,8 +16,9 @@ import {
   NoDelegateRegistered,
   InvalidDelegate,
   InvalidFeesScheduleSubmission,
+  AlreadyExistsButDifferent,
 } from './errors';
-import {xyToLocation, createResponse, time2text} from './utils';
+import {xyToLocation, createResponse, time2text, dequals} from './utils';
 import { parseEther } from 'ethers/lib/utils';
 
 const ADMIN_PASSWORD = 'booted-saffron-blatancy-poncho';
@@ -474,6 +475,23 @@ export class RevealQueue extends DO {
     const revealID = `l_${reveal.fleetID}`;
     const broadcastingTime = Math.max(reveal.arrivalTimeWanted, reveal.startTime + reveal.minDuration);
     const queueID = `q_${lexicographicNumber12(broadcastingTime)}_${reveal.fleetID}}`;
+
+    const exitsitngReveal = await this.state.storage.get<RevealData | undefined>(queueID);
+    if (exitsitngReveal) {
+      try {
+        if (dequals(exitsitngReveal, reveal)) {
+          this.info(`existing is same : ${queueID}`);
+          return createResponse({queueID});
+        } else {
+          this.error(`existing is different : ${queueID}`);
+          return AlreadyExistsButDifferent();
+        }
+      } catch(e) {
+        const message = `existing queueID (${queueID}) : failed with ${e}`;
+        this.error(message);
+        return createErrorResponse({message, code: 5001});
+      }
+    }
 
     const existing = await this.state.storage.get<ListData | undefined>(revealID);
     if (existing) {
