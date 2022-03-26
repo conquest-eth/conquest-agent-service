@@ -2,7 +2,6 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import hre from 'hardhat';
 import {parseEther} from '@ethersproject/units';
 import {BigNumber} from '@ethersproject/bignumber';
-import fs from 'fs';
 
 async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {claimKeyDistributor} = await hre.getNamedAccounts();
@@ -16,13 +15,10 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const addresses: string[] = [];
 
   for (const recipient of recipients) {
-    // amounts.push(BigNumber.from(recipient.amount).mul('1000000000000000000'));
-    // give 200
-    // amounts.push(BigNumber.from(200).mul('1000000000000000000'));
-    amounts.push(BigNumber.from(200).mul('1000000000000000000'));
+    amounts.push(BigNumber.from(100).mul('1000000000000000000'));
     addresses.push(recipient.address);
   }
-  const etherAmount = BigNumber.from(addresses.length).mul(parseEther('0.1'));
+  const etherAmount = BigNumber.from(addresses.length).mul(parseEther('0.2'));
 
   // console.log({amounts: amounts.map((v) => v.toString()), addresses, etherAmount: etherAmount.toString()});
   await execute(

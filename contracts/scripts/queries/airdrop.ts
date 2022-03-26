@@ -16,7 +16,7 @@ query($first: Int! $lastId: ID!) {
     }) {
       id
       introducer { id }
-      playTokenGiven
+      tokenGiven
     }
 }
 `;
@@ -24,12 +24,12 @@ query($first: Int! $lastId: ID!) {
   const players: {
     id: string;
     introducer: {id: string};
-    playTokenGiven: string;
+    tokenGiven: string;
   }[] = await theGraph.query(queryString, {field: 'owners'});
 
   const airdrop: {address: string; amount: number}[] = [];
   for (const player of players) {
-    const amount = BigNumber.from(player.playTokenGiven).div('1000000000000000000').toNumber();
+    const amount = BigNumber.from(player.tokenGiven).div('1000000000000000000').toNumber();
     airdrop.push({address: player.id, amount});
   }
 

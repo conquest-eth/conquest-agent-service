@@ -14,9 +14,9 @@ query($first: Int! $lastId: ID!) {
   }) {
     id
     currentStake
-    playTokenToWithdraw
-    playTokenBalance
-    playTokenGiven
+    tokenToWithdraw
+    tokenBalance
+    tokenGiven
   }
 }
 `;
@@ -27,25 +27,25 @@ async function main() {
   const players: {
     id: string;
     currentStake: string;
-    playTokenToWithdraw: string;
-    playTokenBalance: string;
-    playTokenGiven: string;
+    tokenToWithdraw: string;
+    tokenBalance: string;
+    tokenGiven: string;
   }[] = await theGraph.query(queryString, {field: 'owners'});
   const winners = players
     .map((p) => {
       const currentStake = BigNumber.from(p.currentStake);
-      const playTokenToWithdraw = BigNumber.from(p.playTokenToWithdraw);
-      const playTokenBalance = BigNumber.from(p.playTokenBalance);
-      const playTokenGiven = BigNumber.from(p.playTokenGiven);
-      const total = currentStake.add(playTokenToWithdraw).add(playTokenBalance);
+      const tokenToWithdraw = BigNumber.from(p.tokenToWithdraw);
+      const tokenBalance = BigNumber.from(p.tokenBalance);
+      const tokenGiven = BigNumber.from(p.tokenGiven);
+      const total = currentStake.add(tokenToWithdraw).add(tokenBalance);
       return {
         id: p.id,
         total: total.div(DECIMALS_18).toNumber(),
-        score: total.sub(playTokenGiven).mul(1000000).div(playTokenGiven).toNumber(),
+        score: total.sub(tokenGiven).mul(1000000).div(tokenGiven).toNumber(),
         currentStake: currentStake.div(DECIMALS_18).toNumber(),
-        playTokenToWithdraw: playTokenToWithdraw.div(DECIMALS_18).toNumber(),
-        playTokenBalance: playTokenBalance.div(DECIMALS_18).toNumber(),
-        playTokenGiven: playTokenGiven.div(DECIMALS_18).toNumber(),
+        tokenToWithdraw: tokenToWithdraw.div(DECIMALS_18).toNumber(),
+        tokenBalance: tokenBalance.div(DECIMALS_18).toNumber(),
+        tokenGiven: tokenGiven.div(DECIMALS_18).toNumber(),
       };
     })
     .sort((a, b) => b.score - a.score);
