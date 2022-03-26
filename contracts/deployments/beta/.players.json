@@ -1,5 +1,14 @@
 [
   {
+    "id": "0x007109f0819756f95992a8fddc8809ec4ad0a287",
+    "introducer": {
+      "id": "0xc5ced2ff06aadab1781e52c559639d5610a8d223",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
     "id": "0x0206171cdd913fc2df3d1b084291f424ef680d94",
     "introducer": {
       "id": "0x3ae9b53e3276e06d8d37fdf8ba960d157f3a18b8",
