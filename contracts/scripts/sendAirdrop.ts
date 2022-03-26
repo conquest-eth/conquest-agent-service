@@ -7,27 +7,35 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {claimKeyDistributor} = await hre.getNamedAccounts();
   const {execute} = hre.deployments;
 
-  const recipients: {address: string; amount: number}[] = JSON.parse(
+  const recipients: {address: string; tokenUnitGivenSoFar: number}[] = JSON.parse(
     await hre.deployments.readDotFile('.airdrop.json')
   );
 
   const amounts: BigNumber[] = [];
   const addresses: string[] = [];
 
+  const targetAmount = BigNumber.from(300).mul('1000000000000000000');
+
   for (const recipient of recipients) {
-    amounts.push(BigNumber.from(100).mul('1000000000000000000'));
-    addresses.push(recipient.address);
+    const tokenGiven = BigNumber.from(recipient.tokenUnitGivenSoFar).mul('1000000000000000000');
+    const tokenToGive = targetAmount.sub(tokenGiven);
+    if (tokenToGive.gt(0)) {
+      amounts.push(tokenToGive);
+      addresses.push(recipient.address);
+    } else if (tokenToGive.lt(0)) {
+      console.error(`${recipient.address} has been given too much`);
+    }
   }
   const etherAmount = BigNumber.from(addresses.length).mul(parseEther('0.2'));
 
-  // console.log({amounts: amounts.map((v) => v.toString()), addresses, etherAmount: etherAmount.toString()});
-  await execute(
-    'ConquestToken',
-    {from: claimKeyDistributor, value: etherAmount, log: true, autoMine: true},
-    'distributeVariousAmountsAlongWithETH',
-    addresses,
-    amounts
-  );
+  console.log({amounts: amounts.map((v) => v.toString()), addresses, etherAmount: etherAmount.toString()});
+  // await execute(
+  //   'ConquestToken',
+  //   {from: claimKeyDistributor, value: etherAmount, log: true, autoMine: true},
+  //   'distributeVariousAmountsAlongWithETH',
+  //   addresses,
+  //   amounts
+  // );
 }
 if (require.main === module) {
   func(hre);

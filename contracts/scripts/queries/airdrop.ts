@@ -11,8 +11,10 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const queryString = `
 query($first: Int! $lastId: ID!) {
     owners(first: $first where: {
-      totalStaked_gt: 0
+      #totalStaked_gt: 0
       id_gt: $lastId
+      id_not: "0x0000000000000000000000000000000000000000"
+      tokenGiven_lte: "200000000000000000000"
     }) {
       id
       introducer { id }
@@ -27,10 +29,10 @@ query($first: Int! $lastId: ID!) {
     tokenGiven: string;
   }[] = await theGraph.query(queryString, {field: 'owners'});
 
-  const airdrop: {address: string; amount: number}[] = [];
+  const airdrop: {address: string; tokenUnitGivenSoFar: number}[] = [];
   for (const player of players) {
-    const amount = BigNumber.from(player.tokenGiven).div('1000000000000000000').toNumber();
-    airdrop.push({address: player.id, amount});
+    const tokenUnitGivenSoFar = BigNumber.from(player.tokenGiven).div('1000000000000000000').toNumber();
+    airdrop.push({address: player.id, tokenUnitGivenSoFar});
   }
 
   await deployments.saveDotFile('.airdrop.json', JSON.stringify(airdrop, null, 2));
