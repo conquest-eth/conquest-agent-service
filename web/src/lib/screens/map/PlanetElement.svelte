@@ -117,19 +117,28 @@
   $: renderScale = $camera ? $camera.renderScale : 1;
 
   let selectionBorder = 4;
-  let adjustedRenderScale;
+  let adjustedRenderScale = 1;
   let blockieScale = scale;
+  let unMultipliedBlockieScale = 0.025;
   let zoomIn = true;
   $: if (owner && renderScale < 10) {
     adjustedRenderScale = 10 / renderScale;
     blockieScale = scale * adjustedRenderScale;
+    unMultipliedBlockieScale = 0.025 * adjustedRenderScale;
     zoomIn = false;
     selectionBorder = 4;
   } else {
     selectionBorder = 4;
     zoomIn = true;
     blockieScale = scale;
+    unMultipliedBlockieScale = 0.025;
     adjustedRenderScale = 1;
+  }
+
+  $: if (renderScale < 10) {
+    unMultipliedBlockieScale = 0.025 * (10 / renderScale);
+  } else {
+    unMultipliedBlockieScale = 0.025;
   }
 
   $: playerIsOwner = $privateWallet.step === 'READY' && owner?.toLowerCase() === $wallet.address?.toLowerCase();
@@ -242,8 +251,8 @@
 <div>
   {#if rewardAttached}
     <div
-      style={`position: absolute; transform: translate(${x}px,${y}px) scale(${blockieScale * 2}, ${
-        blockieScale * 2
+      style={`position: absolute; transform: translate(${x}px,${y}px) scale(${unMultipliedBlockieScale * 2}, ${
+        unMultipliedBlockieScale * 2
       }); background: url(${base}${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
         frame.w
       }px; height: ${frame.h}px;
@@ -266,7 +275,7 @@
       style={`
         z-index: 2;
         position: absolute;
-        transform: translate(${x}px,${y}px) scale(${blockieScale * 5}, ${blockieScale * 5});
+        transform: translate(${x}px,${y}px) scale(${unMultipliedBlockieScale * 5}, ${unMultipliedBlockieScale * 5});
         width: ${frame.w}px;
         height: ${frame.h}px;
       `}
@@ -275,7 +284,7 @@
         style={`
         width: ${frame.w}px;
         height: ${frame.h}px;
-        border: ${selectionBorder}px dashed ${borderColor === 'white' || !owner ? 'gold' : borderColor};
+        border: ${selectionBorder}px dashed gold;
       `}
       />
     </div>
