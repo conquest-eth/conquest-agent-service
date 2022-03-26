@@ -99,6 +99,15 @@
     "__typename": "Owner"
   },
   {
+    "id": "0x1e61cf58e9f9b273a3e13ddec1a4b4c34bae5a8b",
+    "introducer": {
+      "id": "0x06551f24fefd54b4f41962c17b57dcde4bf24037",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "200000000000000000000",
+    "__typename": "Owner"
+  },
+  {
     "id": "0x254f81da85b9aa45a7df156d2f93c269a197aa11",
     "introducer": {
       "id": "0xf0f709ccd90a85cad7f74334ee87c016aea3a273",
