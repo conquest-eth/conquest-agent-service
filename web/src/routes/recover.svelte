@@ -16,6 +16,7 @@
   let error: string | undefined;
   let success: string | undefined;
   let arrivalTimeWanted: number = 0;
+  let specific: string = '';
 
   function acknowledgeSuccess() {
     success = undefined;
@@ -93,10 +94,10 @@
               overrideTimestamp: number;
             }
           | undefined = undefined;
-        for (let nonce = tx.nonce; nonce < tx.nonce + 5; nonce++) {
+        for (let nonce = Math.max(0, tx.nonce - 1); nonce < tx.nonce + 5; nonce++) {
           for (let i = 0; i < 2; i++) {
             const gift = i == 0;
-            const specific = '0x0000000000000000000000000000000000000001'; // TODO
+            const specificToUse = specific === '' ? '0x0000000000000000000000000000000000000001' : specific;
             const listOfArrivalTimeWanted = [arrivalTimeWanted];
             if (arrivalTimeWanted === 0) {
               const numTimesToTry = 64;
@@ -111,7 +112,7 @@
                 fromCoords,
                 destinationCoords,
                 gift,
-                specific,
+                specificToUse,
                 arrivalTime,
                 nonce,
                 fleetOwner,
@@ -128,7 +129,7 @@
                     arrivalTimeWanted: arrivalTime,
                     id: fleetData.fleetId,
                     owner: fleetOwner,
-                    specific: specific,
+                    specific: specificToUse,
                     fleetSender: fleetSender,
                     operator: operator,
                     // potentialAlliances: // TODO
@@ -224,6 +225,17 @@
             bind:value={arrivalTimeWanted}
           />
         </div>
+        <div>
+          <label class="text-gray-100 font-semibold block my-3 text-md" for="specific">specific</label>
+          <input
+            class="w-full bg-gray-800 px-4 py-2 rounded-lg focus:outline-none"
+            type="text"
+            name="specific"
+            id="specific"
+            bind:value={specific}
+          />
+        </div>
+
         <!-- <div>
         <label class="text-gray-100 font-semibold block my-3 text-md" for="gift">Gift</label>
         <input
