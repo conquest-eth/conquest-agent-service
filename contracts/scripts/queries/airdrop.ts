@@ -14,6 +14,7 @@ query($first: Int! $lastId: ID!) {
       #totalStaked_gt: 0
       id_gt: $lastId
       id_not: "0x0000000000000000000000000000000000000000"
+      tokenGiven_gt: "0"
       tokenGiven_lte: "200000000000000000000"
     }) {
       id
