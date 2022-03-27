@@ -157,17 +157,25 @@
         }
 
         if (fleetFound) {
-          const pendingActionFound = $account.data.pendingActions[fleetFound.txHash];
-          if (pendingActionFound && typeof pendingActionFound !== 'number') {
-            error = 'already recovered';
-          } else {
-            account.recordFleet(
-              fleetFound.fleet,
-              fleetFound.txHash,
-              fleetFound.timestamp,
-              fleetFound.nonce,
-              fleetFound.overrideTimestamp
-            );
+          try {
+            if (!$account?.data) {
+              error = 'Account not available, please reload';
+            } else {
+              const pendingActionFound = $account.data.pendingActions[fleetFound.txHash];
+              if (pendingActionFound && typeof pendingActionFound !== 'number') {
+                error = 'already recovered';
+              } else {
+                account.recordFleet(
+                  fleetFound.fleet,
+                  fleetFound.txHash,
+                  fleetFound.timestamp,
+                  fleetFound.nonce,
+                  fleetFound.overrideTimestamp
+                );
+              }
+            }
+          } catch (e) {
+            error = e;
           }
         } else {
           error = 'no fleet matching';
