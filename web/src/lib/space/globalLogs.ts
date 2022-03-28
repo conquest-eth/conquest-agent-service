@@ -1,7 +1,7 @@
 import {BaseStoreWithData} from '$lib/utils/stores/base';
-import {blockTime, finality, logPeriod, lowFrequencyFetch} from '$lib/config';
+import {blockTime, finality, lowFrequencyFetch} from '$lib/config'; // logPeriod
 import {SUBGRAPH_ENDPOINT} from '$lib/blockchain/subgraph';
-import type {GenericEvent, GenericParsedEvent} from './subgraphTypes';
+import type {GenericEvent, GenericParsedEvent, OwnerEvent} from './subgraphTypes';
 import {parseEvent} from './subgraphTypes';
 import {now} from '$lib/time';
 
@@ -11,9 +11,9 @@ export type GlobalLogs = {
   error?: string;
 };
 
-type QueryData = {
-  ownerEvents: GenericEvent[];
-};
+type QueryData = OwnerEvent;
+
+const logPeriod = Math.floor(3 * 24 * 60 * 60);
 
 // TODO __typename_not_in: [""]
 //  __typename cannot be used for that. should maybe add a manual typename
@@ -31,15 +31,15 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
     const timestamp = '' + (now() - logPeriod);
 
     const query = `
-    query($timestamp: BigInt!){
+    query($first: Int! $lastId: ID! $timestamp: BigInt!){
       ownerEvents(
-        orderDirection: desc
-        orderBy: blockNumber
+        first: $first
+
         where: {
           timestamp_gt: $timestamp
-          # TODO : __typename_not_in: [""]
+          id_gt: $lastId
+          # TODO : __typename_not_in: ['TravelingUpkeepReductionFromDestructionEvent', 'StakeToWithdrawEvent', 'ExitCompleteEvent']
         }
-        first: 1000
       ) {
     id
     __typename
@@ -91,25 +91,27 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
 
 `;
     try {
-      const result = await SUBGRAPH_ENDPOINT.query<
+      const result = await SUBGRAPH_ENDPOINT.queryList<
         QueryData,
         {
           timestamp: string;
         }
       >(query, {
         variables: {timestamp},
+        path: 'ownerEvents',
         context: {
           requestPolicy: 'network-only', // required as cache-first will not try to get new data
         },
       });
 
-      if (!result.data) {
+      if (!result) {
         console.error(result);
         this.setPartial({error: `cannot fetch from thegraph node`});
         throw new Error(`cannot fetch from thegraph node`);
       }
 
-      const events = result.data.ownerEvents
+      const events = result
+        .sort((a, b) => parseInt(b.timestamp) - parseInt(a.timestamp))
         .filter((v) => eventsToFilterOut.indexOf(v.__typename) === -1)
         .map(parseEvent);
 

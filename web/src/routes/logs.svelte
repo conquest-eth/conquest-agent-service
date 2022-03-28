@@ -212,24 +212,31 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-800 bg-black">
-              {#each logs as event (event.id)}
+              {#if $globalLogs.step === 'LOADING'}
                 <tr>
-                  <LogRow
-                    on:click={() => showDetails(event)}
-                    {filterType}
-                    {filterAddress}
-                    {filterDestination}
-                    {filterOrigin}
-                    {onlySender}
-                    {onlyUnresolved}
-                    {originRadius}
-                    {destinationRadius}
-                    {orLocation}
-                    {event}
-                  />
+                  <td colspan="7">
+                    <p class="text-xl text-orange-500">LOADING....</p>
+                  </td>
                 </tr>
-              {/each}
-
+              {:else}
+                {#each logs as event (event.id)}
+                  <tr>
+                    <LogRow
+                      on:click={() => showDetails(event)}
+                      {filterType}
+                      {filterAddress}
+                      {filterDestination}
+                      {filterOrigin}
+                      {onlySender}
+                      {onlyUnresolved}
+                      {originRadius}
+                      {destinationRadius}
+                      {orLocation}
+                      {event}
+                    />
+                  </tr>
+                {/each}
+              {/if}
               <!-- More transactions... -->
             </tbody>
           </table>
