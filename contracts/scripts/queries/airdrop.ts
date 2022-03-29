@@ -32,10 +32,44 @@ query($first: Int! $lastId: ID!) {
     tokenGiven: string;
   }[] = await theGraph.query(queryString, {field: 'owners'});
 
+  // const claimKeysqueryString = `
+  // query($first: Int! $lastId: ID!) {
+  //     owners(first: $first where: {
+  //       id_gt: $lastId
+  //       totalStaked: 0
+  //       id_not: "0x0000000000000000000000000000000000000000"
+  //       balance: "300000000000000000000"
+  //       tokenGiven: "300000000000000000000"
+  //     }) {
+  //       id
+  //       introducer { id }
+  //       tokenGiven
+  //     }
+  // }
+  // `;
+
+  // const claimkeys: {
+  //   id: string;
+  //   introducer: {id: string};
+  //   tokenGiven: string;
+  // }[] = await theGraph.query(queryString, {field: 'owners'});
+
+  // let introducer = undefined;
+  // for (const claimKey of claimkeys) {
+  //   if (introducer !== claimKey.introducer.id) {
+  //     introducer = claimKey.introducer.id;
+  //     console.log({introducer});
+  //   }
+  // }
+
+  // const list = players.concat(claimkeys);
+
+  const list = players;
+
   const airdrop: {address: string; tokenUnitGivenSoFar: number}[] = [];
-  for (const player of players) {
-    const tokenUnitGivenSoFar = BigNumber.from(player.tokenGiven).div('1000000000000000000').toNumber();
-    airdrop.push({address: player.id, tokenUnitGivenSoFar});
+  for (const account of list) {
+    const tokenUnitGivenSoFar = BigNumber.from(account.tokenGiven).div('1000000000000000000').toNumber();
+    airdrop.push({address: account.id, tokenUnitGivenSoFar});
   }
 
   await deployments.saveDotFile('.airdrop.json', JSON.stringify(airdrop, null, 2));
