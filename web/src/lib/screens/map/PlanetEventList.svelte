@@ -1,6 +1,4 @@
 <script lang="ts">
-  import ErrorInfo from '$lib/components/events/ErrorInfo.svelte';
-
   import EventInfo from '$lib/components/events/EventInfo.svelte';
   import {myevents} from '$lib/space/myevents';
   import {errors} from '$lib/space/errors';

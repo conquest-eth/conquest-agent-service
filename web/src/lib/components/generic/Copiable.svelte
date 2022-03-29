@@ -1,6 +1,7 @@
 <script lang="ts">
   export let text: string;
   export let textCallBack: () => string | undefined = undefined;
+  export let copiedDirection = 'right';
 
   let copied = false;
   async function copy() {
@@ -28,9 +29,11 @@
 
 <div class="inline-flex relative w-fit" on:click={copy}>
   <div
-    class={`${
-      copied ? 'opacity-100' : 'opacity-0'
-    } absolute inline-block top-0 right-0 bottom-auto left-auto translate-x-2/4 -translate-y-1/2 rotate-0 skew-x-0 skew-y-0 scale-x-100 scale-y-100 py-1 px-2.5 text-xs leading-none text-center whitespace-nowrap align-baseline font-bold bg-indigo-700 text-white rounded-full z-10 transition-opacity duration-300`}
+    class={`${copied ? 'opacity-100' : 'opacity-0'} absolute inline-block top-0 ${
+      copiedDirection === 'right'
+        ? 'right-0 left-auto translate-x-2/4 px-2.5'
+        : 'left-0 right-auto -translate-x-2/4 px2.5'
+    } bottom-auto-translate-y-1/2 rotate-0 skew-x-0 skew-y-0 scale-x-100 scale-y-100 py-1 text-xs leading-none text-center whitespace-nowrap align-baseline font-bold bg-indigo-700 text-white rounded-full z-10 transition-opacity duration-300`}
   >
     <p>Copied</p>
   </div>

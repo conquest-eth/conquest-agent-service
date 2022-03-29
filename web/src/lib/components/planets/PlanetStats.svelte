@@ -1,6 +1,7 @@
 <script lang="ts">
   export let planetState: Readable<PlanetState>;
   export let planetInfo: PlanetInfo;
+  export let copiedDirection = 'right';
 
   import Blockie from '$lib/components/account/Blockie.svelte';
   import Stat from '$lib/components/utils/Stat.svelte';
@@ -41,7 +42,7 @@
       <p slot="tooltip">{planetInfo.location.id}</p>
     </Tooltip> -->
     <div>
-      <Blockie class="flex-auto w-8 h-8 flot" address={$planetState.owner} />
+      <Blockie {copiedDirection} class="flex-auto w-8 h-8 flot" address={$planetState.owner} />
     </div>
   {:else}
     <h2 class={`flex-auto text-center pt-1 font-bold ${textColor} inline`}>{planetInfo.stats.name}</h2>

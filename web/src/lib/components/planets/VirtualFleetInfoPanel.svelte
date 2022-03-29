@@ -24,7 +24,7 @@
 <div
   class="absolute right-0 top-14 inline-block w-36 md:w-48 bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 m-4 text-sm"
 >
-  <PlanetStats {planetState} {planetInfo} />
+  <PlanetStats copiedDirection="left" {planetState} {planetInfo} />
 
   <div class="w-full h-1 bg-cyan-300 mt-4 mb-2" />
 

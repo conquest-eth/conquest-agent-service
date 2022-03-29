@@ -159,11 +159,15 @@
           <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
             <dt class="text-sm font-medium text-red-500">{genericTitle}</dt>
             <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
-              <a
-                href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${error.txHash}`}
-                target="_blank"
-                class="text-indigo-600 hover:text-indigo-100">{error.txHash}</a
-              >
+              {#if !error.txHash || error.txHash === 'undefined'}
+                <p class="text-orange-700">Hmm, no transaction found for this error</p>
+              {:else}
+                <a
+                  href={`${import.meta.env.VITE_BLOCK_EXPLORER_TRANSACTION}${error.txHash}`}
+                  target="_blank"
+                  class="text-indigo-600 hover:text-indigo-100">{error.txHash}</a
+                >
+              {/if}
             </dd>
           </div>
         </dl>
