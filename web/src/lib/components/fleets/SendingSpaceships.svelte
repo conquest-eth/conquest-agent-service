@@ -62,7 +62,13 @@
 
   $: travelingArrivals = currentFutures
     .filter((v) => v.fleet.arrivalTimeWanted > 0 && v.fleet.arrivalTimeWanted - now() > -5 * 60)
-    .map((v) => v.fleet.arrivalTimeWanted);
+    .map((v) => v.fleet.arrivalTimeWanted)
+    .reduce((prev, curr) => {
+      if (prev.indexOf(curr) === -1) {
+        prev.push(curr);
+      }
+      return prev;
+    }, []);
 
   $: futureStatesAtFleetArrival = currentFutures.filter(
     (v) => v.fleet.timeLeft <= (currentTimeToArrive > defaultTimeToArrive ? currentTimeToArrive : defaultTimeToArrive)
@@ -206,7 +212,11 @@
       let giving = futureState.state.owner.toLowerCase() === fleetOwner.toLowerCase(); // TODO more complex scenario
       let extraAttack = 0;
       let extra = undefined;
-      if (!giving && arrivalTimeWanted && Math.floor(arrivalTimeWanted.getTime() / 1000) === futureState.arrivalTime) {
+      if (
+        !giving &&
+        arrivalTimeWanted &&
+        Math.floor(arrivalTimeWanted.getTime() / 1000) === futureState.fleet.arrivalTimeWanted
+      ) {
         extra = {
           attackPowerOverride: Math.floor(
             (futureState.accumulatedAttack * futureState.averageAttackPower +

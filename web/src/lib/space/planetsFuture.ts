@@ -95,14 +95,15 @@ class PlanetFutureStateStores {
           // TODO accumulated
 
           if (extraTime > 0 || firstTime || outcome.gift) {
-            futures.push({
+            lastInfo = {
               arrivalTime: lastTime,
               accumulatedAttack: outcome.gift ? 0 : outcome.combat.attackerLoss,
               accumulatedDefense: outcome.gift ? 0 : outcome.combat.defenderLoss,
               averageAttackPower: outcome.gift ? 0 : attackPower,
               state: futureState,
               fleet,
-            });
+            };
+            futures.push(lastInfo);
           } else {
             if (lastInfo) {
               lastInfo.accumulatedAttack = outcome.gift ? 0 : outcome.combat.attackerLoss;
