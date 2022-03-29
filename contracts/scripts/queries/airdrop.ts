@@ -13,9 +13,11 @@ query($first: Int! $lastId: ID!) {
     owners(first: $first where: {
       #totalStaked_gt: 0
       id_gt: $lastId
+      totalStaked_gt: 0
       id_not: "0x0000000000000000000000000000000000000000"
       tokenGiven_gt: "0"
-      tokenGiven_lte: "200000000000000000000"
+      tokenGiven_lte: "300000000000000000000"
+
     }) {
       id
       introducer { id }

@@ -22,8 +22,8 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const planets = JSON.parse(await hre.deployments.readDotFile('.planets-chosen.json'));
 
   if (sponsor === 'xaya') {
-    if (planets.length !== 9) {
-      throw new Error(`9 required`);
+    if (planets.length !== 8) {
+      throw new Error(`8 required`);
     }
   } else {
     if (planets.length !== 7) {
@@ -65,7 +65,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     console.log(planet.location);
     const receipt = await execute(
       'OuterSpace',
-      {from: deployer, log: true, autoMine: true},
+      {from: deployer, log: true, autoMine: true, maxFeePerGas: '10000000000', maxPriorityFeePerGas: '5000000000'},
       'addReward',
       planet.location,
       giverAddress

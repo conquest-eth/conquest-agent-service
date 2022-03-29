@@ -14,7 +14,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const amounts: BigNumber[] = [];
   const addresses: string[] = [];
 
-  const targetAmount = BigNumber.from(300).mul('1000000000000000000');
+  const targetAmount = BigNumber.from(400).mul('1000000000000000000');
 
   for (const recipient of recipients) {
     const tokenGiven = BigNumber.from(recipient.tokenUnitGivenSoFar).mul('1000000000000000000');
@@ -28,14 +28,14 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   }
   const etherAmount = BigNumber.from(addresses.length).mul(parseEther('0.2'));
 
-  console.log({amounts: amounts.map((v) => v.toString()), addresses, etherAmount: etherAmount.toString()});
-  // await execute(
-  //   'ConquestToken',
-  //   {from: claimKeyDistributor, value: etherAmount, log: true, autoMine: true},
-  //   'distributeVariousAmountsAlongWithETH',
-  //   addresses,
-  //   amounts
-  // );
+  // console.log({amounts: amounts.map((v) => v.toString()), addresses, etherAmount: etherAmount.toString()});
+  await execute(
+    'ConquestToken',
+    {from: claimKeyDistributor, value: etherAmount, log: true, autoMine: true},
+    'distributeVariousAmountsAlongWithETH',
+    addresses,
+    amounts
+  );
 }
 if (require.main === module) {
   func(hre);
