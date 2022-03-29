@@ -388,12 +388,12 @@
   >
   <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `}
     >{#if origin}<p class="mb-1">{origin.stats.name}</p>
-      <Coord link={true} location={origin.location.id} />{/if}</td
+      <Coord location={origin.location.id} />{/if}</td
   >
   <!-- <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `} /> -->
   <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `}
     >{#if destination}<p>{destination.stats.name}</p>
-      <Coord link={true} location={destination.location.id} />{/if}
+      <Coord location={destination.location.id} />{/if}
     {#if destinationOwner} <Blockie class="m-1 w-6 h-6 inline my-1/2 mr-2" address={destinationOwner} />{/if}</td
   >
   <!-- <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-center `}

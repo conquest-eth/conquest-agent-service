@@ -113,7 +113,8 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
       const events = result
         .sort((a, b) => parseInt(b.timestamp) - parseInt(a.timestamp))
         .filter((v) => eventsToFilterOut.indexOf(v.__typename) === -1)
-        .map(parseEvent);
+        .map(parseEvent)
+        .filter((v) => !!v); // TODO event not parsed : RewardToWithdrawEvent
 
       this.setPartial({data: events});
 

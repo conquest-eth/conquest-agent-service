@@ -345,6 +345,8 @@ export function parseEvent<T extends EventTypeName>(
     event = parseStakeToWithdrawEvent(e as StakeToWithdrawEvent);
   } else if (e.__typename === 'ExitCompleteEvent') {
     event = parseExitCompleteEvent(e as ExitCompleteEvent);
+  } else {
+    console.error(`unknown event`, e);
   }
   return event as GenericParsedEvent & {__typename: T};
 }
