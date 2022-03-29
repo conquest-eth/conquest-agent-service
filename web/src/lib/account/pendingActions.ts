@@ -323,6 +323,15 @@ class PendingActionsStore implements Readable<CheckedPendingActions> {
 
     let changes = false;
 
+    if (checkedAction.id === 'undefined') {
+      if (checkedAction.status !== 'FAILURE' || !checkedAction.final) {
+        checkedAction.status = 'FAILURE';
+        checkedAction.final = now();
+        this._notify();
+      }
+      return;
+    }
+
     const txFromPeers = await wallet.provider.getTransaction(checkedAction.id);
     let pending = true;
     if (txFromPeers) {

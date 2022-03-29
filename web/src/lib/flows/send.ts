@@ -611,12 +611,21 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
   }
 
   async recoverFleetFromTxHash(txHash: string) {
+    if (!txHash) {
+      this.setPartial({error: {message: `no tx hash specified`}});
+      return;
+    }
+    const tx = await wallet.provider.getTransaction(txHash);
+    if (!tx || !tx.hash) {
+      this.setPartial({error: {message: `no tx found with hash : ${txHash}`}});
+      return;
+    }
     const lastFleet = this.$store.lastFleet;
     if (lastFleet) {
       console.log({lastFleet});
       account.recordFleet(
         lastFleet.fleet,
-        txHash,
+        tx.hash,
         lastFleet.timestamp,
         lastFleet.nonce // tx.nonce can be different it seems, metamask can change it, or maybe be even user
         //  so we should actually use a different fieldName: secretNonce to save lastFleet.nonce
