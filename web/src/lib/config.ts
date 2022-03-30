@@ -110,6 +110,7 @@ const globalQueryParams = [
   'agent-service',
   'logo',
   'errorButton',
+  'options',
 ];
 
 const SYNC_URI = params.sync || (import.meta.env.VITE_SYNC_URI as string); //  'http://invalid.io'; // to emulate connection loss :)

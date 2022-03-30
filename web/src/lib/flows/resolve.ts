@@ -4,7 +4,7 @@ import {BaseStore} from '$lib/utils/stores/base';
 import {account} from '$lib/account/account';
 import {isCorrected, correctTime} from '$lib/time';
 import type {Fleet} from '$lib/space/fleets';
-import type {BigNumber} from '@ethersproject/bignumber';
+import {BigNumber} from '@ethersproject/bignumber';
 import selection from '$lib/map/selection';
 
 export type ResolveStep = 'IDLE' | 'SHOW_LIST' | 'CONNECTING' | 'CREATING_TX' | 'WAITING_TX' | 'SUCCESS';
@@ -34,7 +34,7 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
     this.setPartial({step: this.$store.pastStep || 'IDLE'});
   }
 
-  async resolve(fleet: Fleet, pastStep?: ResolveStep): Promise<void> {
+  async resolve(fleet: Fleet, pastStep?: ResolveStep, force = false): Promise<void> {
     this.setPartial({step: 'CREATING_TX', cancelingConfirmation: undefined, pastStep: pastStep || 'IDLE'});
 
     let nonce = fleet.sending.action.nonce;
@@ -125,22 +125,28 @@ class ResolveFlowStore extends BaseStore<ResolveFlow> {
     const gasPrice = undefined;
 
     let gasEstimation: BigNumber;
-    try {
-      gasEstimation = await wallet.contracts?.OuterSpace.estimateGas.resolveFleet(fleetData.fleetId, {
-        from: xyToLocation(fleet.from.location.x, fleet.from.location.y),
-        to: xyToLocation(fleet.to.location.x, fleet.to.location.y),
-        distance,
-        arrivalTimeWanted: fleet.arrivalTimeWanted,
-        secret: secretHash,
-        gift: fleet.gift,
-        specific: fleet.specific,
-        fleetSender: fleet.fleetSender || fleet.owner,
-        operator: fleet.operator || fleet.owner,
-      });
-    } catch (e) {
-      this.setPartial({error: e, step: this.$store.pastStep || 'IDLE'});
-      return;
+
+    if (force) {
+      gasEstimation = BigNumber.from(1000000);
+    } else {
+      try {
+        gasEstimation = await wallet.contracts?.OuterSpace.estimateGas.resolveFleet(fleetData.fleetId, {
+          from: xyToLocation(fleet.from.location.x, fleet.from.location.y),
+          to: xyToLocation(fleet.to.location.x, fleet.to.location.y),
+          distance,
+          arrivalTimeWanted: fleet.arrivalTimeWanted,
+          secret: secretHash,
+          gift: fleet.gift,
+          specific: fleet.specific,
+          fleetSender: fleet.fleetSender || fleet.owner,
+          operator: fleet.operator || fleet.owner,
+        });
+      } catch (e) {
+        this.setPartial({error: e, step: this.$store.pastStep || 'IDLE'});
+        return;
+      }
     }
+
     // TODO gasEstimation for resolve
     const gasLimit = gasEstimation.add(200000);
 

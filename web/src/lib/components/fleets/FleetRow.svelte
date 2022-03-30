@@ -5,12 +5,13 @@
   import Coord from '../utils/Coord.svelte';
   import resolveFlow from '$lib/flows/resolve';
   import type {Fleet} from '$lib/space/fleets';
+  import {params} from '$lib/config';
 
   export let fleet: Fleet;
   export let outcome: Outcome;
 
-  function resolve(fleet: Fleet) {
-    resolveFlow.resolve(fleet, 'SHOW_LIST');
+  function resolve(fleet: Fleet, force = false) {
+    resolveFlow.resolve(fleet, 'SHOW_LIST', force);
   }
 </script>
 
@@ -41,3 +42,13 @@
     >Resolve<span class="sr-only">, {'x,y'}</span></button
   >
 </td>
+
+{#if params['options'] && params['options'].split(',').indexOf('forceResolve') !== -1}
+  <td
+    ><button
+      on:click={() => resolve(fleet, true)}
+      class="border-2 border-red-500 rounded-md p-2 text-orange-600 hover:text-orange-900 hover:border-orange-900"
+      >Force<span class="sr-only">, {'x,y'}</span></button
+    ></td
+  >
+{/if}
