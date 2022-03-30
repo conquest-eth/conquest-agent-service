@@ -7,6 +7,20 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {deployments} = hre;
   const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
+  // const queryString = `
+  // query($first: Int! $lastId: ID! $blockNumber: Int!) {
+  //     planets(block: {number: $blockNumber} first: $first where: {
+  //       id_gt: $lastId
+  //     }) {
+  //       id
+  //     }
+  // }
+  // `;
+
+  //   const planets: {
+  //     id: string;
+  //   }[] = await theGraph.query(queryString, {field: 'planets', variables: {blockNumber: 6074693}});
+
   // query($blockNumber: Int! $first: Int! $lastId: ID! $id: ID!) {
   const queryString = `
 query($first: Int! $lastId: ID!) {
