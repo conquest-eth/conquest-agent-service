@@ -143,6 +143,14 @@ function setGetName(func: () => string): void {
 
 const version = __VERSION__;
 
+const options: {[option: string]: boolean} = {};
+if (params['options']) {
+  const splitted = params['options'].split(',');
+  for (const split of splitted) {
+    options[split] = true;
+  }
+}
+
 if (import.meta.env.MODE === 'production') {
   Sentry.init({
     release: __VERSION__,
@@ -210,6 +218,7 @@ export {
   localDev,
   setGetName,
   version,
+  options,
 };
 
 if (typeof window !== 'undefined') {

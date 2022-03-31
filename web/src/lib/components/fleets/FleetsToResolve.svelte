@@ -4,6 +4,7 @@
   import resolveFlow from '$lib/flows/resolve';
   import PanelButton from '$lib/components/generic/PanelButton.svelte';
   import {timeToText} from '$lib/utils';
+  import {options} from '$lib/config';
 
   function showResolutions() {
     resolveFlow.showList();
@@ -16,7 +17,7 @@
 
 <!-- TODO fliter on to-->
 
-{#if fleetsToResolve.length > 0}
+{#if (options['showAllFleets'] && $fleetList.fleets.length > 0) || fleetsToResolve.length > 0}
   <div class="border-2 border-red-600 mt-3 mr-1 text-center text-cyan-300 ">
     <h2 class="p-1">Fleets to Resolve</h2>
     <div class="w-full h-1 bg-red-600 mt-1 mb-2 " />

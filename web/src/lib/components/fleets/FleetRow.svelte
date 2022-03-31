@@ -5,7 +5,7 @@
   import Coord from '../utils/Coord.svelte';
   import resolveFlow from '$lib/flows/resolve';
   import type {Fleet} from '$lib/space/fleets';
-  import {params} from '$lib/config';
+  import {options} from '$lib/config';
 
   export let fleet: Fleet;
   export let outcome: Outcome;
@@ -43,7 +43,7 @@
   >
 </td>
 
-{#if params['options'] && params['options'].split(',').indexOf('forceResolve') !== -1}
+{#if options['forceResolve']}
   <td
     ><button
       on:click={() => resolve(fleet, true)}

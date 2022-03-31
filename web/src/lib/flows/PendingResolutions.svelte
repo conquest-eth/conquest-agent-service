@@ -14,6 +14,7 @@
   import {playersQuery} from '$lib/space/playersQuery';
   import OutcomeVis from '$lib/components/fleets/OutcomeVis.svelte';
   import FleetRow from '$lib/components/fleets/FleetRow.svelte';
+  import {options} from '$lib/config';
 
   type FleetsGroup = {destination: PlanetInfo; arrivalTimeWanted: number; fleets: Fleet[]};
 
@@ -27,7 +28,7 @@
     fleetsGroups = [];
     const map: {[group: string]: FleetsGroup} = {};
     for (const fleet of $fleetList.fleets.sort((a, b) => a.timeToResolve - b.timeToResolve)) {
-      if (fleet.state === 'READY_TO_RESOLVE') {
+      if (fleet.state === 'READY_TO_RESOLVE' || options['showAllFleets']) {
         const groupId = `${fleet.to.location.x},${fleet.to.location.y}:${fleet.arrivalTimeWanted}`;
         const existingGroup = map[groupId];
         if (existingGroup) {
