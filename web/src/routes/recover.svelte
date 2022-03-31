@@ -106,6 +106,13 @@
                 listOfArrivalTimeWanted.push(startTime + k * 60);
               }
               console.log({listOfArrivalTimeWanted});
+            } else if (arrivalTimeWanted == -1) {
+              const numTimesToTry = 512;
+              const startTime = Math.floor(block.timestamp / 60) * 60 - Math.floor(numTimesToTry / 2) * 60;
+              for (let k = 0; k < numTimesToTry; k++) {
+                listOfArrivalTimeWanted.push(startTime + k * 60);
+              }
+              console.log({listOfArrivalTimeWanted});
             }
             for (const arrivalTime of listOfArrivalTimeWanted) {
               const fleetData = await account.hashFleet(
