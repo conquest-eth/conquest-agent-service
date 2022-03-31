@@ -176,6 +176,22 @@ export class FleetsStore implements Readable<FleetListState> {
                   if (resolution.status === 'SUCCESS' || resolution.counted) {
                     // TODO error
                     state = 'WAITING_ACKNOWLEDGMENT';
+                    try {
+                      console.log('WAITING_ACKNOWLEDGMENT', {
+                        tx: resolution.id,
+                        status: resolution.status,
+                        type: resolution.action.type,
+                        nonce: resolution.action.nonce,
+                        acknowledged: resolution.action.acknowledged,
+                        acknowledgementTime: resolution.action.acknowledgementTime,
+                        final: resolution.action.final,
+                        external: resolution.action.external,
+                        timestamp: resolution.action.timestamp,
+                      });
+                    } catch (e) {
+                      console.error(e);
+                    }
+
                     // continue; // acknowledgement go through events // TODO enable even though but should be required
                   }
                 }
