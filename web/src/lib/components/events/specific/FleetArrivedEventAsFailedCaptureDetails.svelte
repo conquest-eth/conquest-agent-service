@@ -118,7 +118,11 @@
         <dt class="text-sm font-medium text-gray-500">Defense</dt>
         <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
           <p class="text-gray-100">
-            {event.numSpaceshipsAtArrival + event.inFlightPlanetLoss} spaceships were protecting the planet
+            {#if event.inFlightPlanetLoss}
+              more than {event.numSpaceshipsAtArrival + event.inFlightPlanetLoss} spaceships were protecting the planet.
+            {:else}
+              {event.numSpaceshipsAtArrival + event.inFlightPlanetLoss} spaceships were protecting the planet
+            {/if}
           </p>
           {#if event.inFlightPlanetLoss}
             <p class="text-red-400">
@@ -132,7 +136,8 @@
           {/if}
 
           <p class="my-1 text-md">
-            Total: {event.numSpaceshipsAtArrival - event.inFlightPlanetLoss + event.accumulatedDefenseAdded}
+            Total: {event.numSpaceshipsAtArrival + event.inFlightPlanetLoss + event.accumulatedDefenseAdded}
+            {#if event.inFlightPlanetLoss > 0} + orbit defense (exact number not available){/if}
           </p>
         </dd>
       </div>
@@ -141,9 +146,10 @@
         <dt class="text-sm font-medium text-gray-500">Outcome</dt>
         <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
           <p class="text-gray-100">
-            {event.quantity - event.inFlightFleetLoss - event.taxLoss + event.accumulatedAttackAdded} vs {event.numSpaceshipsAtArrival -
+            {event.quantity - event.inFlightFleetLoss - event.taxLoss + event.accumulatedAttackAdded} vs {event.numSpaceshipsAtArrival +
               event.inFlightPlanetLoss +
               event.accumulatedDefenseAdded}
+            {#if event.inFlightPlanetLoss > 0} + orbit defense (exact number not available){/if}
           </p>
 
           <p class="text-lime-500">
