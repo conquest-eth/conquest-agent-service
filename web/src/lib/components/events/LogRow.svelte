@@ -159,6 +159,7 @@
       outcome = {
         winner: undefined,
         stake: undefined,
+        // TODO use event info to show battle / arrival results, at least in details ?
         description: event.fleet.resolveTransaction
           ? `${quantity.amount} spaceships have arrived`
           : `${quantity.amount} spaceships on their way`,
