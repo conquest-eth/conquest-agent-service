@@ -5,7 +5,7 @@
       "id": "0xc5ced2ff06aadab1781e52c559639d5610a8d223",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -14,7 +14,7 @@
       "id": "0x722bb5b88cf9e08754753b588d6f369934a24d5a",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -23,7 +23,7 @@
       "id": "0x3ae9b53e3276e06d8d37fdf8ba960d157f3a18b8",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -32,7 +32,7 @@
       "id": "0x9778855c731b5955e1ae7b77128f7bf5abdffc0c",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -41,7 +41,7 @@
       "id": "0x1ab4c0be6e006011d71f262b1dd769216309ffd9",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -50,7 +50,7 @@
       "id": "0xc113a99e4a9bb90fdf9010a5523d220164fac285",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -59,7 +59,7 @@
       "id": "0x5f772ee3a1fce779af947ab4c92793e49b80e7d9",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -68,7 +68,7 @@
       "id": "0x6e8cab0ec3b4815c921774bd190874f92e0e4ba4",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -77,7 +77,7 @@
       "id": "0x6d1cbd0fbc7f8f50e03d45f378adc532cc840487",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -86,7 +86,7 @@
       "id": "0x9eed613f6c84ada1343adb442d9ec585856dc019",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -95,7 +95,7 @@
       "id": "0xbc1f05993ecc2dadad749d68bef03faaaeb2e1d3",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -104,7 +104,16 @@
       "id": "0x54183b8a89f0879440f7ef4beccf7605f20fcc20",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x1694492e230049a0ba9dfda008640f8e88973e7c",
+    "introducer": {
+      "id": "0xb6107094ca3377bd41a739bd595a560ec2af132e",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -113,7 +122,16 @@
       "id": "0x0cbf8c8c81a58767723e1e31bda1aca81d422600",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x18c24478ae3289779059c6e30a1978ee8241088c",
+    "introducer": {
+      "id": "0x284dbae4f45be34ff3c62d94f8595c91a4d85933",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -122,7 +140,7 @@
       "id": "0x06551f24fefd54b4f41962c17b57dcde4bf24037",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -131,7 +149,7 @@
       "id": "0xf0f709ccd90a85cad7f74334ee87c016aea3a273",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -140,7 +158,7 @@
       "id": "0x8b1e589ed9bdbc1427d4eeb2f8ee3122686a8433",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -149,7 +167,7 @@
       "id": "0xd29b11313aba3031981c7eba7bd1fa8cd3dc097d",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -158,7 +176,16 @@
       "id": "0x944883e31bd383dd2bc4648aac50a596163bfaca",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x3064f0f0a08d723e814f14386ba0c62dc7bd7ad3",
+    "introducer": {
+      "id": "0x82f0f9628399723cf4728b498a350e57b6c7b204",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -167,7 +194,7 @@
       "id": "0x279ae21f855af24d3e4c5df9eafe4ba19a858af1",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -176,7 +203,7 @@
       "id": "0xf8d49a5261578df0b036b86061a17ac0153c4c73",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -185,7 +212,7 @@
       "id": "0xf6f4bbf302cf3e74f67fc8f702ec675da80b4453",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -194,7 +221,7 @@
       "id": "0x73667b9c33b381bd1dd98d33be319607e8cc4436",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -203,7 +230,7 @@
       "id": "0x922c1222ca389b1e7f0547590094002752283a36",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -212,7 +239,7 @@
       "id": "0xc0bf5caf9e474402ea63497986a901a0464bbbf2",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -221,7 +248,7 @@
       "id": "0x18e2e6a012985ddb56200a797b8c12aa8e9e986d",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -230,7 +257,7 @@
       "id": "0xf69ab60f51cf9812c76f80b9971273e8c51be318",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -239,7 +266,7 @@
       "id": "0x5292096aaa7b35b6f97b0a17957efa79cedaeaee",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -248,7 +275,7 @@
       "id": "0x95bc3ed8d079f803a643d95ab3bf95b7b4da7c90",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -257,7 +284,7 @@
       "id": "0x2219873b59965012d04ebf18a8a3737f1f69b347",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -266,7 +293,7 @@
       "id": "0x5a5d8f53ac249155b85956631bb1c8b31fabd83f",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -275,7 +302,7 @@
       "id": "0xbe1f64451f91134a20c964b9c67ed58cff3061c8",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -284,7 +311,7 @@
       "id": "0x5bedfca0ee48e264085e729be69d5f9b5d6df2fa",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -293,7 +320,7 @@
       "id": "0x1372c2ffa6956400ca9dd2cf4a5a55526c5b80df",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -302,7 +329,7 @@
       "id": "0x0c6ef8f4dc0e12824fac29a0e0971fdd540f18f5",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -311,7 +338,7 @@
       "id": "0x9e2bac49dc63e97a4568fa475c0dc29ba5426c02",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -320,7 +347,7 @@
       "id": "0xf136ade576027ee3a1771d06dfe30b5a901f8ce9",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -329,7 +356,7 @@
       "id": "0x8ffba87db5709153710d1bb5d71e3d0430280566",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -338,7 +365,7 @@
       "id": "0xfddcc24ae06de8d542e9f845fa3c6245243000fa",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -347,7 +374,16 @@
       "id": "0xe0061137779ec9b8c8a98f280729b4c7efa9c837",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0x85150378f872a5ef6fa700d83fe0496c0981bf98",
+    "introducer": {
+      "id": "0x07cc40fa123947a6310a0cf16038c4190f5fc633",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -356,7 +392,7 @@
       "id": "0x632c3a3f9092f57f5a87436a79e8919d6fa23269",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -365,7 +401,7 @@
       "id": "0x12331c82cb421527c40663b9e8d2acfa2388998e",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -374,7 +410,7 @@
       "id": "0xa90744ed58e7054addd15f96f0df0237652245da",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -383,7 +419,7 @@
       "id": "0x61bd3a8361e7edf3a6f3f3411ae6481261c5cea2",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -392,7 +428,7 @@
       "id": "0xa7dce14a7da1c735a1fe28211e70cf4a6a011d9e",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -401,7 +437,7 @@
       "id": "0x1de57eea9d6f38b3014420532c934e8d0d95d56b",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -410,7 +446,7 @@
       "id": "0xf4c3d26fce1470ebfca5b133ce72349bce6fe471",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -419,7 +455,7 @@
       "id": "0x8512dc7017704cac5ff961f3199bd3622dc94a79",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -428,7 +464,7 @@
       "id": "0x2a35cb584153727e895974cbe90f80b96e5af4c1",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -437,7 +473,7 @@
       "id": "0x77c0d05f445aceb72435f8a38594e510c2d22f1c",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -446,7 +482,7 @@
       "id": "0x63d9bee52cae87365f1b3cdea4a2c4d0a1d541bc",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -455,7 +491,16 @@
       "id": "0x713630c5bf13a8f9e0c5e84f6f448831a7696d8a",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xaa0004ab712f6716ccd895b39a1923ecc3093a8d",
+    "introducer": {
+      "id": "0xc6307675ef2d8493a8d3c06e42de0c547a28197c",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -464,7 +509,7 @@
       "id": "0xcef0fc30fbf7c87de3c56ed4c81681354f4e5c69",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -473,7 +518,7 @@
       "id": "0x3362b07b470866f6ca4cdef6a2b8303087e9ff4b",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -482,7 +527,7 @@
       "id": "0xbc6980c9460fbaab1f81230897d23270ad475233",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -491,7 +536,7 @@
       "id": "0x8c3a37f75b9d79bd47947979c12752c26585b49a",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -500,7 +545,7 @@
       "id": "0x24a643741408c0f127682e705f6a0677081a8c4b",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -509,7 +554,7 @@
       "id": "0x3db7c9f88410d9db832ab435224584be0a52f129",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -518,7 +563,7 @@
       "id": "0x5d5b96c1dd2e7ba053efe5a14f63160325241d80",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -527,7 +572,7 @@
       "id": "0x9e0b61ac9bf48dd82e43169f01e2b784bca6a445",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -536,7 +581,7 @@
       "id": "0xc5d0ba8b2c55a97bf6768887f198ce94ab9e8618",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -545,7 +590,7 @@
       "id": "0x4bf13933578e0c67e78d2c16f098cc302a14b9cc",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -554,7 +599,7 @@
       "id": "0x0e9e53c2a60b94f8bd53bb980dfb64663e243240",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -563,7 +608,7 @@
       "id": "0xd11c6b8717e1448291ff2251d4639ea138581b70",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -572,7 +617,16 @@
       "id": "0x668db5ea1ae462c2a64579af1a747f10d7dba446",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xc824fab4bf3eea2f765020591de03d7d04074c61",
+    "introducer": {
+      "id": "0x953dd8bce03083d872f60231a23111dba44ea925",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -581,7 +635,7 @@
       "id": "0xe62b69b158f774d83d55f3db1e3bbad8918786ff",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -590,7 +644,7 @@
       "id": "0x784ded3f629dae1bdd742cc5773cfb95e23b69e3",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -599,7 +653,7 @@
       "id": "0xd0c0b75bad9ae565e5656512c569801ce8340dc3",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -608,7 +662,7 @@
       "id": "0x9380cad7d5e6ff12743850e63b7e57f9f8b71013",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -617,7 +671,7 @@
       "id": "0x3314d3bff285ab3d7429a98e077ebe3badfd35f3",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -626,7 +680,7 @@
       "id": "0x4947d5ca51fc6608bb5ff0e06c46bf08ffade6cf",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -635,7 +689,7 @@
       "id": "0xa3950dfb4392db9bd3d8b464dd66531dc42c5b40",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -644,7 +698,7 @@
       "id": "0x355b48a8901a63af57ff9224f0816087ac04cfe9",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -653,7 +707,7 @@
       "id": "0x6e5ea1055da5caf403e92a1a9d6842e6fb0fb0c4",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -662,7 +716,7 @@
       "id": "0xb8a6a613003e155961338b0354d0ab9f2f39e0e4",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -671,7 +725,7 @@
       "id": "0x8fa261f58b49466b968c25e87635abced1840874",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -680,7 +734,16 @@
       "id": "0xf47963f000d67d9b7b3b72848f5b00def18d7034",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
+    "__typename": "Owner"
+  },
+  {
+    "id": "0xe6d80dfa5f93292b5cf6059ba75dca99f742971e",
+    "introducer": {
+      "id": "0xdaebb5dd1bc7a935dfb2924ee517b88cfbf07d21",
+      "__typename": "Owner"
+    },
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -689,7 +752,7 @@
       "id": "0xa2b361744d5694a10270fb33d268cd712cb53146",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -698,7 +761,7 @@
       "id": "0xddb85983c74bc8a13854d20e8b78ea054a386edb",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -707,7 +770,7 @@
       "id": "0x22ecf97d66c46bd463fc52c9465bcfe86d9a210c",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -716,7 +779,7 @@
       "id": "0x27e526f70260374ecfce0cbc5623ec77e7663ce9",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -725,7 +788,7 @@
       "id": "0x1b46ca9fb67d7cf7c3ecb8dd2fdf2418f87e66d5",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -734,7 +797,7 @@
       "id": "0xc97b29cd60416204040818b8e5a8b4a0db4124f1",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   },
   {
@@ -743,7 +806,7 @@
       "id": "0x999b18d20f9685fa4d5734966e4a53d49f229bc3",
       "__typename": "Owner"
     },
-    "tokenGiven": "300000000000000000000",
+    "tokenGiven": "400000000000000000000",
     "__typename": "Owner"
   }
 ]
