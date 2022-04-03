@@ -15,7 +15,7 @@
   import {hasCommonAlliance, playersQuery} from '$lib/space/playersQuery';
   import {privateWallet} from '$lib/account/privateWallet';
   import {matchConditions, pluginShowing, showPlanetButtons} from '$lib/plugins/currentPlugin';
-  import {showAlliances} from '$lib/map/showAlliances';
+  import {overlays} from '$lib/map/overlays';
   import sendFlow from '$lib/flows/send';
 
   type Frame = {x: number; y: number; w: number; h: number};
@@ -246,6 +246,12 @@
     ($sendFlow.step === 'PICK_ORIGIN' &&
       $sendFlow.data.to.x == planetInfo.location.x &&
       $sendFlow.data.to.y == planetInfo.location.y);
+
+  $: showOwner =
+    $overlays.planetOwners !== 'None' &&
+    ($overlays.planetOwners === 'Everyone' ||
+      ($overlays.planetOwners === 'OnlyYou' && playerIsOwner) ||
+      ($overlays.planetOwners === 'OnlyAllies' && (isAlly || playerIsOwner)));
 </script>
 
 <div>
@@ -259,7 +265,7 @@
 `}
       data={`${planetInfo.location.x}, ${planetInfo.location.y} : ${planetInfo.stats.subX}, ${planetInfo.stats.subY} -| ${planetInfo.location.globalX}, ${planetInfo.location.globalY}`}
     />
-  {:else if zoomIn}
+  {:else if zoomIn || !showOwner}
     <!-- {#if zoomIn} -->
     <div
       style={`position: absolute; transform: translate(${x}px,${y}px) scale(${scale}, ${scale}); background: url(${base}${planetsImageURL}); background-position: ${-frame.x}px ${-frame.y}px; width: ${
@@ -416,7 +422,7 @@
     </div>
   {/each}
 
-  {#if owner}
+  {#if showOwner && owner}
     {#if blockieScale <= scale}
       <SharedBlockie
         style={`
@@ -450,7 +456,7 @@
     {/if}
   {/if}
 
-  {#if $showAlliances}
+  {#if $overlays.alliances}
     {#each alliances as alliance, i}
       {#if blockieScale <= scale}
         <SharedBlockie

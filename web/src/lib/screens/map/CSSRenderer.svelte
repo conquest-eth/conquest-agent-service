@@ -11,13 +11,12 @@
   import EventElement from './EventElement.svelte';
   import {errors} from '$lib/space/errors';
   import ErrorElement from './ErrorElement.svelte';
-  import {showFleets} from '$lib/map/showFleets';
+  import {overlays} from '$lib/map/overlays';
   import sendFlow, {virtualFleetFrom, virtualFleetTo} from '$lib/flows/send';
   import selection from '$lib/map/selection';
   import VirtualFleetElement from './VirtualFleetElement.svelte';
   import simulateFlow, {virtualFleetSimulationTo} from '$lib/flows/simulateFlow';
   import VirtualFleetSimulationElement from './VirtualFleetSimulationElement.svelte';
-  import {showSectors} from '$lib/map/showSectors';
 
   $: renderScale = $camera ? $camera.renderScale : 1;
   $: renderX = $camera?.renderX || 0;
@@ -99,7 +98,7 @@
     `}
 /> -->
 
-{#if $showSectors}
+{#if $overlays.sectors}
   <!--
   SECTOR GRID
   that works in both chrome and firefox but does not render well on firefox
@@ -213,7 +212,7 @@ width:100%; height: 100%;
       {/each}
     {/if}
 
-    {#if $showFleets}
+    {#if $overlays.fleets}
       {#if $fleetList.fleets}
         {#each $fleetList.fleets as fleet}
           {#if fleet.state !== 'WAITING_ACKNOWLEDGMENT'}
@@ -233,7 +232,7 @@ width:100%; height: 100%;
       {/if}
     {/if}
 
-    {#if $showSectors}
+    {#if $overlays.sectors}
       {#each sectorsInView as sector (sector.id)}
         <div
           style={`background-color: black; z-index: 50; position: absolute; transform: translate(${sector.x - 30}px,${

@@ -42,10 +42,7 @@
   import Search from '$lib/components/utils/Search.svelte';
   import PlanetEventList from './PlanetEventList.svelte';
   import {xyToLocation} from 'conquest-eth-common';
-  import {select_option} from 'svelte/internal';
-  import {showFleets} from '$lib/map/showFleets';
-  import {showAlliances} from '$lib/map/showAlliances';
-  import {showSectors} from '$lib/map/showSectors';
+  import {overlays} from '$lib/map/overlays';
 
   // import {timeToText} from '$lib/utils';
   // import {spaceInfo} from '$lib/space/spaceInfo';
@@ -218,9 +215,25 @@
       <div
         class="top-0 md:p-3 p-1  w-32 text-center relative bg-gray-900 bg-opacity-80 text-cyan-300 border-2 border-cyan-300 mt-4 text-sm"
       >
-        <p class="text-white text-xs"><input type="checkbox" bind:checked={$showFleets} /> Fleet</p>
-        <p class="text-white text-xs"><input type="checkbox" bind:checked={$showAlliances} /> alliances</p>
-        <p class="text-white text-xs"><input type="checkbox" bind:checked={$showSectors} /> sectors</p>
+        <p class="text-white text-xs"><input type="checkbox" bind:checked={$overlays.fleets} /> Fleet</p>
+        <p class="text-white text-xs"><input type="checkbox" bind:checked={$overlays.alliances} /> alliances</p>
+        <p class="text-white text-xs"><input type="checkbox" bind:checked={$overlays.sectors} /> sectors</p>
+        <p class="text-white text-xs">
+          <label for="planetOwners">Owners:</label>
+          <select
+            id="planetOwners"
+            style={`
+              background: black;
+              color: white;
+          `}
+            bind:value={$overlays.planetOwners}
+          >
+            <option value="Everyone"> Everyone </option>
+            <option value="OnlyYou"> Your </option>
+            <option value="OnlyAllies"> Allies</option>
+            <!-- <option value="None">None</option> -->
+          </select>
+        </p>
       </div>
     </div>
   </div>
