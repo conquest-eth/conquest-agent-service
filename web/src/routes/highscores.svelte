@@ -1,5 +1,6 @@
 <script lang="ts">
   import {base} from '$app/paths';
+  import {wallet} from '$lib/blockchain/wallet';
 
   import Blockie from '$lib/components/account/Blockie.svelte';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
@@ -40,7 +41,7 @@
       <hr class="my-4" />
       <ul>
         {#each $highscores.data.slice(0, 18) as player, index}
-          <li>
+          <li class={`${$wallet.address?.toLowerCase() === player.id ? 'font-black text-green-400' : ''}`}>
             <span class="w-10 inline-block">{index + 1}:</span>
             <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={player.id} />
             <div class="w-6 h-6 text-xs mr-4 inline-block" style={`white-space: nowrap;overflow: hidden;`}>
