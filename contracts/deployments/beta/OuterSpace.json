@@ -1836,7 +1836,7 @@
       }
     ]
   ],
-  "numDeployments": 1,
+  "numDeployments": 2,
   "linkedData": {
     "genesisHash": "0xf69ea25ce5e4aa509188e7ece284702358d8df5e656a9a3c8509506343f9faa8",
     "resolveWindow": 43200,
@@ -1865,7 +1865,7 @@
       ]
     },
     {
-      "facetAddress": "0xf5d8E2A641264FF5Cec421AB26e42a14ebdE8eab",
+      "facetAddress": "0x294709D0064a0E44F19Aa9867C9a710E40Ff9Ea1",
       "functionSelectors": [
         "0x56bf642d",
         "0x8d27f669",
@@ -1873,7 +1873,7 @@
       ]
     },
     {
-      "facetAddress": "0xBDEDB680671c31a644499ef3B5d42DBD889b3316",
+      "facetAddress": "0x4ddD9304Fcf6B04217A7A6bC5E3b90D7AC9303A4",
       "functionSelectors": [
         "0xee543393",
         "0xf69438c3",
@@ -1882,7 +1882,7 @@
       ]
     },
     {
-      "facetAddress": "0x939f28e26325eB26d0F7B7D6df05EDbDeF111473",
+      "facetAddress": "0xC6821cf8F3a07d417Dbcd6B9DEe3D1d4006D368e",
       "functionSelectors": [
         "0x34efcb8e",
         "0xd522989e",
@@ -1897,7 +1897,7 @@
       ]
     },
     {
-      "facetAddress": "0xD6C1149caEe845E9762bc703Ae11fcF46931fFBE",
+      "facetAddress": "0x7F33C175c7fb2f8a305d3AE3D2d5Fda3687Bd76d",
       "functionSelectors": [
         "0xe8525444",
         "0xc5aaa0ae",
@@ -1906,7 +1906,7 @@
       ]
     },
     {
-      "facetAddress": "0xEC1394Bc2d2515C762F02E3f741095410c0593C9",
+      "facetAddress": "0x8c506713E1000E62B820143a194A2D794fD70b2B",
       "functionSelectors": [
         "0x7ba423fb",
         "0xc9560838",

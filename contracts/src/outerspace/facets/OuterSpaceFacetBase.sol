@@ -30,13 +30,13 @@ contract OuterSpaceFacetBase is
     uint256 internal immutable _resolveWindow;
     uint256 internal immutable _timePerDistance;
     uint256 internal immutable _exitDuration;
-    uint32 internal immutable _acquireNumSpaceships;
-    uint32 internal immutable _productionSpeedUp;
+    uint32 internal immutable _acquireNumSpaceships; // TODO use uint256
+    uint32 internal immutable _productionSpeedUp; // TODO use uint256
     uint256 internal immutable _frontrunningDelay;
     uint256 internal immutable _productionCapAsDuration;
     uint256 internal immutable _upkeepProductionDecreaseRatePer10000th;
     uint256 internal immutable _fleetSizeFactor6;
-    uint32 internal immutable _expansionDelta; // = 8;
+    uint32 internal immutable _expansionDelta; // = 8;  // TODO use uint256
     uint256 internal immutable _giftTaxPer10000; // = 2500;
 
     struct Config {
@@ -131,7 +131,7 @@ contract OuterSpaceFacetBase is
 
         uint256 timePassed = block.timestamp - planetUpdate.lastUpdated;
         uint16 production = _production(planetUpdate.data);
-        uint256 produce = (timePassed * _productionSpeedUp * uint256(production)) / 1 hours;
+        uint256 produce = (timePassed * uint256(_productionSpeedUp) * uint256(production)) / 1 hours;
 
         // NOTE: the repaypemnt of upkeep always happen at a fixed rate (per planet), it is fully predictable
         uint256 upkeepRepaid = 0;
@@ -154,13 +154,13 @@ contract OuterSpaceFacetBase is
                 if (planetUpdate.newExitStartTime == 0) {
                     uint256 decreaseRate = 1800;
                     if (planetUpdate.overflow > 0) {
-                        decreaseRate = (planetUpdate.overflow * 1800) / capWhenActive;
+                        decreaseRate = (uint256(planetUpdate.overflow) * 1800) / capWhenActive;
                         if (decreaseRate < 1800) {
                             decreaseRate = 1800;
                         }
                     }
 
-                    uint256 decrease = (timePassed * _productionSpeedUp * decreaseRate) / 1 hours;
+                    uint256 decrease = (timePassed * uint256(_productionSpeedUp) * decreaseRate) / 1 hours;
                     if (decrease > newNumSpaceships - cap) {
                         decrease = newNumSpaceships - cap;
                     }
@@ -205,10 +205,13 @@ contract OuterSpaceFacetBase is
         } else {
             // TODO We are not using this branch, and in that branch there is no upkeep or overflow to consider
             if (planetUpdate.active) {
-                newNumSpaceships += (timePassed * _productionSpeedUp * uint256(production)) / 1 hours - upkeepRepaid;
+                newNumSpaceships +=
+                    (timePassed * uint256(_productionSpeedUp) * uint256(production)) /
+                    1 hours -
+                    upkeepRepaid;
             } else {
                 // NOTE no need to overflow here  as there is no production cap, so no incentive to regroup spaceships
-                uint256 decrease = (timePassed * _productionSpeedUp * 1800) / 1 hours;
+                uint256 decrease = (timePassed * uint256(_productionSpeedUp) * 1800) / 1 hours;
                 if (decrease > newNumSpaceships) {
                     decrease = newNumSpaceships;
                     newNumSpaceships = 0;
@@ -337,7 +340,8 @@ contract OuterSpaceFacetBase is
         // TODO ensure a player staking on a planet it previously exited work here
         planetUpdate.newOwner = player;
         if (defense != 0) {
-            (uint32 attackerLoss, ) = _computeFight(_acquireNumSpaceships, defense, 10000, _defense(planetUpdate.data));
+            (uint32 attackerLoss, ) =
+                _computeFight(uint256(_acquireNumSpaceships), defense, 10000, _defense(planetUpdate.data));
             // attacker alwasy win as defense (and stats.native) is restricted to 3500
             // (attackerLoss: 0, defenderLoss: 0) would mean defense was zero
             require(attackerLoss < _acquireNumSpaceships, "FAILED_CAPTURED");
