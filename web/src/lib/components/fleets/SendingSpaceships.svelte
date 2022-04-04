@@ -285,10 +285,17 @@
   }
 
   $: warning =
-    !gift && prediction && prediction.outcome.allies
+    !gift && $toPlanetState?.owner === $wallet.address?.toLowerCase()
+      ? 'You are atrempting to attack yourself! You need to select a different fleetOwner'
+      : !gift && prediction && prediction.outcome.allies
       ? 'You are attacking an ally!'
       : gift && prediction && !prediction.outcome.allies
       ? 'Your are giving spaceship to a potential enemy!'
+      : '';
+
+  $: warningNote =
+    !gift && $toPlanetState?.owner === $wallet.address?.toLowerCase()
+      ? '(will attack anyone if ownership changes)'
       : '';
 
   $: border_color = gift ? 'border-cyan-300' : 'border-red-500';
@@ -309,9 +316,9 @@
   }
 
   function useAttack() {
-    if (fleetOwner.toLowerCase() != $toPlanetState.owner.toLowerCase()) {
-      gift = false;
-    }
+    // if (fleetOwner.toLowerCase() != $toPlanetState.owner.toLowerCase()) {
+    gift = false;
+    // }
   }
 </script>
 
@@ -337,6 +344,7 @@
     {#if warning}
       <div class="text-center text-yellow-600">
         {warning}
+        {#if warningNote}<span class="text-xs">{warningNote}</span>{/if}
       </div>
     {/if}
     <div class="text-center">
