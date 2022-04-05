@@ -3,14 +3,18 @@ import 'dotenv/config';
 import {TheGraph} from './utils/thegraph';
 const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
-const planetsStrings = ['-49,-43', '-9,80', '-120,-11', '-2,67', '-46,51', '-21,74', '-6,-27'];
+const gnosisPlanets = ['-49,-43', '-9,80', '-120,-11', '-2,67', '-46,51', '-21,74', '-6,-27'];
+const poktPlanets = ['-127,116', '-98,44', '-140,128', '-137,58', '-66,117', '54,58', '-111,-77'];
+const planetsStrings = gnosisPlanets.concat(poktPlanets);
 
 const planets = planetsStrings.map((v) => {
   const splitted = v.split(',');
   return xyToLocation(parseInt(splitted[0]), parseInt(splitted[1]));
 });
 
-console.log({planets});
+console.log({
+  planets: planets.map((v) => `${locationToXY(v).x}, ${locationToXY(v).y}`),
+});
 
 const queryString = `
 query($planets: [ID!]! $blockNumber: Int!) {
@@ -35,7 +39,7 @@ query($planets: [ID!]! $blockNumber: Int!) {
 
 async function main() {
   const result = await theGraph.query(queryString, {
-    variables: {planets: planets, blockNumber: 21367725}, // TODO blockNumber
+    variables: {planets: planets, blockNumber: 21465547}, // TODO blockNumber
   });
   const data = result[0] as {
     planetExitEvents: {
@@ -59,12 +63,18 @@ async function main() {
 
   const exited = exittedComplete.concat(exitingDone);
 
-  const winners: {[id: string]: number} = {};
+  const winners: {[id: string]: {planets: string[]; amount: number}} = {};
   const planetsCounted: {[id: string]: boolean} = {};
   for (const planetExited of exited) {
     if (!planetsCounted[planetExited.planet.id]) {
-      winners[planetExited.owner.id] = winners[planetExited.owner.id] || 0;
-      winners[planetExited.owner.id] += 100;
+      winners[planetExited.owner.id] = winners[planetExited.owner.id] || {
+        planets: [],
+        amount: 0,
+      };
+      winners[planetExited.owner.id].amount += 100;
+      winners[planetExited.owner.id].planets.push(
+        `${locationToXY(planetExited.planet.id).x},${locationToXY(planetExited.planet.id).y}`
+      );
       planetsCounted[planetExited.planet.id] = true;
     }
   }
@@ -93,7 +103,7 @@ async function main() {
 
   for (const loc of planets) {
     if (!planetsCounted[loc]) {
-      console.log(`not counted: ${locationToXY(loc)}`);
+      console.log(`not counted: ${locationToXY(loc).x}, ${locationToXY(loc).y}`);
     }
   }
 }
