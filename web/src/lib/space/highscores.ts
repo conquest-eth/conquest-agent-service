@@ -58,7 +58,7 @@ class HighscoresStore extends BaseStoreWithData<Highscores, Highscore[]> {
     // id_not_in: ["0x61c461ecc993aadeb7e4b47e96d1b8cc37314b20", "0xe53cd71271acadbeb0f64d9c8c62bbddc8ca9e66"]
     const query = `
 query($first: Int! $lastId: ID!) {
-  owners(first: $first where: {
+  owners(first: $first block: {number: 21538868} where: {
     totalStaked_gt: 0
     tokenGiven_gt: 0
     id_gt: $lastId
