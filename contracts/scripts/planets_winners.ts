@@ -1,5 +1,6 @@
 import {locationToXY, xyToLocation} from 'conquest-eth-common';
 import 'dotenv/config';
+import {deployments} from 'hardhat';
 import {TheGraph} from './utils/thegraph';
 const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
@@ -46,6 +47,9 @@ query($planets: [ID!]! $blockNumber: Int!) {
 `;
 
 async function main() {
+  const rewardsAlreadyGiven: {[token: string]: {[address: string]: {given: {tx: string; planets: string[]}[]}}} =
+    JSON.parse(await deployments.readDotFile('.planets_rewards.json'));
+
   const result = await theGraph.query(queryString, {
     variables: {planets: planets, blockNumber: 21538868}, // TODO blockNumber
   });
@@ -81,23 +85,62 @@ async function main() {
         wchi: 0,
       };
       const planetString = `${locationToXY(planetExited.planet.id).x},${locationToXY(planetExited.planet.id).y}`;
+
+      let token: 'wchi' | 'xdai' = 'xdai';
+      let amount = 100;
       if (xayaPlanets.indexOf(planetString) !== -1) {
-        winners[planetExited.owner.id].wchi += 375;
-      } else {
-        winners[planetExited.owner.id].xdai += 100;
+        token = 'wchi';
+        amount = 375;
       }
 
-      winners[planetExited.owner.id].planets.push(planetString);
+      let alreadyCounted = false;
+      if (rewardsAlreadyGiven[token] && rewardsAlreadyGiven[token][planetExited.owner.id]) {
+        for (const givenElem of rewardsAlreadyGiven[token][planetExited.owner.id].given) {
+          if (givenElem.planets.indexOf(planetString) !== -1) {
+            alreadyCounted = true;
+          }
+        }
+      }
+
+      if (!alreadyCounted) {
+        winners[planetExited.owner.id][token] += amount;
+        winners[planetExited.owner.id].planets.push(planetString);
+      }
       planetsCounted[planetExited.planet.id] = true;
     }
   }
 
   for (const planetHeld of held) {
-    // if (!planetsCounted[planetHeld.id]) {
-    //   winners[planetHeld.owner.id] = winners[planetHeld.owner.id] || 0;
-    //   winners[planetHeld.owner.id] += 100;
-    //   planetsCounted[planetHeld.id] = true;
-    // }
+    if (!planetsCounted[planetHeld.id]) {
+      winners[planetHeld.owner.id] = winners[planetHeld.owner.id] || {
+        planets: [],
+        xdai: 0,
+        wchi: 0,
+      };
+      const planetString = `${locationToXY(planetHeld.id).x},${locationToXY(planetHeld.id).y}`;
+
+      let token: 'wchi' | 'xdai' = 'xdai';
+      let amount = 100;
+      if (xayaPlanets.indexOf(planetString) !== -1) {
+        token = 'wchi';
+        amount = 375;
+      }
+
+      let alreadyCounted = false;
+      if (rewardsAlreadyGiven[token] && rewardsAlreadyGiven[token][planetHeld.owner.id]) {
+        for (const givenElem of rewardsAlreadyGiven[token][planetHeld.owner.id].given) {
+          if (givenElem.planets.indexOf(planetString) !== -1) {
+            alreadyCounted = true;
+          }
+        }
+      }
+
+      if (!alreadyCounted) {
+        winners[planetHeld.owner.id][token] += amount;
+        winners[planetHeld.owner.id].planets.push(planetString);
+      }
+      planetsCounted[planetHeld.id] = true;
+    }
   }
 
   console.log({

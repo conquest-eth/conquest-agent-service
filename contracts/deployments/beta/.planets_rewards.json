@@ -1,5 +1,5 @@
 {
-  "gnosis": {
+  "xdai": {
     "0xe0cd518a1c9e76a380fda3a8b5c027c076d6d472": {
       "given": [
         {
@@ -35,7 +35,7 @@
         }
       ]
     },
-    "0xCfedD5b3aae8a2C0eB6cD94d547d971092C95029": {
+    "0xcfedd5b3aae8a2c0eb6cd94d547d971092c95029": {
       "given": [
         {
           "tx": "0xbaeee79476a918f22a5fe6c33132381cda481edd93ab5cfaa42837b950c48619",

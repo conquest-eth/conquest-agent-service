@@ -2,13 +2,14 @@ import 'dotenv/config';
 import {TheGraph} from './utils/thegraph';
 import {BigNumber} from '@ethersproject/bignumber';
 import fs from 'fs';
+import {deployments} from 'hardhat';
 
 const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
 // query($blockNumber: Int! $first: Int! $lastId: ID! $id: ID!) {
 const queryString = `
 query($first: Int! $lastId: ID!) {
-  owners(first: $first block: {number:4830319} where: {
+  owners(first: $first block: {number:21538868} where: {
     totalStaked_gt: 0
     id_gt: $lastId
   }) {
@@ -56,7 +57,7 @@ async function main() {
   console.log(top18.map((v) => v.id));
 
   const winnersWithReward: {[id: string]: number} = {};
-  const tokenDistribution = [500, 200, 100, 50, 25, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 5];
+  const tokenDistribution = [1100, 550, 300, 125, 70, 65, 60, 55, 50, 45, 40, 35, 30, 25, 20, 15, 10, 5];
   for (let i = 0; i < top18.length; i++) {
     winnersWithReward[top18[i].id] = tokenDistribution[i];
   }
@@ -70,7 +71,7 @@ async function main() {
     numWCHI?: number;
   }[] = [];
   try {
-    winnersArray = JSON.parse(fs.readFileSync('winners.json').toString());
+    winnersArray = JSON.parse(await deployments.readDotFile('.winners.json'));
   } catch (e) {}
   for (const winner of Object.keys(winnersWithReward)) {
     const found = winnersArray.findIndex((v) => v.address.toLowerCase() === winner);
@@ -83,7 +84,7 @@ async function main() {
       });
     }
   }
-  fs.writeFileSync('winners.json', JSON.stringify(winnersArray, null, 2));
+  await deployments.saveDotFile('.winners.json', JSON.stringify(winnersArray, null, 2));
 }
 
 main();
