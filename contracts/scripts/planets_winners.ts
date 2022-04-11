@@ -3,9 +3,17 @@ import 'dotenv/config';
 import {TheGraph} from './utils/thegraph';
 const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
+const args = process.argv.slice(2);
+
+const all = args[0] === 'all';
+
 const gnosisPlanets = ['-49,-43', '-9,80', '-120,-11', '-2,67', '-46,51', '-21,74', '-6,-27'];
 const poktPlanets = ['-127,116', '-98,44', '-140,128', '-137,58', '-66,117', '54,58', '-111,-77'];
-const planetsStrings = gnosisPlanets.concat(poktPlanets);
+const xayaPlanets = ['-86,53', '42,32', '7,35', '-123,6', '-49,-67', '-19,46', '-93,77', '-33,69'];
+let planetsStrings = gnosisPlanets.concat(poktPlanets);
+if (all) {
+  planetsStrings = planetsStrings.concat(xayaPlanets);
+}
 
 const planets = planetsStrings.map((v) => {
   const splitted = v.split(',');
@@ -39,7 +47,7 @@ query($planets: [ID!]! $blockNumber: Int!) {
 
 async function main() {
   const result = await theGraph.query(queryString, {
-    variables: {planets: planets, blockNumber: 21465547}, // TODO blockNumber
+    variables: {planets: planets, blockNumber: 21538868}, // TODO blockNumber
   });
   const data = result[0] as {
     planetExitEvents: {
@@ -63,18 +71,23 @@ async function main() {
 
   const exited = exittedComplete.concat(exitingDone);
 
-  const winners: {[id: string]: {planets: string[]; amount: number}} = {};
+  const winners: {[id: string]: {planets: string[]; xdai: number; wchi: number}} = {};
   const planetsCounted: {[id: string]: boolean} = {};
   for (const planetExited of exited) {
     if (!planetsCounted[planetExited.planet.id]) {
       winners[planetExited.owner.id] = winners[planetExited.owner.id] || {
         planets: [],
-        amount: 0,
+        xdai: 0,
+        wchi: 0,
       };
-      winners[planetExited.owner.id].amount += 100;
-      winners[planetExited.owner.id].planets.push(
-        `${locationToXY(planetExited.planet.id).x},${locationToXY(planetExited.planet.id).y}`
-      );
+      const planetString = `${locationToXY(planetExited.planet.id).x},${locationToXY(planetExited.planet.id).y}`;
+      if (xayaPlanets.indexOf(planetString) !== -1) {
+        winners[planetExited.owner.id].wchi += 375;
+      } else {
+        winners[planetExited.owner.id].xdai += 100;
+      }
+
+      winners[planetExited.owner.id].planets.push(planetString);
       planetsCounted[planetExited.planet.id] = true;
     }
   }
