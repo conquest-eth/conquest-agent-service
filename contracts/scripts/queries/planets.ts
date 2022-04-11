@@ -21,10 +21,9 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   //     id: string;
   //   }[] = await theGraph.query(queryString, {field: 'planets', variables: {blockNumber: 6074693}});
 
-  // query($blockNumber: Int! $first: Int! $lastId: ID! $id: ID!) {
   const queryString = `
-query($first: Int! $lastId: ID!) {
-    planets(first: $first where: {
+query($blockNumber: Int! $first: Int! $lastId: ID!) {
+    planets(first: $first block: {number: $blockNumber} where: {
       id_gt: $lastId
     }) {
       id
@@ -34,7 +33,12 @@ query($first: Int! $lastId: ID!) {
 
   const planets: {
     id: string;
-  }[] = await theGraph.query(queryString, {field: 'planets'});
+  }[] = await theGraph.query(queryString, {
+    field: 'planets',
+    variables: {
+      blockNumber: 21538868,
+    },
+  });
 
   await deployments.saveDotFile('.planets.json', JSON.stringify(planets, null, 2));
   console.log({numPlanets: planets.length});

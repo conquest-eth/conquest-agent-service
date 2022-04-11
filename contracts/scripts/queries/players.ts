@@ -7,10 +7,9 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {deployments} = hre;
   const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
-  // query($blockNumber: Int! $first: Int! $lastId: ID! $id: ID!) {
   const queryString = `
-query($first: Int! $lastId: ID!) {
-    owners(first: $first where: {
+query($blockNumber: Int! $first: Int! $lastId: ID!) {
+    owners(first: $first block: {number: $blockNumber} where: {
       totalStaked_gt: 0
       id_gt: $lastId
     }) {
@@ -23,7 +22,12 @@ query($first: Int! $lastId: ID!) {
 
   const players: {
     id: string;
-  }[] = await theGraph.query(queryString, {field: 'owners'});
+  }[] = await theGraph.query(queryString, {
+    field: 'owners',
+    variables: {
+      blockNumber: 21538868,
+    },
+  });
 
   await deployments.saveDotFile('.players.json', JSON.stringify(players, null, 2));
   console.log({numPlayers: players.length});
