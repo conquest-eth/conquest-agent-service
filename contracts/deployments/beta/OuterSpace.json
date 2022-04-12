@@ -1836,7 +1836,7 @@
       }
     ]
   ],
-  "numDeployments": 2,
+  "numDeployments": 3,
   "linkedData": {
     "genesisHash": "0xf69ea25ce5e4aa509188e7ece284702358d8df5e656a9a3c8509506343f9faa8",
     "resolveWindow": 43200,
@@ -1882,7 +1882,7 @@
       ]
     },
     {
-      "facetAddress": "0xC6821cf8F3a07d417Dbcd6B9DEe3D1d4006D368e",
+      "facetAddress": "0xe6F001A2e718A8eacE4be1B54c11fE608CEF284d",
       "functionSelectors": [
         "0x34efcb8e",
         "0xd522989e",

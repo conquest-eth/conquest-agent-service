@@ -284,15 +284,15 @@
             <div class="w-20">Exit</div>
           </PanelButton>
 
-          <!-- <PanelButton
-          label="Transfer"
-          color="text-yellow-400"
-          borderColor="border-yellow-400"
-          class="m-2"
-          on:click={transferPlanet}
-        >
-          <div class="w-20">Transfer</div>
-        </PanelButton> -->
+          <PanelButton
+            label="Transfer"
+            color="text-yellow-400"
+            borderColor="border-yellow-400"
+            class="m-2"
+            on:click={transferPlanet}
+          >
+            <div class="w-20">Transfer</div>
+          </PanelButton>
         {/if}
       {:else}
         {#if $planetState.active}
