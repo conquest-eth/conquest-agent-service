@@ -51,6 +51,46 @@
           ]
         }
       ]
+    },
+    "0x7a7029bc89182f61a15de8ee7ecbf14368b76916": {
+      "given": [
+        {
+          "tx": "0xd61f7eebd65f18b49a5e1b4fe6f4b9149b22f0bae1001cc83b0415b8130ed446",
+          "planets": [
+            "54,58"
+          ]
+        }
+      ]
+    },
+    "0xf8b109af18cfa614bef1c2899e522d77b3c64c14": {
+      "given": [
+        {
+          "tx": "",
+          "planets": [
+            "-49,-43"
+          ]
+        }
+      ]
+    },
+    "0xa93182ac1617383caad621d34c63311e85a74eb6": {
+      "given": [
+        {
+          "tx": "",
+          "planets": [
+            "-66,117"
+          ]
+        }
+      ]
+    },
+    "0x38daea6f17e4308b0da9647db9ca6d84a3a7e195": {
+      "given": [
+        {
+          "tx": "",
+          "planets": [
+            "-6,-27"
+          ]
+        }
+      ]
     }
   }
 }
