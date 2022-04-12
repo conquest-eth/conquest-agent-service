@@ -65,7 +65,7 @@
     "0xf8b109af18cfa614bef1c2899e522d77b3c64c14": {
       "given": [
         {
-          "tx": "",
+          "tx": "0xbebfb224a716e74bfb788d45b9748181f20d60c9c951df5574d75b5584b52b7d",
           "planets": [
             "-49,-43"
           ]
@@ -75,7 +75,7 @@
     "0xa93182ac1617383caad621d34c63311e85a74eb6": {
       "given": [
         {
-          "tx": "",
+          "tx": "0x3edd319c16ef409b1fdf44f63235ff2d1111a76b372376a5ed75b2a86accd790",
           "planets": [
             "-66,117"
           ]
@@ -85,7 +85,7 @@
     "0x38daea6f17e4308b0da9647db9ca6d84a3a7e195": {
       "given": [
         {
-          "tx": "",
+          "tx": "0x96ebe9d893e595373d5c20a31726dafdaf1eb17d2455dbfef62d7fd38380818d",
           "planets": [
             "-6,-27"
           ]
