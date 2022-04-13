@@ -150,31 +150,28 @@ contract OuterSpaceFacetBase is
             uint256 cap = planetUpdate.active ? capWhenActive : 0;
 
             if (newNumSpaceships > cap) {
-                // NOTE do not decrease while exiting
-                if (planetUpdate.newExitStartTime == 0) {
-                    uint256 decreaseRate = 1800;
-                    if (planetUpdate.overflow > 0) {
-                        decreaseRate = (uint256(planetUpdate.overflow) * 1800) / capWhenActive;
-                        if (decreaseRate < 1800) {
-                            decreaseRate = 1800;
-                        }
+                uint256 decreaseRate = 1800;
+                if (planetUpdate.overflow > 0) {
+                    decreaseRate = (uint256(planetUpdate.overflow) * 1800) / capWhenActive;
+                    if (decreaseRate < 1800) {
+                        decreaseRate = 1800;
                     }
+                }
 
-                    uint256 decrease = (timePassed * uint256(_productionSpeedUp) * decreaseRate) / 1 hours;
-                    if (decrease > newNumSpaceships - cap) {
-                        decrease = newNumSpaceships - cap;
+                uint256 decrease = (timePassed * uint256(_productionSpeedUp) * decreaseRate) / 1 hours;
+                if (decrease > newNumSpaceships - cap) {
+                    decrease = newNumSpaceships - cap;
+                }
+                if (decrease > newNumSpaceships) {
+                    if (planetUpdate.active) {
+                        extraUpkeepPaid = produce - upkeepRepaid + newNumSpaceships;
                     }
-                    if (decrease > newNumSpaceships) {
-                        if (planetUpdate.active) {
-                            extraUpkeepPaid = produce - upkeepRepaid + newNumSpaceships;
-                        }
-                        newNumSpaceships = 0;
-                    } else {
-                        if (planetUpdate.active) {
-                            extraUpkeepPaid = produce - upkeepRepaid + decrease;
-                        }
-                        newNumSpaceships -= decrease;
+                    newNumSpaceships = 0;
+                } else {
+                    if (planetUpdate.active) {
+                        extraUpkeepPaid = produce - upkeepRepaid + decrease;
                     }
+                    newNumSpaceships -= decrease;
                 }
             } else {
                 if (planetUpdate.active) {
