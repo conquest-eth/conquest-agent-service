@@ -93,6 +93,7 @@ contract OuterSpaceFacetBase is
         address owner;
         address newOwner; // modified
         bytes32 data;
+        uint24 futureExtraProduction;
     }
 
     function _createPlanetUpdateState(Planet memory planet, uint256 location)
@@ -576,7 +577,8 @@ contract OuterSpaceFacetBase is
         _fleets[fleetId] = Fleet({
             launchTime: uint40(block.timestamp),
             owner: launch.fleetOwner,
-            quantity: launch.quantity
+            quantity: launch.quantity,
+            futureExtraProduction: planetUpdate.futureExtraProduction
         });
 
         emit FleetSent(
@@ -598,14 +600,21 @@ contract OuterSpaceFacetBase is
             if (planetUpdate.active) {
                 // NOTE we do not update travelingUpkeep on Inactive planets
                 //  these get reset on staking
+
                 uint16 production = _production(planetUpdate.data);
                 uint256 cap = _capWhenActive(production);
-
-                int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) + int256(uint256(quantity));
-                if (newTravelingUpkeep > int256(cap)) {
-                    newTravelingUpkeep = int256(cap);
+                if (planetUpdate.numSpaceships < cap) {
+                    uint256 futureExtraProduction = cap - planetUpdate.numSpaceships;
+                    if (futureExtraProduction > quantity) {
+                        futureExtraProduction = quantity;
+                    }
+                    int256 newTravelingUpkeep = int256(planetUpdate.travelingUpkeep) + int256(futureExtraProduction);
+                    if (newTravelingUpkeep > int256(cap)) {
+                        newTravelingUpkeep = int256(cap);
+                    }
+                    planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
+                    planetUpdate.futureExtraProduction = uint24(futureExtraProduction); // cap is always smaller than uint24
                 }
-                planetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
             }
 
             if (planetUpdate.overflow > quantity) {
@@ -654,6 +663,7 @@ contract OuterSpaceFacetBase is
         uint32 accumulatedDefenseAdded;
         uint32 accumulatedAttackAdded;
         uint16 attackPower;
+        uint24 futureExtraProduction;
     }
 
     function _resolveFleet(uint256 fleetId, FleetResolution calldata resolution) internal {
@@ -1032,7 +1042,16 @@ contract OuterSpaceFacetBase is
             uint16 production = _production(fromPlanetUpdate.data);
             uint256 capWhenActive = _capWhenActive(production);
 
-            int256 newTravelingUpkeep = int256(fromPlanetUpdate.travelingUpkeep) - int256(int32(rState.attackerLoss));
+            uint256 refund = rState.futureExtraProduction;
+            uint256 timePassed = block.timestamp - rState.fleetLaunchTime;
+            uint256 produce = (timePassed * uint256(_productionSpeedUp) * uint256(production)) / 1 hours;
+            if (produce > refund) {
+                refund = 0;
+            } else {
+                refund -= produce;
+            }
+
+            int256 newTravelingUpkeep = int256(fromPlanetUpdate.travelingUpkeep) - int256(refund);
             if (newTravelingUpkeep < -int256(capWhenActive)) {
                 newTravelingUpkeep = -int256(capWhenActive);
             }
@@ -1040,7 +1059,7 @@ contract OuterSpaceFacetBase is
 
             _setPlanet(fromPlanet, fromPlanetUpdate, false);
 
-            emit TravelingUpkeepReductionFromDestruction(
+            emit TravelingUpkeepRefund(
                 location,
                 fleetID,
                 fromPlanetUpdate.numSpaceships,
@@ -1073,6 +1092,7 @@ contract OuterSpaceFacetBase is
         rState.fleetLaunchTime = fleet.launchTime;
         rState.originalQuantity = fleet.quantity;
         rState.fleetQuantity = fleet.quantity;
+        rState.futureExtraProduction = fleet.futureExtraProduction;
         rState.fromData = _planetData(from);
         rState.attackPower = _attack(rState.fromData);
     }
@@ -1215,7 +1235,6 @@ contract OuterSpaceFacetBase is
             rState.victory = true;
         } else {
             _computeAttack(rState, toPlanetUpdate, numDefense);
-            _computeTravelingUpkeepReductionAfterAttack(rState, toPlanetUpdate, production);
         }
     }
 
@@ -1385,25 +1404,6 @@ contract OuterSpaceFacetBase is
             attackerLoss = uint32(defenseDamage);
             defenderLoss = uint32(numDefense); // all defense destroyed
         }
-    }
-
-    function _computeTravelingUpkeepReductionAfterAttack(
-        ResolutionState memory rState,
-        PlanetUpdateState memory toPlanetUpdate,
-        uint16 production
-    ) internal view {
-        // allow the attacker to pay for upkeep as part of the attack
-        // only get to keep the upkeep that was there as a result of spaceships sent away
-
-        uint256 capWhenActive = _capWhenActive(production);
-
-        int256 totalLoss =
-            int256(uint256(rState.defenderLoss) + uint256(rState.inFlightPlanetLoss) + uint256(rState.attackerLoss));
-        int256 newTravelingUpkeep = int256(toPlanetUpdate.travelingUpkeep) - totalLoss;
-        if (newTravelingUpkeep < -int256(capWhenActive)) {
-            newTravelingUpkeep = -int256(capWhenActive);
-        }
-        toPlanetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
     }
 
     function _recordInOrbitLossAfterAttack(ResolutionState memory rState, PlanetUpdateState memory toPlanetUpdate)

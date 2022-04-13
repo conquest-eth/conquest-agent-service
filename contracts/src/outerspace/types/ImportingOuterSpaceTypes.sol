@@ -47,6 +47,7 @@ interface ImportingOuterSpaceTypes {
         address owner;
         uint40 launchTime; // ~ 34865 years, should be enough :)
         uint32 quantity; // TODO? first bit = done? to keep quantity value on-chain post resolution, actually not needed, can be given in the hash
+        uint24 futureExtraProduction;
         // we got 24bit more to store if needed
         // operator ? // signer ?
     }

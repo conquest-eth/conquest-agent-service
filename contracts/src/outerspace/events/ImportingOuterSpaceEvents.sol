@@ -46,7 +46,7 @@ interface ImportingOuterSpaceEvents {
         ArrivalData data
     );
 
-    event TravelingUpkeepReductionFromDestruction(
+    event TravelingUpkeepRefund(
         uint256 indexed origin,
         uint256 indexed fleet,
         uint32 newNumspaceships,
