@@ -37,7 +37,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const upkeepProductionDecreaseRatePer10000th = 5000;
   const fleetSizeFactor6 = 500000;
   const initialSpaceExpansion = 12;
-  const expansionDelta = 4;
+  const expansionDelta = 6;
   const giftTaxPer10000 = 2000;
 
   // use a command to increase time in 1337
@@ -57,6 +57,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     productionSpeedUp = 180;
     frontrunningDelay /= 180;
     resolveWindow /= 180;
+    // productionCapAsDuration /= 180;
+  }
+
+  if (networkName === 'defcon') {
+    // TODO remove when updating quick to a new contract
+    genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65112';
+    timePerDistance = Math.floor(timePerDistance / 5);
+    exitDuration = Math.floor(exitDuration / 5);
+    productionSpeedUp = 5;
+    frontrunningDelay = Math.floor(frontrunningDelay / 5);
+    resolveWindow = Math.floor(resolveWindow / 5);
     // productionCapAsDuration /= 180;
   }
 
