@@ -1235,6 +1235,7 @@ contract OuterSpaceFacetBase is
             rState.victory = true;
         } else {
             _computeAttack(rState, toPlanetUpdate, numDefense);
+            _computeTravelingUpkeepReductionFromDefenseLoss(rState, toPlanetUpdate, production);
         }
     }
 
@@ -1404,6 +1405,24 @@ contract OuterSpaceFacetBase is
             attackerLoss = uint32(defenseDamage);
             defenderLoss = uint32(numDefense); // all defense destroyed
         }
+    }
+
+    function _computeTravelingUpkeepReductionFromDefenseLoss(
+        ResolutionState memory rState,
+        PlanetUpdateState memory toPlanetUpdate,
+        uint16 production
+    ) internal view {
+        // allow the attacker to pay for upkeep as part of the attack
+        // only get to keep the upkeep that was there as a result of spaceships sent away
+
+        uint256 capWhenActive = _capWhenActive(production);
+
+        int256 totalDefenseLoss = int256(uint256(rState.defenderLoss) + uint256(rState.inFlightPlanetLoss));
+        int256 newTravelingUpkeep = int256(toPlanetUpdate.travelingUpkeep) - totalDefenseLoss;
+        if (newTravelingUpkeep < -int256(capWhenActive)) {
+            newTravelingUpkeep = -int256(capWhenActive);
+        }
+        toPlanetUpdate.travelingUpkeep = int40(newTravelingUpkeep);
     }
 
     function _recordInOrbitLossAfterAttack(ResolutionState memory rState, PlanetUpdateState memory toPlanetUpdate)
