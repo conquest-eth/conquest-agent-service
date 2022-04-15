@@ -1,4 +1,86 @@
 {
+  "wchi": {
+    "0xe2a00cc90358f148c8fd3e052cf86a4be22a4eac": {
+      "given": [
+        {
+          "tx": "0x7fe7cc22e5bc2e20e430866c38a507216ed20e27079eee59235adf99d314d6f3",
+          "planets": [
+            "-123,6"
+          ]
+        }
+      ]
+    },
+    "0x7a7029bc89182f61a15de8ee7ecbf14368b76916": {
+      "given": [
+        {
+          "tx": "0x25ed17f91f9ad961f56a0826e8f635bac81f5410ac0305b2ba9ed2c1abc2e23b",
+          "planets": [
+            "7,35"
+          ]
+        }
+      ]
+    },
+    "0xffc52c6dbcd6b3e81c12285492b8c8a72c87b693": {
+      "given": [
+        {
+          "tx": "0xb8e348fd9e1e69c2e2fce4f25ba9dd7659db1ae669c16b1c10fe0bdb07005222",
+          "planets": [
+            "42,32"
+          ]
+        }
+      ]
+    },
+    "0x4047f55ac6c9da5938e6b662926d04c0dbcc5343": {
+      "given": [
+        {
+          "tx": "0x426967606b031fc05d0df9245123ed25ad5d0f1cde47dbd8f0224b4d9f4cfdf2",
+          "planets": [
+            "-33,69"
+          ]
+        }
+      ]
+    },
+    "0x007109f0819756f95992a8fddc8809ec4ad0a287": {
+      "given": [
+        {
+          "tx": "0xf105ca9daf980ec4fccc1664fcf9c00565d41697a923429361d15958826c6929",
+          "planets": [
+            "-49,-67"
+          ]
+        }
+      ]
+    },
+    "0x60d38778adbbeeac88f741b833cbb9877228eea0": {
+      "given": [
+        {
+          "tx": "0x7c7816a1eef31bbc4a87c8385584b228452bf14b006ec8cbd78b30d9cb42114e",
+          "planets": [
+            "-93,77"
+          ]
+        }
+      ]
+    },
+    "0xf162f8e62e4d8543a70af017557d18a859848452": {
+      "given": [
+        {
+          "tx": "0x9e0393771f2ff8fa80f62dbf9c98cd2a3531181323c5e37a23ec4d45588a05d3",
+          "planets": [
+            "-86,53"
+          ]
+        }
+      ]
+    },
+    "0x96595d81831d1b92002bb0b60bb8cc9596f3488a": {
+      "given": [
+        {
+          "tx": "0x81a884ea99b339fe1ed73b18c72e2609e300702946ecf4cbc3c1f642ba50a3a7",
+          "planets": [
+            "-19,46"
+          ]
+        }
+      ]
+    }
+  },
   "xdai": {
     "0xe0cd518a1c9e76a380fda3a8b5c027c076d6d472": {
       "given": [
