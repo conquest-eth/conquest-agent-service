@@ -5,6 +5,8 @@
   import Button from '$lib/components/generic/PanelButton.svelte';
   import PlayCoin from '../utils/PlayCoin.svelte';
   import {spaceInfo} from '$lib/space/spaceInfo';
+  import NavButton from '../navigation/NavButton.svelte';
+  import {url} from '$lib/utils/url';
 
   export let event: ExitCompleteEvent;
   export let okLabel: string = 'OK';
@@ -29,6 +31,8 @@
       '1000000000000000000'
     )}
     <PlayCoin class="h-6 w-6" />
+
+    <NavButton label="withdrawals" href={url('withdrawals/')}>Withdraw</NavButton>
   {/if}
 
   <div class="text-center">

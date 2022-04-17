@@ -4,6 +4,7 @@ import {BaseStoreWithData} from '$lib/utils/stores/base';
 import {account} from '$lib/account/account';
 import {BigNumber} from '@ethersproject/bignumber';
 import {spaceInfo} from '$lib/space/spaceInfo';
+import {contractsInfos} from '$lib/blockchain/contractsInfos';
 
 type Data = {
   txHash?: string;
@@ -11,7 +12,7 @@ type Data = {
 };
 export type MintFlow = {
   type: 'MINT';
-  step: 'IDLE' | 'CONNECTING' | 'WAITING_CONFIRMATION' | 'CREATING_TX' | 'WAITING_TX' | 'SUCCESS';
+  step: 'IDLE' | 'CONNECTING' | 'WAITING_CONFIRMATION' | 'CREATING_TX' | 'WAITING_TX' | 'TX_SUBMITTED' | 'SUCCESS';
   cancelingConfirmation?: boolean;
   data?: Data;
   error?: {message?: string};
@@ -41,10 +42,15 @@ class MintFlowStore extends BaseStoreWithData<MintFlow, Data> {
     }
 
     const amount = BigNumber.from(numTokenUnit * 10).mul('100000000000000000');
+    const nativeTokenAmount = amount
+      .mul('1000000000000000000')
+      .div(contractsInfos.contracts.PlayToken.linkedData.numTokensPerNativeTokenAt18Decimals);
 
     let gasEstimation: BigNumber;
     try {
-      gasEstimation = await wallet.contracts?.PlayToken.estimateGas.mint(wallet.address, amount, {value: amount}); // TODO ratio multiplier for underlying token
+      gasEstimation = await wallet.contracts?.PlayToken.estimateGas.mint(wallet.address, amount, {
+        value: nativeTokenAmount,
+      });
     } catch (e) {
       this.setPartial({
         step: 'WAITING_CONFIRMATION',
@@ -58,7 +64,7 @@ class MintFlowStore extends BaseStoreWithData<MintFlow, Data> {
     this.setPartial({step: 'WAITING_TX'});
     let tx: {hash: string; nonce?: number};
     try {
-      tx = await wallet.contracts?.PlayToken.mint(wallet.address, amount, {value: amount, gasLimit}); // TODO ratio multiplier for underlying token
+      tx = await wallet.contracts?.PlayToken.mint(wallet.address, amount, {value: nativeTokenAmount, gasLimit});
     } catch (e) {
       if (e.transactionHash) {
         tx = {hash: e.transactionHash};
@@ -86,7 +92,9 @@ class MintFlowStore extends BaseStoreWithData<MintFlow, Data> {
       }
     }
 
-    this.setData({txHash: tx.hash}, {step: 'SUCCESS'});
+    this.setData({txHash: tx.hash}, {step: 'TX_SUBMITTED'});
+    await wallet.provider.waitForTransaction(tx.hash);
+    this.setPartial({step: 'SUCCESS'});
   }
 
   async cancelCancelation(): Promise<void> {

@@ -6,7 +6,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deployer} = await hre.getNamedAccounts();
   const {deploy} = hre.deployments;
 
-  const numTokensPerNativeTokenAt18Decimals = parseEther('1');
+  // const chainId = await hre.getChainId();
+  const networkName = await hre.deployments.getNetworkName();
+  // TODO use network tags ?
+  const localTesting = networkName === 'hardhat' || networkName === 'localhost'; // chainId === '1337' || chainId === '31337';
+
+  let numTokensPerNativeTokenAt18Decimals = parseEther('1');
+
+  if (localTesting) {
+    numTokensPerNativeTokenAt18Decimals = parseEther('1000');
+  }
+
+  if (networkName === 'defcon') {
+    // TODO remove, use 1 ETH/XDAI
+    numTokensPerNativeTokenAt18Decimals = parseEther('1000');
+  }
+
   await deploy('PlayToken', {
     from: deployer,
     contract: 'PlayToken',

@@ -13,7 +13,7 @@
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
   import mintFlow from '$lib/flows/mint';
-  import {min} from 'bn.js';
+  import EmbeddedMintFlow from './EmbeddedMintFlow.svelte';
 
   $: coords = $claimFlow.data?.coords;
   $: planetInfo = coords ? spaceInfo.getPlanetInfo(coords.x, coords.y) : undefined;
@@ -28,53 +28,22 @@
   async function mint(numTokenUnit: number) {
     mintFlow.mint(numTokenUnit);
   }
+
+  let tokenAmountToMint = $mintFlow.data?.numTokenUnit;
+  $: if ($mintFlow.data?.numTokenUnit && !tokenAmountToMint) {
+    tokenAmountToMint = $mintFlow.data?.numTokenUnit;
+  }
+
+  // function onTokenAmountToMintChanged(event: Event) {
+  //   const value = parseInt(event.target.value);
+  //   if (!isNaN(value)) {
+  //     mintFlow.setAmount(value);
+  //   }
+  // }
 </script>
 
-{#if $mintFlow.step !== 'IDLE'}
-  {#if $mintFlow.error}
-    <Modal on:close={() => mintFlow.acknownledgeError()}>
-      <div class="text-center">
-        <h2>An error happenned For Planet Staking</h2>
-        <p class="text-red-500 mt-2 text-sm">{formatError($mintFlow.error)}</p>
-        <Button class="mt-5" label="Stake" on:click={() => mintFlow.acknownledgeError()}>Ok</Button>
-      </div>
-    </Modal>
-  {:else if $mintFlow.cancelingConfirmation}
-    <Modal
-      closeButton={true}
-      globalCloseButton={true}
-      on:close={() => mintFlow.cancelCancelation()}
-      on:confirm={() => mintFlow.cancel()}
-    >
-      <div class="text-center">
-        <p class="pb-4">Are you sure to cancel ?</p>
-        <p class="pb-4">(This will prevent the game to record your transaction, if you were to execute it afterward)</p>
-        <Button label="OK" on:click={() => mintFlow.cancel()}>Yes</Button>
-      </div>
-    </Modal>
-  {:else if $mintFlow.step === 'CONNECTING'}
-    <!---->
-  {:else if $mintFlow.step === 'CREATING_TX'}
-    <!-- {@debug $mintFlow} -->
-    <Modal>Preparing the Transaction...</Modal>
-  {:else if $mintFlow.step === 'WAITING_TX'}
-    <Modal
-      closeButton={true}
-      globalCloseButton={true}
-      closeOnOutsideClick={false}
-      on:close={() => mintFlow.cancel(true)}
-    >
-      Please Accept the Transaction...
-    </Modal>
-  {:else if $mintFlow.step === 'WAITING_CONFIRMATION'}
-    <Modal on:close={() => mintFlow.cancel()}>
-      <p class="text-center" />
-
-      <p class="text-center mt-3">
-        <Button label="OK" on:click={() => mintFlow.confirm()}>Confirm</Button>
-      </p>
-    </Modal>
-  {/if}
+{#if $mintFlow.step !== 'IDLE' && $mintFlow.step !== 'SUCCESS'}
+  <EmbeddedMintFlow />
 {:else if $claimFlow.error}
   <Modal on:close={() => claimFlow.acknownledgeError()}>
     <div class="text-center">
@@ -106,11 +75,14 @@
       You do not have any
       <PlayCoin class="inline w-4" />. You need
       {cost.toNumber() / 10000}
-      <PlayCoin class="inline w-4" />. You can mint some by depositing XDAI And you can always burn them then to get
-      back the XDAI. As long as you hold them or withdraw from the game.
-      <center class="m-5">
-        <Button label="mint" on:click={() => mint(5)}>Mint 5 <PlayCoin class="inline w-4" /></Button>
-      </center>
+      <PlayCoin class="inline w-4" />.
+      <p class="mt-4 text-yellow-600">
+        You can mint some by depositing XDAI And you can always burn them then to get back the XDAI. As long as you hold
+        them or withdraw from the game.
+        <center class="m-5">
+          <Button label="mint" on:click={() => mint(5)}>Mint 5 <PlayCoin class="inline w-4" /></Button>
+        </center>
+      </p>
     {:else if $myTokens.freePlayTokenBalance.lt(cost.mul('100000000000000')) && $myTokens.playTokenBalance.lt(cost.mul('100000000000000'))}
       Not enough
       <PlayCoin class="inline w-4" />. You need
@@ -127,6 +99,14 @@
           <PlayCoin class="inline w-4" free={true} /></span
         >
       {/if}
+
+      <p class="mt-4 text-yellow-600">
+        You can mint some by depositing XDAI And you can always burn them then to get back the XDAI. As long as you hold
+        them or withdraw from the game.
+        <center class="m-5">
+          <Button label="mint" on:click={() => mint(5)}>Mint 5 <PlayCoin class="inline w-4" /></Button>
+        </center>
+      </p>
     {:else}
       <div class="text-center">
         <h2>
