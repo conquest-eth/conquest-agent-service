@@ -91,11 +91,11 @@
       type = 'Stake';
       quantity = {
         type: 'Stake',
-        amount: origin.stats.stake,
+        amount: origin.stats.stake / 10000,
       };
       outcome = {
         winner: undefined,
-        stake: origin.stats.stake,
+        stake: origin.stats.stake / 10000,
         description: 'Planet is now active',
       };
       if (!walletAddress) {
@@ -110,12 +110,12 @@
       type = 'Exiting';
       quantity = {
         type: 'Stake',
-        amount: origin.stats.stake,
+        amount: origin.stats.stake / 10000,
       };
       const timePassedSinceExit = $time - event.exitTime;
       outcome = {
         winner: undefined,
-        stake: origin.stats.stake,
+        stake: origin.stats.stake / 10000,
         description: event.interupted
           ? 'Planet Exit was interrupted'
           : timePassedSinceExit > spaceInfo.exitDuration
@@ -206,7 +206,7 @@
       outcome = {
         captured: winner && winner !== event.destinationOwner.id,
         winner,
-        stake: destinationOwner && event.won ? destination.stats.stake : undefined,
+        stake: destinationOwner && event.won ? destination.stats.stake / 10000 : undefined,
         description,
       };
 

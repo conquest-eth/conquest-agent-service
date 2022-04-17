@@ -512,6 +512,13 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
           gasLimit,
         });
       } else {
+        // console.log(`sending `, {
+        //   fleetSender,
+        //   fleetOwner,
+        //   from,
+        //   quantity: fleetAmount,
+        //   toHash,
+        // });
         tx = await wallet.contracts?.OuterSpace.sendFor(
           {
             fleetSender,
@@ -532,6 +539,7 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         // });
       }
     } catch (e) {
+      // console.error(e);
       if (e.transactionHash) {
         tx = {hash: e.transactionHash};
         try {

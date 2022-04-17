@@ -8,7 +8,7 @@
   $: x = planetInfo.location.globalX - 48 / 2;
   $: y = planetInfo.location.globalY - 48 / 2;
 
-  $: multiplier = planetInfo.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
+  $: multiplier = planetInfo.stats.production / 3600;
   $: scale = 0.025 * multiplier;
 
   $: color = event.effect === 'neutral' ? 'blue' : event.effect === 'good' ? ' #10B981' : '#FDE047';

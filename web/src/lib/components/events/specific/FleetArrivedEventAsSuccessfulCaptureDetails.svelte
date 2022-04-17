@@ -176,7 +176,7 @@
           {/if}
           {#if event.planetActive}
             <p>
-              {destination.stats.stake}
+              {destination.stats.stake / 10000}
               <PlayCoin class="w-6 h-6 inline-block" /> captured
             </p>
           {/if}

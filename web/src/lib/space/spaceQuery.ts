@@ -37,6 +37,7 @@ export type PlanetQueryState = {
   id: string;
   owner: {id: string};
   numSpaceships: string;
+  flagTime: string;
   travelingUpkeep: string;
   overflow: string;
   lastUpdated: string;
@@ -49,6 +50,7 @@ export type PlanetContractState = {
   id: string;
   owner: string;
   numSpaceships: number;
+  flagTime: number;
   travelingUpkeep: number;
   overflow: number;
   lastUpdated: number;
@@ -61,7 +63,7 @@ export type SpaceQueryResult = {
   nullplanets: PlanetQueryState[]; // TODO remove: make owner == null => 0x00000
   otherplanets: PlanetQueryState[];
   myplanets?: PlanetQueryState[];
-  owner?: {id: string; tokenBalance: string; tokenToWithdraw: string};
+  owner?: {id: string; playTokenBalance: string; freePlayTokenBalance: string; tokenToWithdraw: string};
   space?: {minX: string; maxX: string; minY: string; maxY: string; address: string};
   chain?: {blockHash: string; blockNumber: string};
   fleetsArrivedFromYou?: FleetArrivedEvent[]; // TODO
@@ -74,7 +76,7 @@ export type SpaceQueryResult = {
 
 export type SpaceState = {
   invalid?: boolean;
-  player?: {id: string; tokenBalance: BigNumber; tokenToWithdraw: BigNumber};
+  player?: {id: string; playTokenBalance: BigNumber; freePlayTokenBalance: BigNumber; tokenToWithdraw: BigNumber};
   planets: PlanetContractState[];
   loading: boolean;
   space?: {x1: number; x2: number; y1: number; y2: number; address: string};
@@ -104,6 +106,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
   nullplanets: planets(first: 1000 where: {owner: null}) {
     id
     numSpaceships
+    flagTime
     travelingUpkeep
     overflow
     lastUpdated
@@ -117,6 +120,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       id
     }
     numSpaceships
+    flagTime
     travelingUpkeep
     overflow
     lastUpdated
@@ -138,7 +142,8 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
   ?$owner?
   owner(id: $owner) {
     id
-    tokenBalance
+    playTokenBalance
+    freePlayTokenBalance
     tokenToWithdraw
   }
   myplanets: planets(first: 1000 where: {owner: $owner}) {
@@ -147,6 +152,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       id
     }
     numSpaceships
+    flagTime
     travelingUpkeep
     overflow
     lastUpdated
@@ -359,13 +365,15 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
         player: data.owner
           ? {
               id: data.owner.id,
-              tokenBalance: BigNumber.from(data.owner.tokenBalance),
+              playTokenBalance: BigNumber.from(data.owner.playTokenBalance),
+              freePlayTokenBalance: BigNumber.from(data.owner.freePlayTokenBalance),
               tokenToWithdraw: BigNumber.from(data.owner.tokenToWithdraw),
             }
           : this.queryStore.runtimeVariables.owner
           ? {
               id: this.queryStore.runtimeVariables.owner,
-              tokenBalance: BigNumber.from(0),
+              playTokenBalance: BigNumber.from(0),
+              freePlayTokenBalance: BigNumber.from(0),
               tokenToWithdraw: BigNumber.from(0),
             }
           : undefined,
@@ -401,13 +409,15 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       player: data.owner
         ? {
             id: data.owner.id,
-            tokenBalance: BigNumber.from(data.owner.tokenBalance),
+            playTokenBalance: BigNumber.from(data.owner.playTokenBalance),
+            freePlayTokenBalance: BigNumber.from(data.owner.freePlayTokenBalance),
             tokenToWithdraw: BigNumber.from(data.owner.tokenToWithdraw),
           }
         : this.queryStore.runtimeVariables.owner
         ? {
             id: this.queryStore.runtimeVariables.owner,
-            tokenBalance: BigNumber.from(0),
+            playTokenBalance: BigNumber.from(0),
+            freePlayTokenBalance: BigNumber.from(0),
             tokenToWithdraw: BigNumber.from(0),
           }
         : undefined,
@@ -416,6 +426,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
           id: v.id,
           owner: v.owner ? v.owner.id : undefined,
           numSpaceships: parseInt(v.numSpaceships),
+          flagTime: parseInt(v.flagTime),
           travelingUpkeep: parseInt(v.travelingUpkeep),
           overflow: parseInt(v.overflow),
           lastUpdated: parseInt(v.lastUpdated),

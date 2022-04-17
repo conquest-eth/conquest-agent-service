@@ -12,6 +12,8 @@ import "../../libraries/Math.sol";
 import "../../interfaces/IAlliance.sol";
 import "../../alliances/AllianceRegistry.sol";
 
+import "../../conquest_token/FreePlayToken.sol";
+
 // TODO Remove
 //  import "hardhat/console.sol";
 
@@ -24,6 +26,7 @@ contract OuterSpaceFacetBase is
     using Extraction for bytes32;
 
     IERC20 internal immutable _stakingToken;
+    FreePlayToken internal immutable _freeStakingToken;
     AllianceRegistry internal immutable _allianceRegistry;
 
     bytes32 internal immutable _genesis;
@@ -38,9 +41,16 @@ contract OuterSpaceFacetBase is
     uint256 internal immutable _fleetSizeFactor6;
     uint32 internal immutable _expansionDelta; // = 8;  // TODO use uint256
     uint256 internal immutable _giftTaxPer10000; // = 2500;
+    // // 4,5,5,10,10,15,15, 20, 20, 30,30,40,40,80,80,100
+    // bytes32 constant stakeRange = 0x000400050005000A000A000F000F00140014001E001E00280028005000500064;
+    // 6, 8, 10, 12, 14, 16, 18, 20, 20, 22, 24, 32, 40, 48, 56, 72
+    // bytes32 internal constant stakeRange = 0x00060008000A000C000E00100012001400140016001800200028003000380048;
+    bytes32 internal immutable _stakeRange;
+    uint256 internal immutable _stakeMultiplier10000th;
 
     struct Config {
         IERC20 stakingToken;
+        FreePlayToken freeStakingToken;
         AllianceRegistry allianceRegistry;
         bytes32 genesis;
         uint256 resolveWindow;
@@ -54,6 +64,8 @@ contract OuterSpaceFacetBase is
         uint256 fleetSizeFactor6;
         uint32 expansionDelta;
         uint256 giftTaxPer10000;
+        bytes32 stakeRange;
+        uint256 stakeMultiplier10000th;
     }
 
     constructor(Config memory config) {
@@ -61,6 +73,7 @@ contract OuterSpaceFacetBase is
         require(t * 4 == config.timePerDistance, "TIME_PER_DIST_NOT_DIVISIBLE_4");
 
         _stakingToken = config.stakingToken;
+        _freeStakingToken = config.freeStakingToken;
         _allianceRegistry = config.allianceRegistry;
 
         _genesis = config.genesis;
@@ -75,6 +88,8 @@ contract OuterSpaceFacetBase is
         _fleetSizeFactor6 = config.fleetSizeFactor6;
         _expansionDelta = config.expansionDelta;
         _giftTaxPer10000 = config.giftTaxPer10000;
+        _stakeRange = config.stakeRange;
+        _stakeMultiplier10000th = config.stakeMultiplier10000th;
     }
 
     // ---------------------------------------------------------------------------------------------------------------
@@ -275,7 +290,8 @@ contract OuterSpaceFacetBase is
     function _acquire(
         address player,
         uint256 stake,
-        uint256 location
+        uint256 location,
+        bool freegift
     ) internal {
         // -----------------------------------------------------------------------------------------------------------
         // Initialise State Update
@@ -286,7 +302,7 @@ contract OuterSpaceFacetBase is
         // -----------------------------------------------------------------------------------------------------------
         // check requirements
         // -----------------------------------------------------------------------------------------------------------
-        require(stake == uint256(_stake(planetUpdate.data)) * (DECIMALS_18), "INVALID_AMOUNT");
+        require(stake == uint256(_stake(planetUpdate.data)) * (DECIMALS_14), "INVALID_AMOUNT");
 
         // -----------------------------------------------------------------------------------------------------------
         // Compute Basic Planet Updates
@@ -309,6 +325,12 @@ contract OuterSpaceFacetBase is
         // -----------------------------------------------------------------------------------------------------------
         _setDiscoveryAfterStaking(location);
 
+        if (freegift) {
+            _planetFlagged[location] = block.timestamp;
+        } else {
+            _planetFlagged[location] = 0; // staked with normal tokens
+        }
+
         // -----------------------------------------------------------------------------------------------------------
         // Emit Event
         // -----------------------------------------------------------------------------------------------------------
@@ -318,7 +340,8 @@ contract OuterSpaceFacetBase is
             planetUpdate.numSpaceships,
             planetUpdate.travelingUpkeep,
             planetUpdate.overflow,
-            stake
+            stake,
+            freegift
         );
     }
 
@@ -434,9 +457,24 @@ contract OuterSpaceFacetBase is
         // TODO Transfer to zero and Transfer from zero ?
 
         // optional so we can use it in the batch withdraw,
-        uint256 newStake = _stakeReadyToBeWithdrawn[planetUpdate.owner] + stake;
-        _stakeReadyToBeWithdrawn[planetUpdate.owner] = newStake;
-        emit StakeToWithdraw(planetUpdate.owner, newStake);
+
+        uint256 flagTime = _planetFlagged[planetUpdate.location];
+        if (flagTime > 0) {
+            if (planetUpdate.exitStartTime >= flagTime + (6 days / _productionSpeedUp)) {
+                _freeStakingToken.burn(address(this), address(this), stake);
+                uint256 newStake = _stakeReadyToBeWithdrawn[planetUpdate.owner] + stake;
+                _stakeReadyToBeWithdrawn[planetUpdate.owner] = newStake;
+                emit StakeToWithdraw(planetUpdate.owner, newStake, false);
+            } else {
+                uint256 newStake = _freeStakeReadyToBeWithdrawn[planetUpdate.owner] + stake;
+                _freeStakeReadyToBeWithdrawn[planetUpdate.owner] = newStake;
+                emit StakeToWithdraw(planetUpdate.owner, newStake, true);
+            }
+        } else {
+            uint256 newStake = _stakeReadyToBeWithdrawn[planetUpdate.owner] + stake;
+            _stakeReadyToBeWithdrawn[planetUpdate.owner] = newStake;
+            emit StakeToWithdraw(planetUpdate.owner, newStake, false);
+        }
     }
 
     function _completeExit(
@@ -444,7 +482,7 @@ contract OuterSpaceFacetBase is
         uint256 location,
         bytes32 data
     ) internal returns (uint256 stake) {
-        stake = uint256(_stake(data)) * (DECIMALS_18);
+        stake = uint256(_stake(data)) * (DECIMALS_14);
         emit ExitComplete(owner, location, stake);
 
         // TODO handle Staking pool release ?
@@ -471,18 +509,33 @@ contract OuterSpaceFacetBase is
         require(active, "NOT_ACTIVE");
         require(owner == planet.owner, "NOT_OWNER");
         require(planet.exitStartTime == 0, "EXITING_ALREADY");
+
         planet.exitStartTime = uint40(block.timestamp);
         emit PlanetExit(owner, location);
     }
 
     function _fetchAndWithdrawFor(address owner, uint256[] calldata locations) internal {
         uint256 addedStake = 0;
+        uint256 freeAddedStake = 0;
         for (uint256 i = 0; i < locations.length; i++) {
             Planet storage planet = _getPlanet(locations[i]);
             if (_hasJustExited(planet.exitStartTime)) {
                 require(owner == planet.owner, "NOT_OWNER");
                 emit Transfer(owner, address(0), locations[i]);
-                addedStake += _completeExit(planet.owner, locations[i], _planetData(locations[i]));
+
+                uint256 flagTime = _planetFlagged[locations[i]];
+                if (flagTime > 0) {
+                    if (planet.exitStartTime >= flagTime + (6 days / _productionSpeedUp)) {
+                        uint256 extra = _completeExit(planet.owner, locations[i], _planetData(locations[i]));
+                        addedStake += extra;
+                        _freeStakingToken.burn(address(this), address(this), extra);
+                    } else {
+                        freeAddedStake += _completeExit(planet.owner, locations[i], _planetData(locations[i]));
+                    }
+                } else {
+                    addedStake += _completeExit(planet.owner, locations[i], _planetData(locations[i]));
+                }
+
                 planet.owner = address(0);
                 planet.ownershipStartTime = 0;
                 planet.exitStartTime = 0;
@@ -494,14 +547,25 @@ contract OuterSpaceFacetBase is
         }
         uint256 newStake = _stakeReadyToBeWithdrawn[owner] + addedStake;
         _unsafe_withdrawAll(owner, newStake);
+
+        uint256 newFreeStake = _freeStakeReadyToBeWithdrawn[owner] + freeAddedStake;
+        _free_unsafe_withdrawAll(owner, newFreeStake);
     }
 
     function _unsafe_withdrawAll(address owner, uint256 amount) internal {
         _stakeReadyToBeWithdrawn[owner] = 0;
-        emit StakeToWithdraw(owner, amount);
+        emit StakeToWithdraw(owner, amount, false);
         require(_stakingToken.transfer(owner, amount), "FAILED_TRANSFER");
         // TODO Staking Pool
-        emit StakeToWithdraw(owner, 0);
+        emit StakeToWithdraw(owner, 0, false);
+    }
+
+    function _free_unsafe_withdrawAll(address owner, uint256 amount) internal {
+        _freeStakeReadyToBeWithdrawn[owner] = 0;
+        emit StakeToWithdraw(owner, amount, true);
+        require(_freeStakingToken.transfer(owner, amount), "FAILED_TRANSFER");
+        // TODO Staking Pool
+        emit StakeToWithdraw(owner, 0, true);
     }
 
     function _hasJustExited(uint40 exitTime) internal view returns (bool) {
@@ -1457,13 +1521,7 @@ contract OuterSpaceFacetBase is
         subY = 1 - int8(data.value8Mod(2, 3));
     }
 
-    // // 4,5,5,10,10,15,15, 20, 20, 30,30,40,40,80,80,100
-    // bytes32 constant stakeRange = 0x000400050005000A000A000F000F00140014001E001E00280028005000500064;
-
-    // 6, 8, 10, 12, 14, 16, 18, 20, 20, 22, 24, 32, 40, 48, 56, 72
-    bytes32 internal constant stakeRange = 0x00060008000A000C000E00100012001400140016001800200028003000380048;
-
-    function _stake(bytes32 data) internal pure returns (uint16) {
+    function _stake(bytes32 data) internal view returns (uint32) {
         require(_exists(data), "PLANET_NOT_EXISTS");
         // return data.normal16(4, 0x000400050005000A000A000F000F00140014001E001E00280028005000500064);
         uint8 productionIndex = data.normal8(12); // production affect the stake value
@@ -1480,7 +1538,7 @@ contract OuterSpaceFacetBase is
         // }
         uint16 stakeIndex = productionIndex;
         // skip stakeIndex * 2 + 0 as it is always zero in stakeRange
-        return uint16(uint8(stakeRange[stakeIndex * 2 + 1]));
+        return uint32(((uint256(uint8(_stakeRange[stakeIndex * 2 + 1])) * _stakeMultiplier10000th) / 1000) * 1000); // round to 1 decimal
     }
 
     function _production(bytes32 data) internal pure returns (uint16) {

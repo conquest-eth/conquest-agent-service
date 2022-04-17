@@ -55,7 +55,7 @@ interface ImportingOuterSpaceTypes {
     struct PlanetStats {
         int8 subX;
         int8 subY;
-        uint16 stake;
+        uint32 stake;
         uint16 production;
         uint16 attack;
         uint16 defense;

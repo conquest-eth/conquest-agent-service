@@ -77,16 +77,8 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       return;
     }
 
-    const ConquestToken = wallet.chain.contracts.ConquestToken;
-    const balance = await ConquestToken.balanceOf(claimWallet.address);
-
-    if (wallet.address) {
-      const touched = await ConquestToken.touched(wallet.address);
-      if (touched) {
-        this.setPartial({state: 'AlreadyClaimedAnother'});
-        return;
-      }
-    }
+    const FreePlayToken = wallet.chain.contracts.FreePlayToken;
+    const balance = await FreePlayToken.balanceOf(claimWallet.address);
 
     if (balance.eq(0)) {
       this.setPartial({state: 'AlreadyClaimed'});
@@ -107,7 +99,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
 
     const claimWallet = this.getClaimtWallet().connect(wallet.provider);
 
-    const ConquestToken = wallet.chain.contracts.ConquestToken.connect(claimWallet);
+    const FreePlayToken = wallet.chain.contracts.FreePlayToken.connect(claimWallet);
 
     let ethBalance: BigNumber;
     let tokenBalance: BigNumber;
@@ -115,14 +107,14 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
     let estimate: BigNumber;
     try {
       ethBalance = await wallet.provider.getBalance(claimWallet.address);
-      tokenBalance = await ConquestToken.balanceOf(claimWallet.address);
+      tokenBalance = await FreePlayToken.balanceOf(claimWallet.address);
       if (tokenBalance.eq(0)) {
         // TODO
       }
 
       nonce = await wallet.provider.getTransactionCount(claimWallet.address, 'latest');
 
-      estimate = await ConquestToken.estimateGas.transferAlongWithETH(wallet.address, tokenBalance, {
+      estimate = await FreePlayToken.estimateGas.transferAlongWithETH(wallet.address, tokenBalance, {
         value: 1,
         nonce,
       });
@@ -151,7 +143,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
         provider = new JsonRpcProvider(url);
       }
       const claimWallet_forPortisBug = this.getClaimtWallet().connect(provider);
-      const ConquestToken_forPortisBug = wallet.chain.contracts.ConquestToken.connect(claimWallet_forPortisBug);
+      const FreePlayToken_forPortisBug = wallet.chain.contracts.FreePlayToken.connect(claimWallet_forPortisBug);
 
       const gasPrice = (await wallet.provider.getGasPrice()).mul(2); // TODO ?
 
@@ -160,7 +152,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
 
       let tx;
       try {
-        tx = await ConquestToken_forPortisBug.transferAlongWithETH(wallet.address, tokenBalance, {
+        tx = await FreePlayToken_forPortisBug.transferAlongWithETH(wallet.address, tokenBalance, {
           value: ethLeft.toString(),
           nonce,
           gasPrice,
@@ -194,7 +186,7 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
 
       let tx;
       try {
-        tx = await ConquestToken.transferAlongWithETH(wallet.address, tokenBalance, {
+        tx = await FreePlayToken.transferAlongWithETH(wallet.address, tokenBalance, {
           value: ethLeft.toString(),
           nonce,
           maxFeePerGas: gasPrice, // TODO won't sweep it all
@@ -218,57 +210,6 @@ class TokenClaimStore extends BaseStore<TokenClaim> {
       }
     }
   }
-
-  // protected async fetchFor<T, P>(
-  //   address: string,
-  //   func: (address: string) => Promise<P>
-  // ): Promise<P> {
-  //   const partial = await func(address);
-  //   if (this.$store.account === address) {
-  //     this.setPartial(partial);
-  //   }
-  //   return partial;
-  // }
-
-  // private triggerUpdates() {
-  //   this.update();
-  // }
-
-  // private async update() {
-  //   if (this.wallet.contracts) {
-  //     this.setPartial({
-  //       status: 'Ready', // Fetching?
-  //     });
-  //     try {
-  //       await this.fetchFor(this.$store.account, (address) =>
-  //         this.wallet.contracts.ConquestToken.balanceOf(address).then((b) => ({
-  //           balance: b,
-  //         }))
-  //       );
-  //     } catch (e) {
-  //       this.setPartial({
-  //         error: e,
-  //       });
-  //     }
-  //     try {
-  //       await this.fetchFor(this.$store.account, (address) =>
-  //         this.wallet.contracts.ConquestToken.allowance(
-  //           address,
-  //           this.wallet.contracts.OuterSpace.address
-  //         ).then((v) => ({allowanceForOuterSpace: v}))
-  //       );
-  //     } catch (e) {
-  //       this.setPartial({
-  //         error: e,
-  //       });
-  //     }
-  //   } else {
-  //     this.setPartial({
-  //       status: 'WaitingContracts',
-  //     });
-  //   }
-  //   setTimeout(this.update.bind(this), 1000); // TODO config delay;
-  // }
 }
 
 export default new TokenClaimStore(wallet, chain);

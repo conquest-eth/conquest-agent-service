@@ -3,7 +3,7 @@ pragma solidity 0.8.9;
 
 import "./OuterSpaceFacetBase.sol";
 import "../interfaces/IOuterSpacePlanets.sol";
-import "../interfaces/IApprovalReceiver.sol";
+import "../interfaces/IApprovalForAllReceiver.sol";
 
 contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
     // solhint-disable-next-line no-empty-blocks
@@ -15,7 +15,7 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
         emit ApprovalForAll(sender, operator, approved);
     }
 
-    function setApprovalForAllIfNeededAndCall(IApprovalReceiver operator, bytes calldata data) external {
+    function setApprovalForAllIfNeededAndCall(IApprovalForAllReceiver operator, bytes calldata data) external {
         address sender = _msgSender();
         if (!_operators[sender][address(operator)]) {
             _operators[sender][address(operator)] = true;

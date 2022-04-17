@@ -8,8 +8,10 @@ import {BigNumber} from '@ethersproject/bignumber';
 import {now} from '$lib/time';
 
 export type MyToken = {
-  balance?: BigNumber;
-  allowance?: BigNumber;
+  playTokenBalance?: BigNumber;
+  freePlayTokenBalance?: BigNumber;
+  playTokenAllowance?: BigNumber;
+  freePlayTokenAllowance?: BigNumber;
 };
 
 export class MyTokenStore implements Readable<MyToken> {
@@ -24,8 +26,13 @@ export class MyTokenStore implements Readable<MyToken> {
     spaceQueryWithPendingActions.subscribe(this.onSpaceUpdate.bind(this));
   }
 
-  private getPendingSpending(update: SpaceQueryWithPendingState): BigNumber {
-    let spending = BigNumber.from(0);
+  private getPendingSpending(
+    update: SpaceQueryWithPendingState,
+    playTokenBalance: BigNumber,
+    freePlayTokenBalance: BigNumber
+  ): {playTokenDelta: BigNumber; freePlayTokenDelta: BigNumber} {
+    let playTokenDelta = BigNumber.from(0);
+    let freePlayTokenDelta = BigNumber.from(0);
     const pendingActions = update.pendingActions;
     for (const pendingAction of pendingActions) {
       if (pendingAction.counted) {
@@ -44,12 +51,17 @@ export class MyTokenStore implements Readable<MyToken> {
         ) {
           if (captureAction.planetCoords) {
             const planetInfo = spaceInfo.getPlanetInfo(captureAction.planetCoords.x, captureAction.planetCoords.y);
-            spending = spending.add(BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'));
+            const numTokens = BigNumber.from(planetInfo.stats.stake).mul('100000000000000');
+            if (freePlayTokenBalance.sub(freePlayTokenDelta).gte(numTokens)) {
+              freePlayTokenDelta = freePlayTokenDelta.add(numTokens);
+            } else {
+              playTokenDelta = playTokenDelta.add(numTokens);
+            }
           }
         }
       }
     }
-    return spending;
+    return {playTokenDelta, freePlayTokenDelta};
   }
 
   private onSpaceUpdate(update: SpaceQueryWithPendingState): void {
@@ -58,7 +70,17 @@ export class MyTokenStore implements Readable<MyToken> {
     if (!updatePlayer) {
       this.data = {};
     } else {
-      this.data = {balance: update.queryState.data.player.tokenBalance.sub(this.getPendingSpending(update))};
+      let playTokenBalance = update.queryState.data.player.playTokenBalance;
+      let freePlayTokenBalance = update.queryState.data.player.freePlayTokenBalance;
+      const {playTokenDelta, freePlayTokenDelta} = this.getPendingSpending(
+        update,
+        playTokenBalance,
+        freePlayTokenBalance
+      );
+      playTokenBalance = playTokenBalance.sub(playTokenDelta);
+      freePlayTokenBalance = freePlayTokenBalance.sub(freePlayTokenDelta);
+
+      this.data = {playTokenBalance, freePlayTokenBalance};
     }
     this.store.set(this.data);
   }

@@ -15,9 +15,15 @@ contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
         uint256 amount,
         bytes calldata data
     ) public returns (bool) {
-        require(msg.sender == address(_stakingToken), "INVALID_ERC20");
+        bool freegift;
+        if (msg.sender == address(_freeStakingToken)) {
+            freegift = true;
+        } else {
+            require(msg.sender == address(_stakingToken), "INVALID_ERC20");
+        }
+
         (address acquirer, uint256 location) = abi.decode(data, (address, uint256));
-        _acquire(acquirer, amount, location); // we do not care of who the payer is
+        _acquire(acquirer, amount, location, freegift); // we do not care of who the payer is
         return true;
     }
 
@@ -27,16 +33,27 @@ contract OuterSpaceStakingFacet is OuterSpaceFacetBase {
         uint256 amount,
         bytes calldata data
     ) external returns (bool) {
-        require(msg.sender == address(_stakingToken), "INVALID_ERC20");
+        bool freegift;
+        if (msg.sender == address(_freeStakingToken)) {
+            freegift = true;
+        } else {
+            require(msg.sender == address(_stakingToken), "INVALID_ERC20");
+        }
         uint256 location = abi.decode(data, (uint256));
-        _acquire(forAddress, amount, location); // we do not care of who the payer is
+        _acquire(forAddress, amount, location, freegift); // we do not care of who the payer is
         return true;
     }
 
     function acquireViaTransferFrom(uint256 location, uint256 amount) public {
         address sender = _msgSender();
-        _acquire(sender, amount, location);
+        _acquire(sender, amount, location, false);
         _stakingToken.transferFrom(sender, address(this), amount);
+    }
+
+    function acquireViaFreeTokenTransferFrom(uint256 location, uint256 amount) public {
+        address sender = _msgSender();
+        _acquire(sender, amount, location, true);
+        _freeStakingToken.transferFrom(sender, address(this), amount);
     }
 
     // ---------------------------------------------------------------------------------------------------------------

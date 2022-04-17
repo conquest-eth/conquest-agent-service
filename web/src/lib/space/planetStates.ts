@@ -156,6 +156,7 @@ export class PlanetStates {
       startExitTime: 0,
       active: false,
       numSpaceships: planetInfo.stats.natives,
+      flagTime: 0,
       travelingUpkeep: 0,
       overflow: 0,
       exiting: false,
@@ -184,6 +185,7 @@ export class PlanetStates {
       planetState.lastUpdatedSaved = contractState.lastUpdated;
       planetState.startExitTime = contractState.exitTime;
       planetState.owner = contractState.owner;
+      planetState.flagTime = contractState.flagTime;
       planetState.active = contractState.active;
       planetState.rewardGiver = contractState.rewardGiver ? contractState.rewardGiver : '';
       planetState.numSpaceships = contractState.numSpaceships;

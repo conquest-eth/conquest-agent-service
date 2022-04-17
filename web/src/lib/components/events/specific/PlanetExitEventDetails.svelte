@@ -91,7 +91,7 @@
       <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
         <dt class="text-sm font-medium text-gray-500">Stake</dt>
         <dd class="mt-1 text-sm text-gray-100 sm:mt-0 sm:col-span-2">
-          <p class="mb-1">{origin.stats.stake} <PlayCoin class="w-6 h-6 inline-block" /></p>
+          <p class="mb-1">{origin.stats.stake / 10000} <PlayCoin class="w-6 h-6 inline-block" /></p>
         </dd>
       </div>
 

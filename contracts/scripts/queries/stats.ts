@@ -48,6 +48,7 @@ query($first: Int! $lastId: ID! $blockNumber: Int!) {
       planets(first: 1000) {
         id
         numSpaceships
+        flagTime
         lastUpdated
         owner {id}
         active

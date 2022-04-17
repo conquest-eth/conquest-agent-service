@@ -21,7 +21,8 @@ export type PlanetExitEvent = {
 export type ExitsQueryResult = {
   planetExitEvents: PlanetExitEvent[];
   owner: {
-    tokenBalance: string;
+    playTokenBalance: string;
+    freePlayTokenBalance: string;
     tokenToWithdraw: string;
   };
 };
@@ -50,7 +51,8 @@ export class ExitQueryStore implements QueryStore<ExitsState> {
     stake
   }
   owner(id: $owner) {
-    tokenBalance
+    playTokenBalance
+    freePlayTokenBalance
     tokenToWithdraw
   }
 }`,

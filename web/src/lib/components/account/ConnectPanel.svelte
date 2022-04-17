@@ -44,15 +44,23 @@
 
   <div on:click={(e) => e.stopPropagation()} class="absolute right-0 bg-gray-900 bg-opacity-80 z-10 overflow-hidden">
     <div class="flex items-center">
-      <span class="text-yellow-300 font-black pr-4">
-        {#if $myTokens.balance}
-          {'' + $myTokens.balance.div('10000000000000000').toNumber() / 100 + ''}
+      {#if $myTokens.playTokenBalance}
+        <span class="text-yellow-300 font-black pr-4">
+          {'' + $myTokens.playTokenBalance.div('10000000000000000').toNumber() / 100 + ''}
           <PlayCoin class="inline w-4" />
-        {:else}
+        </span>
+        {#if $myTokens.freePlayTokenBalance.gt(0)}
+          <span class="text-green-300 font-black pr-4">
+            {'' + $myTokens.freePlayTokenBalance.div('10000000000000000').toNumber() / 100 + ''}
+            <PlayCoin class="inline w-4" free={true} />
+          </span>
+        {/if}
+      {:else}
+        <span class="text-yellow-300 font-black pr-4">
           ...
           <PlayCoin class="inline w-4" />
-        {/if}
-      </span>
+        </span>
+      {/if}
       <span class="inline-block align-middle" on:click={() => (menu = !menu)}>
         <Blockie copiable={false} class="w-10 h-10 m-1" address={$wallet.address} />
       </span>

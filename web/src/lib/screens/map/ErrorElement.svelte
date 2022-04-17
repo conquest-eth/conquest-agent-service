@@ -8,7 +8,7 @@
   $: x = planetInfo.location.globalX - 48 / 2;
   $: y = planetInfo.location.globalY - 48 / 2;
 
-  $: multiplier = planetInfo.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
+  $: multiplier = planetInfo.stats.production / 3600;
   $: scale = 0.025 * multiplier;
 
   $: color = 'red';
@@ -34,9 +34,9 @@
 
 <div
   id={error.txHash}
-  style={`z-index: 5; pointer-events: none; position: absolute; transform: translate(${x}px,${y}px)  scale(${blockieScale * 3}, ${
+  style={`z-index: 5; pointer-events: none; position: absolute; transform: translate(${x}px,${y}px)  scale(${
     blockieScale * 3
-  }); width: 48px; height: 48px;`}
+  }, ${blockieScale * 3}); width: 48px; height: 48px;`}
 >
   <div
     style={`

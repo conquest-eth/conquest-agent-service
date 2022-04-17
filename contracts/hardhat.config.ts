@@ -8,10 +8,10 @@ import 'solidity-coverage';
 import 'hardhat-contract-sizer';
 import 'hardhat-deploy-tenderly';
 import {node_url, accounts, addForkConfiguration} from './utils/network';
-const l1_deployments: string[] = ['deploy_l1/01_conquest_tokens'];
+const l1_deployments: string[] = [];
 const l1_deployments_dev: string[] = [];
 const l2_deployments: string[] = [
-  'deploy_l2/01_conquest_token',
+  'deploy_l2/01_play_tokens',
   'deploy_l2/02_alliance_registry',
   'deploy_l2/03_outerspace',
 ];
@@ -114,6 +114,11 @@ const config: HardhatUserConfig = {
       deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
     },
     beta: {
+      url: node_url('gnosis_chain'),
+      accounts: accounts('gnosis_chain'),
+      deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),
+    },
+    defcon: {
       url: node_url('gnosis_chain'),
       accounts: accounts('gnosis_chain'),
       deploy: l1_deployments.concat(l1_deployments_dev, l2_deployments, l2_deployments_dev),

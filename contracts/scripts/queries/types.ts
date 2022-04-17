@@ -3,6 +3,7 @@ export type PlayerData = {
   planets: {
     id: string;
     numSpaceships: string;
+    flagTime: string;
     lastUpdated: string;
     owner: {id: string};
     active: boolean;

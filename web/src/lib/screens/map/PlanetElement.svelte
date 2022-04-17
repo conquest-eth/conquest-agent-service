@@ -17,6 +17,7 @@
   import {matchConditions, pluginShowing, showPlanetButtons} from '$lib/plugins/currentPlugin';
   import {overlays} from '$lib/map/overlays';
   import sendFlow from '$lib/flows/send';
+  import {time} from '$lib/time';
 
   type Frame = {x: number; y: number; w: number; h: number};
 
@@ -61,7 +62,7 @@
   }
   let frameInfo = (planetsFrame.frames as any)[frameType] as {frame: Frame};
   let frame = frameInfo.frame;
-  const multiplier = planetInfo.stats.production / 3600; // Math.max(planet.stats.stake / 16, 1 / 2);
+  const multiplier = planetInfo.stats.production / 3600;
   let scale = 0.025 * multiplier;
   let x = planetInfo.location.globalX - frame.w / 2;
   let y = planetInfo.location.globalY - frame.h / 2;
@@ -391,6 +392,36 @@
           d="M18 2.0845
             a 15.9155 15.9155 0 0 1 0 31.831
             a 15.9155 15.9155 0 0 1 0 -31.831"
+        />
+      </svg>
+    </div>
+  {/if}
+
+  {#if $planetState && $planetState.flagTime > 0 && $time < $planetState.flagTime + (6 * 24 * 3600) / spaceInfo.productionSpeedUp}
+    <div
+      style={`
+    z-index: 5;
+    position: absolute;
+    transform: translate(${x}px,${y}px) scale(${blockieScale * 2}, ${blockieScale * 2});
+    width: ${frame.w}px;
+    height: ${frame.h}px;
+  `}
+    >
+      <svg viewBox="0 0 36 36">
+        <path
+          style="fill: none; stroke-width: 2.8; stroke-linecap: round; stroke: #86efac;"
+          stroke-dasharray={`${Math.min(
+            Math.max(
+              (($planetState.flagTime + (6 * 24 * 3600) / spaceInfo.productionSpeedUp - $time) /
+                ((6 * 24 * 3600) / spaceInfo.productionSpeedUp)) *
+                100,
+              3
+            ),
+            95
+          )} 95`}
+          d="M18 2.0845
+        a 15.9155 15.9155 0 0 1 0 31.831
+        a 15.9155 15.9155 0 0 1 0 -31.831"
         />
       </svg>
     </div>

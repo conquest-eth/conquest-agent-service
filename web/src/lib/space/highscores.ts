@@ -23,8 +23,7 @@ type QueryOwner = {
   id: string;
   currentStake: string;
   tokenToWithdraw: string;
-  tokenBalance: string;
-  tokenGiven: string;
+  playTokenBalance: string;
 };
 
 const DECIMALS_18 = BigNumber.from('1000000000000000000');

@@ -78,7 +78,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   }
 
   const claimKeyDistributorETHBalance = await ethers.provider.getBalance(claimKeyDistributor);
-  const claimKeyDistributorTokenBalance = await read('ConquestToken', 'balanceOf', claimKeyDistributor);
+  const claimKeyDistributorTokenBalance = await read('FreePlayToken', 'balanceOf', claimKeyDistributor);
 
   console.log({
     claimKeyDistributor,
@@ -89,7 +89,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     totalTokenAmount: totalTokenAmount.toString(),
   });
   const receipt = await execute(
-    'ConquestToken',
+    'FreePlayToken',
     {
       from: claimKeyDistributor,
       value: totalETHAmount.toString(),

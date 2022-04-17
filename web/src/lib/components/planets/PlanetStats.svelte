@@ -27,11 +27,12 @@
       $planetState.numSpaceships >= planetInfo.stats.cap
     : false;
 
-  $: productionColor = capacityReached
-    ? ' text-red-600'
-    : $planetState?.travelingUpkeep > 0
-    ? 'text-amber-500'
-    : 'text-green-500';
+  $: productionColor =
+    capacityReached || !$planetState?.active
+      ? ' text-red-600'
+      : $planetState?.travelingUpkeep > 0
+      ? 'text-amber-500'
+      : 'text-green-500';
 </script>
 
 <div class="flex m-1">
@@ -177,13 +178,13 @@
         </Help>
       </p>
       <p class="float-right relative -top-6">
-        {planetInfo.stats.stake}
+        {planetInfo.stats.stake / 10000}
         <PlayCoin class="inline w-4" />
       </p>
       <div class="box-border rounded-md bg-gray-600">
         <div
           class="w-full h-3 rounded-md bg-yellow-400"
-          style="width: {Math.floor((planetInfo.stats.stake * 100) / 72)}%;"
+          style="width: {Math.floor(((planetInfo.stats.stake / 10000) * 100) / 72)}%;"
         />
       </div>
     </div>

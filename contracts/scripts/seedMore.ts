@@ -3,7 +3,7 @@ import {parseEther} from '@ethersproject/units';
 import {defaultAbiCoder} from '@ethersproject/abi';
 import {getUnnamedAccounts, deployments, getNamedAccounts, ethers} from 'hardhat';
 import {SpaceInfo} from 'conquest-eth-common';
-import {ConquestToken} from '../typechain';
+import {FreePlayToken} from '../typechain';
 import {setupUsers} from '../utils';
 
 async function main() {
@@ -12,7 +12,7 @@ async function main() {
 
   const contracts = {
     OuterSpace: await ethers.getContract('OuterSpace'),
-    ConquestToken: <ConquestToken>await ethers.getContract('ConquestToken'),
+    FreePlayToken: <FreePlayToken>await ethers.getContract('FreePlayToken'),
   };
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
   const players = await setupUsers(unNamedAccounts, contracts);
@@ -30,7 +30,7 @@ async function main() {
     }
     const player = deployer; // players[i % 4].address;
     await deployments.execute(
-      'ConquestToken',
+      'FreePlayToken',
       {from: player, log: true, autoMine: true},
       'transferAndCall',
       outerSpaceContract.address,

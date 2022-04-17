@@ -23,6 +23,6 @@ contract UsingOuterSpaceDataLayout is ImportingOuterSpaceTypes {
     // This adds 20,000 gas to all resolution
     mapping(uint256 => mapping(address => mapping(uint256 => AccumulatedAttack))) internal _attacks;
 
-    // remove
-    // mapping(address => Account) internal _accounts;
+    mapping(address => uint256) internal _freeStakeReadyToBeWithdrawn;
+    mapping(uint256 => uint256) internal _planetFlagged;
 }

@@ -7,6 +7,8 @@ import {TutorialSteps} from '$lib/account/constants';
 import {account} from '$lib/account/account';
 import {privateWallet} from '$lib/account/privateWallet';
 import {xyToLocation} from 'conquest-eth-common';
+import {myTokens} from '$lib/space/token';
+import {get} from 'svelte/store';
 
 type Data = {txHash?: string; coords: {x: number; y: number}};
 export type ClaimFlow = {
@@ -99,11 +101,17 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
       return;
     }
 
+    const tokenAmount = BigNumber.from(planetInfo.stats.stake).mul('100000000000000');
+    let paymentTokenContract = wallet?.contracts.PlayToken;
+    if (get(myTokens).freePlayTokenBalance.gte(tokenAmount)) {
+      paymentTokenContract = wallet?.contracts.FreePlayToken;
+    }
+
     let gasEstimation: BigNumber;
     try {
-      gasEstimation = await wallet.contracts?.ConquestToken.estimateGas.transferAndCall(
+      gasEstimation = await paymentTokenContract.estimateGas.transferAndCall(
         wallet.contracts?.OuterSpace.address,
-        BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'),
+        tokenAmount,
         defaultAbiCoder.encode(
           ['address', 'uint256'],
           [wallet.address, xyToLocation(flow.data.coords.x, flow.data.coords.y)]
@@ -122,9 +130,9 @@ class ClaimFlowStore extends BaseStoreWithData<ClaimFlow, Data> {
     this.setPartial({step: 'WAITING_TX'});
     let tx: {hash: string; nonce?: number};
     try {
-      tx = await wallet.contracts?.ConquestToken.transferAndCall(
+      tx = await paymentTokenContract.transferAndCall(
         wallet.contracts?.OuterSpace.address,
-        BigNumber.from(planetInfo.stats.stake).mul('1000000000000000000'),
+        tokenAmount,
         defaultAbiCoder.encode(
           ['address', 'uint256'],
           [wallet.address, xyToLocation(flow.data.coords.x, flow.data.coords.y)]

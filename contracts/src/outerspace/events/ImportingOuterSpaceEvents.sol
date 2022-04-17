@@ -8,7 +8,8 @@ interface ImportingOuterSpaceEvents {
         uint32 numSpaceships,
         int40 travelingUpkeep,
         uint32 overflow,
-        uint256 stake
+        uint256 stake,
+        bool freegift
     );
     event FleetSent(
         address indexed fleetSender,
@@ -72,7 +73,7 @@ interface ImportingOuterSpaceEvents {
     event RewardSetup(uint256 indexed location, address indexed giver, uint256 rewardId);
     event RewardToWithdraw(address indexed owner, uint256 indexed location, uint256 indexed rewardId);
 
-    event StakeToWithdraw(address indexed owner, uint256 newStake);
+    event StakeToWithdraw(address indexed owner, uint256 newStake, bool freegift);
 
     event Initialized(
         bytes32 genesis,

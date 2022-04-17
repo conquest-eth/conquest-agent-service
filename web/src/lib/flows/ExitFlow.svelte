@@ -34,7 +34,7 @@
 {:else if $exitFlow.step === 'WAITING_CONFIRMATION'}
   <Modal on:close={() => exitFlow.cancel()} on:confirm={() => exitFlow.confirm()}>
     <p class="text-center">
-      Exiting a planet will allow you to claim the stake back ({planetInfo.stats.stake}
+      Exiting a planet will allow you to claim the stake back ({planetInfo.stats.stake / 10000}
       <PlayCoin class="inline w-4" />
       for this planet). But be careful, while you are exiting (this takes
       {timeToText(spaceInfo.exitDuration, {verbose: true})}), you cannot operate with the spaceships and someone else

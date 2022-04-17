@@ -1,0 +1,23 @@
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
+import {DeployFunction} from 'hardhat-deploy/types';
+import {deployments} from 'hardhat';
+
+const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+  const {deployer, claimKeyDistributor} = await hre.getNamedAccounts();
+  const {read, execute} = hre.deployments;
+
+  const OuterSpaceDeployment = await deployments.get('OuterSpace');
+
+  await execute('FreePlayToken', {from: deployer, log: true, autoMine: true}, 'setMinter', deployer, true);
+
+  await execute(
+    'FreePlayToken',
+    {from: deployer, log: true, autoMine: true},
+    'setBurner',
+    OuterSpaceDeployment.address,
+    true
+  );
+};
+export default func;
+func.tags = ['FreePlayToken', 'FreePlayToken_setup'];
+func.dependencies = ['FreePlayToken_deploy'];

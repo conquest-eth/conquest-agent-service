@@ -5,26 +5,77 @@
   import {planets} from '$lib/space/planets';
   import {wallet} from '$lib/blockchain/wallet';
   // TODO use myTokens ?
-  import {tokenAccount} from '$lib/account/token';
+  import {myTokens} from '$lib/space/token';
   import {BigNumber} from '@ethersproject/bignumber';
   import PlayCoin from '$lib/components/utils/PlayCoin.svelte';
   import {formatError, timeToText} from '$lib/utils';
   import {spaceInfo} from '$lib/space/spaceInfo';
   import NavButton from '$lib/components/navigation/NavButton.svelte';
   import {base} from '$app/paths';
+  import mintFlow from '$lib/flows/mint';
+  import {min} from 'bn.js';
 
   $: coords = $claimFlow.data?.coords;
   $: planetInfo = coords ? spaceInfo.getPlanetInfo(coords.x, coords.y) : undefined;
   $: planetState = planetInfo ? planets.planetStateFor(planetInfo) : undefined;
   $: stats = planetInfo ? planetInfo.stats : undefined;
-  $: stake = stats && stats.stake;
+  $: stake = stats && stats.stake / 10000;
   $: cost = stats ? BigNumber.from(stats.stake) : undefined; // TODO multiplier from config/contract
 
   $: result =
     planetInfo && $planetState ? spaceInfo.simulateCapture($wallet.address, planetInfo, $planetState) : undefined;
+
+  async function mint(numTokenUnit: number) {
+    mintFlow.mint(numTokenUnit);
+  }
 </script>
 
-{#if $claimFlow.error}
+{#if $mintFlow.step !== 'IDLE'}
+  {#if $mintFlow.error}
+    <Modal on:close={() => mintFlow.acknownledgeError()}>
+      <div class="text-center">
+        <h2>An error happenned For Planet Staking</h2>
+        <p class="text-red-500 mt-2 text-sm">{formatError($mintFlow.error)}</p>
+        <Button class="mt-5" label="Stake" on:click={() => mintFlow.acknownledgeError()}>Ok</Button>
+      </div>
+    </Modal>
+  {:else if $mintFlow.cancelingConfirmation}
+    <Modal
+      closeButton={true}
+      globalCloseButton={true}
+      on:close={() => mintFlow.cancelCancelation()}
+      on:confirm={() => mintFlow.cancel()}
+    >
+      <div class="text-center">
+        <p class="pb-4">Are you sure to cancel ?</p>
+        <p class="pb-4">(This will prevent the game to record your transaction, if you were to execute it afterward)</p>
+        <Button label="OK" on:click={() => mintFlow.cancel()}>Yes</Button>
+      </div>
+    </Modal>
+  {:else if $mintFlow.step === 'CONNECTING'}
+    <!---->
+  {:else if $mintFlow.step === 'CREATING_TX'}
+    <!-- {@debug $mintFlow} -->
+    <Modal>Preparing the Transaction...</Modal>
+  {:else if $mintFlow.step === 'WAITING_TX'}
+    <Modal
+      closeButton={true}
+      globalCloseButton={true}
+      closeOnOutsideClick={false}
+      on:close={() => mintFlow.cancel(true)}
+    >
+      Please Accept the Transaction...
+    </Modal>
+  {:else if $mintFlow.step === 'WAITING_CONFIRMATION'}
+    <Modal on:close={() => mintFlow.cancel()}>
+      <p class="text-center" />
+
+      <p class="text-center mt-3">
+        <Button label="OK" on:click={() => mintFlow.confirm()}>Confirm</Button>
+      </p>
+    </Modal>
+  {/if}
+{:else if $claimFlow.error}
   <Modal on:close={() => claimFlow.acknownledgeError()}>
     <div class="text-center">
       <h2>An error happenned For Planet Staking</h2>
@@ -49,52 +100,65 @@
   <!---->
 {:else if $claimFlow.step === 'CHOOSE_STAKE' && $wallet.state == 'Ready'}
   <Modal on:close={() => claimFlow.cancel()}>
-    {#if $tokenAccount.status === 'Idle'}
+    {#if !$myTokens.playTokenBalance}
       Please wait...
-    {:else if $tokenAccount.status === 'WaitingContracts'}
-      Please wait...
-    {:else if $tokenAccount.status === 'Ready'}
-      {#if !$tokenAccount.balance}
-        Fetching Balance...
-      {:else if $tokenAccount.balance.eq(0)}
-        You do not have any
-        <PlayCoin class="inline w-4" />. You need
-        {cost.toString()}
-        <PlayCoin class="inline w-4" />. If you have never got any token, please visit our
-        <a href="https://discord.gg/Qb4gr2ekfr" class="underline" target="_blank" rel="noopener">discord</a> and talk to
-        our bot "Etherplay Discord Bot"
-      {:else if $tokenAccount.balance.lt(cost.mul('1000000000000000000'))}
-        Not enough
-        <PlayCoin class="inline w-4" />. You need
-        <span class="text-yellow-400">{cost.toString()}</span>
-        <PlayCoin class="inline w-4" />
-        but you have only
-        <span class="text-yellow-400">{$tokenAccount.balance.div('1000000000000000000').toString()}</span>
-      {:else}
-        <div class="text-center">
-          <h2>
-            Stake
+    {:else if $myTokens.playTokenBalance.eq(0) && $myTokens.freePlayTokenBalance.eq(0)}
+      You do not have any
+      <PlayCoin class="inline w-4" />. You need
+      {cost.toNumber() / 10000}
+      <PlayCoin class="inline w-4" />. You can mint some by depositing XDAI And you can always burn them then to get
+      back the XDAI. As long as you hold them or withdraw from the game.
+      <center class="m-5">
+        <Button label="mint" on:click={() => mint(5)}>Mint 5 <PlayCoin class="inline w-4" /></Button>
+      </center>
+    {:else if $myTokens.freePlayTokenBalance.lt(cost.mul('100000000000000')) && $myTokens.playTokenBalance.lt(cost.mul('100000000000000'))}
+      Not enough
+      <PlayCoin class="inline w-4" />. You need
+      <span class="text-yellow-400">{cost.toNumber() / 10000}</span>
+      <PlayCoin class="inline w-4" />
+      but you have only
+      <span class="text-yellow-400"
+        >{$myTokens.playTokenBalance.div('1000000000000000000').toString()} <PlayCoin class="inline w-4" /></span
+      >
+      {#if $myTokens.freePlayTokenBalance.gt(0)}
+        and
+        <span class="text-green-400"
+          >{$myTokens.freePlayTokenBalance.div('1000000000000000000').toString()}
+          <PlayCoin class="inline w-4" free={true} /></span
+        >
+      {/if}
+    {:else}
+      <div class="text-center">
+        <h2>
+          Stake
+          {#if $myTokens.freePlayTokenBalance.lt(cost.mul('100000000000000'))}
             <span class="text-yellow-500"
               >{stake}
               <PlayCoin class="inline w-4" /></span
             >
-            to activate Planet
-            <span class="text-green-500">"{stats.name}"</span>.
-          </h2>
-          <p class="text-gray-300 mt-2 text-sm">
-            You'll be able to get your stake back if you manage to exit the planet safely (this takes
-            {timeToText(spaceInfo.exitDuration, {verbose: true})}).
-          </p>
-          <p class="text-blue-400 mt-2 text-sm">
-            Once the tx will be mined, the planet will start with
-            {result && result.numSpaceshipsLeft}
-            spaceships and will produce
-            {stats.production / 60}
-            spaceships per minutes.
-          </p>
-          <Button class="mt-5" label="Stake" on:click={() => claimFlow.confirm()}>Confirm</Button>
-        </div>
-      {/if}
+          {:else}
+            <span class="text-green-500"
+              >{stake}
+              <PlayCoin class="inline w-4" free={true} /></span
+            >
+          {/if}
+
+          to activate Planet
+          <span class="text-green-500">"{stats.name}"</span>.
+        </h2>
+        <p class="text-gray-300 mt-2 text-sm">
+          You'll be able to get your stake back if you manage to exit the planet safely (this takes
+          {timeToText(spaceInfo.exitDuration, {verbose: true})}).
+        </p>
+        <p class="text-blue-400 mt-2 text-sm">
+          Once the tx will be mined, the planet will start with
+          {result && result.numSpaceshipsLeft}
+          spaceships and will produce
+          {stats.production / 60}
+          spaceships per minutes.
+        </p>
+        <Button class="mt-5" label="Stake" on:click={() => claimFlow.confirm()}>Confirm</Button>
+      </div>
     {/if}
   </Modal>
 {:else if $claimFlow.step === 'CREATING_TX'}

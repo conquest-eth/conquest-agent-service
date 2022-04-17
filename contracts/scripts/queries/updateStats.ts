@@ -47,6 +47,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
           const toPlanetState: PlanetState = {
             owner: np.owner.id,
             numSpaceships: parseInt(np.numSpaceships),
+            flagTime: parseInt(np.flagTime),
             active: np.active,
             exiting: np.exitTime != '0',
             exitTimeLeft: parseInt(np.exitTime), // TODO fix;

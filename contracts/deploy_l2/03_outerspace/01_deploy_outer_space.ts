@@ -17,7 +17,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // console.log({networkName, localTesting});
 
-  const ConquestToken = await hre.deployments.get('ConquestToken');
+  const PlayToken = await hre.deployments.get('PlayToken');
+  const FreePlayToken = await hre.deployments.get('FreePlayToken');
 
   const allianceRegistry = await hre.deployments.get('AllianceRegistry');
 
@@ -39,6 +40,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const initialSpaceExpansion = 12;
   const expansionDelta = 6;
   const giftTaxPer10000 = 2000;
+  const stakeRange = '0x00060008000A000C000E00100012001400140016001800200028003000380048';
+  let stakeMultiplier10000th = 10;
 
   // use a command to increase time in 1337
   if (localTesting) {
@@ -47,6 +50,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     productionSpeedUp = 180;
     frontrunningDelay /= 180;
     resolveWindow /= 30; // 180;
+    stakeMultiplier10000th = 1666;
   }
 
   if (networkName === 'quick') {
@@ -68,6 +72,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     productionSpeedUp = 5;
     frontrunningDelay = Math.floor(frontrunningDelay / 5);
     resolveWindow = Math.floor(resolveWindow / 5);
+    stakeMultiplier10000th = 1666;
     // productionCapAsDuration /= 180;
   }
 
@@ -100,7 +105,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   console.log({
-    ConquestToken: ConquestToken.address,
+    PlayToken: PlayToken.address,
+    FreePlayToken: FreePlayToken.address,
     allianceRegistry: allianceRegistry.address,
     genesisHash,
     resolveWindow,
@@ -115,6 +121,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     initialSpaceExpansion,
     expansionDelta,
     giftTaxPer10000,
+    stakeRange,
+    stakeMultiplier10000th,
   });
 
   await diamond.deploy('OuterSpace', {
@@ -134,6 +142,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       initialSpaceExpansion,
       expansionDelta,
       giftTaxPer10000,
+      stakeRange,
+      stakeMultiplier10000th,
     },
     facets: [
       'OuterSpaceInitializationFacet',
@@ -145,7 +155,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ],
     facetsArgs: [
       {
-        stakingToken: ConquestToken.address,
+        stakingToken: PlayToken.address,
+        freeStakingToken: FreePlayToken.address,
         allianceRegistry: allianceRegistry.address,
         genesis: genesisHash,
         resolveWindow,
@@ -160,6 +171,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         initialSpaceExpansion,
         expansionDelta,
         giftTaxPer10000,
+        stakeRange,
+        stakeMultiplier10000th,
       },
     ],
     execute: {
@@ -171,5 +184,5 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 };
 export default func;
-func.dependencies = ['ConquestToken_deploy', 'AllianceRegistry_deploy'];
+func.dependencies = ['PlayToken_deploy', 'FreePlayToken_deploy', 'AllianceRegistry_deploy'];
 func.tags = ['OuterSpace', 'OuterSpace_deploy'];
