@@ -66,12 +66,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   if (networkName === 'defcon') {
     // TODO remove when updating quick to a new contract
-    genesisHash = '0xe0c3fa9ae97fc9b60baae605896b5e3e7cecb6baaaa4708162d1ec51e8d65112';
-    timePerDistance = Math.floor(timePerDistance / 5);
-    exitDuration = Math.floor(exitDuration / 5);
-    productionSpeedUp = 5;
-    frontrunningDelay = Math.floor(frontrunningDelay / 5);
-    resolveWindow = Math.floor(resolveWindow / 5);
+    genesisHash = '0xdefd8666ec077c932b62f77bcfea4badcb3c296fc1f8a8792c9b7ca2ee6c8c4b';
+    // timePerDistance = Math.floor(timePerDistance / 5);
+    // exitDuration = Math.floor(exitDuration / 5);
+    // productionSpeedUp = 5;
+    // frontrunningDelay = Math.floor(frontrunningDelay / 5);
+    // resolveWindow = Math.floor(resolveWindow / 5);
     stakeMultiplier10000th = 1666;
     // productionCapAsDuration /= 180;
   }
