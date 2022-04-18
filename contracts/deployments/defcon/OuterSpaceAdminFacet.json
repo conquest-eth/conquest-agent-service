@@ -1,5 +1,5 @@
 {
-  "address": "0x17805C33467e5535d494Ab1b942A5171c36e038F",
+  "address": "0x9bc25256EBa55Fa71895d653Df64fa222f98CA25",
   "abi": [
     {
       "inputs": [
@@ -707,28 +707,28 @@
       "type": "function"
     }
   ],
-  "transactionHash": "0xb966b375b93b7c9c785aed401f43996f8dc917045b0e54d566a7626927f98c97",
+  "transactionHash": "0x3f9a21d62b3a7f01db51398a1441150cb161a8b903098f3842124df6f3840d0f",
   "receipt": {
     "to": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
     "from": "0xbE19B59E8C588d68f475A407C7BA5fE813AEb792",
     "contractAddress": null,
-    "transactionIndex": 3,
+    "transactionIndex": 9,
     "gasUsed": "405908",
     "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-    "blockHash": "0x1d0b3b9f2caa0762ba22f9f6f7a07e115614fcd668dc5682e8c698595ef678bc",
-    "transactionHash": "0xb966b375b93b7c9c785aed401f43996f8dc917045b0e54d566a7626927f98c97",
+    "blockHash": "0xc1efdb7ce074a1bc6d8391058ea2c94211a731ffde25687130297ec0a0ceac02",
+    "transactionHash": "0x3f9a21d62b3a7f01db51398a1441150cb161a8b903098f3842124df6f3840d0f",
     "logs": [],
-    "blockNumber": 21700418,
-    "cumulativeGasUsed": "1710500",
+    "blockNumber": 21704515,
+    "cumulativeGasUsed": "3417094",
     "status": 1,
     "byzantium": true
   },
   "args": [
     {
-      "stakingToken": "0xf1782f189A13d01d313A075aDD5673737C7D1674",
-      "freeStakingToken": "0xBd268bd7Cf9D1dd3bfFC1b32530d7d117A3Fac99",
-      "allianceRegistry": "0x4261b9133bd8635536E067ddf313eA1c61aC2050",
-      "genesis": "0xdefd8666ec077c932b62f77bcfea4badcb3c296fc1f8a8792c9b7ca2ee6c8c4b",
+      "stakingToken": "0x27B84C84a0809AE26381b1b9595fF22cB209A433",
+      "freeStakingToken": "0xf023f6Fa662047D7921B1AEC797470A76CFC9f5b",
+      "allianceRegistry": "0xEb54201B6A070f710F5913Fb5B735D2c9a848760",
+      "genesis": "0xdefd8666ec077c932b62f77bcfea4badcb3c296fc1f8a8792c9b7ca2ee6c8c4c",
       "resolveWindow": 43200,
       "timePerDistance": 7200,
       "exitDuration": 259200,
@@ -745,9 +745,9 @@
       "stakeMultiplier10000th": 1666
     }
   ],
-  "numDeployments": 2,
+  "numDeployments": 1,
   "linkedData": {
-    "genesisHash": "0xdefd8666ec077c932b62f77bcfea4badcb3c296fc1f8a8792c9b7ca2ee6c8c4b",
+    "genesisHash": "0xdefd8666ec077c932b62f77bcfea4badcb3c296fc1f8a8792c9b7ca2ee6c8c4c",
     "resolveWindow": 43200,
     "timePerDistance": 7200,
     "exitDuration": 259200,

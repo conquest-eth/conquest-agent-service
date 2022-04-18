@@ -45,7 +45,7 @@
   <div class="w-full h-1 bg-cyan-300 mt-2" />
   <a class="relative inline-block border border-cyan-500 ml-8 my-2 px-1 text-center" href={`${base}/logs/`}>LOGS</a>
   <div class="w-full h-1 bg-cyan-300" />
-  <a class="relative inline-block border border-cyan-500 ml-3 my-2 px-1 text-center" href={`${base}/highscores/`}
+  <!-- <a class="relative inline-block border border-cyan-500 ml-3 my-2 px-1 text-center" href={`${base}/highscores/`}
     >Highscores</a
-  >
+  > -->
 </div>

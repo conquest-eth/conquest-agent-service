@@ -120,10 +120,10 @@
         Logs
         <Help class="w-4 h-4">See Global Logs</Help>
       </NavButton>
-      <NavButton class="m-1" label="help" href={url('highscores/')}>
+      <!-- <NavButton class="m-1" label="help" href={url('highscores/')}>
         Highscores
         <Help class="w-4 h-4">See Highscores for current alpha</Help>
-      </NavButton>
+      </NavButton> -->
       <NavButton class="m-1" label="help" href={url('alliances/')}>
         Alliances
         <Help class="w-4 h-4">See All Public Alliances</Help>
