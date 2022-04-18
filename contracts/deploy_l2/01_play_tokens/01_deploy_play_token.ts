@@ -18,8 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   if (networkName === 'defcon') {
-    // TODO remove, use 1 ETH/XDAI
-    numTokensPerNativeTokenAt18Decimals = parseEther('1000');
+    numTokensPerNativeTokenAt18Decimals = parseEther('1');
   }
 
   await deploy('PlayToken', {
