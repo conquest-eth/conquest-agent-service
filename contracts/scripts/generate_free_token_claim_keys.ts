@@ -1,7 +1,8 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import hre, {deployments} from 'hardhat';
-import {parseEther} from '@ethersproject/units';
+import {formatEther, parseEther} from '@ethersproject/units';
 import {Wallet} from '@ethersproject/wallet';
+import qrcode from 'qrcode';
 
 const append = true;
 
@@ -49,6 +50,11 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     .mul(parseEther('1'))
     .div(PlayTokenDeployment.linkedData.numTokensPerNativeTokenAt18Decimals);
 
+  console.log({
+    amountOfNativeToken: formatEther(amountOfNativeToken),
+    tokenAmount: formatEther(tokenAmount),
+    claimKeyETHAmount: formatEther(claimKeyETHAmount),
+  });
   const path = "m/44'/60'/" + 0 + "'/0/0";
   const wallet = Wallet.fromMnemonic(mnemonic, path);
 
@@ -66,7 +72,16 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     tokenAmount
   );
 
+  let mainURL = `https://${hre.network.name}.conquest.etherplay.io/`;
+
+  if (!mainURL.endsWith('/')) {
+    mainURL = mainURL + '/';
+  }
+  const url = `${mainURL}#tokenClaim=${wallet.privateKey}`;
+  console.log();
   console.log(wallet.privateKey);
+  const qrURL = await qrcode.toDataURL(url);
+  console.log(qrURL);
 }
 
 // function wait(time: number): Promise<void> {
