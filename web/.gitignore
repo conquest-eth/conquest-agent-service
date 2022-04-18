@@ -17,3 +17,4 @@ yalc.lock
 # TODO remove:
 src/qrs.json
 src/routes/qr.svelte
+src/routes/qr_verso.svelte
