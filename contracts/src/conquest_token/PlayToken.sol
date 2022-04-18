@@ -10,10 +10,10 @@ import "./PlayToken.sol";
 
 contract PlayToken is UsingERC20Base, WithPermitAndFixedDomain, Proxied {
     uint256 internal constant DECIMALS_18 = 1000000000000000000;
-    uint256 internal immutable _numTokensPerNativeTokenAt18Decimals;
+    uint256 public immutable numTokensPerNativeTokenAt18Decimals;
 
-    constructor(uint256 numTokensPerNativeTokenAt18Decimals) WithPermitAndFixedDomain("1") {
-        _numTokensPerNativeTokenAt18Decimals = numTokensPerNativeTokenAt18Decimals;
+    constructor(uint256 _numTokensPerNativeTokenAt18Decimals) WithPermitAndFixedDomain("1") {
+        numTokensPerNativeTokenAt18Decimals = _numTokensPerNativeTokenAt18Decimals;
         postUpgrade(numTokensPerNativeTokenAt18Decimals);
     }
 
@@ -26,12 +26,12 @@ contract PlayToken is UsingERC20Base, WithPermitAndFixedDomain, Proxied {
     }
 
     function mint(address to, uint256 amount) external payable {
-        require((msg.value * _numTokensPerNativeTokenAt18Decimals) / DECIMALS_18 == amount, "INVALID_AMOUNT");
+        require((msg.value * numTokensPerNativeTokenAt18Decimals) / DECIMALS_18 == amount, "INVALID_AMOUNT");
         _mint(to, amount);
     }
 
     function burn(address payable to, uint256 amount) external {
         _burnFrom(msg.sender, amount);
-        to.transfer((amount * DECIMALS_18) / _numTokensPerNativeTokenAt18Decimals);
+        to.transfer((amount * DECIMALS_18) / numTokensPerNativeTokenAt18Decimals);
     }
 }

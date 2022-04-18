@@ -441,6 +441,19 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "numTokensPerNativeTokenAt18Decimals",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -768,7 +781,7 @@
     "0xbE19B59E8C588d68f475A407C7BA5fE813AEb792",
     "0xdbceb17500000000000000000000000000000000000000000000003635c9adc5dea00000"
   ],
-  "numDeployments": 1,
+  "numDeployments": 2,
   "linkedData": {
     "numTokensPerNativeTokenAt18Decimals": "1000000000000000000000"
   },
@@ -785,7 +798,7 @@
       }
     ]
   },
-  "implementation": "0x976d4FB6ab79D5a066DC1c34b686ED373f46527c",
+  "implementation": "0x3cCCcDc2b98FD376191d9967137E2844F2de2714",
   "devdoc": {
     "kind": "dev",
     "methods": {},

@@ -11,17 +11,19 @@ import "./PlayToken.sol";
 
 contract FreePlayToken is UsingERC20Base, WithPermitAndFixedDomain, Proxied {
     using Address for address;
-    using SafeERC20 for IERC20;
+    using SafeERC20 for PlayToken;
+
+    uint256 internal constant DECIMALS_18 = 1000000000000000000;
 
     event Burner(address burner, bool enabled);
     event Minter(address burner, bool enabled);
 
-    IERC20 internal immutable _underlyingToken;
+    PlayToken internal immutable _underlyingToken;
 
     mapping(address => bool) public minters;
     mapping(address => bool) public burners;
 
-    constructor(IERC20 underlyingToken) WithPermitAndFixedDomain("1") {
+    constructor(PlayToken underlyingToken) WithPermitAndFixedDomain("1") {
         _underlyingToken = underlyingToken;
     }
 
@@ -41,6 +43,47 @@ contract FreePlayToken is UsingERC20Base, WithPermitAndFixedDomain, Proxied {
         emit Minter(burner, enabled);
     }
 
+    // function onTokenTransfer(
+    //     address from,
+    //     uint256 amount,
+    //     bytes calldata data
+    // ) public returns (bool) {
+    //     require(msg.sender == address(_underlyingToken), "INVALID_ERC20");
+    //     require(minters[from], "NOT_ALLOWED_MINTER");
+
+    //     address to = abi.decode(data, (address));
+    //     _mint(to, amount);
+    //     return true;
+    // }
+
+    // function onTokenPaidFor(
+    //     address from,
+    //     address forAddress,
+    //     uint256 amount,
+    //     bytes calldata data
+    // ) external returns (bool) {
+    //     require(msg.sender == address(_underlyingToken), "INVALID_ERC20");
+    //     require(minters[from], "NOT_ALLOWED_MINTER");
+    //     _mint(forAddress, amount);
+    //     return true;
+    // }
+
+    function mintViaNativeToken(address to, uint256 amount) external payable {
+        require(minters[msg.sender], "NOT_ALLOWED_MINTER");
+        _underlyingToken.mint{value: msg.value}(address(this), amount);
+        _mint(to, amount);
+    }
+
+    function mintViaNativeTokenPlusSendExtraNativeTokens(address payable to, uint256 amount) external payable {
+        require(minters[msg.sender], "NOT_ALLOWED_MINTER");
+        uint256 valueExpected = (amount * DECIMALS_18) / _underlyingToken.numTokensPerNativeTokenAt18Decimals();
+        _underlyingToken.mint{value: valueExpected}(address(this), amount);
+        _mint(to, amount);
+        if (msg.value > valueExpected) {
+            to.transfer(msg.value - valueExpected);
+        }
+    }
+
     function mint(
         address from,
         address to,
@@ -56,7 +99,7 @@ contract FreePlayToken is UsingERC20Base, WithPermitAndFixedDomain, Proxied {
         address to,
         uint256 amount
     ) external {
-        require(burners[msg.sender], "NOT_ALLOWED_MINTER");
+        require(burners[msg.sender], "NOT_ALLOWED_BURNER");
         _underlyingToken.safeTransfer(to, amount);
         _burnFrom(from, amount);
     }
