@@ -140,6 +140,13 @@
         Plugins
         <Help class="w-4 h-4">Manage Plugins</Help>
       </NavButton>
+      <NavButton class="m-1" label="cashout" href={url('cashout/')}>
+        Cash Out
+        <Help class="w-4 h-4">
+          Here you'll be able to cash the
+          <PlayCoin class="w-4 h-4 inline" /> out into XDAI
+        </Help>
+      </NavButton>
       {#if showErrorButton}
         <NavButton class="m-1" label="settings" on:click={() => account.generateError()}>
           Error
