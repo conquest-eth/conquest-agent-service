@@ -55,6 +55,11 @@ contract BasicAlliance {
         _allianceRegistry.addMultiplePlayersToAlliance(playerSubmissions);
     }
 
+    function removeMember(address player) external {
+        require(msg.sender == admin, "NOT_ALLOWED");
+        _allianceRegistry.ejectPlayerFromAlliance(player);
+    }
+
     function claimInvite(
         address player,
         uint32 nonce,

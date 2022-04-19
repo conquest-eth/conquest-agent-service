@@ -8,15 +8,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const OuterSpaceDeployment = await deployments.get('OuterSpace');
 
-  await execute('FreePlayToken', {from: deployer, log: true, autoMine: true}, 'setMinter', deployer, true);
+  const isMinter = await read('FreePlayToken', 'minters', deployer);
+  if (!isMinter) {
+    await execute('FreePlayToken', {from: deployer, log: true, autoMine: true}, 'setMinter', deployer, true);
+  }
 
-  await execute(
-    'FreePlayToken',
-    {from: deployer, log: true, autoMine: true},
-    'setBurner',
-    OuterSpaceDeployment.address,
-    true
-  );
+  const isBurner = await read('FreePlayToken', 'burners', OuterSpaceDeployment.address);
+  if (!isBurner) {
+    await execute(
+      'FreePlayToken',
+      {from: deployer, log: true, autoMine: true},
+      'setBurner',
+      OuterSpaceDeployment.address,
+      true
+    );
+  }
 };
 export default func;
 func.tags = ['FreePlayToken', 'FreePlayToken_setup'];
