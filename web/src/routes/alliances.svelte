@@ -52,7 +52,7 @@
     <p>
       For now we have created a basic alliance that is managed by one admin user. Check it out <a
         class="underline"
-        href="https://basic-alliances-beta.conquest.etherplay.io/">here</a
+        href="https://basic-alliances-defcon.conquest.etherplay.io/">here</a
       >
     </p>
   </div>
