@@ -23,7 +23,7 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const tokenAmounts: BigNumber[] = [];
   const nativeTokenAmounts: BigNumber[] = [];
 
-  const page = lists[0];
+  const page = lists[3];
 
   if (page.used) {
     throw new Error('page used');
@@ -48,20 +48,20 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
     totalETH: formatEther(totalETH),
   });
 
-  // await deployments.execute(
-  //   'FreePlayToken',
-  //   {
-  //     from: deployer,
-  //     log: true,
-  //     autoMine: true,
-  //     value: amountOfNativeToken.add(claimKeyETHAmount),
-  //     gasLimit: 300000,
-  //   },
-  //   'mintMultipleViaNativeTokenPlusSendExtraNativeTokens',
-  //   addresses,
-  //   tokenAmounts,
-  //   nativeTokenAmounts
-  // );
+  await deployments.execute(
+    'FreePlayToken',
+    {
+      from: deployer,
+      log: true,
+      autoMine: true,
+      value: totalETH,
+      gasLimit: 10000000,
+    },
+    'mintMultipleViaNativeTokenPlusSendExtraNativeTokens',
+    addresses,
+    tokenAmounts,
+    nativeTokenAmounts
+  );
 }
 
 // function wait(time: number): Promise<void> {
