@@ -25,3 +25,4 @@ metadata/
 # ignore stats as they are big files
 .player_stats.json
 .stats.json
+.free_token_list.json

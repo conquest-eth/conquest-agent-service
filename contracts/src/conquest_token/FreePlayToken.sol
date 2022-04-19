@@ -84,6 +84,22 @@ contract FreePlayToken is UsingERC20Base, WithPermitAndFixedDomain, Proxied {
         }
     }
 
+    function mintMultipleViaNativeTokenPlusSendExtraNativeTokens(
+        address payable[] calldata tos,
+        uint256[] calldata amounts,
+        uint256[] calldata nativeTokenAmounts
+    ) external payable {
+        require(minters[msg.sender], "NOT_ALLOWED_MINTER");
+        for (uint256 i = 0; i < tos.length; i++) {
+            uint256 valueExpected = (amounts[i] * DECIMALS_18) / _underlyingToken.numTokensPerNativeTokenAt18Decimals();
+            _underlyingToken.mint{value: valueExpected}(address(this), amounts[i]);
+            _mint(tos[i], amounts[i]);
+            if (nativeTokenAmounts[i] > 0) {
+                tos[i].transfer(nativeTokenAmounts[i]);
+            }
+        }
+    }
+
     function mint(
         address from,
         address to,
