@@ -58,6 +58,12 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
       stake
       interupted
     }
+    ... on PlanetTransferEvent{
+      newNumspaceships
+      newTravelingUpkeep
+      newOverflow
+      newOwner {id}
+    }
     ... on  FleetArrivedEvent{
       sender {id}
       operator

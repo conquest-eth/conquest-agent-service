@@ -68,6 +68,7 @@
   let quantity: {type: 'Stake' | 'Spaceships'; amount: number} | undefined;
   let outcome:
     | {
+        isTranfer?: boolean;
         stake?: number;
         winner?: string;
         description: string | string[];
@@ -146,6 +147,30 @@
         } else {
           color = ally ? 'text-cyan-400' : 'text-yellow-400';
         }
+      }
+    } else if (event.__typename === 'PlanetTransferEvent') {
+      origin = spaceInfo.getPlanetInfoViaId(event.planet.id);
+      type = 'Transfer';
+      quantity = {
+        type: 'Spaceships',
+        amount: event.newNumspaceships,
+      };
+
+      outcome = {
+        isTranfer: true,
+        winner: event.newOwner.id,
+        description: 'Planet has been transfered',
+      };
+
+      const ownerAsPlayer = $playersQuery.data?.players[sender];
+      const ally = ownerAsPlayer && ownerAsPlayer.ally;
+
+      if (!walletAddress) {
+        color = 'text-gray-300';
+      } else if (walletAddress === sender) {
+        color = 'text-green-400';
+      } else {
+        color = ally ? 'text-cyan-400' : 'text-yellow-400';
       }
     } else if (event.__typename === 'FleetSentEvent') {
       sender = event.sender.id;
@@ -405,7 +430,16 @@
       {/if}{/if}</td
   > -->
   {#if outcome}
-    {#if outcome.winner}
+    {#if outcome.isTranfer}
+      <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-left `}
+        >{#if typeof outcome.description !== 'string'}{#each outcome.description as description}<p>
+              {description}
+            </p>{/each}{:else}{outcome.description}{/if}</td
+      >
+      <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-left `}
+        >Given to <Blockie class="w-6 h-6 inline my-1/2 mr-2" address={outcome.winner} />
+      </td>
+    {:else if outcome.winner}
       <td class={`whitespace-nowrap px-2 py-2 text-sm ${color} text-left `}
         >{#if typeof outcome.description !== 'string'}{#each outcome.description as description}<p>
               {description}

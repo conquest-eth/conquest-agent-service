@@ -19,6 +19,8 @@
   <FleetSentEventDetails {event} />
 {:else if event.__typename === 'PlanetStakeEvent'}
   <PlanetStakeEventEventDetails {event} />
+  <!-- {:else if event.__typename === 'PlanetTransferEvent'}
+  <PlanetStakeEventEventDetails {event} /> -->
   <!-- {:else if event.__typename === 'ExitCompleteEvent'}
   <FleetArrivedEventDetails {event} /> -->
   <!-- {:else if event.__typename === 'StakeToWithdrawEvent'}

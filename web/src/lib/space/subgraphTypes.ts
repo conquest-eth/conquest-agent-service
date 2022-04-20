@@ -3,6 +3,7 @@ import {BigNumber} from '@ethersproject/bignumber';
 export type GenericEvent =
   | PlanetStakeEvent
   | PlanetExitEvent
+  | PlanetTransferEvent
   | FleetArrivedEvent
   | FleetSentEvent
   | TravelingUpkeepReductionFromDestructionEvent
@@ -12,6 +13,7 @@ export type GenericEvent =
 export type GenericParsedEvent =
   | PlanetStakeParsedEvent
   | PlanetExitParsedEvent
+  | PlanetTransferParsedEvent
   | FleetArrivedParsedEvent
   | FleetSentParsedEvent
   | TravelingUpkeepReductionFromDestructionParsedEvent
@@ -39,6 +41,7 @@ export type OwnerParsedEvent = {
 export type EventTypeName =
   | 'PlanetStakeEvent'
   | 'PlanetExitEvent'
+  | 'PlanetTransferEvent'
   | 'FleetSentEvent'
   | 'FleetArrivedEvent'
   | 'TravelingUpkeepReductionFromDestructionEvent'
@@ -97,6 +100,22 @@ export type PlanetExitParsedEvent = PlanetParsedEvent & {
   interupted: boolean;
   complete: boolean;
   success: boolean;
+};
+
+export type PlanetTransferEvent = PlanetEvent & {
+  __typename: 'PlanetTransferEvent';
+  newNumspaceships: string;
+  newTravelingUpkeep: string;
+  newOverflow: string;
+  newOwner: {id: string};
+};
+
+export type PlanetTransferParsedEvent = PlanetEvent & {
+  __typename: 'PlanetTransferEvent';
+  newNumspaceships: number;
+  newTravelingUpkeep: number;
+  newOverflow: number;
+  newOwner: {id: string};
 };
 
 export type PlanetInteruptedExitEvent = PlanetExitEvent & {
@@ -246,6 +265,23 @@ export function parsePlanetExitEvent(v: PlanetExitEvent, interupted: boolean): P
   };
 }
 
+export function parsePlanetTransferEvent(v: PlanetTransferEvent): PlanetTransferParsedEvent {
+  console.log({newOwner: v.newOwner});
+  return {
+    id: v.id,
+    __typename: v.__typename,
+    transaction: v.transaction,
+    owner: v.owner,
+    blockNumber: v.blockNumber,
+    timestamp: v.timestamp,
+    planet: v.planet,
+    newNumspaceships: parseInt(v.newNumspaceships),
+    newOverflow: parseInt(v.newOverflow),
+    newTravelingUpkeep: parseInt(v.newTravelingUpkeep),
+    newOwner: v.newOwner,
+  };
+}
+
 export function parsePlanetInteruptedExitEvent(v: PlanetExitEvent): PlanetInteruptedExitParsedEvent {
   return parsePlanetExitEvent(v, true) as PlanetInteruptedExitParsedEvent;
 }
@@ -335,6 +371,8 @@ export function parseEvent<T extends EventTypeName>(
     event = parseFleetArrived(e as FleetArrivedEvent);
   } else if (e.__typename === 'PlanetExitEvent') {
     event = parsePlanetExitEvent(e as PlanetExitEvent, (e as PlanetExitEvent).interupted);
+  } else if (e.__typename === 'PlanetTransferEvent') {
+    event = parsePlanetTransferEvent(e as PlanetTransferEvent);
   } else if (e.__typename === 'PlanetStakeEvent') {
     event = parsePlanetStakeEvent(e as PlanetStakeEvent);
   } else if (e.__typename === 'FleetSentEvent') {
