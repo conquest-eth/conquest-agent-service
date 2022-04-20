@@ -5,7 +5,10 @@
 
   import {Blockie} from '$lib/utils/eth/blockie';
 
-  $: uri = Blockie.getURI(address, offset);
+  $: uri =
+    address.toLowerCase() === '0xdeaddeaddeaddeaddeaddeaddeaddeaddeaddead'
+      ? 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAAXNSR0IArs4c6QAAAC5JREFUCJljYCAeXK/excDAwPL//38scgy7GOASaAwmXAYyYjWKkZERoReZxAcA+csbkMtRTQoAAAAASUVORK5CYII='
+      : Blockie.getURI(address, offset);
 </script>
 
 <img {style} src={uri} alt={address} />
