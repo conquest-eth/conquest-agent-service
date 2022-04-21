@@ -178,12 +178,10 @@ contract OuterSpaceFacetBase is
                     uint256 increase = amountProducedTheWholeTime;
                     if (planetUpdate.travelingUpkeep > 0) {
                         uint256 timeBeforeUpkeepBackToZero =
-                            uint256(uint40(planetUpdate.travelingUpkeep)) /
+                            (uint256(uint40(planetUpdate.travelingUpkeep)) * 1 hours) /
                                 ((uint256(_productionSpeedUp) *
                                     uint256(production) *
-                                    _upkeepProductionDecreaseRatePer10000th) /
-                                    1 hours /
-                                    10000);
+                                    _upkeepProductionDecreaseRatePer10000th) / 10000); // 10,000 should be extracted as to not reach div by zero (like "1 hours")
                         if (timeBeforeUpkeepBackToZero >= timePassed) {
                             extraUpkeepPaid = increase;
                         } else {
