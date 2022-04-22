@@ -7,6 +7,8 @@ async function func(hre: HardhatRuntimeEnvironment): Promise<void> {
   const {deployments} = hre;
   const theGraph = new TheGraph(`https://api.thegraph.com/subgraphs/name/${process.env.SUBGRAPH_NAME}`);
 
+  const latestBlockNnmber = await hre.ethers.provider.getBlockNumber();
+
   const queryString = `
 query($blockNumber: Int! $first: Int! $lastId: ID!) {
     owners(first: $first block: {number: $blockNumber} where: {
@@ -14,8 +16,6 @@ query($blockNumber: Int! $first: Int! $lastId: ID!) {
       id_gt: $lastId
     }) {
       id
-      introducer { id }
-      tokenGiven
     }
 }
 `;
@@ -25,7 +25,7 @@ query($blockNumber: Int! $first: Int! $lastId: ID!) {
   }[] = await theGraph.query(queryString, {
     field: 'owners',
     variables: {
-      blockNumber: 21538868,
+      blockNumber: latestBlockNnmber - 12,
     },
   });
 
