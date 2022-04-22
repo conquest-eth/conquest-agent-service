@@ -147,6 +147,10 @@
           <PlayCoin class="w-4 h-4 inline" /> out into XDAI
         </Help>
       </NavButton>
+      <NavButton class="m-1" label="stats" href={url('stats/')}>
+        Stats
+        <Help class="w-4 h-4">Show Stats</Help>
+      </NavButton>
       {#if showErrorButton}
         <NavButton class="m-1" label="settings" on:click={() => account.generateError()}>
           Error
