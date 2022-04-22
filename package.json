@@ -49,6 +49,7 @@
     "account-service:build": "node ./_scripts.js account-service:build",
     "account-service:deploy": "node ./_scripts.js account-service:deploy",
     "---------------------- subgraphs ----------------------": "generate and deploy local subgraph",
+    "subgraph:build": "node ./_scripts.js subgraph:build",
     "subgraph:dev": "node ./_scripts.js subgraph:dev",
     "subgraph:deploy": "node ./_scripts.js subgraph:deploy",
     "subgraph:etherplay": "node ./_scripts.js subgraph:etherplay",

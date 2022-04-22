@@ -215,6 +215,10 @@ async function performAction(rawArgs) {
     const network = fixedArgs[0] || 'localhost';
     const env = getEnv(network);
     await execute(`${env}npm --prefix contracts run tenderly:push ${network}`);
+  } else if (firstArg === 'subgraph:build') {
+    await execute(`dotenv -- npm --prefix subgraph run generate ../contracts/deployments/localhost mainnet`);
+    await execute(`dotenv -- npm --prefix subgraph run codegen`);
+    await execute(`dotenv -- npm --prefix subgraph run build`);
   } else if (firstArg === 'subgraph:dev') {
     await execute(`dotenv -- npm --prefix subgraph run setup`);
     await execute(`wait-on web/src/lib/contracts.json`);
