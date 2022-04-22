@@ -193,6 +193,15 @@ if (import.meta.env.MODE === 'production') {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function report(message: any) {
+  try {
+    Sentry.captureMessage(message);
+  } catch (e) {
+    console.error(`error reporting message : ${message}`, e);
+  }
+}
+
 export {
   finality,
   fallbackProviderOrUrl,
@@ -219,6 +228,7 @@ export {
   setGetName,
   version,
   options,
+  report,
 };
 
 if (typeof window !== 'undefined') {
