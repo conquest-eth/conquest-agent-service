@@ -68,11 +68,17 @@ class PlanetFutureStateStores {
           if (extraTime > 0 || firstTime) {
             futureState = spaceInfo.computeFuturePlanetState(planetInfo, futureState, extraTime);
           }
+
+          let newQuantity = fleet.quantity + accumulatedAttackAdded;
+          if (newQuantity > Math.pow(2, 32) - 1) {
+            newQuantity = Math.pow(2, 32) - 1;
+          }
+
           const outcome = spaceInfo.outcome(
             fleet.from,
             planetInfo,
             futureState,
-            fleet.quantity + accumulatedAttackAdded,
+            newQuantity,
             fleet.timeLeft,
             playersQuery.getPlayer(fleet.fleetSender),
             playersQuery.getPlayer(fleet.owner),
