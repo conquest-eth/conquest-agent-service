@@ -21,6 +21,7 @@
   import confirmDatePlugin from 'flatpickr/dist/plugins/confirmDate/confirmDate.js';
   import type {Outcome} from 'conquest-eth-common';
   import {planetFutureStates} from '$lib/space/planetsFuture';
+  import {options} from '$lib/config';
 
   let travelingFleetSelected: string | undefined = undefined;
   function onTravelingFleetSelected(event: Event) {
@@ -600,13 +601,41 @@
                 fleetOwnerSpecified,
                 arrivalTimeWanted
                   ? Math.floor(arrivalTimeWanted.getTime() / 1000)
-                  : Math.ceil((spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo) + now()) / 60) * 60
+                  : Math.ceil((spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo) + now()) / 60) * 60,
+                false
               )}
           >
             <p>Confirm</p>
             {#if confirmDisabled}(need higher attack){/if}
           </PanelButton>
         </div>
+
+        {#if options['forceSend']}
+          <div class="text-center">
+            <PanelButton
+              borderColor={border_color}
+              color={text_color}
+              cornerColor={border_color}
+              class="mt-5"
+              label="Fleet Amount"
+              disabled={confirmDisabled}
+              on:click={() =>
+                sendFlow.confirm(
+                  fleetAmount,
+                  gift,
+                  useAgentService,
+                  fleetOwnerSpecified,
+                  arrivalTimeWanted
+                    ? Math.floor(arrivalTimeWanted.getTime() / 1000)
+                    : Math.ceil((spaceInfo.timeToArrive(fromPlanetInfo, toPlanetInfo) + now()) / 60) * 60,
+                  true
+                )}
+            >
+              <p>FORCE</p>
+              {#if confirmDisabled}(need higher attack){/if}
+            </PanelButton>
+          </div>
+        {/if}
       {/if}
     </div>
   </Modal>

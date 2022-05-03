@@ -70,6 +70,7 @@ type Data = {
   fleetAmount: number;
   useAgentService: boolean;
   config?: SendConfig;
+  force?: boolean;
 };
 
 export type SendFlow = {
@@ -239,7 +240,8 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     gift: boolean,
     useAgentService: boolean,
     fleetOwner: string,
-    arrivalTimeWanted?: number
+    arrivalTimeWanted: number | undefined,
+    force: boolean
   ) {
     this.setData({
       fleetAmount,
@@ -249,11 +251,12 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
         fleetOwner,
         arrivalTimeWanted,
       },
+      force,
     });
     if (!account.isWelcomingStepCompleted(TutorialSteps.TUTORIAL_FLEET_PRE_TRANSACTION)) {
       this.setPartial({step: 'TUTORIAL_PRE_TRANSACTION'});
     } else {
-      this._confirm(fleetAmount, gift, useAgentService);
+      this._confirm(fleetAmount, gift, useAgentService, force);
     }
   }
 
@@ -270,11 +273,12 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
       this.$store.data?.gift,
       this.$store.data?.useAgentService,
       this.$store.data?.config?.fleetOwner,
-      this.$store.data?.config?.arrivalTimeWanted
+      this.$store.data?.config?.arrivalTimeWanted,
+      this.$store.data?.force
     );
   }
 
-  async _confirm(fleetAmount: number, gift: boolean, useAgentService: boolean): Promise<void> {
+  async _confirm(fleetAmount: number, gift: boolean, useAgentService: boolean, force: boolean): Promise<void> {
     const flow = this.setPartial({step: 'CREATING_TX', cancelingConfirmation: undefined});
     if (!flow.data) {
       throw new Error(`no data for send flow`);
@@ -448,28 +452,33 @@ class SendFlowStore extends BaseStoreWithData<SendFlow, Data> {
     }
 
     let gasEstimation: BigNumber;
-    try {
-      if (abi) {
-        // create a contract interface for the purchase call
-        const contract = new Contract(operator, [abi], wallet.provider.getSigner());
-        gasEstimation = await contract.estimateGas[abi.name](...args, {
-          value: msgValue,
+
+    if (force) {
+      gasEstimation = BigNumber.from(2000000);
+    } else {
+      try {
+        if (abi) {
+          // create a contract interface for the purchase call
+          const contract = new Contract(operator, [abi], wallet.provider.getSigner());
+          gasEstimation = await contract.estimateGas[abi.name](...args, {
+            value: msgValue,
+          });
+        } else {
+          gasEstimation = await wallet.contracts?.OuterSpace.estimateGas.sendFor({
+            fleetSender,
+            fleetOwner,
+            from: xyToLocation(from.x, from.y),
+            quantity: fleetAmount,
+            toHash,
+          });
+        }
+      } catch (e) {
+        this.setPartial({
+          step: 'CHOOSE_FLEET_AMOUNT',
+          error: e,
         });
-      } else {
-        gasEstimation = await wallet.contracts?.OuterSpace.estimateGas.sendFor({
-          fleetSender,
-          fleetOwner,
-          from: xyToLocation(from.x, from.y),
-          quantity: fleetAmount,
-          toHash,
-        });
+        return;
       }
-    } catch (e) {
-      this.setPartial({
-        step: 'CHOOSE_FLEET_AMOUNT',
-        error: e,
-      });
-      return;
     }
     // TODO gasEstimation for SEND
     const gasLimit = gasEstimation.add(100000);
