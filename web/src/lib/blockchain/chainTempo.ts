@@ -44,6 +44,15 @@ class ChainTempo implements Readable<ChainTempoInfo> {
     this.timeout = setTimeout(this.check.bind(this), this.maxTimeout * 1000);
   }
 
+  async sync() {
+    if (this.currentProvider) {
+      const currentBlockNumber = await this.currentProvider.getBlockNumber();
+      if (currentBlockNumber > this.chainInfo.lastBlockNumber) {
+        this.onBlock(currentBlockNumber);
+      }
+    }
+  }
+
   startOrUpdateProvider(provider?: Provider) {
     if (this.currentProvider !== provider) {
       if (this.currentProvider) {

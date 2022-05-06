@@ -66,6 +66,12 @@ export type SpaceQueryResult = {
   owner?: {id: string; playTokenBalance: string; freePlayTokenBalance: string; tokenToWithdraw: string};
   space?: {minX: string; maxX: string; minY: string; maxY: string; address: string};
   chain?: {blockHash: string; blockNumber: string};
+  _meta: {
+    block: {
+      number: number;
+      hash: string;
+    };
+  };
   fleetsArrivedFromYou?: FleetArrivedEvent[]; // TODO
   fleetsArrivedToYou?: FleetArrivedEvent[]; // TODO
   fleetsArrivedAsYou?: FleetArrivedEvent[]; // TODO
@@ -76,11 +82,20 @@ export type SpaceQueryResult = {
 
 export type SpaceState = {
   invalid?: boolean;
+  outofsync?: {
+    delta: number;
+  };
   player?: {id: string; playTokenBalance: BigNumber; freePlayTokenBalance: BigNumber; tokenToWithdraw: BigNumber};
   planets: PlanetContractState[];
   loading: boolean;
   space?: {x1: number; x2: number; y1: number; y2: number; address: string};
   chain?: {blockHash: string; blockNumber: string};
+  _meta: {
+    block: {
+      number: number;
+      hash: string;
+    };
+  };
   fleetsArrivedFromYou: FleetArrivedParsedEvent[]; // TODO
   fleetsArrivedToYou: FleetArrivedParsedEvent[]; // TODO
   fleetsArrivedAsYou: FleetArrivedParsedEvent[]; // TODO
@@ -131,6 +146,12 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
   chain(id: "Chain") {
     blockHash
     blockNumber
+  }
+  _meta {
+    block {
+      number
+      hash
+    }
   }
   space(id: "Space") {
     minX
@@ -310,6 +331,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       await this._handleAccountChange($account);
     });
     this.unsubscribeFromQuery = this.queryStore.subscribe(this.update.bind(this));
+
     return this.stop.bind(this);
   }
 
@@ -360,6 +382,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
         contractAddress: initialContractsInfos.contracts.OuterSpace.address.toLowerCase(),
       });
       return {
+        outofsync: undefined,
         invalid: true,
         loading: false,
         player: data.owner
@@ -393,6 +416,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
               blockNumber: data.chain.blockNumber,
             }
           : undefined,
+        _meta: data._meta,
         fleetsArrivedFromYou: [],
         fleetsArrivedToYou: [],
         fleetsArrivedAsYou: [],
@@ -402,10 +426,17 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
       };
     }
 
+    let outofsync: {delta: number} | undefined;
+    if (data._meta.block.number < chainTempo.chainInfo.lastBlockNumber - 100) {
+      // TODO config
+      outofsync = {delta: chainTempo.chainInfo.lastBlockNumber - data._meta.block.number};
+    }
+
     const planets = (data.myplanets || []).concat(data.nullplanets.concat(data.otherplanets));
     // console.log(`stop loading query!`);
     return {
       loading: false,
+      outofsync,
       player: data.owner
         ? {
             id: data.owner.id,
@@ -450,6 +481,7 @@ export class SpaceQueryStore implements QueryStore<SpaceState> {
             blockNumber: data.chain.blockNumber,
           }
         : undefined,
+      _meta: data._meta,
       fleetsArrivedFromYou: !data.fleetsArrivedFromYou ? [] : data.fleetsArrivedFromYou.map(parseFleetArrived),
       fleetsArrivedToYou: !data.fleetsArrivedToYou ? [] : data.fleetsArrivedToYou.map(parseFleetArrived),
       fleetsArrivedAsYou: !data.fleetsArrivedAsYou ? [] : data.fleetsArrivedAsYou.map(parseFleetArrived),
