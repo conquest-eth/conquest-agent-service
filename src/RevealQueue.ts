@@ -21,8 +21,6 @@ import {
 import {xyToLocation, createResponse, time2text, dequals} from './utils';
 import { parseEther } from 'ethers/lib/utils';
 
-const ADMIN_PASSWORD = 'booted-saffron-blatancy-poncho';
-
 // const oldFetch = globalThis.fetch;
 
 // function wait(delay) {
@@ -299,7 +297,7 @@ export class RevealQueue extends DO {
   }
 
   async adoptDefaultFeeSubmission(path: string[]): Promise<Response> {
-    if (path[1] !== ADMIN_PASSWORD) {
+    if (path[1] !== this.env.API_KEY) {
       return createResponse({success: false});
     }
 
@@ -317,7 +315,7 @@ export class RevealQueue extends DO {
   }
 
   async adoptDefaultFeeSubmissionOnReveal(path: string[]): Promise<Response> {
-    if (path[1] !== ADMIN_PASSWORD) {
+    if (path[1] !== this.env.API_KEY) {
       return createResponse({success: false});
     }
 
@@ -576,7 +574,7 @@ export class RevealQueue extends DO {
   }
 
   async deleteAll(path: string[]): Promise<Response> {
-    if (path[0] === ADMIN_PASSWORD) {
+    if (path[0] === this.env.API_KEY) {
       this.state.storage.deleteAll();
       return createResponse({success: true});
     } else {
@@ -678,7 +676,7 @@ export class RevealQueue extends DO {
   }
 
   async getQueueAsSortedArray(path: string[]): Promise<Response> {
-    if (path[0] !== ADMIN_PASSWORD) {
+    if (path[0] !== this.env.API_KEY) {
       return createResponse({success: false});
     }
     const limit = 1000;
@@ -806,7 +804,7 @@ export class RevealQueue extends DO {
   }
 
   async setSyncState(path: string[]): Promise<Response> {
-    if (path[0] !== ADMIN_PASSWORD) {
+    if (path[0] !== this.env.API_KEY) {
       return createResponse({success: false});
     }
     let lastSync = await this.state.storage.get<SyncData | undefined>('sync');
