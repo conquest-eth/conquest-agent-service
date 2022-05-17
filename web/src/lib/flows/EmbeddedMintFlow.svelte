@@ -66,7 +66,7 @@
 
     <p class="m-2">You can adjust the amount here</p>
 
-    <input class="bg-black" type="number" bind:value={tokenAmountToMint} />
+    <input class="bg-black" step="0.1" type="number" bind:value={tokenAmountToMint} />
 
     <p class="text-center mt-3">
       <Button label="OK" on:click={() => mintFlow.confirm(tokenAmountToMint)}>Confirm</Button>

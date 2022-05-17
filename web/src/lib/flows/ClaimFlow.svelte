@@ -80,7 +80,9 @@
         You can mint some by depositing XDAI And you can always burn them then to get back the XDAI. As long as you hold
         them or withdraw from the game.
         <center class="m-5">
-          <Button label="mint" on:click={() => mint(5)}>Mint 5 <PlayCoin class="inline w-4" /></Button>
+          <Button label="mint" on:click={() => mint(cost.toNumber() / 10000)}
+            >Mint {cost.toNumber() / 10000} <PlayCoin class="inline w-4" /></Button
+          >
         </center>
       </p>
     {:else if $myTokens.freePlayTokenBalance.lt(cost.mul('100000000000000')) && $myTokens.playTokenBalance.lt(cost.mul('100000000000000'))}
@@ -104,7 +106,9 @@
         You can mint some by depositing XDAI And you can always burn them then to get back the XDAI. As long as you hold
         them or withdraw from the game.
         <center class="m-5">
-          <Button label="mint" on:click={() => mint(5)}>Mint 5 <PlayCoin class="inline w-4" /></Button>
+          <Button label="mint" on:click={() => mint(cost.toNumber() / 10000)}
+            >Mint {cost.toNumber() / 10000} <PlayCoin class="inline w-4" /></Button
+          >
         </center>
       </p>
     {:else}

@@ -16,6 +16,7 @@
   import {formatEther, parseEther} from '@ethersproject/units';
   import {account} from '$lib/account/account';
   import {fleetList} from '$lib/space/fleets';
+  import {onMount} from 'svelte';
 
   $: registered = $agentService.account && $agentService.account.delegate;
   $: enoughBalance = registered && $agentService.account.balance.gte($agentService.account.minimumBalance);
@@ -23,7 +24,10 @@
   $: minimumBalance = $agentService.account
     ? BigNumber.from($agentService.account?.minimumBalance)
     : parseEther('0.01');
-  const topupValue = parseEther('0.1'); // TODO config
+  let topupValueInEth;
+  onMount(() => {
+    topupValueInEth = 0.9;
+  });
 </script>
 
 <div class="w-full h-full bg-black">
@@ -120,10 +124,18 @@
                 {$agent.balance.div($agent?.cost || 0)}
                 fleet) -->
 
-              <Button class="w-max-content m-4" label="Top Up" on:click={() => agentService_topup.topup(topupValue)}>
-                Top Up ({formatEther(topupValue)})
+              <Button
+                class="w-max-content mt-4 mx-4"
+                label="Top Up"
+                on:click={() => agentService_topup.topup(parseEther('' + topupValueInEth))}
+              >
+                Top Up ({topupValueInEth})
                 <!-- Top Up (for 10 fleets) -->
               </Button>
+            </p>
+            <p class="text-xs">You can adjust the amount here</p>
+            <p class="mb-4">
+              <input class="bg-gray-800 text-xs" step="0.1" type="number" bind:value={topupValueInEth} />
             </p>
           {/if}
 
