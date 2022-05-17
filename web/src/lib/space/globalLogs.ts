@@ -13,14 +13,13 @@ export type GlobalLogs = {
 
 type QueryData = OwnerEvent;
 
-const logPeriod = Math.floor(3 * 24 * 60 * 60);
-
 // TODO __typename_not_in: [""]
 //  __typename cannot be used for that. should maybe add a manual typename
 const eventsToFilterOut = ['TravelingUpkeepReductionFromDestructionEvent', 'StakeToWithdrawEvent', 'ExitCompleteEvent'];
 
 class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]> {
   private timeout: NodeJS.Timeout;
+  private logPeriod = Math.floor(3 * 24 * 60 * 60);
   public constructor() {
     super({
       step: 'IDLE',
@@ -28,7 +27,7 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
   }
 
   async fetch() {
-    const timestamp = '' + (now() - logPeriod);
+    const timestamp = '' + (now() - this.logPeriod);
 
     const query = `
     query($first: Int! $lastId: ID! $timestamp: BigInt!){
@@ -133,7 +132,10 @@ class GlobalLogsStore extends BaseStoreWithData<GlobalLogs, GenericParsedEvent[]
     this.timeout = setTimeout(this.fetch.bind(this), lowFrequencyFetch * 1000);
   }
 
-  start() {
+  start(logPeriod?: number) {
+    if (logPeriod) {
+      this.logPeriod = logPeriod;
+    }
     if (this.$store.step === 'IDLE') {
       this.setPartial({step: 'LOADING'});
     }

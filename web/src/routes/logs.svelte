@@ -11,8 +11,15 @@
   import {planetStates} from '$lib/space/planetStates';
   import {wallet} from '$lib/blockchain/wallet';
   import Counter from '$lib/components/generic/Counter.svelte';
+  import {page} from '$app/stores';
   onMount(() => {
-    globalLogs.start();
+    let logPeriod: number | undefined;
+    let logPeriodParam = $page.url.searchParams.get('logPeriod');
+    if (logPeriodParam) {
+      logPeriod = parseInt(logPeriodParam);
+    }
+
+    globalLogs.start(logPeriod);
     planetStates.start();
   });
 
