@@ -136,8 +136,48 @@ contract OuterSpacePlanetsFacet is OuterSpaceFacetBase, IOuterSpacePlanets {
         ownershipStartTime = _planets[location].ownershipStartTime;
     }
 
-    function getPlanetState(uint256 location) external view returns (Planet memory state) {
-        return _planets[location];
+    // TODO update spaceship sale contract // now use ExternalPlanet
+    function getPlanetState(uint256 location) external view returns (ExternalPlanet memory state) {
+        Planet storage planet = _getPlanet(location);
+        (bool active, uint32 numSpaceships) = _activeNumSpaceships(planet.numSpaceships);
+        state = ExternalPlanet({
+            owner: planet.owner,
+            ownershipStartTime: planet.ownershipStartTime,
+            exitStartTime: planet.exitStartTime,
+            numSpaceships: numSpaceships,
+            overflow: planet.overflow,
+            lastUpdated: planet.lastUpdated,
+            active: active,
+            reward: _rewards[location]
+        });
+    }
+
+    // TODO test
+    function getUpdatedPlanetState(uint256 location) external view returns (ExternalPlanet memory state) {
+        // -----------------------------------------------------------------------------------------------------------
+        // Initialise State Update
+        // -----------------------------------------------------------------------------------------------------------
+        Planet storage planet = _getPlanet(location);
+        PlanetUpdateState memory planetUpdate = _createPlanetUpdateState(planet, location);
+
+        // -----------------------------------------------------------------------------------------------------------
+        // Compute Basic Planet Updates
+        // -----------------------------------------------------------------------------------------------------------
+        _computePlanetUpdateForTimeElapsed(planetUpdate);
+
+        state = ExternalPlanet({
+            owner: planetUpdate.newOwner,
+            ownershipStartTime: planetUpdate.newOwner != planetUpdate.owner
+                ? uint40(block.timestamp)
+                : planet.ownershipStartTime,
+            exitStartTime: planetUpdate.newExitStartTime,
+            numSpaceships: planetUpdate.numSpaceships,
+            overflow: planetUpdate.overflow,
+            lastUpdated: uint40(block.timestamp),
+            active: planetUpdate.active,
+            reward: _rewards[location]
+            // travelingUpkeep
+        });
     }
 
     function getPlanet(uint256 location) external view returns (ExternalPlanet memory state, PlanetStats memory stats) {
