@@ -60,8 +60,9 @@ const config: HardhatUserConfig = {
   namedAccounts: {
     deployer: 0,
     agentService: {
+      hardhat: 1,
+      localhost: '0x3bfa2f0888E7d87f9bb044EAE82CEb62290337B4', // see ../agent-service/.env(.default)
       1337: '0x3bfa2f0888E7d87f9bb044EAE82CEb62290337B4', // see ../agent-service/.env(.default)
-      31337: '0x3bfa2f0888E7d87f9bb044EAE82CEb62290337B4',
     },
     claimKeyDistributor: {
       hardhat: 0,
