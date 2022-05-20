@@ -127,6 +127,7 @@ function getEnv(network) {
       env += ` -e .env -e contracts/.env -- `;
     }
   }
+  console.log({ENV: env});
   return env;
 }
 
