@@ -986,22 +986,88 @@
               "type": "uint32"
             },
             {
+              "internalType": "uint32",
+              "name": "overflow",
+              "type": "uint32"
+            },
+            {
               "internalType": "uint40",
               "name": "lastUpdated",
               "type": "uint40"
             },
             {
-              "internalType": "int40",
-              "name": "travelingUpkeep",
-              "type": "int40"
+              "internalType": "bool",
+              "name": "active",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "reward",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ImportingOuterSpaceTypes.ExternalPlanet",
+          "name": "state",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "location",
+          "type": "uint256"
+        }
+      ],
+      "name": "getUpdatedPlanetState",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "uint40",
+              "name": "ownershipStartTime",
+              "type": "uint40"
+            },
+            {
+              "internalType": "uint40",
+              "name": "exitStartTime",
+              "type": "uint40"
+            },
+            {
+              "internalType": "uint32",
+              "name": "numSpaceships",
+              "type": "uint32"
             },
             {
               "internalType": "uint32",
               "name": "overflow",
               "type": "uint32"
+            },
+            {
+              "internalType": "uint40",
+              "name": "lastUpdated",
+              "type": "uint40"
+            },
+            {
+              "internalType": "bool",
+              "name": "active",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "reward",
+              "type": "uint256"
             }
           ],
-          "internalType": "struct ImportingOuterSpaceTypes.Planet",
+          "internalType": "struct ImportingOuterSpaceTypes.ExternalPlanet",
           "name": "state",
           "type": "tuple"
         }
@@ -1867,7 +1933,7 @@
       }
     ]
   ],
-  "numDeployments": 3,
+  "numDeployments": 4,
   "linkedData": {
     "genesisHash": "0xdefd8666ec077c932b62f77bcfea4badcb3c296fc1f8a8792c9b7ca2ee6c8c4c",
     "resolveWindow": 43200,
@@ -1915,10 +1981,11 @@
       ]
     },
     {
-      "facetAddress": "0xd56c4120B7DDd36c5646e5b7e16482D2a1abD174",
+      "facetAddress": "0xb383bf89acb7F420cE41aF1dAf59409aE454B567",
       "functionSelectors": [
         "0x34efcb8e",
         "0xd522989e",
+        "0x1e7c86ea",
         "0xe985e9c5",
         "0x8a886cd5",
         "0x6352211e",

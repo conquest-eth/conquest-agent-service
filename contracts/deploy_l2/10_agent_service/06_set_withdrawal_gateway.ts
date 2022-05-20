@@ -8,7 +8,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const currentOwner = await read('PaymentGateway', 'owner');
   if (currentOwner.toLowerCase() !== paymentWithdrwalGateway.address.toLowerCase()) {
-    await execute('PaymentGateway', {from: currentOwner}, 'transferOwnership', paymentWithdrwalGateway.address);
+    await execute(
+      'PaymentGateway',
+      {from: currentOwner, log: true},
+      'transferOwnership',
+      paymentWithdrwalGateway.address
+    );
   }
 };
 export default func;
