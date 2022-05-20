@@ -1,5 +1,6 @@
 .env*
 !.env*.default
+!.env.web.*
 .newsh.json
 node_modules
 conquest-eth.code-workspace
