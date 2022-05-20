@@ -476,7 +476,7 @@ export class RevealQueue extends DO {
 
     let balance = BigNumber.from(account.paymentReceived).sub(BigNumber.from(account.paymentUsed).add(account.paymentSpending));
 
-    if (account.withdrawalRequest && timestamp < account.withdrawalRequest.timestamp + contracts.PaymentWithdrawalGateway.linkedData.MSG_EXPIRY + contracts.PaymentWithdrawalGateway.linkedData.EXTERA_DELAY) {
+    if (account.withdrawalRequest && timestamp < account.withdrawalRequest.timestamp + contracts.PaymentWithdrawalGateway.linkedData.expiryInSeconds + contracts.PaymentWithdrawalGateway.linkedData.extraIntervalInSeconds) {
       balance = balance.sub(account.withdrawalRequest.amount);
     }
 
@@ -602,6 +602,8 @@ export class RevealQueue extends DO {
   }
 
   async account(path: string[]): Promise<Response> {
+    const timestampMs = Math.floor(Date.now());
+    const timestamp = Math.floor(timestampMs / 1000);
     const player = path[0]?.toLowerCase();
     const accountID = `account_${player}`;
     const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
@@ -610,10 +612,15 @@ export class RevealQueue extends DO {
       const minimumCost = maxFeeAllowed.mul(revealMaxGasEstimate);
       const minimumBalance = minimumCost.sub(parseEther('1'));
       let balance = BigNumber.from(accountData.paymentReceived).sub(BigNumber.from(accountData.paymentUsed).add(accountData.paymentSpending));
-      // TODO count the withdrawalRequest amount ?
-      if (balance.lt(minimumBalance)) {
+
+      // if (balance.lt(minimumBalance)) {
         balance = await this._fetchExtraBalanceFromLogs(balance, player);
+      // }
+
+      if (accountData.withdrawalRequest && timestamp < accountData.withdrawalRequest.timestamp + contracts.PaymentWithdrawalGateway.linkedData.expiryInSeconds + contracts.PaymentWithdrawalGateway.linkedData.extraIntervalInSeconds) {
+        balance = balance.sub(accountData.withdrawalRequest.amount);
       }
+
       return createResponse({
         account: {
           ...accountData,
@@ -1033,7 +1040,7 @@ export class RevealQueue extends DO {
         timestamp : account.withdrawalRequest.timestamp
       });
     }
-    return createResponse({success: false});
+    return NotRegistered()
   }
 
   private async _fetchExtraBalanceFromLogs(balance: BigNumber, player: string): Promise<BigNumber> {

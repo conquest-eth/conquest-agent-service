@@ -7,7 +7,7 @@
   import PendingFleetElement from '$lib/components/fleets/PendingFleetElement.svelte';
   import {base} from '$app/paths';
   import {privateWallet} from '$lib/account/privateWallet';
-  import {contractsInfos} from '$lib/blockchain/contractsInfos';
+
   import {agentService} from '$lib/account/agentService';
   import {nativeTokenSymbol} from '$lib/config';
   import agentService_register from '$lib/flows/agentService_register';
@@ -17,6 +17,7 @@
   import {account} from '$lib/account/account';
   import {fleetList} from '$lib/space/fleets';
   import {onMount} from 'svelte';
+  import agentService_withdraw from '$lib/flows/agentService_withdraw';
 
   $: registered = $agentService.account && $agentService.account.delegate;
   $: enoughBalance = registered && $agentService.account.balance.gte($agentService.account.minimumBalance);
@@ -134,10 +135,24 @@
               </Button>
             </p>
             <p class="text-xs">You can adjust the amount here</p>
-            <p class="mb-4">
+            <p>
               <input class="bg-gray-800 text-xs" step="0.1" type="number" bind:value={topupValueInEth} />
             </p>
           {/if}
+
+          <p class="mb-4">
+            {#if $agentService.account?.balance.gt(0)}
+              <Button
+                class="w-max-content mt-4 mx-4"
+                color="text-red-300"
+                cornerColor="border-red-300"
+                label="Withdraw"
+                on:click={() => agentService_withdraw.withdraw()}
+              >
+                Withdraw All
+              </Button>
+            {/if}
+          </p>
 
           <!-- {#if $agentService.lowETH}
                 <p class="text-red-500">The agent need to be topped up to perform the fleet resolution</p>

@@ -33,7 +33,14 @@ async function getNetworkName() {
   let networkName = process.env.NETWORK_NAME;
   if (!networkName) {
     try {
-      const branch = await getCurrentBranch();
+      let branch = await getCurrentBranch();
+      if (branch.indexOf('/') !== -1) {
+        const components = branch.split('/');
+        branch = components[0];
+      } else if (branch.indexOf('_') !== -1) {
+        const components = branch.split('_');
+        branch = components[0];
+      }
       if (fs.existsSync(`contracts/deployments/${branch}`)) {
         networkName = branch;
       }
