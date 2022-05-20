@@ -15,6 +15,9 @@ function wait(numSeconds) {
 
 function getCurrentBranch() {
   return new Promise((resolve, reject) => {
+    if (process.env.VERCEL_GIT_COMMIT_REF) {
+      return resolve(process.env.VERCEL_GIT_COMMIT_REF);
+    }
     try {
       exec('git rev-parse --abbrev-ref HEAD', (error, stdout, stderr) => {
         if (error !== null) {
