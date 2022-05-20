@@ -32,8 +32,10 @@ function getCurrentBranch() {
 async function getNetworkName() {
   let networkName = process.env.NETWORK_NAME;
   if (!networkName) {
+    console.log(`no NETWORK_NAME specified`);
     try {
       let branch = await getCurrentBranch();
+      console.log(`branch: ${branch}`);
       if (branch.indexOf('/') !== -1) {
         const components = branch.split('/');
         branch = components[0];
@@ -44,11 +46,12 @@ async function getNetworkName() {
       if (fs.existsSync(`contracts/deployments/${branch}`)) {
         networkName = branch;
       }
+      console.log(`networkName: ${networkName}`);
     } catch (e) {
       console.error(e);
     }
   }
-  console.log(`networkName: ${networkName}`);
+  // console.log(`networkName: ${networkName}`);
   return networkName;
 }
 
