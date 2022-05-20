@@ -116,8 +116,9 @@ function getEnv(network) {
   let env = 'dotenv -e .env -e contracts/.env -- ';
   if (network && network !== 'localhost') {
     if (fs.existsSync(`.env.web.${network}`) || fs.existsSync(`.env.${network}`)) {
+      env = `dotenv `;
       if (fs.existsSync(`.env.${network}`)) {
-        env = `dotenv -e .env.${network}`;
+        env += ` -e .env.${network}`;
       }
 
       if (fs.existsSync(`.env.web.${network}`)) {
@@ -127,7 +128,7 @@ function getEnv(network) {
       env += ` -e .env -e contracts/.env -- `;
     }
   }
-  console.log({ENV: env});
+  // console.log({ENV: env});
   return env;
 }
 
