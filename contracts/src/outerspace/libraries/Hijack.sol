@@ -1,5 +1,6 @@
 library Hijack {
     bytes32 constant DIAMOND_STORAGE_POSITION = keccak256("diamond.standard.diamond.storage");
+
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     struct FacetAddressAndPosition {
@@ -41,12 +42,14 @@ library Hijack {
             ds.slot := position
         }
     }
+
     function diamond2Storage() internal pure returns (Diamond2Storage storage ds) {
         bytes32 position = DIAMOND_STORAGE_POSITION;
         assembly {
             ds.slot := position
         }
     }
+
     function diamond1Storage() internal pure returns (Diamond1Storage storage ds) {
         bytes32 position = DIAMOND_STORAGE_POSITION;
         assembly {
@@ -69,7 +72,6 @@ library Hijack {
                 sstore(0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103, newOwner)
             }
         } else {
-
             previousOwner = ds2.contractOwner;
             if (previousOwner != address(0)) {
                 // Diamond 2
