@@ -40,7 +40,7 @@
     "@urql/core": "^2.4.3",
     "chai": "^4.3.6",
     "chai-ethers": "^0.0.1",
-    "conquest-eth-common": "0.0.1",
+    "conquest-eth-common": "workspace:*",
     "cross-env": "^7.0.2",
     "dotenv": "^16.0.0",
     "eslint": "^8.10.0",
