@@ -1,0 +1,52 @@
+[
+  {
+    "x": -3,
+    "y": -242,
+    "location": "0xffffffffffffffffffffffffffffff0efffffffffffffffffffffffffffffffd"
+  },
+  {
+    "x": -154,
+    "y": -108,
+    "location": "0xffffffffffffffffffffffffffffff94ffffffffffffffffffffffffffffff66"
+  },
+  {
+    "x": -155,
+    "y": -83,
+    "location": "0xffffffffffffffffffffffffffffffadffffffffffffffffffffffffffffff65"
+  },
+  {
+    "x": 37,
+    "y": -236,
+    "location": "0xffffffffffffffffffffffffffffff1400000000000000000000000000000025"
+  },
+  {
+    "x": 96,
+    "y": 94,
+    "location": "0x0000000000000000000000000000005e00000000000000000000000000000060"
+  },
+  {
+    "x": -13,
+    "y": -198,
+    "location": "0xffffffffffffffffffffffffffffff3afffffffffffffffffffffffffffffff3"
+  },
+  {
+    "x": 52,
+    "y": -211,
+    "location": "0xffffffffffffffffffffffffffffff2d00000000000000000000000000000034"
+  },
+  {
+    "x": 184,
+    "y": -167,
+    "location": "0xffffffffffffffffffffffffffffff59000000000000000000000000000000b8"
+  },
+  {
+    "x": -98,
+    "y": 150,
+    "location": "0x00000000000000000000000000000096ffffffffffffffffffffffffffffff9e"
+  },
+  {
+    "x": -74,
+    "y": 97,
+    "location": "0x00000000000000000000000000000061ffffffffffffffffffffffffffffffb6"
+  }
+]
