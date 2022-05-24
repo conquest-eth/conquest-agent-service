@@ -1,11 +1,5 @@
-.env*
-!.env*.default
-!.env.web.*
-.newsh.json
-node_modules
-conquest-eth.code-workspace
-.claimKeys.mnemonics
-.*claimKeys*
-.yalc
-yalc.lock
-exec.sh
+dist/
+node_modules/
+.env
+src/contracts.json
+wrangler.toml
