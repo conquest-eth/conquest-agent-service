@@ -98,6 +98,12 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
     }
     let resp = await obj.fetch(url.toString(), request);
     return resp;
+  } else if (fnc === 'requestWithdrawal') {
+    if (method !== 'POST') {
+      return InvalidMethod();
+    }
+    let resp = await obj.fetch(url.toString(), request);
+    return resp;
   } else if (fnc === 'account') {
     if (method !== 'GET') {
       return InvalidMethod();

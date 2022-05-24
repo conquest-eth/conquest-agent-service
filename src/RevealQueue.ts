@@ -97,6 +97,10 @@ type MaxFeesSchedule = [
 
 // Data for each account
 type AccountData = {
+  withdrawalRequest?: {
+    timestamp: number;
+    amount: string;
+  };
   nonceMsTimestamp: number;
   paymentReceived: string; // amount of ETH deposited minus amout used (by mined transactions)
   paymentUsed: string;
@@ -126,6 +130,14 @@ type RegistrationSubmission = {
   nonceMsTimestamp: number; // handy mechanism to push update without the need to fetch nonce first
   signature: string; // signature for the registration data
 };
+
+type WithdrawalSubmission = {
+  player: string; // player to register
+  delegate: string; // delegate allowed to perform submission on behalf of the player
+  nonceMsTimestamp: number; // handy mechanism to push update without the need to fetch nonce first
+  signature: string; // signature for the registration data
+};
+
 
 type FeeScheduleSubmission = {
   player: string; // player for which we want to update the feeSchedule
@@ -404,6 +416,7 @@ export class RevealQueue extends DO {
     }
 
     const timestampMs = Math.floor(Date.now());
+    const timestamp = Math.floor(timestampMs / 1000);
 
     const accountID = `account_${revealSubmission.player.toLowerCase()}`;
     let account = await this.state.storage.get<AccountData | undefined>(accountID);
@@ -462,6 +475,11 @@ export class RevealQueue extends DO {
     }
 
     let balance = BigNumber.from(account.paymentReceived).sub(BigNumber.from(account.paymentUsed).add(account.paymentSpending));
+
+    if (account.withdrawalRequest && timestamp < account.withdrawalRequest.timestamp + contracts.PaymentWithdrawalGateway.linkedData.expiryInSeconds + contracts.PaymentWithdrawalGateway.linkedData.extraIntervalInSeconds) {
+      balance = balance.sub(account.withdrawalRequest.amount);
+    }
+
     if (balance.lt(minimumBalance)) {
       //|| !account.delegate) {
       balance = await this._fetchExtraBalanceFromLogs(balance, player.toLowerCase());
@@ -584,6 +602,8 @@ export class RevealQueue extends DO {
   }
 
   async account(path: string[]): Promise<Response> {
+    const timestampMs = Math.floor(Date.now());
+    const timestamp = Math.floor(timestampMs / 1000);
     const player = path[0]?.toLowerCase();
     const accountID = `account_${player}`;
     const accountData = await this.state.storage.get<AccountData | undefined>(accountID);
@@ -592,9 +612,15 @@ export class RevealQueue extends DO {
       const minimumCost = maxFeeAllowed.mul(revealMaxGasEstimate);
       const minimumBalance = minimumCost.sub(parseEther('1'));
       let balance = BigNumber.from(accountData.paymentReceived).sub(BigNumber.from(accountData.paymentUsed).add(accountData.paymentSpending));
-      if (balance.lt(minimumBalance)) {
+
+      // if (balance.lt(minimumBalance)) {
         balance = await this._fetchExtraBalanceFromLogs(balance, player);
+      // }
+
+      if (accountData.withdrawalRequest && timestamp < accountData.withdrawalRequest.timestamp + contracts.PaymentWithdrawalGateway.linkedData.expiryInSeconds + contracts.PaymentWithdrawalGateway.linkedData.extraIntervalInSeconds) {
+        balance = balance.sub(accountData.withdrawalRequest.amount);
       }
+
       return createResponse({
         account: {
           ...accountData,
@@ -873,7 +899,7 @@ export class RevealQueue extends DO {
 
     const fromBlockNumber = lastSync.blockNumber + 1;
 
-    const accountsToUpdate: {[account: string]: {balanceUpdate: BigNumber}} = {};
+    const accountsToUpdate: {[account: string]: {balanceUpdate: BigNumber, withdrawalRequestRemoval?: boolean}} = {};
     const events = await this.paymentContract.queryFilter(
       this.paymentContract.filters.Payment(),
       fromBlockNumber,
@@ -891,6 +917,8 @@ export class RevealQueue extends DO {
         const accountUpdate = (accountsToUpdate[payer] = accountsToUpdate[payer] || {balanceUpdate: BigNumber.from(0)});
         if (event.args.refund) {
           accountUpdate.balanceUpdate = accountUpdate.balanceUpdate.sub(event.args.amount);
+          accountUpdate.withdrawalRequestRemoval = true;
+          // remove it based on timestamp // or id ?
         } else {
           // if (event.args.setDelegate.toLowerCase() !== "0x0000000000000000000000000000000000000000") {
           //     account.delegate = event.args.setDelegate.toLowerCase();
@@ -936,6 +964,7 @@ export class RevealQueue extends DO {
         nonceMsTimestamp: currentAccountState.nonceMsTimestamp,
         delegate: currentAccountState.delegate,
         maxFeesSchedule: currentAccountState.maxFeesSchedule,
+        withdrawalRequest: accountUpdate.withdrawalRequestRemoval ? undefined: currentAccountState.withdrawalRequest
       });
       this.info(`${accountAddress} updated...`);
     }
@@ -946,6 +975,72 @@ export class RevealQueue extends DO {
 
     // this.info({lastSyncRefetched});
     return createResponse({success: true});
+  }
+
+
+  async requestWithdrawal(path: string[], withdrawalSubmission: WithdrawalSubmission): Promise<Response> {
+    const timestampMs = Math.floor(Date.now());
+    const timestamp = Math.floor(timestampMs / 1000);
+
+    const accountID = `account_${withdrawalSubmission.player.toLowerCase()}`;
+    let account = await this.state.storage.get<AccountData | undefined>(accountID);
+
+    if (account) {
+      if (
+        withdrawalSubmission.nonceMsTimestamp <= account.nonceMsTimestamp ||
+        withdrawalSubmission.nonceMsTimestamp > timestampMs
+      ) {
+        return InvalidNonce();
+      }
+
+      if (withdrawalSubmission.delegate) {
+        if (!account.delegate) {
+          return NoDelegateRegistered();
+        }
+        if (withdrawalSubmission.delegate.toLowerCase() !== account.delegate.toLowerCase()) {
+          return InvalidDelegate();
+        }
+      }
+
+      const {player} = withdrawalSubmission;
+
+      const withdrawMessageString = `withdraw:${player}:${withdrawalSubmission.nonceMsTimestamp}`;
+      const authorized = isAuthorized(
+        withdrawalSubmission.delegate ? account.delegate : player,
+        withdrawMessageString,
+        withdrawalSubmission.signature
+      );
+      this.info({
+        withdrawMessageString,
+        player,
+        delegate: account.delegate,
+        authorized,
+        signature: withdrawalSubmission.signature,
+      });
+      if (!authorized) {
+        return NotAuthorized();
+      }
+
+      let balance = BigNumber.from(account.paymentReceived).sub(BigNumber.from(account.paymentUsed).add(account.paymentSpending));
+      // mo fetch logs as we want to only allow withdrawal for what is final
+
+      account.withdrawalRequest = {
+        amount: balance.toString(),
+        timestamp
+      }
+
+      const data = ethers.utils.defaultAbiCoder.encode([ "uint256", "address", "uint256" ], [ timestamp, player, balance ]);
+      const dataHash = ethers.utils.keccak256(data);
+      const signature = await this.wallet.signMessage(ethers.utils.arrayify(dataHash));
+
+      return createResponse({
+        signature,
+        player: withdrawalSubmission.player,
+        amount: account.withdrawalRequest.amount,
+        timestamp : account.withdrawalRequest.timestamp
+      });
+    }
+    return NotRegistered()
   }
 
   private async _fetchExtraBalanceFromLogs(balance: BigNumber, player: string): Promise<BigNumber> {
